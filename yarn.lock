@@ -2643,10 +2643,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@faker-js/faker@npm:^7.6.0":
-  version: 7.6.0
-  resolution: "@faker-js/faker@npm:7.6.0"
-  checksum: 10c0/8f0e0588b1327563aba3bf71d859eb52575c6e34f9d259f63dfa3c3ba7eea910588395399f2531753f1b7b730c06e0ef79336634361b2e69445ed69123e019eb
+"@faker-js/faker@npm:^9.9.0":
+  version: 9.9.0
+  resolution: "@faker-js/faker@npm:9.9.0"
+  checksum: 10c0/02107cb6915217b4831fa4b261603165972eb7f09d2ab2e1d4b75807df2d425a2bac8621cddbfdcc158c2c447c2bce2e14939d51c4a63fbd832df55452e7f73c
   languageName: node
   linkType: hard
 
@@ -9323,7 +9323,7 @@ __metadata:
     "@babel/preset-typescript": "npm:^7.23.3"
     "@cypress/code-coverage": "npm:^3.12.36"
     "@etchteam/storybook-addon-css-variables-theme": "npm:^1.6.0"
-    "@faker-js/faker": "npm:^7.6.0"
+    "@faker-js/faker": "npm:^9.9.0"
     "@honeybadger-io/js": "npm:^6.9.1"
     "@hotwired/stimulus": "npm:3.2.2"
     "@knapsack-pro/cypress": "npm:^7.4.0"
