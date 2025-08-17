@@ -1,0 +1,100 @@
+replicaCount:
+  web: 1
+  worker: 1
+
+image:
+  repository: muraridevv/careerpolitics-platform
+  tag: latest
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging" # or letsencrypt-live
+  hosts:
+    - host: careerpolitics.in
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: careerpolitics-tls
+      hosts:
+        - careerpolitics.in
+
+
+
+env:
+  RAILS_ENV: production
+  NODE_ENV: production
+  ALGOLIA_API_KEY: "1efc4ecc26614f14e8cf68851e88014b"
+  ALGOLIA_APPLICATION_ID: "EX5A5LT1RT"
+  ALGOLIA_DISPLAY_BRANDING: "true"
+  ALGOLIA_SEARCH_ONLY_API_KEY: "fc0ff65e9f4c6a75888b66a12ba66cf0"
+  APP_DOMAIN: "careerpolitics.in"
+  APP_PROTOCOL: "https://"
+  AWS_BUCKET_NAME: "careerpolitics-image-bucket"
+  AWS_ID: "AKIARIW6QBQ3J2BUKIUA"
+  AWS_S3_INPUT_BUCKET: "careerpolitics-image-bucket"
+  AWS_S3_VIDEO_ID: ""
+  AWS_S3_VIDEO_KEY: ""
+  AWS_SECRET: "+BJupkuNREhdMS1LTV//ifYt0YlRMFtvCybp2/us"
+  AWS_UPLOAD_ACL: ""
+  AWS_UPLOAD_REGION: "ap-south-1"
+  BUFFER_ACCESS_TOKEN: "Optional"
+  BUFFER_FACEBOOK_ID: "Optional"
+  BUFFER_LINKEDIN_ID: "Optional"
+  BUFFER_LISTINGS_PROFILE: "Optional"
+  BUFFER_PROFILE_ID: "0"
+  BUFFER_TWITTER_ID: "Optional"
+  CLOUDINARY_API_KEY: "164819613456569"
+  CLOUDINARY_API_SECRET: "W_zPRiRkUUfLodAplnFOq0eTwY8"
+  CLOUDINARY_CLOUD_NAME: "dl9zoitzq"
+  CLOUDINARY_SECURE: "true"
+  COMMUNITY_NAME: "Career Politics"
+  COVERAGE: "false"
+  DATABASE_NAME: "careerpolitics_prod"
+  DATABASE_POOL_SIZE: "3"
+  DATABASE_URL: "postgresql://doadmin:AVNS_Wn_xOCvNSCfyhgjMxxb@postgresql-db-do-user-24455640-0.d.db.ondigitalocean.com:25060/defaultdb?sslmode=require"
+  DEFAULT_EMAIL: "info@careerpolitics.in"
+  FASTLY_API_KEY: "zLDX-mtoMhWBgS3yxX1vBmOo0zxxGkoP"
+  FASTLY_SERVICE_ID: "ps1mr9jClCxL98m64HMIrF"
+  FORCE_SSL_IN_RAILS: "true"
+  FOREM_OWNER_SECRET: "4220d6a4e44d8bd34f8b7c66c14b3d"
+  GA_ANALYTICS_4_ID: "G-SX49NJTWXJ"
+  GA_API_SECRET: "JYXYrTFwTtSUA-WmISVnig"
+  GA_TRACKING_ID: ""
+  GEMINI_API_KEY: "AIzaSyCdWEPkwTBPS0q9wQxQVzzD3n7SQN4k2HU"
+  GITHUB_KEY: "Optional"
+  GITHUB_SECRET: "Optional"
+  HCTI_API_KEY: "Optional"
+  HCTI_API_USER_ID: "Optional"
+  HONEYBADGER_API_KEY: "hbp_Zk6giPZ8Jv8LAWU14b12V7WanwhL8y36vBEb"
+  HONEYBADGER_JS_API_KEY: "hbp_7rZhC9dxtGUci4W7wB3WgKN70Hkcau11COmb"
+  HONEYCOMB_API_KEY: "RQWFDXaVSvi3W8ozcySe2F"
+  LANG: "en_US.UTF-8"
+  MAILCHIMP_API_KEY: "825d747b107a3e714a70c90a50dda7e1-us7"
+  OPENRESTY_URL: ""
+  RACK_ENV: "production"
+  RACK_TIMEOUT_SERVICE_TIMEOUT: "100000"
+  RACK_TIMEOUT_WAIT_TIMEOUT: "100000"
+  RAILS_LOG_TO_STDOUT: "enabled"
+  RAILS_MAX_THREADS: "2"
+  RAILS_SERVE_STATIC_FILES: "enabled"
+  RECAPTCHA_SECRET: "6Lf_fX0rAAAAADJM9wW1noWy_SdHyM5SxU56kTp5"
+  RECAPTCHA_SITE: "6Lf_fX0rAAAAAA4-ianeVmBJDZizM1AeDeGWXjo4"
+  REDISCLOUD_URL: "rediss://default:AVNS_1SJPtSRQNGA7r-Vrgte@redis-db-do-user-24455640-0.d.db.ondigitalocean.com:25061"
+  REDIS_URL: "rediss://default:AVNS_1SJPtSRQNGA7r-Vrgte@redis-db-do-user-24455640-0.d.db.ondigitalocean.com:25061"
+  SECRET_KEY_BASE: "f4c9c3775906455968f5e1b1842ec23c26e1923624eb0eec8b2725ff9b6d761958148bc146d6af7306b91481b3781fff9134301a597245ed68383045626daf66"
+  SESSION_EXPIRY_SECONDS: "1209600"
+  SESSION_KEY: "_Career_Politics_Session"
+  SMTP_ADDRESS: "smtp.hostinger.com"
+  SMTP_AUTHENTICATION: "login"
+  SMTP_DOMAIN: "careerpolitics.in"
+  SMTP_PASSWORD: "Abcd@1234"
+  SMTP_PORT: "587"
+  SMTP_USER_NAME: "info@careerpolitics.in"
+  WEB_CONCURRENCY: "2"
+  SECONDARY_APP_DOMAINS: "www.careerpolitics.in,careerpolitics-app-9cfpa.ondigitalocean.app"
+  REDIRECT_WWW_TO_ROOT: "true"
+  HEROKU_APP_URL: "careerpolitics-app-9cfpa.ondigitalocean.app"
+  REDIS_SESSIONS_URL: "rediss://default:AVNS_1SJPtSRQNGA7r-Vrgte@redis-db-do-user-24455640-0.d.db.ondigitalocean.com:25061"

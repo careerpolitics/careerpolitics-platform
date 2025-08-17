@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: careerpolitics-web
+  labels:
+    app: careerpolitics
+spec:
+  type: ClusterIP
+  selector:
+    app: careerpolitics
+    component: web
+  ports:
+    - port: 3000
+      targetPort: 3000
