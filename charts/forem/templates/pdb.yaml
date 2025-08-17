@@ -1,0 +1,30 @@
+{{- if .Values.podDisruptionBudget.web.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "forem.fullname" . }}-web
+  labels:
+    {{- include "forem.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.web.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "forem.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: web
+{{- end }}
+
+{{- if and .Values.worker.enabled .Values.podDisruptionBudget.worker.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "forem.fullname" . }}-worker
+  labels:
+    {{- include "forem.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.worker.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "forem.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+{{- end }}

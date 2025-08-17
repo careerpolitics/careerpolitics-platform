@@ -1,0 +1,57 @@
+{{- if .Values.hooks.migrate.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "forem.fullname" . }}-migrate
+  labels:
+    {{- include "forem.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": {{ .Values.hooks.migrate.hooks | quote }}
+    "helm.sh/hook-weight": "0"
+    {{- with .Values.hooks.migrate.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  backoffLimit: {{ .Values.hooks.migrate.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.hooks.migrate.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "forem.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migrate
+    spec:
+      restartPolicy: Never
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.image.pullSecrets | nindent 8 }}
+      {{- end }}
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "forem.fullname" . }}
+      {{- else if .Values.serviceAccount.name }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      {{- end }}
+      containers:
+        - name: migrate
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - bash
+            - -lc
+            - |
+              set -euo pipefail
+              echo "Running release tasks..."
+              ./release-tasks.sh
+          envFrom:
+            - configMapRef:
+                name: {{ include "forem.fullname" . }}-env
+            {{- range .Values.rails.envFrom }}
+            - {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- if not .Values.rails.existingSecretName }}
+            - secretRef:
+                name: {{ include "forem.fullname" . }}-secret
+            {{- else }}
+            - secretRef:
+                name: {{ .Values.rails.existingSecretName }}
+            {{- end }}
+{{- end }}

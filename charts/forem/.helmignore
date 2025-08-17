@@ -1,0 +1,13 @@
+.git/
+.github/
+.gitignore
+.vscode/
+.DS_Store
+*.swp
+*.bak
+*.tmp
+*.orig
+*.log
+node_modules/
+charts/
+Chart.lock
