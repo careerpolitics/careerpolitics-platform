@@ -169,7 +169,7 @@ RUN bash -c yarn install --dev
 # Document that we're going to expose port 3000
 EXPOSE 3000
 # Use Bash as the default command
-CMD ["/usr/bin/bash"]
+CMD ["/bin/bash"]
 
 ## Development
 FROM base AS development
@@ -244,4 +244,4 @@ WORKDIR /app
 # Document that we're going to expose port 3000
 EXPOSE 3000
 # Use Bash as the default command
-CMD ["/usr/bin/bash"]
+CMD ["/bin/bash"]
