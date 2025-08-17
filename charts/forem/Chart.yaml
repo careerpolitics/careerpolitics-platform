@@ -1,6 +1,6 @@
 apiVersion: v2
-name: forem
-description: Production-grade Helm chart for Forem (Rails web + Sidekiq worker)
+name: careerpolitics-platform
+description: Production-grade Helm chart for Career Politics Platform (Rails web + Sidekiq worker)
 type: application
 version: 0.1.0
 appVersion: "0.0.0"
