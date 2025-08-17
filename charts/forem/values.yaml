@@ -1,0 +1,201 @@
+image:
+  repository: ghcr.io/forem/forem
+  tag: "latest"
+  pullPolicy: IfNotPresent
+  # Secrets for private registries can be referenced here (optional)
+  pullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+rails:
+  env:
+    RAILS_ENV: production
+    RAILS_LOG_TO_STDOUT: "true"
+    RAILS_SERVE_STATIC_FILES: "true"
+    PORT: "3000"
+    # APP_DOMAIN: example.com
+    # APP_PROTOCOL: https://
+    # FASTLY_CDN_URL: ""
+    # LOG_LEVEL: info
+    # WEB_CONCURRENCY: "2"
+    # RAILS_MAX_THREADS: "5"
+    # DATABASE_URL: "postgres://user:pass@postgres:5432/db"
+    # REDIS_URL: "redis://redis:6379/0"
+  secretEnv: {}
+  # existingSecretName: ""
+  envFrom: []
+    # - secretRef:
+    #     name: my-env-secrets
+    # - configMapRef:
+    #     name: my-env-config
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automount: true
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  # - secretName: forem-tls
+  #   hosts:
+  #     - example.com
+
+persistence:
+  enabled: false
+  existingClaim: ""
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+  mountPath: /opt/apps/forem/public
+
+web:
+  replicas: 2
+  revisionHistoryLimit: 3
+  podAnnotations: {}
+  podLabels: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints: []
+  updateStrategy: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1
+      memory: 1Gi
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 6
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 15
+    periodSeconds: 5
+    timeoutSeconds: 1
+    failureThreshold: 6
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    # targetMemoryUtilizationPercentage: 80
+  securityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+  extraEnv: []
+  extraEnvFrom: []
+  extraVolumeMounts: []
+  extraVolumes: []
+  extraContainers: []
+  extraInitContainers: []
+  command: []
+  args: []
+
+worker:
+  enabled: true
+  replicas: 1
+  revisionHistoryLimit: 3
+  podAnnotations: {}
+  podLabels: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  updateStrategy: {}
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1
+      memory: 1Gi
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 6
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 6
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  securityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+  extraEnv: []
+  extraEnvFrom: []
+  extraVolumeMounts: []
+  extraVolumes: []
+  extraContainers: []
+  extraInitContainers: []
+  command: []
+  args: []
+
+networkPolicy:
+  enabled: false
+  annotations: {}
+  ingress:
+    - from: []
+      ports:
+        - port: 80
+  egress:
+    - to: []
+      ports: []
+
+podDisruptionBudget:
+  web:
+    enabled: true
+    minAvailable: 1
+  worker:
+    enabled: false
+    minAvailable: 1
+
+rbac:
+  create: false
+
+hooks:
+  migrate:
+    enabled: true
+    annotations: {}
+    # change to pre-install,pre-upgrade if you need migrations before new pods
+    hooks: "pre-install,pre-upgrade"
+    backoffLimit: 0
+    ttlSecondsAfterFinished: 300
+
+metrics:
+  serviceMonitor:
+    enabled: false
+    interval: 30s

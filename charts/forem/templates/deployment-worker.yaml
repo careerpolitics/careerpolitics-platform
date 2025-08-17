@@ -1,0 +1,114 @@
+{{- if .Values.worker.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "forem.fullname" . }}-worker
+  labels:
+    {{- include "forem.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  replicas: {{ .Values.worker.replicas }}
+  revisionHistoryLimit: {{ .Values.worker.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{- include "forem.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        {{- include "forem.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+        {{- with .Values.worker.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.worker.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.image.pullSecrets | nindent 8 }}
+      {{- end }}
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "forem.fullname" . }}
+      {{- else if .Values.serviceAccount.name }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      {{- end }}
+      securityContext:
+        {{- if .Values.worker.securityContext.enabled }}
+        runAsNonRoot: {{ .Values.worker.securityContext.runAsNonRoot }}
+        runAsUser: {{ .Values.worker.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.worker.securityContext.runAsGroup }}
+        fsGroup: {{ .Values.worker.securityContext.fsGroup }}
+        {{- end }}
+      containers:
+        - name: sidekiq
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.worker.command }}
+          command: {{- toYaml .Values.worker.command | nindent 12 }}
+          {{- else }}
+          command:
+            - bash
+            - -lc
+            - bundle exec sidekiq -t 25
+          {{- end }}
+          {{- if .Values.worker.args }}
+          args: {{- toYaml .Values.worker.args | nindent 12 }}
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "forem.fullname" . }}-env
+            {{- range .Values.rails.envFrom }}
+            - {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- range .Values.worker.extraEnvFrom }}
+            - {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- if not .Values.rails.existingSecretName }}
+            - secretRef:
+                name: {{ include "forem.fullname" . }}-secret
+            {{- else }}
+            - secretRef:
+                name: {{ .Values.rails.existingSecretName }}
+            {{- end }}
+          {{- with .Values.worker.extraEnv }}
+          env:
+            {{- range . }}
+            - {{- toYaml . | nindent 14 }}
+            {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+          {{- if .Values.worker.livenessProbe.enabled }}
+          livenessProbe:
+            exec:
+              command: ["bash", "-lc", "ps aux | grep -v grep | grep sidekiq"]
+            initialDelaySeconds: {{ .Values.worker.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.worker.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.worker.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.worker.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.worker.readinessProbe.enabled }}
+          readinessProbe:
+            exec:
+              command: ["bash", "-lc", "ps aux | grep -v grep | grep sidekiq"]
+            initialDelaySeconds: {{ .Values.worker.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.worker.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.worker.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.worker.readinessProbe.failureThreshold }}
+          {{- end }}
+      {{- with .Values.worker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.worker.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.worker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
