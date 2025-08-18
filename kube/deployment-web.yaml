@@ -4,7 +4,7 @@ metadata:
   name: careerpolitics-web
   namespace: production
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: careerpolitics
@@ -21,122 +21,8 @@ spec:
           ports:
             - containerPort: 3000
           env:
-            # Sensitive (from Secret)
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: DATABASE_URL
-            - name: SECRET_KEY_BASE
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: SECRET_KEY_BASE
-            - name: AWS_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: AWS_SECRET
-            - name: SMTP_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: SMTP_PASSWORD
-            - name: CLOUDINARY_API_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: CLOUDINARY_API_SECRET
-            - name: FOREM_OWNER_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: FOREM_OWNER_SECRET
-            - name: HONEYBADGER_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: HONEYBADGER_API_KEY
-            - name: HONEYBADGER_JS_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: HONEYBADGER_JS_API_KEY
-            - name: RECAPTCHA_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: RECAPTCHA_SECRET
-            - name: SMTP_USER_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: SMTP_USER_NAME
-            - name: ALGOLIA_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: ALGOLIA_API_KEY
-            - name: ALGOLIA_APPLICATION_ID
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: ALGOLIA_APPLICATION_ID
-            - name: ALGOLIA_SEARCH_ONLY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: ALGOLIA_SEARCH_ONLY_API_KEY
-            - name: AWS_ID
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: AWS_ID
-            - name: CLOUDINARY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: CLOUDINARY_API_KEY
-            - name: FASTLY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: FASTLY_API_KEY
-            - name: GEMINI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: GEMINI_API_KEY
-            - name: HONEYCOMB_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: HONEYCOMB_API_KEY
-            - name: FASTLY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: FASTLY_API_KEY
-            - name: FASTLY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: FASTLY_API_KEY
-            - name: FASTLY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: FASTLY_API_KEY
-            - name: FASTLY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: FASTLY_API_KEY
-            # Non-sensitive (plain env)
             - name: RAILS_ENV
-              value: production
             - name: NODE_ENV
-              value: production
             - name: ALGOLIA_DISPLAY_BRANDING
               value: "true"
             - name: APP_DOMAIN
@@ -243,15 +129,3 @@ spec:
               value: "rediss://default:AVNS_1SJPtSRQNGA7r-Vrgte@redis-db-do-user-24455640-0.d.db.ondigitalocean.com:25061"
             - name: REDIS_SESSIONS_URL
               value: "rediss://default:AVNS_1SJPtSRQNGA7r-Vrgte@redis-db-do-user-24455640-0.d.db.ondigitalocean.com:25061"
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            initialDelaySeconds: 10
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            initialDelaySeconds: 30
-            periodSeconds: 20
