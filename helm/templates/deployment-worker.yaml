@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: careerpolitics-worker
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicaCountWorker }}
+  selector:
+    matchLabels:
+      app: careerpolitics
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: careerpolitics
+        component: worker
+    spec:
+      containers:
+        - name: worker
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["bundle", "exec", "sidekiq"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: DATABASE_URL
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: SECRET_KEY_BASE
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: REDIS_URL
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
