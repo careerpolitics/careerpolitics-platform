@@ -1,0 +1,172 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: careerpolitics-web
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: careerpolitics
+      component: web
+  template:
+    metadata:
+      labels:
+        app: careerpolitics
+        component: web
+    spec:
+      containers:
+        - name: web
+          image: muraridevv/careerpolitics-platform  # replace with your image
+          ports:
+            - containerPort: 3000
+          env:
+            - name: RAILS_ENV
+              value: "production"
+            - name: NODE_ENV
+              value: "production"
+            - name: ALGOLIA_API_KEY
+              value: "1efc4ecc26614f14e8cf68851e88014b"
+            - name: ALGOLIA_APPLICATION_ID
+              value: "EX5A5LT1RT"
+            - name: ALGOLIA_DISPLAY_BRANDING
+              value: "true"
+            - name: ALGOLIA_SEARCH_ONLY_API_KEY
+              value: "fc0ff65e9f4c6a75888b66a12ba66cf0"
+            - name: APP_DOMAIN
+              value: "careerpolitics.in"
+            - name: APP_PROTOCOL
+              value: "https://"
+            - name: AWS_BUCKET_NAME
+              value: "careerpolitics-image-bucket"
+            - name: AWS_ID
+              value: "AKIARIW6QBQ3J2BUKIUA"
+            - name: AWS_S3_INPUT_BUCKET
+              value: "careerpolitics-image-bucket"
+            - name: AWS_S3_VIDEO_ID
+              value: ""
+            - name: AWS_S3_VIDEO_KEY
+              value: ""
+            - name: AWS_SECRET
+              value: "+BJupkuNREhdMS1LTV//ifYt0YlRMFtvCybp2/us"
+            - name: AWS_UPLOAD_ACL
+              value: ""
+            - name: AWS_UPLOAD_REGION
+              value: "ap-south-1"
+            - name: BUFFER_ACCESS_TOKEN
+              value: "Optional"
+            - name: BUFFER_FACEBOOK_ID
+              value: "Optional"
+            - name: BUFFER_LINKEDIN_ID
+              value: "Optional"
+            - name: BUFFER_LISTINGS_PROFILE
+              value: "Optional"
+            - name: BUFFER_PROFILE_ID
+              value: "0"
+            - name: BUFFER_TWITTER_ID
+              value: "Optional"
+            - name: CLOUDINARY_API_KEY
+              value: "164819613456569"
+            - name: CLOUDINARY_API_SECRET
+              value: "W_zPRiRkUUfLodAplnFOq0eTwY8"
+            - name: CLOUDINARY_CLOUD_NAME
+              value: "dl9zoitzq"
+            - name: CLOUDINARY_SECURE
+              value: "true"
+            - name: COMMUNITY_NAME
+              value: "Career Politics"
+            - name: COVERAGE
+              value: "false"
+            - name: DATABASE_NAME
+              value: "careerpolitics_prod"
+            - name: DATABASE_POOL_SIZE
+              value: "3"
+            - name: DATABASE_URL
+              value: "postgresql://doadmin:AVNS_Wn_xOCvNSCfyhgjMxxb@postgresql-db-do-user-24455640-0.d.db.ondigitalocean.com:25060/defaultdb?sslmode=require"
+            - name: DEFAULT_EMAIL
+              value: "info@careerpolitics.in"
+            - name: FASTLY_API_KEY
+              value: "zLDX-mtoMhWBgS3yxX1vBmOo0zxxGkoP"
+            - name: FASTLY_SERVICE_ID
+              value: "ps1mr9jClCxL98m64HMIrF"
+            - name: FORCE_SSL_IN_RAILS
+              value: "true"
+            - name: FOREM_OWNER_SECRET
+              value: "4220d6a4e44d8bd34f8b7c66c14b3d"
+            - name: GA_ANALYTICS_4_ID
+              value: "G-SX49NJTWXJ"
+            - name: GA_API_SECRET
+              value: "JYXYrTFwTtSUA-WmISVnig"
+            - name: GA_TRACKING_ID
+              value: ""
+            - name: GEMINI_API_KEY
+              value: "AIzaSyCdWEPkwTBPS0q9wQxQVzzD3n7SQN4k2HU"
+            - name: GITHUB_KEY
+              value: "Optional"
+            - name: GITHUB_SECRET
+              value: "Optional"
+            - name: HCTI_API_KEY
+              value: "Optional"
+            - name: HCTI_API_USER_ID
+              value: "Optional"
+            - name: HONEYBADGER_API_KEY
+              value: "hbp_Zk6giPZ8Jv8LAWU14b12V7WanwhL8y36vBEb"
+            - name: HONEYBADGER_JS_API_KEY
+              value: "hbp_7rZhC9dxtGUci4W7wB3WgKN70Hkcau11COmb"
+            - name: HONEYCOMB_API_KEY
+              value: "RQWFDXaVSvi3W8ozcySe2F"
+            - name: LANG
+              value: "en_US.UTF-8"
+            - name: MAILCHIMP_API_KEY
+              value: "825d747b107a3e714a70c90a50dda7e1-us7"
+            - name: OPENRESTY_URL
+              value: ""
+            - name: RACK_ENV
+              value: "production"
+            - name: RACK_TIMEOUT_SERVICE_TIMEOUT
+              value: "100000"
+            - name: RACK_TIMEOUT_WAIT_TIMEOUT
+              value: "100000"
+            - name: RAILS_LOG_TO_STDOUT
+              value: "enabled"
+            - name: RAILS_MAX_THREADS
+              value: "2"
+            - name: RAILS_SERVE_STATIC_FILES
+              value: "enabled"
+            - name: RECAPTCHA_SECRET
+              value: "6Lf_fX0rAAAAADJM9wW1noWy_SdHyM5SxU56kTp5"
+            - name: RECAPTCHA_SITE
+              value: "6Lf_fX0rAAAAAA4-ianeVmBJDZizM1AeDeGWXjo4"
+            - name: REDISCLOUD_URL
+              value: "rediss://default:AVNS_1SJPtSRQNGA7r-Vrgte@redis-db-do-user-24455640-0.d.db.ondigitalocean.com:25061"
+            - name: REDIS_URL
+              value: "rediss://default:AVNS_1SJPtSRQNGA7r-Vrgte@redis-db-do-user-24455640-0.d.db.ondigitalocean.com:25061"
+            - name: SECRET_KEY_BASE
+              value: "f4c9c3775906455968f5e1b1842ec23c26e1923624eb0eec8b2725ff9b6d761958148bc146d6af7306b91481b3781fff9134301a597245ed68383045626daf66"
+            - name: SESSION_EXPIRY_SECONDS
+              value: "1209600"
+            - name: SESSION_KEY
+              value: "_Career_Politics_Session"
+            - name: SMTP_ADDRESS
+              value: "smtp.hostinger.com"
+            - name: SMTP_AUTHENTICATION
+              value: "login"
+            - name: SMTP_DOMAIN
+              value: "careerpolitics.in"
+            - name: SMTP_PASSWORD
+              value: "Abcd@1234"
+            - name: SMTP_PORT
+              value: "587"
+            - name: SMTP_USER_NAME
+              value: "info@careerpolitics.in"
+            - name: WEB_CONCURRENCY
+              value: "2"
+            - name: SECONDARY_APP_DOMAINS
+              value: "www.careerpolitics.in,careerpolitics-app-9cfpa.ondigitalocean.app"
+            - name: REDIRECT_WWW_TO_ROOT
+              value: "true"
+            - name: HEROKU_APP_URL
+              value: "careerpolitics-app-9cfpa.ondigitalocean.app"
+            - name: REDIS_SESSIONS_URL
+              value: "rediss://default:AVNS_1SJPtSRQNGA7r-Vrgte@redis-db-do-user-24455640-0.d.db.ondigitalocean.com:25061"
+
