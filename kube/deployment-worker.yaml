@@ -20,6 +20,7 @@ spec:
           image: muraridevv/careerpolitics-platform:latest
           command: ["bundle", "exec", "sidekiq"]
           env:
+            # Sensitive
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
@@ -30,4 +31,27 @@ spec:
                 secretKeyRef:
                   name: careerpolitics-secrets
                   key: SECRET_KEY_BASE
-            # other env vars
+            - name: AWS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: AWS_SECRET
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: SMTP_PASSWORD
+            # Non-sensitive
+            - name: RAILS_ENV
+              value: production
+            - name: NODE_ENV
+              value: production
+            - name: APP_DOMAIN
+              value: "careerpolitics.in"
+            - name: APP_PROTOCOL
+              value: "https://"
+            - name: AWS_BUCKET_NAME
+              value: "careerpolitics-image-bucket"
+            - name: WEB_CONCURRENCY
+              value: "2"
+            # Add other non-sensitive envs here
