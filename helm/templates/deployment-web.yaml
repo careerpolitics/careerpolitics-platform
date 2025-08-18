@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: careerpolitics-web
-  namespace: production
+  namespace: {{ .Values.namespace }}
 spec:
-  replicas: 2
+  replicas: {{ .Values.replicaCountWeb }}
   selector:
     matchLabels:
       app: careerpolitics
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: muraridevv/careerpolitics-platform:latest
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: 3000
           env:
@@ -41,7 +41,15 @@ spec:
                 secretKeyRef:
                   name: careerpolitics-secrets
                   key: SMTP_PASSWORD
-            # Add other non-sensitive env vars here
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: REDIS_URL
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
           readinessProbe:
             httpGet:
               path: /
