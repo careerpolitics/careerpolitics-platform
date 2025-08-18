@@ -92,7 +92,6 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install careerpolitics-redis bitnami/redis --namespace redis
 ```
 
-> After deployment, note the Redis URL for environment variables: `redis://careerpolitics-redis-master.redis.svc.cluster.local:6379`
 
 ---
 
