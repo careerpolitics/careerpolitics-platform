@@ -72,28 +72,79 @@ spec:
                 secretKeyRef:
                   name: careerpolitics-secrets
                   key: SMTP_USER_NAME
-
+            - name: ALGOLIA_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: ALGOLIA_API_KEY
+            - name: ALGOLIA_APPLICATION_ID
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: ALGOLIA_APPLICATION_ID
+            - name: ALGOLIA_SEARCH_ONLY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: ALGOLIA_SEARCH_ONLY_API_KEY
+            - name: AWS_ID
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: AWS_ID
+            - name: CLOUDINARY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: CLOUDINARY_API_KEY
+            - name: FASTLY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: FASTLY_API_KEY
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: GEMINI_API_KEY
+            - name: HONEYCOMB_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: HONEYCOMB_API_KEY
+            - name: FASTLY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: FASTLY_API_KEY
+            - name: FASTLY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: FASTLY_API_KEY
+            - name: FASTLY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: FASTLY_API_KEY
+            - name: FASTLY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: careerpolitics-secrets
+                  key: FASTLY_API_KEY
             # Non-sensitive (plain env)
             - name: RAILS_ENV
               value: production
             - name: NODE_ENV
               value: production
-            - name: ALGOLIA_API_KEY
-              value: "1efc4ecc26614f14e8cf68851e88014b"
-            - name: ALGOLIA_APPLICATION_ID
-              value: "EX5A5LT1RT"
             - name: ALGOLIA_DISPLAY_BRANDING
               value: "true"
-            - name: ALGOLIA_SEARCH_ONLY_API_KEY
-              value: "fc0ff65e9f4c6a75888b66a12ba66cf0"
             - name: APP_DOMAIN
               value: "careerpolitics.in"
             - name: APP_PROTOCOL
               value: "https://"
             - name: AWS_BUCKET_NAME
               value: "careerpolitics-image-bucket"
-            - name: AWS_ID
-              value: "AKIARIW6QBQ3J2BUKIUA"
             - name: AWS_S3_INPUT_BUCKET
               value: "careerpolitics-image-bucket"
             - name: AWS_S3_VIDEO_ID
@@ -116,8 +167,6 @@ spec:
               value: "0"
             - name: BUFFER_TWITTER_ID
               value: "Optional"
-            - name: CLOUDINARY_API_KEY
-              value: "164819613456569"
             - name: CLOUDINARY_CLOUD_NAME
               value: "dl9zoitzq"
             - name: CLOUDINARY_SECURE
@@ -132,8 +181,6 @@ spec:
               value: "3"
             - name: DEFAULT_EMAIL
               value: "info@careerpolitics.in"
-            - name: FASTLY_API_KEY
-              value: "zLDX-mtoMhWBgS3yxX1vBmOo0zxxGkoP"
             - name: FASTLY_SERVICE_ID
               value: "ps1mr9jClCxL98m64HMIrF"
             - name: FORCE_SSL_IN_RAILS
