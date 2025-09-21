@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: careerpolitics-ingress
+  namespace: production
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: careerpolitics.in
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: careerpolitics-web
+                port:
+                  number: 3000
+  tls:
+    - hosts:
+        - careerpolitics.in
+      secretName: careerpolitics-tls
