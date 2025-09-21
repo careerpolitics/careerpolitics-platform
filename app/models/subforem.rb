@@ -1,5 +1,6 @@
 class Subforem < ApplicationRecord
   acts_as_followable
+  resourcify
 
   has_many :articles, dependent: :nullify
   has_many :navigation_links, dependent: :nullify
@@ -12,12 +13,12 @@ class Subforem < ApplicationRecord
   validates :root, uniqueness: { message: "Only one subforem can be the root" }, if: :root
 
   # Virtual attributes for form
-  attr_accessor :name, :brain_dump, :logo_url, :bg_image_url
+  attr_accessor :name, :brain_dump, :logo_url, :bg_image_url, :default_locale
 
   before_validation :downcase_domain
   after_save :bust_caches
 
-  def self.create_from_scratch!(domain:, brain_dump:, name:, logo_url:, bg_image_url: nil)
+  def self.create_from_scratch!(domain:, brain_dump:, name:, logo_url:, bg_image_url: nil, default_locale: "en")
     subforem = Subforem.create!(domain: domain)
 
     # Queue background job for AI services
@@ -27,6 +28,7 @@ class Subforem < ApplicationRecord
       name,
       logo_url,
       bg_image_url,
+      default_locale,
     )
 
     subforem
@@ -94,9 +96,21 @@ class Subforem < ApplicationRecord
 
   def self.cached_postable_array
     Rails.cache.fetch("subforem_postable_array", expires_in: 12.hours) do
-      Subforem.where(discoverable: true).pluck(:id).map do |id|
+      Subforem.where(discoverable: true).order("hotness_score desc").pluck(:id).map do |id|
         [id, Settings::Community.community_name(subforem_id: id)]
       end
+    end
+  end
+
+  def self.cached_misc_subforem_id
+    Rails.cache.fetch("subforem_misc_id", expires_in: 12.hours) do
+      Subforem.find_by(misc: true)&.id
+    end
+  end
+
+  def self.misc_subforem
+    Rails.cache.fetch("subforem_misc_object", expires_in: 12.hours) do
+      Subforem.find_by(misc: true)
     end
   end
 
@@ -106,6 +120,10 @@ class Subforem < ApplicationRecord
 
   def name
     Settings::Community.community_name(subforem_id: id)
+  end
+
+  def subforem_moderator_ids
+    User.with_role(:subforem_moderator, self).order(id: :asc).ids
   end
 
   def update_scores!
@@ -130,6 +148,8 @@ class Subforem < ApplicationRecord
     Rails.cache.delete("subforem_all_domains")
     Rails.cache.delete("subforem_default_id")
     Rails.cache.delete("subforem_id_by_domain_#{domain}")
+    Rails.cache.delete("subforem_misc_id")
+    Rails.cache.delete("subforem_misc_object")
   end
 
   def downcase_domain
