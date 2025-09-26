@@ -22,13 +22,13 @@ This guide explains how to deploy the CareerPolitics app on a DigitalOcean Kuber
   * Push to Docker Hub or DigitalOcean Container Registry:
 
     ```bash
-    docker build -t muraridevv/careerpolitics-platform:latest .
+    docker build --target production -t muraridevv/careerpolitics-platform:latest .
     docker push muraridevv/careerpolitics-platform:latest
     ```
 
 3. **Domain**
 
-  * Ensure you have `careerpolitics.in` (or your custom domain) ready to point to the cluster.
+  * Ensure you have `careerpolitics.com` (or your custom domain) ready to point to the cluster.
 
 ---
 
@@ -47,9 +47,9 @@ This guide explains how to deploy the CareerPolitics app on a DigitalOcean Kuber
 ```bash
 doctl kubernetes cluster create careerpolitics-cluster \
   --region blr1 \
-  --version 1.33.1-do.3 \
+  --version 1.33.1-do.4 \
   --size s-2vcpu-4gb \
-  --count 3
+  --count 2
 ```
 
 > Wait for cluster provisioning (\~5–10 min).
@@ -107,7 +107,11 @@ kubectl create secret generic careerpolitics-secrets \
   --from-literal=AWS_SECRET="<your-aws-secret>" \
   --from-literal=SMTP_PASSWORD="<your-smtp-password>" \
   --from-literal=REDIS_URL="redis://careerpolitics-redis-master.redis.svc.cluster.local:6379" \
+  --from-literal=GA_API_SECRET="<your-ga-api-secret>" \
+  --from-literal=MAILCHIMP_API_KEY="<your-mailchimp-api-key>" \
+  --from-literal=GEMINI_API_KEY="<your-gemini-api-key>" \
   -n production
+
 ```
 
 > Add other secrets like `HONEYBADGER_API_KEY`, `FOREM_OWNER_SECRET` as needed.
