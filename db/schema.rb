@@ -169,7 +169,6 @@ ActiveRecord::Schema[7.0].define(version: 2025_09_18_134444) do
     t.string "video_source_url"
     t.string "video_state"
     t.string "video_thumbnail_url"
-    t.index ["automod_label"], name: "index_articles_on_automod_label"
     t.index ["cached_label_list"], name: "index_articles_on_cached_label_list", using: :gin
     t.index ["cached_tag_list"], name: "index_articles_on_cached_tag_list", opclass: :gin_trgm_ops, using: :gin
     t.index ["canonical_url"], name: "index_articles_on_canonical_url", unique: true, where: "(published IS TRUE)"
@@ -1538,7 +1537,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_09_18_134444) do
     t.datetime "last_article_at", precision: nil, default: "2017-01-01 05:00:00"
     t.datetime "last_comment_at", precision: nil, default: "2017-01-01 05:00:00"
     t.datetime "last_followed_at", precision: nil
-    t.datetime "last_moderation_notification", precision: nil, default: "2017-01-01 00:00:00"
+    t.datetime "last_moderation_notification", precision: nil, default: "2016-12-31 18:30:00"
     t.datetime "last_notification_activity", precision: nil
     t.string "last_onboarding_page"
     t.datetime "last_reacted_at", precision: nil
