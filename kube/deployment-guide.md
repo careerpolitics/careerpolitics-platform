@@ -96,52 +96,7 @@ helm install careerpolitics-redis bitnami/redis --namespace redis
 
 ---
 
-## Step 6: Create Secrets for Sensitive Environment Variables
-
-**IMPORTANT**: For security reasons, all sensitive environment variables are now stored in Kubernetes secrets instead of being hardcoded in deployment files.
-
-### Option A: Use the provided secrets.yaml file
-
-```bash
-kubectl apply -f secrets.yaml
-```
-
-### Option B: Create secrets manually
-
-```bash
-kubectl create secret generic careerpolitics-secrets \
-  --from-literal=DATABASE_URL="postgresql://doadmin:AVNS_Wn_xOCvNSCfyhgjMxxb@postgresql-db-do-user-24455640-0.d.db.ondigitalocean.com:25060/defaultdb?sslmode=require" \
-  --from-literal=SECRET_KEY_BASE="<your-secret-key>" \
-  --from-literal=AWS_SECRET="<your-aws-secret>" \
-  --from-literal=AWS_ID="<your-aws-id>" \
-  --from-literal=SMTP_PASSWORD="<your-smtp-password>" \
-  --from-literal=SMTP_USER_NAME="<your-smtp-username>" \
-  --from-literal=CLOUDINARY_API_KEY="<your-cloudinary-api-key>" \
-  --from-literal=CLOUDINARY_API_SECRET="<your-cloudinary-api-secret>" \
-  --from-literal=CLOUDINARY_CLOUD_NAME="<your-cloudinary-cloud-name>" \
-  --from-literal=FOREM_OWNER_SECRET="<your-forem-owner-secret>" \
-  --from-literal=HONEYBADGER_API_KEY="<your-honeybadger-api-key>" \
-  --from-literal=HONEYBADGER_JS_API_KEY="<your-honeybadger-js-api-key>" \
-  --from-literal=RECAPTCHA_SECRET="<your-recaptcha-secret>" \
-  --from-literal=ALGOLIA_API_KEY="<your-algolia-api-key>" \
-  --from-literal=ALGOLIA_APPLICATION_ID="<your-algolia-app-id>" \
-  --from-literal=ALGOLIA_SEARCH_ONLY_API_KEY="<your-algolia-search-key>" \
-  --from-literal=FASTLY_API_KEY="<your-fastly-api-key>" \
-  --from-literal=FASTLY_SERVICE_ID="<your-fastly-service-id>" \
-  --from-literal=GEMINI_API_KEY="<your-gemini-api-key>" \
-  --from-literal=HONEYCOMB_API_KEY="<your-honeycomb-api-key>" \
-  --from-literal=GA_API_SECRET="<your-ga-api-secret>" \
-  --from-literal=MAILCHIMP_API_KEY="<your-mailchimp-api-key>" \
-  --from-literal=REDIS_URL="redis://careerpolitics-redis-master.redis.svc.cluster.local:6379" \
-  --from-literal=REDIS_SESSIONS_URL="redis://careerpolitics-redis-master.redis.svc.cluster.local:6379" \
-  -n production
-```
-
-> **Security Note**: The secrets.yaml file contains base64 encoded values. Make sure to update them with your actual secret values before applying.
-
----
-
-## Step 7: Apply Kubernetes Manifests
+## Step 6: Apply Kubernetes Manifests
 
 All your YAML files should be applied in the following order:
 
@@ -181,7 +136,7 @@ kubectl logs -f deployment/careerpolitics-web -n production
 
 ---
 
-## Step 8: Point Domain to Ingress
+## Step 7: Point Domain to Ingress
 
 1. Get LoadBalancer IP:
 
@@ -201,7 +156,7 @@ TTL: 300
 
 ---
 
-## Step 9: Access App
+## Step 8: Access App
 
 Visit: `https://careerpolitics.in` 🎉
 
