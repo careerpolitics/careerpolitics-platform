@@ -1,6 +1,6 @@
 Datadog.configure do |c|
   c.env = Rails.env
-  c.tracing.enabled = ENV["DD_API_KEY"].present?
+  c.tracing.enabled = ENV["DD_API_KEY"].present? && ENV["DD_AGENT_HOST"].present?
   c.tracing.partial_flush.enabled = true
   c.diagnostics.startup_logs.enabled = Rails.env.production?
   c.tracing.log_injection = ENV["TRACING_LOG_INJECTION"] == "yes"
