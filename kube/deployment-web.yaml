@@ -124,9 +124,7 @@ spec:
             - name: REDIRECT_WWW_TO_ROOT
               value: "true"
             - name: REDIS_URL
-              value: "redis://default:QDb5ikqj1g@careerpolitics-redis-master.redis.svc.cluster.local:6379/0"
-            - name: REDIS_SESSIONS_URL
-              value: "redis://default:QDb5ikqj1g@careerpolitics-redis-master.redis.svc.cluster.local:6379/0"
+              value: rediss://default:AVNS_egF7Vkgq9vYdAlEZjpJ@db-valkey-blr1-42804-do-user-24455640-0.h.db.ondigitalocean.com:25061
 
           # --------------------
           # Resource Limits
