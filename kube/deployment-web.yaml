@@ -76,7 +76,7 @@ spec:
             - name: DEFAULT_EMAIL
               value: "support@careerpolitics.com"
             - name: FORCE_SSL_IN_RAILS
-              value: "true"
+              value: "false"
             - name: GA_ANALYTICS_4_ID
               value: "G-SX49NJTWXJ"
             - name: GA_TRACKING_ID
@@ -124,7 +124,7 @@ spec:
             - name: REDIRECT_WWW_TO_ROOT
               value: "true"
             - name: REDIS_URL
-              value: rediss://default:AVNS_egF7Vkgq9vYdAlEZjpJ@db-valkey-blr1-42804-do-user-24455640-0.h.db.ondigitalocean.com:25061
+              value: redis://:password@careerpolitics-redis-master.redis.svc.cluster.local:6379/0
 
           # --------------------
           # Resource Limits

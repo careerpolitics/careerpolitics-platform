@@ -88,11 +88,23 @@ kubectl get pods -n cert-manager
 
 ```bash
 kubectl create namespace redis
+
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install careerpolitics-redis bitnami/redis --namespace redis
+helm repo update
+
+# Install Redis with authentication and persistence
+helm install careerpolitics-redis bitnami/redis \
+  --namespace redis \
+  --set auth.enabled=true \
+  --set auth.password="password" \
+  --set replica.replicaCount=1 \
+  --set master.persistence.enabled=true \
+  --set master.persistence.size=1Gi \
+  --set master.persistence.storageClass="do-block-storage"
+
 ```
 
-> After deployment, note the Redis URL for environment variables: `redis://careerpolitics-redis-master.redis.svc.cluster.local:6379`
+> After deployment, note the Redis URL for environment variables: `redis://:password@careerpolitics-redis-master.redis.svc.cluster.local:6379/0`
 
 ---
 
