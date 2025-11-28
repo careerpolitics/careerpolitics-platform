@@ -5,9 +5,13 @@ metadata:
   namespace: production
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-#    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - careerpolitics.com
+      secretName: careerpolitics-tls
   rules:
     - host: careerpolitics.com
       http:
@@ -19,7 +23,3 @@ spec:
                 name: careerpolitics-web
                 port:
                   number: 3000
-  tls:
-    - hosts:
-        - careerpolitics.com
-      secretName: careerpolitics-tls
