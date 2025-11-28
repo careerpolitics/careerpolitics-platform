@@ -1,62 +1,61 @@
-# CareerPolitics Kubernetes Deployment Guide
+# **CareerPolitics Kubernetes Deployment Guide**
 
-This guide explains how to deploy the CareerPolitics app on a DigitalOcean Kubernetes cluster using NGINX Ingress and Cert-Manager for SSL.
+This guide explains how to deploy the **CareerPolitics** application onto a **DigitalOcean Kubernetes (DOKS)** cluster using:
 
----
-
-## Prerequisites
-
-1. **DigitalOcean Account & doctl**
-
-  * Create a DigitalOcean account if you don't have one.
-  * Install `doctl` CLI: [https://docs.digitalocean.com/reference/doctl/how-to/install/](https://docs.digitalocean.com/reference/doctl/how-to/install/)
-  * Authenticate `doctl`:
-
-    ```bash
-    doctl auth init
-    ```
-
-2. **Docker Image**
-
-  * Build your app Docker image locally or via CI/CD.
-  * Push to Docker Hub or DigitalOcean Container Registry:
-
-    ```bash
-    docker build -t muraridevv/careerpolitics-platform:latest .
-    docker push muraridevv/careerpolitics-platform:latest
-    ```
-
-3. **Domain**
-
-  * Ensure you have `careerpolitics.in` (or your custom domain) ready to point to the cluster.
+* NGINX Ingress Controller
+* Redis (Bitnami Helm Chart)
+* Cert-Manager (Let’s Encrypt SSL)
+* DigitalOcean Load Balancer
+* Kubernetes Manifests
 
 ---
 
-## Step 1: Create Kubernetes Cluster
+# **Prerequisites**
 
-**Option A: DigitalOcean UI**
+### **1. DigitalOcean Account & doctl**
 
-1. Go to **DigitalOcean → Kubernetes → Create Cluster**.
-2. Region: `Bangalore (BLR1)`.
-3. Kubernetes Version: latest stable.
-4. Node pool: 3 nodes (s-2vcpu-4gb recommended for HA).
-5. Click **Create Cluster**.
+* Create a DigitalOcean account
+* Install `doctl`:
+  [https://docs.digitalocean.com/reference/doctl/how-to/install/](https://docs.digitalocean.com/reference/doctl/how-to/install/)
+* Authenticate:
 
-**Option B: doctl CLI**
+```bash
+doctl auth init
+```
+
+---
+
+### **2. Domain Setup**
+
+Ensure you own a domain (e.g., `careerpolitics.com`) and can create DNS records.
+
+---
+
+# **Step 1: Create Kubernetes Cluster**
+
+## **Option A: Using the DigitalOcean UI (Recommended)**
+
+1. Go to **DigitalOcean → Kubernetes → Create Cluster**
+2. Region: **Bangalore (BLR1)**
+3. Kubernetes Version: **Latest Stable**
+4. Node Pool: **3 nodes (s-2vcpu-4gb recommended)**
+5. Click **Create Cluster**
+
+---
+
+## **Option B: Using doctl**
 
 ```bash
 doctl kubernetes cluster create careerpolitics-cluster \
   --region blr1 \
-  --version 1.33.1-do.3 \
-  --size s-2vcpu-4gb \
-  --count 3
+  --version latest \
+  --size s-1vcpu-2gb \
+  --count 2
 ```
-
-> Wait for cluster provisioning (\~5–10 min).
 
 ---
 
-## Step 2: Connect to Cluster
+# **Step 2: Connect to the Cluster**
 
 ```bash
 doctl kubernetes cluster kubeconfig save careerpolitics-cluster
@@ -66,77 +65,199 @@ kubectl create namespace production
 
 ---
 
-## Step 3: Install NGINX Ingress Controller
+# **Step 3: Build & Push the Docker Image**
+
+This step ensures your application image is available for Kubernetes deployments.
+
+### **1. Build the image**
+
+Run inside your project root:
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/do/deploy.yaml
+docker build --target production \
+  -t muraridevv/careerpolitics-platform:latest .
+```
+
+---
+
+### **2. Push the image to Docker Hub**
+
+```bash
+docker push muraridevv/careerpolitics-platform:latest
+```
+
+> If using **DigitalOcean Container Registry (DOCR)** instead of Docker Hub, run:
+
+```bash
+doctl registry login
+docker tag <local-image> registry.digitalocean.com/<registry-name>/careerpolitics-platform:latest
+docker push registry.digitalocean.com/<registry-name>/careerpolitics-platform:latest
+```
+
+---
+
+# **Step 4: Install NGINX Ingress Controller (DigitalOcean Method)**
+
+DigitalOcean provides a fully managed installation for NGINX.
+
+---
+
+## **Option A: Install via DigitalOcean UI**
+
+1. Open your Kubernetes cluster
+2. Go to **Add-Ons**
+3. Search **NGINX Ingress Controller**
+4. Click **Install**
+5. Verify installation:
+
+```bash
 kubectl get pods -n ingress-nginx
 ```
 
 ---
 
-## Step 4: Install Cert-Manager
+## **Option B: Install via doctl**
 
 ```bash
-kubectl apply --validate=false -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.1/cert-manager.yaml
-kubectl get pods -n cert-manager
+doctl kubernetes cluster addon install <CLUSTER-ID> ingress-nginx
+kubectl get pods -n ingress-nginx
 ```
 
 ---
 
-## Step 5: Deploy Redis in Kubernetes
+# **Step 5: Install Redis (Bitnami Helm Chart)**
+
+Redis is required for caching and job processing.
+
+---
+
+### **1. Create Redis namespace**
 
 ```bash
 kubectl create namespace redis
+```
+
+---
+
+### **2. Add Bitnami Helm charts repo**
+
+```bash
 helm repo add bitnami https://charts.bitnami.com/bitnami
+```
+
+---
+
+### **3. Install Redis**
+
+```bash
 helm install careerpolitics-redis bitnami/redis --namespace redis
 ```
 
-> After deployment, note the Redis URL for environment variables: `redis://careerpolitics-redis-master.redis.svc.cluster.local:6379`
-
 ---
 
-## Step 6: Create Secrets for Sensitive Environment Variables
-
-Include database, secret key, SMTP, and Redis URL.
+### **4. Retrieve Redis password**
 
 ```bash
-kubectl create secret generic careerpolitics-secrets \
-  --from-literal=DATABASE_URL="postgresql://doadmin:AVNS_Wn_xOCvNSCfyhgjMxxb@postgresql-db-do-user-24455640-0.d.db.ondigitalocean.com:25060/defaultdb?sslmode=require" \
-  --from-literal=SECRET_KEY_BASE="<your-secret-key>" \
-  --from-literal=AWS_SECRET="<your-aws-secret>" \
-  --from-literal=SMTP_PASSWORD="<your-smtp-password>" \
-  --from-literal=REDIS_URL="redis://careerpolitics-redis-master.redis.svc.cluster.local:6379" \
-  -n production
+kubectl get secret --namespace redis careerpolitics-redis \
+  -o jsonpath="{.data.redis-password}" | base64 -d
 ```
 
-> Add other secrets like `HONEYBADGER_API_KEY`, `FOREM_OWNER_SECRET` as needed.
+Example output:
 
----
-
-## Step 7: Apply Kubernetes Manifests
-
-All your YAML files (`cluster-issuer.yaml`, `deployment-web.yaml`, `service-web.yaml`, `deployment-worker.yaml`, `ingress.yaml`) should be applied:
-
-```bash
-kubectl apply -f cluster-issuer.yaml
-kubectl apply -f deployment-web.yaml
-kubectl apply -f service-web.yaml
-kubectl apply -f deployment-worker.yaml
-kubectl apply -f ingress.yaml
+```
+NiJZSC7CFr
 ```
 
 ---
 
-## Step 8: Point Domain to Ingress
+### **5. Redis connection URL**
 
-1. Get LoadBalancer IP:
+```
+redis://:PASSWORD@careerpolitics-redis-master.redis.svc.cluster.local:6379
+```
+
+Example:
+
+```
+redis://:NiJZSC7CFr@careerpolitics-redis-master.redis.svc.cluster.local:6379
+```
+
+---
+
+# **Step 6: Install Cert-Manager (SSL Certificates)**
+
+### **1. Install Cert-Manager CRDs + components**
+
+```bash
+kubectl apply --validate=false -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.1/cert-manager.yaml
+
+kubectl rollout status deployment/cert-manager -n cert-manager
+kubectl rollout status deployment/cert-manager-webhook -n cert-manager
+kubectl rollout status deployment/cert-manager-cainjector -n cert-manager
+```
+
+---
+
+### **2. Apply the Let's Encrypt ClusterIssuer**
+
+```bash
+kubectl apply -f kube/cluster-issuer.yaml
+kubectl describe clusterissuer letsencrypt-prod
+```
+
+Make sure the email in `cluster-issuer.yaml` is updated:
+
+```yaml
+spec:
+  acme:
+    email: your@email
+```
+
+---
+
+### **3. (Optional) Create staging issuer for testing**
+
+Switch ACME server:
+
+```
+https://acme-staging-v02.api.letsencrypt.org/directory
+```
+
+---
+
+# **Step 7: Deploy Application Manifests**
+
+Apply Deployment, Services, Ingress, etc.
+
+```bash
+kubectl apply -f kube/cluster-issuer.yaml
+kubectl apply -f kube/deployment-web.yaml
+kubectl apply -f kube/service-web.yaml
+kubectl apply -f kube/deployment-worker.yaml
+kubectl apply -f kube/ingress.yaml
+```
+
+Verify:
+
+```
+kubectl get all -n production
+```
+
+---
+
+# **Step 8: Configure DNS for Ingress LoadBalancer**
+
+### **1. Get the LoadBalancer IP**
 
 ```bash
 kubectl get svc -n ingress-nginx
 ```
 
-2. Add A record in DNS:
+Look for the EXTERNAL-IP.
+
+---
+
+### **2. Add DNS A records**
 
 ```
 Host: @
@@ -144,34 +265,63 @@ Value: <EXTERNAL-IP>
 TTL: 300
 ```
 
-3. Wait for DNS propagation.
+```
+Host: www
+Value: <EXTERNAL-IP>
+TTL: 300
+```
 
 ---
 
-## Step 9: Access App
+### **3. Wait for DNS propagation**
 
-Visit: `https://careerpolitics.in` 🎉
+SSL will only issue after domain resolves publicly.
 
-* Verify SSL:
+---
+
+# **Step 9: Validate SSL**
 
 ```bash
+kubectl get certificate,certificaterequest,order -n production
 kubectl describe certificate careerpolitics-tls -n production
-kubectl logs -n cert-manager deploy/cert-manager
+kubectl logs deploy/cert-manager -n cert-manager --tail=200
+```
+
+Healthy certificate:
+
+```
+Ready=True
 ```
 
 ---
 
-## Optional: Horizontal Pod Autoscaler
+# **Step 10: Access the Application**
+
+Visit:
+
+```
+https://careerpolitics.com
+```
+
+🎉 Your application is now live on Kubernetes!
+
+---
+
+# **Optional: Enable Autoscaling**
 
 ```bash
-kubectl autoscale deployment careerpolitics-web --cpu-percent=50 --min=2 --max=5 -n production
+kubectl autoscale deployment careerpolitics-web \
+  --cpu-percent=50 --min=2 --max=5 -n production
 ```
 
 ---
 
-## Monitoring & Logs
+# **Monitoring & Logs**
 
 ```bash
 kubectl logs -f deployment/careerpolitics-web -n production
 kubectl get pods -n production
+kubectl describe ingress -n production
 ```
+
+---

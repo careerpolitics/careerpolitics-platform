@@ -23,115 +23,39 @@ spec:
           env:
             # Sensitive (from Secret)
             - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: DATABASE_URL
+              value: "postgresql://doadmin:AVNS_K5yar0B1z62ROPp73DI@db-postgresql-blr1-02718-do-user-24455640-0.i.db.ondigitalocean.com:25060/defaultdb?sslmode=require"
             - name: SECRET_KEY_BASE
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: SECRET_KEY_BASE
+              value: "f4c9c3775906455968f5e1b1842ec23c26e1923624eb0eec8b2725ff9b6d761958148bc146d6af7306b91481b3781fff9134301a597245ed68383045626daf66"
             - name: AWS_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: AWS_SECRET
+              value: "+BJupkuNREhdMS1LTV//ifYt0YlRMFtvCybp2/us"
             - name: SMTP_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: SMTP_PASSWORD
+              value: "98@Murari"
             - name: CLOUDINARY_API_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: CLOUDINARY_API_SECRET
+              value: "W_zPRiRkUUfLodAplnFOq0eTwY8"
             - name: FOREM_OWNER_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: FOREM_OWNER_SECRET
+              value: "4220d6a4e44d8bd34f8b7c66c14b3d"
             - name: HONEYBADGER_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: HONEYBADGER_API_KEY
+              value: "hbp_Zk6giPZ8Jv8LAWU14b12V7WanwhL8y36vBEb"
             - name: HONEYBADGER_JS_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: HONEYBADGER_JS_API_KEY
+              value: "hbp_7rZhC9dxtGUci4W7wB3WgKN70Hkcau11COmb"
             - name: RECAPTCHA_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: RECAPTCHA_SECRET
+              value: "6Lf_fX0rAAAAADJM9wW1noWy_SdHyM5SxU56kTp5"
             - name: SMTP_USER_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: SMTP_USER_NAME
+              value: "support@careerpolitics.com"
             - name: ALGOLIA_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: ALGOLIA_API_KEY
+              value: "1efc4ecc26614f14e8cf68851e88014b"
             - name: ALGOLIA_APPLICATION_ID
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: ALGOLIA_APPLICATION_ID
+              value: "EX5A5LT1RT"
             - name: ALGOLIA_SEARCH_ONLY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: ALGOLIA_SEARCH_ONLY_API_KEY
+              value: "fc0ff65e9f4c6a75888b66a12ba66cf0"
             - name: AWS_ID
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: AWS_ID
+              value: "AKIARIW6QBQ3J2BUKIUA"
             - name: CLOUDINARY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: CLOUDINARY_API_KEY
-            - name: FASTLY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: FASTLY_API_KEY
-            - name: GEMINI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: GEMINI_API_KEY
+              value: "164819613456569"
             - name: HONEYCOMB_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: HONEYCOMB_API_KEY
+              value: "RQWFDXaVSvi3W8ozcySe2F"
             - name: FASTLY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: FASTLY_API_KEY
-            - name: FASTLY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: FASTLY_API_KEY
-            - name: FASTLY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: FASTLY_API_KEY
-            - name: FASTLY_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: careerpolitics-secrets
-                  key: FASTLY_API_KEY
+              value: ""
             # Non-sensitive (plain env)
             - name: RAILS_ENV
               value: production
@@ -140,7 +64,7 @@ spec:
             - name: ALGOLIA_DISPLAY_BRANDING
               value: "true"
             - name: APP_DOMAIN
-              value: "careerpolitics.in"
+              value: "careerpolitics.com"
             - name: APP_PROTOCOL
               value: "https://"
             - name: AWS_BUCKET_NAME
@@ -180,7 +104,7 @@ spec:
             - name: DATABASE_POOL_SIZE
               value: "3"
             - name: DEFAULT_EMAIL
-              value: "info@careerpolitics.in"
+              value: "support@careerpolitics.com"
             - name: FASTLY_SERVICE_ID
               value: "ps1mr9jClCxL98m64HMIrF"
             - name: FORCE_SSL_IN_RAILS
@@ -228,30 +152,25 @@ spec:
             - name: SMTP_AUTHENTICATION
               value: "login"
             - name: SMTP_DOMAIN
-              value: "careerpolitics.in"
+              value: "careerpolitics.com"
             - name: SMTP_PORT
               value: "587"
             - name: WEB_CONCURRENCY
               value: "2"
-            - name: SECONDARY_APP_DOMAINS
-              value: "www.careerpolitics.in,careerpolitics-app-9cfpa.ondigitalocean.app"
             - name: REDIRECT_WWW_TO_ROOT
               value: "true"
-            - name: HEROKU_APP_URL
-              value: "careerpolitics-app-9cfpa.ondigitalocean.app"
             - name: REDIS_URL
-              value: "rediss://default:AVNS_1SJPtSRQNGA7r-Vrgte@redis-db-do-user-24455640-0.d.db.ondigitalocean.com:25061"
-            - name: REDIS_SESSIONS_URL
-              value: "rediss://default:AVNS_1SJPtSRQNGA7r-Vrgte@redis-db-do-user-24455640-0.d.db.ondigitalocean.com:25061"
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            initialDelaySeconds: 10
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            initialDelaySeconds: 30
-            periodSeconds: 20
+              value: "redis://:Z36RnTg26w@careerpolitics-redis-master.redis.svc.cluster.local:6379"
+
+#          readinessProbe:
+#            httpGet:
+#              path: /
+#              port: 3000
+#            initialDelaySeconds: 10
+#            periodSeconds: 10
+#          livenessProbe:
+#            httpGet:
+#              path: /
+#              port: 3000
+#            initialDelaySeconds: 30
+#            periodSeconds: 20
