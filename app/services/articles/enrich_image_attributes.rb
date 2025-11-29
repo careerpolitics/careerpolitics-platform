@@ -80,8 +80,14 @@ module Articles
       markdown_urls = markdown_text.scan(markdown_pattern).flatten
       html_urls = markdown_text.scan(html_pattern).flatten
       all_urls = markdown_urls + html_urls
-      stored_image_url = "https://#{ApplicationConfig['AWS_BUCKET_NAME']}.s3.amazonaws.com"
-      filtered_urls = all_urls.reject { |url| url.include?(stored_image_url) }
+      # Support both AWS S3 and DigitalOcean Spaces URLs
+      bucket_name = ApplicationConfig["AWS_BUCKET_NAME"]
+      stored_image_url = if ApplicationConfig["DO_SPACES_ENDPOINT"].present?
+                          "#{ApplicationConfig['DO_SPACES_ENDPOINT']}/#{bucket_name}"
+                        else
+                          "https://#{bucket_name}.s3.amazonaws.com"
+                        end
+      filtered_urls = all_urls.reject { |url| url.include?(stored_image_url) || url.include?("#{bucket_name}.s3.amazonaws.com") }
       images_converted = []
       filtered_urls.uniq.each do |url|
         store = MediaStore.where(original_url: url).first_or_create

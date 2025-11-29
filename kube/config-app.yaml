@@ -15,7 +15,7 @@ data:
   AWS_S3_VIDEO_ID: ""
   AWS_S3_VIDEO_KEY: ""
   AWS_UPLOAD_ACL: ""
-  AWS_UPLOAD_REGION: "ap-south-1"
+  AWS_UPLOAD_REGION: ""
   DO_SPACES_ENDPOINT: "https://blr1.digitaloceanspaces.com"
   DO_SPACES_CDN_ENDPOINT: ""
   BUFFER_ACCESS_TOKEN: "Optional"
