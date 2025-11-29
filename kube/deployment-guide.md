@@ -150,16 +150,90 @@ redis://:PASSWORD@careerpolitics-redis-master.redis.svc.cluster.local:6379
 
 ---
 
-# **Step 6: Create App Secrets**
+# **Step 6: Create DigitalOcean Spaces (Object Storage)**
 
-Create an `.env.production` file locally:
+DigitalOcean Spaces is an S3-compatible object storage service for images and files.
+
+## **1. Create a Space**
+
+### **Option A: DigitalOcean UI**
+
+1. Go to **DigitalOcean → Spaces**
+2. Click **Create a Space**
+3. Choose region: **Singapore (sgp1)** or closest to your cluster
+4. Name: `careerpolitics-images` (must be globally unique)
+5. Enable **File Listing** (optional, for debugging)
+6. Click **Create a Space**
+
+### **Option B: doctl CLI**
+
+```bash
+doctl spaces create careerpolitics-images --region sgp1
+```
+
+## **2. Generate Access Keys**
+
+1. Go to **API → Spaces Keys**
+2. Click **Generate New Key**
+3. Name: `careerpolitics-spaces-key`
+4. Copy the **Access Key** and **Secret Key**
+
+⚠️ **Save these keys immediately** - the secret is shown only once.
+
+## **3. Configure CORS (Optional)**
+
+If you need direct browser uploads, configure CORS:
+
+```bash
+doctl spaces cors put careerpolitics-images \
+  --cors-rules '[
+    {
+      "AllowedOrigins": ["https://careerpolitics.com"],
+      "AllowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+      "AllowedHeaders": ["*"],
+      "ExposeHeaders": ["ETag"],
+      "MaxAgeSeconds": 3000
+    }
+  ]'
+```
+
+## **4. Enable CDN (Optional)**
+
+1. In Spaces UI, go to **Settings → CDN**
+2. Enable **CDN** and note the CDN endpoint
+3. Update `DO_SPACES_CDN_ENDPOINT` in your ConfigMap if using CDN
+
+---
+
+# **Step 7: Create App Secrets**
+
+Create an `.env.production` file locally with all sensitive values:
 
 ```
+# Database
 DATABASE_URL=postgres://...
+
+# Rails
 SECRET_KEY_BASE=...
-REDIS_URL=redis://:PASSWORD@careerpolitics-redis-master.redis.svc.cluster.local:6379
 FOREM_OWNER_SECRET=...
+
+# Redis
+REDIS_URL=redis://:PASSWORD@careerpolitics-redis-master.redis.svc.cluster.local:6379
+
+# DigitalOcean Spaces (replaces AWS S3)
+DO_SPACES_ACCESS_KEY_ID=your-spaces-access-key
+DO_SPACES_SECRET_ACCESS_KEY=your-spaces-secret-key
+# OR use legacy AWS_ID/AWS_SECRET (will work with DO Spaces)
+AWS_ID=your-spaces-access-key
+AWS_SECRET=your-spaces-secret-key
+
+# Other API keys (Algolia, SMTP, etc.)
+ALGOLIA_API_KEY=...
+SMTP_PASSWORD=...
+# ... include all other secrets from your deployment YAMLs
 ```
+
+> **Note**: DigitalOcean Spaces uses S3-compatible API. You can use either `DO_SPACES_ACCESS_KEY_ID`/`DO_SPACES_SECRET_ACCESS_KEY` or the legacy `AWS_ID`/`AWS_SECRET` keys. Both will work.
 
 Create/update K8s secret:
 
@@ -170,9 +244,17 @@ kubectl create secret generic careerpolitics-secrets \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
 
+> **Important**: After creating the secret, also apply the ConfigMap which contains non-sensitive configuration:
+
+```bash
+kubectl apply -f kube/config-app.yaml
+```
+
+The ConfigMap includes DigitalOcean Spaces endpoint and region settings.
+
 ---
 
-# **Step 7: Install Cert-Manager (SSL)**
+# **Step 8: Install Cert-Manager (SSL)**
 
 ## **1. Apply official manifests**
 
@@ -203,11 +285,12 @@ Use staging to avoid rate limits during testing.
 
 ---
 
-# **Step 8: Deploy Application**
+# **Step 9: Deploy Application**
 
 Apply all manifests:
 
 ```bash
+kubectl apply -f kube/config-app.yaml
 kubectl apply -f kube/deployment-web.yaml
 kubectl apply -f kube/service-web.yaml
 kubectl apply -f kube/deployment-worker.yaml
@@ -223,7 +306,7 @@ kubectl rollout status deployment/careerpolitics-worker -n production
 
 ---
 
-# **Step 9: Configure DNS**
+# **Step 10: Configure DNS**
 
 ## **1. Get LoadBalancer IP**
 
@@ -252,7 +335,7 @@ Cert-Manager will fail until DNS is propagated globally.
 
 ---
 
-# **Step 10: Validate SSL**
+# **Step 11: Validate SSL**
 
 ```bash
 kubectl get certificate,certificaterequest,order -n production
@@ -270,7 +353,7 @@ If not, inspect the related `Order` → `Challenge` objects.
 
 ---
 
-# **Step 11: Access the Application**
+# **Step 12: Access the Application**
 
 Visit:
 
