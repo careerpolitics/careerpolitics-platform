@@ -104,7 +104,7 @@ spec:
             - name: DATABASE_POOL_SIZE
               value: "3"
             - name: DEFAULT_EMAIL
-              value: "info@careerpolitics.in"
+              value: "support@careerpolitics.com"
             - name: FASTLY_SERVICE_ID
               value: "ps1mr9jClCxL98m64HMIrF"
             - name: FORCE_SSL_IN_RAILS
