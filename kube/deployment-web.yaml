@@ -4,7 +4,7 @@ metadata:
   name: careerpolitics-web
   namespace: production
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: careerpolitics
