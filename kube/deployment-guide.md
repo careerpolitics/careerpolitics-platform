@@ -128,7 +128,7 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 ### Install Redis
 
 ```bash
-helm install careerpolitics-redis bitnami/redis --namespace redis
+ helm install careerpolitics-redis bitnami/redis   --namespace redis   --set architecture=standalone   --set master.persistence.enabled=true
 ```
 
 ### Get password
@@ -216,6 +216,34 @@ kubectl describe clusterissuer letsencrypt-prod
 ```
 
 Ensure the email in the issuer is correct.
+
+---
+
+# 9️⃣.5️⃣ Run Database Migrations
+
+### ▶ Run the migration job
+
+```bash
+kubectl apply -f kube/job-migrate.yaml
+```
+
+### ▶ Wait until migrations finish
+
+```bash
+kubectl wait --for=condition=complete job/careerpolitics-migrate -n production
+```
+
+### ▶ Check logs (optional)
+
+```bash
+kubectl logs job/careerpolitics-migrate -n production
+```
+
+### ▶ Cleanup the job after success
+
+```bash
+kubectl delete job careerpolitics-migrate -n production
+```
 
 ---
 
