@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: careerpolitics-migrate
+  namespace: production
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: muraridevv/careerpolitics-platform:latest
+          command: ["bundle", "exec", "rails", "db:migrate"]
+          envFrom:
+            - secretRef:
+                name: careerpolitics-secrets
+            - configMapRef:
+                name: careerpolitics-config
