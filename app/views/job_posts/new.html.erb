@@ -1,0 +1,69 @@
+<% content_for :title, "Create New Job Post" %>
+
+<div class="crayons-layout crayons-layout--limited-l">
+  <div class="crayons-layout__content">
+    <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+      <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 30px;">Create New Job Post</h1>
+
+      <%= form_with model: @job_post, url: job_posts_path, local: true, class: "job-post-form" do |form| %>
+        <% if @job_post.errors.any? %>
+          <div class="error-messages" style="background-color: #fee2e2; border: 1px solid #fecaca; border-radius: 6px; padding: 16px; margin-bottom: 24px;">
+            <h3 style="color: #991b1b; margin: 0 0 12px 0; font-size: 16px;">Please fix the following errors:</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #991b1b;">
+              <% @job_post.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <%= form.label :title, "Title *", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
+          <%= form.text_field :title, required: true, style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" %>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <%= form.label :description, "Description", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
+          <%= form.text_area :description, rows: 10, style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px; font-family: inherit;" %>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <%= form.label :post_type, "Post Type", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
+          <%= form.select :post_type, options_for_select([
+            ['Select a type...', ''],
+            ['New Update', 'new_update'],
+            ['Admit Card', 'admit_card'],
+            ['Online Form', 'online_form']
+          ], @job_post.post_type), {}, { style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" } %>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <%= form.label :category, "Category", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
+          <%= form.text_field :category, style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" %>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <%= form.label :link, "Application/External Link", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
+          <%= form.url_field :link, style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" %>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <%= form.label :color, "Card Background Color (Hex code, e.g., #3b82f6)", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
+          <%= form.text_field :color, placeholder: "#3b82f6", style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" %>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <%= form.label :published, style: "display: flex; align-items: center; gap: 8px; font-weight: 600; color: #374151;" do %>
+            <%= form.check_box :published, style: "width: 18px; height: 18px;" %>
+            Publish immediately
+          <% end %>
+        </div>
+
+        <div class="form-actions" style="display: flex; gap: 12px; margin-top: 32px;">
+          <%= form.submit "Create Job Post", class: "crayons-btn crayons-btn--primary", style: "padding: 12px 24px; font-size: 16px; font-weight: 600;" %>
+          <%= link_to "Cancel", job_posts_path, class: "crayons-btn crayons-btn--secondary", style: "padding: 12px 24px; font-size: 16px;" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

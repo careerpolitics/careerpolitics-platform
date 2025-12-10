@@ -1,0 +1,48 @@
+<% content_for :title, @job_post.title %>
+
+<div class="crayons-layout crayons-layout--limited-l">
+  <div class="crayons-layout__content">
+    <article class="job-post-detail" style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+      <header style="margin-bottom: 30px;">
+        <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 16px; color: #1f2937;">
+          <%= @job_post.title %>
+        </h1>
+        <div class="job-post-meta" style="display: flex; gap: 20px; color: #6b7280; font-size: 14px;">
+          <span>Posted by <%= @job_post.user.name %></span>
+          <% if @job_post.published_at %>
+            <span><%= @job_post.published_at.strftime("%B %d, %Y") %></span>
+          <% end %>
+          <% if @job_post.category.present? %>
+            <span class="category" style="background-color: #e5e7eb; padding: 4px 12px; border-radius: 12px; font-size: 12px;">
+              <%= @job_post.category %>
+            </span>
+          <% end %>
+        </div>
+      </header>
+
+      <div class="job-post-content" style="line-height: 1.8; color: #374151;">
+        <% if @job_post.description.present? %>
+          <div class="description" style="white-space: pre-wrap; margin-bottom: 30px;">
+            <%= simple_format(@job_post.description) %>
+          </div>
+        <% end %>
+
+        <% if @job_post.link.present? %>
+          <div class="job-post-link" style="margin-top: 30px; padding: 20px; background-color: #f9fafb; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            <p style="margin: 0 0 12px 0; font-weight: 600; color: #1f2937;">Application Link:</p>
+            <a href="<%= @job_post.link %>" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: none; font-size: 16px; word-break: break-all;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+              <%= @job_post.link %>
+            </a>
+          </div>
+        <% end %>
+      </div>
+
+      <% if user_signed_in? && (current_user == @job_post.user || current_user.any_admin?) %>
+        <div class="job-post-actions" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+          <%= link_to "Edit", edit_job_post_path(@job_post.slug), class: "crayons-btn crayons-btn--secondary", style: "margin-right: 12px;" %>
+          <%= link_to "Back to Job Posts", job_posts_path, class: "crayons-btn crayons-btn--outlined" %>
+        </div>
+      <% end %>
+    </article>
+  </div>
+</div>
