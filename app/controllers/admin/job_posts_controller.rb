@@ -12,6 +12,7 @@ module Admin
       published
       approved
       position
+      featured
     ].freeze
 
     def index

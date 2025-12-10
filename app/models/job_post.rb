@@ -14,7 +14,7 @@ class JobPost < ApplicationRecord
   scope :available, -> { published.approved }
   scope :by_post_type, ->(type) { where(post_type: type) }
   scope :recent, -> { order(position: :asc, published_at: :desc, created_at: :desc) }
-  scope :featured, -> { available.recent.limit(8) }
+  scope :featured, -> { available.where(featured: true).recent.limit(8) }
   scope :pending_approval, -> { where(approved: false) }
 
   POST_TYPES = {

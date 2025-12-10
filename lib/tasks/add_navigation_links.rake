@@ -160,7 +160,7 @@ namespace :navigation_links do
       section: :default,
     )
     NavigationLink.create_or_update_by_identity(
-      url: "#{base_url}/jobpost",
+      url: "#{base_url}/jobs",
       name: "Job Posts",
       icon: mic_icon,
       display_to: :all,

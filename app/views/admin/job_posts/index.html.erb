@@ -21,6 +21,7 @@
           <th>User</th>
           <th>Status</th>
           <th>Position</th>
+      <th>Featured</th>
           <th>Created</th>
           <th>Actions</th>
         </tr>
@@ -52,6 +53,7 @@
               <% end %>
             </td>
             <td><%= job_post.position %></td>
+            <td><%= job_post.featured? ? "Yes" : "No" %></td>
             <td><%= job_post.created_at.strftime("%b %d, %Y") %></td>
             <td>
               <div class="flex gap-2">

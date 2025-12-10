@@ -47,6 +47,10 @@
         <dd><%= @job_post.position %></dd>
       </div>
       <div class="flex">
+        <dt class="fw-bold" style="min-width: 150px;">Featured:</dt>
+        <dd><%= @job_post.featured? ? "Yes" : "No" %></dd>
+      </div>
+      <div class="flex">
         <dt class="fw-bold" style="min-width: 150px;">Status:</dt>
         <dd>
           <% if @job_post.approved? && @job_post.published? %>
