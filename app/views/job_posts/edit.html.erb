@@ -5,7 +5,7 @@
     <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
       <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 30px;">Edit Job Post</h1>
 
-      <%= form_with model: @job_post, url: job_post_path(@job_post.slug), method: :patch, local: true, class: "job-post-form" do |form| %>
+      <%= form_with model: @job_post, url: job_post_path(@job_post), method: :patch, local: true, class: "job-post-form" do |form| %>
         <% if @job_post.errors.any? %>
           <div class="error-messages" style="background-color: #fee2e2; border: 1px solid #fecaca; border-radius: 6px; padding: 16px; margin-bottom: 24px;">
             <h3 style="color: #991b1b; margin: 0 0 12px 0; font-size: 16px;">Please fix the following errors:</h3>
@@ -52,7 +52,7 @@
 
         <div class="form-actions" style="display: flex; gap: 12px; margin-top: 32px;">
           <%= form.submit "Update Job Post", class: "crayons-btn crayons-btn--primary", style: "padding: 12px 24px; font-size: 16px; font-weight: 600;" %>
-          <%= link_to "Cancel", job_post_path(@job_post.slug), class: "crayons-btn crayons-btn--secondary", style: "padding: 12px 24px; font-size: 16px;" %>
+          <%= link_to "Cancel", job_post_path(@job_post), class: "crayons-btn crayons-btn--secondary", style: "padding: 12px 24px; font-size: 16px;" %>
         </div>
       <% end %>
     </div>
