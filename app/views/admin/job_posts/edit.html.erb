@@ -3,7 +3,7 @@
 </header>
 
 <div class="crayons-card p-6">
-  <%= form_with model: [:admin, @job_post], local: true do |form| %>
+  <%= form_with model: @job_post, url: admin_job_post_path(@job_post.id), local: true do |form| %>
     <% if @job_post.errors.any? %>
       <div class="crayons-notice crayons-notice--danger mb-4">
         <h3>Please fix the following errors:</h3>
