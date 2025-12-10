@@ -4,10 +4,39 @@ class JobPostsController < ApplicationController
   after_action :verify_authorized, except: %i[index show]
 
   def index
-    @featured_job_posts = JobPost.featured
-    @new_updates = JobPost.available.by_post_type('new_update').recent.limit(10)
-    @admit_cards = JobPost.available.by_post_type('admit_card').recent.limit(10)
-    @online_forms = JobPost.available.by_post_type('online_form').recent.limit(10)
+    @featured_job_posts = JobPost.featured.includes(:user)
+    
+    # Paginate each section with 10 items per page
+    @new_updates = JobPost.available.by_post_type('new_update').includes(:user).recent.page(params[:new_updates_page] || 1).per(10)
+    @admit_cards = JobPost.available.by_post_type('admit_card').includes(:user).recent.page(params[:admit_cards_page] || 1).per(10)
+    @online_forms = JobPost.available.by_post_type('online_form').includes(:user).recent.page(params[:online_forms_page] || 1).per(10)
+    
+    respond_to do |format|
+      format.html
+      format.json do
+        post_type = params[:post_type]
+        page = params[:page] || 1
+        
+        job_posts = case post_type
+                    when 'new_update'
+                      JobPost.available.by_post_type('new_update').includes(:user).recent.page(page).per(10)
+                    when 'admit_card'
+                      JobPost.available.by_post_type('admit_card').includes(:user).recent.page(page).per(10)
+                    when 'online_form'
+                      JobPost.available.by_post_type('online_form').includes(:user).recent.page(page).per(10)
+                    else
+                      JobPost.none.page(1)
+                    end
+        
+        render json: {
+          job_posts: job_posts.map { |jp| job_post_json(jp) },
+          has_next_page: job_posts.next_page.present?,
+          next_page: job_posts.next_page,
+          current_page: job_posts.current_page,
+          total_pages: job_posts.total_pages
+        }
+      end
+    end
   end
 
   def show
@@ -66,5 +95,18 @@ class JobPostsController < ApplicationController
 
   def job_post_params
     params.require(:job_post).permit(:title, :post_type, :link, :color)
+  end
+
+  def job_post_json(job_post)
+    link_url = job_post.link.presence || job_post_path(job_post.slug)
+    link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}")
+    
+    {
+      id: job_post.id,
+      title: job_post.title,
+      link: link_url,
+      badge_type: job_post.badge_type,
+      post_type: job_post.post_type
+    }
   end
 end

@@ -2,7 +2,7 @@ module Admin
   class JobPostsController < Admin::ApplicationController
     layout "admin"
 
-    before_action :find_job_post, only: %i[show edit update destroy approve preview]
+    before_action :find_job_post, only: %i[show edit update destroy approve]
     JOB_POST_ALLOWED_PARAMS = %i[
       title
       post_type
@@ -49,11 +49,6 @@ module Admin
       else
         redirect_to admin_job_posts_path, alert: "Failed to delete job post."
       end
-    end
-
-    def preview
-      @related_jobs = @job_post.related_jobs
-      render 'job_posts/show', layout: 'application'
     end
 
     private

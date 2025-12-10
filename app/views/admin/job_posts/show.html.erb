@@ -72,7 +72,6 @@
 
   <div class="flex gap-2">
     <%= link_to "Edit", edit_admin_job_post_path(@job_post.id), class: "crayons-btn crayons-btn--primary" %>
-    <%= link_to "Preview", preview_admin_job_post_path(@job_post.id), class: "crayons-btn crayons-btn--secondary", target: "_blank" %>
     <% unless @job_post.approved? %>
       <%= button_to "Approve & Publish", approve_admin_job_post_path(@job_post.id), method: :post, class: "crayons-btn crayons-btn--success" %>
     <% end %>

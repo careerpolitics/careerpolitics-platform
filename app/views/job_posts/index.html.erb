@@ -10,7 +10,7 @@
 
 <style>
   .jobs-page { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(135deg, #f5f7fa, #e3e8f5); color: #1a1a1a; line-height: 1.5; min-height: 100vh; }
-  .jobs-container { max-width: 1400px; width: 95%; margin: 10px auto; padding: 10px; }
+  .jobs-container { max-width: 1200px; width: 90%; margin: 10px auto; padding: 10px; }
   .jobs-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin: 10px 0; }
   .jobs-btn { padding: 15px; text-align: center; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform .3s ease, box-shadow .3s ease, background .3s ease; box-shadow: 0 4px 8px rgba(0,0,0,.1); display: flex; align-items: center; justify-content: center; font-size: 1em; border: none; cursor: pointer; }
   .jobs-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,.15); }
@@ -28,6 +28,13 @@
   .jobs-dynamic h3 { color: #218838; margin-bottom: 12px; font-size: 1.3em; font-weight: 700; text-transform: uppercase; }
   .jobs-dynamic .meta { font-size: .9em; color: #666; font-style: italic; }
   .jobs-loading { text-align: center; color: #666; margin: 20px 0; font-size: 1.1em; display: none; }
+  .load-more-btn { display: block; width: 100%; padding: 12px; margin-top: 15px; background: #0056b3; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background .3s ease; }
+  .load-more-btn:hover { background: #003d82; }
+  .load-more-btn:disabled { background: #ccc; cursor: not-allowed; }
+  .load-more-btn.loading { position: relative; color: transparent; }
+  .load-more-btn.loading::after { content: ''; position: absolute; width: 20px; height: 20px; top: 50%; left: 50%; margin-left: -10px; margin-top: -10px; border: 3px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .pagination-links { display: none; } /* Hidden but present for SEO */
   @media (max-width: 600px) {
     .jobs-container { padding: 10px; }
     .jobs-buttons { grid-template-columns: 1fr; }
@@ -52,9 +59,9 @@
     </div>
 
     <div class="jobs-grid">
-      <section class="jobs-card">
+      <section class="jobs-card" data-post-type="new_update">
         <h2><i class="fas fa-bell"></i>New Update</h2>
-        <ul>
+        <ul id="new-updates-list">
           <% @new_updates.each do |job_post| %>
             <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
             <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
@@ -70,11 +77,19 @@
             </li>
           <% end %>
         </ul>
+        <% if @new_updates.next_page %>
+          <button class="load-more-btn" data-post-type="new_update" data-page="<%= @new_updates.current_page %>" data-next-page="<%= @new_updates.next_page %>">
+            Load More
+          </button>
+        <% end %>
+        <div class="pagination-links">
+          <%= paginate @new_updates, param_name: :new_updates_page, params: { anchor: 'new-updates' } %>
+        </div>
       </section>
 
-      <section class="jobs-card">
+      <section class="jobs-card" data-post-type="admit_card">
         <h2><i class="fas fa-ticket-alt"></i>Admit Card</h2>
-        <ul>
+        <ul id="admit-cards-list">
           <% @admit_cards.each do |job_post| %>
             <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
             <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
@@ -90,11 +105,19 @@
             </li>
           <% end %>
         </ul>
+        <% if @admit_cards.next_page %>
+          <button class="load-more-btn" data-post-type="admit_card" data-page="<%= @admit_cards.current_page %>" data-next-page="<%= @admit_cards.next_page %>">
+            Load More
+          </button>
+        <% end %>
+        <div class="pagination-links">
+          <%= paginate @admit_cards, param_name: :admit_cards_page, params: { anchor: 'admit-cards' } %>
+        </div>
       </section>
 
-      <section class="jobs-card">
+      <section class="jobs-card" data-post-type="online_form">
         <h2><i class="fas fa-file-alt"></i>Top Online Form</h2>
-        <ul>
+        <ul id="online-forms-list">
           <% @online_forms.each do |job_post| %>
             <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
             <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
@@ -110,6 +133,14 @@
             </li>
           <% end %>
         </ul>
+        <% if @online_forms.next_page %>
+          <button class="load-more-btn" data-post-type="online_form" data-page="<%= @online_forms.current_page %>" data-next-page="<%= @online_forms.next_page %>">
+            Load More
+          </button>
+        <% end %>
+        <div class="pagination-links">
+          <%= paginate @online_forms, param_name: :online_forms_page, params: { anchor: 'online-forms' } %>
+        </div>
       </section>
     </div>
 
@@ -156,5 +187,71 @@
     script.type = 'application/ld+json';
     script.text = JSON.stringify(schema);
     document.head.appendChild(script);
+  })();
+
+  // Load More functionality
+  (function() {
+    const loadMoreButtons = document.querySelectorAll('.load-more-btn');
+    
+    loadMoreButtons.forEach(function(button) {
+      button.addEventListener('click', function() {
+        const postType = this.dataset.postType;
+        const nextPage = this.dataset.nextPage;
+        const listId = postType === 'new_update' ? 'new-updates-list' : 
+                      postType === 'admit_card' ? 'admit-cards-list' : 'online-forms-list';
+        const list = document.getElementById(listId);
+        
+        if (!list || !nextPage) return;
+        
+        // Disable button and show loading state
+        this.disabled = true;
+        this.classList.add('loading');
+        const originalText = this.textContent;
+        
+        // Fetch next page
+        fetch(`<%= job_posts_path(format: :json) %>?post_type=${postType}&page=${nextPage}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(function(data) {
+          // Append new items to list
+          data.job_posts.forEach(function(jobPost) {
+            const li = document.createElement('li');
+            let badgeHtml = '';
+            if (jobPost.badge_type === 'new') {
+              badgeHtml = '<span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>';
+            } else if (jobPost.badge_type === 'last_day') {
+              badgeHtml = '<span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>';
+            }
+            li.innerHTML = `<a href="${jobPost.link}" style="display: flex; align-items: center; gap: 8px;">${jobPost.title} ${badgeHtml}</a>`;
+            list.appendChild(li);
+          });
+          
+          // Update button state
+          if (data.has_next_page) {
+            button.dataset.page = data.current_page;
+            button.dataset.nextPage = data.next_page;
+            button.disabled = false;
+            button.classList.remove('loading');
+            button.textContent = originalText;
+          } else {
+            // No more pages, remove button
+            button.remove();
+          }
+        })
+        .catch(function(error) {
+          console.error('Error loading more job posts:', error);
+          button.disabled = false;
+          button.classList.remove('loading');
+          button.textContent = originalText;
+          alert('Failed to load more job posts. Please try again.');
+        });
+      });
+    });
   })();
 </script>
