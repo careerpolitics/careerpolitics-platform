@@ -12,11 +12,15 @@ class JobPostsController < ApplicationController
 
   def show
     @job_post = JobPost.find_by!(slug: params[:slug] || params[:id])
-    if @job_post.link.present?
+    return unless @job_post
+    
+    @related_jobs = @job_post.related_jobs
+    
+    # Only redirect if link is an absolute external URL
+    if @job_post.link.present? && @job_post.link.match?(/\Ahttps?:\/\//)
       redirect_to @job_post.link, allow_other_host: true
-    else
-      redirect_to job_posts_path, alert: 'Job post link not available.'
     end
+    # Otherwise render the show page (for relative URLs or no link)
   end
 
   def new
@@ -61,6 +65,6 @@ class JobPostsController < ApplicationController
   end
 
   def job_post_params
-    params.require(:job_post).permit(:title, :category, :post_type, :link, :color)
+    params.require(:job_post).permit(:title, :post_type, :link, :color)
   end
 end

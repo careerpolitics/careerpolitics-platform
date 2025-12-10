@@ -1,8 +1,16 @@
 <% content_for :title, "Latest Government Job Updates - CareerPolitics" %>
+<% content_for :page_meta do %>
+  <meta name="description" content="Discover the latest government job updates, admit cards, and online forms for 2025 across India. Find UPSC, SSC, Railway, and other government job opportunities.">
+  <meta name="keywords" content="government jobs, job updates, admit cards, online forms, India, UPSC, SSC, Railway jobs, government recruitment">
+  <meta property="og:title" content="Latest Government Job Updates - CareerPolitics">
+  <meta property="og:description" content="Find the latest government job updates, admit cards, and online forms for 2025 across India.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="<%= request.original_url %>">
+<% end %>
 
 <style>
   .jobs-page { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(135deg, #f5f7fa, #e3e8f5); color: #1a1a1a; line-height: 1.5; min-height: 100vh; }
-  .jobs-container { max-width: 1200px; width: 90%; margin: 10px auto; padding: 10px; }
+  .jobs-container { max-width: 1400px; width: 95%; margin: 10px auto; padding: 10px; }
   .jobs-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin: 10px 0; }
   .jobs-btn { padding: 15px; text-align: center; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform .3s ease, box-shadow .3s ease, background .3s ease; box-shadow: 0 4px 8px rgba(0,0,0,.1); display: flex; align-items: center; justify-content: center; font-size: 1em; border: none; cursor: pointer; }
   .jobs-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,.15); }
@@ -35,7 +43,9 @@
     <div class="jobs-buttons">
       <% @featured_job_posts.each do |job_post| %>
         <% color = job_post.color.presence || "#0056b3" %>
-        <a href="<%= job_post.link.presence || job_post_path(job_post.slug) %>" class="jobs-btn" style="background: <%= color %>" target="_blank" rel="noopener">
+        <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
+        <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
+        <a href="<%= link_url %>" class="jobs-btn" style="background: <%= color %>">
           <%= job_post.title %>
         </a>
       <% end %>
@@ -46,9 +56,16 @@
         <h2><i class="fas fa-bell"></i>New Update</h2>
         <ul>
           <% @new_updates.each do |job_post| %>
+            <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
+            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
-              <a href="<%= job_post.link.presence || job_post_path(job_post.slug) %>" target="_blank" rel="noopener">
+              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
+                <% if job_post.badge_type == 'new' %>
+                  <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
+                <% elsif job_post.badge_type == 'last_day' %>
+                  <span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>
+                <% end %>
               </a>
             </li>
           <% end %>
@@ -59,9 +76,16 @@
         <h2><i class="fas fa-ticket-alt"></i>Admit Card</h2>
         <ul>
           <% @admit_cards.each do |job_post| %>
+            <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
+            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
-              <a href="<%= job_post.link.presence || job_post_path(job_post.slug) %>" target="_blank" rel="noopener">
+              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
+                <% if job_post.badge_type == 'new' %>
+                  <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
+                <% elsif job_post.badge_type == 'last_day' %>
+                  <span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>
+                <% end %>
               </a>
             </li>
           <% end %>
@@ -72,9 +96,16 @@
         <h2><i class="fas fa-file-alt"></i>Top Online Form</h2>
         <ul>
           <% @online_forms.each do |job_post| %>
+            <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
+            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
-              <a href="<%= job_post.link.presence || job_post_path(job_post.slug) %>" target="_blank" rel="noopener">
+              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
+                <% if job_post.badge_type == 'new' %>
+                  <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
+                <% elsif job_post.badge_type == 'last_day' %>
+                  <span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>
+                <% end %>
               </a>
             </li>
           <% end %>
@@ -97,3 +128,33 @@
     <% end %>
   </section>
 </main>
+
+<script>
+  // Schema.org structured data for SEO
+  (function() {
+    const jobPosts = <%= @featured_job_posts.map { |jp| { title: jp.title, link: jp.link.presence || job_post_path(jp.slug) } }.to_json.html_safe %>;
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Latest Government Job Updates",
+      "description": "Discover the latest government job updates, admit cards, and online forms for 2025 across India",
+      "url": "<%= request.original_url %>",
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": jobPosts.map((job, index) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "JobPosting",
+            "title": job.title,
+            "url": job.link
+          }
+        }))
+      }
+    };
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(schema);
+    document.head.appendChild(script);
+  })();
+</script>

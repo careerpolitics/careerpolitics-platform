@@ -123,6 +123,7 @@ namespace :admin do
     resources :job_posts, only: %i[index show edit update destroy] do
       member do
         post :approve
+        get :preview
       end
     end
     resources :tags, only: %i[index new create update edit] do

@@ -31,13 +31,9 @@
     </div>
 
     <div class="form-group mb-4">
-      <%= form.label :category, "Category", class: "crayons-field__label" %>
-      <%= form.text_field :category, class: "crayons-textfield" %>
-    </div>
-
-    <div class="form-group mb-4">
       <%= form.label :link, "Link *", class: "crayons-field__label" %>
-      <%= form.url_field :link, required: true, class: "crayons-textfield" %>
+      <%= form.text_field :link, required: true, class: "crayons-textfield", placeholder: "https://example.com/apply or /relative/path" %>
+      <small class="color-secondary">You can use absolute URLs (https://...) or relative paths (starting with /).</small>
     </div>
 
     <div class="form-group mb-4">
@@ -74,6 +70,7 @@
 
     <div class="form-actions flex gap-2">
       <%= form.submit "Update Job Post", class: "crayons-btn crayons-btn--primary" %>
+      <%= link_to "Preview", preview_admin_job_post_path(@job_post.id), class: "crayons-btn crayons-btn--secondary", target: "_blank" %>
       <%= link_to "Cancel", admin_job_posts_path, class: "crayons-btn crayons-btn--secondary" %>
     </div>
   <% end %>

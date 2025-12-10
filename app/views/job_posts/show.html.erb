@@ -1,35 +1,67 @@
 <% content_for :title, @job_post.title %>
+<% content_for :page_meta do %>
+  <meta name="description" content="<%= @job_post.title %> - <%= @job_post.post_type&.humanize || 'Government Job' %>">
+  <meta property="og:title" content="<%= @job_post.title %>">
+  <meta property="og:description" content="<%= @job_post.title %> - <%= @job_post.post_type&.humanize || 'Government Job' %>">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="<%= request.original_url %>">
+<% end %>
 
-<div class="crayons-layout crayons-layout--limited-l">
+<div class="crayons-layout">
   <div class="crayons-layout__content">
-    <article class="job-post-detail" style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+    <article class="job-post-detail" style="max-width: 1000px; margin: 0 auto; padding: 40px 20px;">
       <header style="margin-bottom: 30px;">
         <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 16px; color: #1f2937;">
           <%= @job_post.title %>
         </h1>
-        <div class="job-post-meta" style="display: flex; gap: 20px; color: #6b7280; font-size: 14px;">
+        <div class="job-post-meta" style="display: flex; gap: 20px; align-items: center; color: #6b7280; font-size: 14px; flex-wrap: wrap;">
           <span>Posted by <%= @job_post.user.name %></span>
           <% if @job_post.published_at %>
             <span><%= @job_post.published_at.strftime("%B %d, %Y") %></span>
           <% end %>
-          <% if @job_post.category.present? %>
-            <span class="category" style="background-color: #e5e7eb; padding: 4px 12px; border-radius: 12px; font-size: 12px;">
-              <%= @job_post.category %>
-            </span>
+          <% if @job_post.badge_type == 'new' %>
+            <span class="job-badge" style="background: #28a745; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">NEW</span>
           <% end %>
         </div>
       </header>
 
       <div class="job-post-content" style="line-height: 1.8; color: #374151;">
         <% if @job_post.link.present? %>
+          <% link_url = @job_post.link.start_with?('/') ? @job_post.link : (@job_post.link.start_with?('http') ? @job_post.link : "/#{@job_post.link}") %>
           <div class="job-post-link" style="margin-top: 30px; padding: 20px; background-color: #f9fafb; border-radius: 8px; border-left: 4px solid #3b82f6;">
             <p style="margin: 0 0 12px 0; font-weight: 600; color: #1f2937;">Application Link:</p>
-            <a href="<%= @job_post.link %>" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: none; font-size: 16px; word-break: break-all;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+            <a href="<%= link_url %>" style="color: #3b82f6; text-decoration: none; font-size: 16px; word-break: break-all;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
               <%= @job_post.link %>
             </a>
           </div>
         <% end %>
       </div>
+
+      <% related_jobs = @job_post.related_jobs %>
+      <% if related_jobs.any? %>
+        <div class="related-jobs" style="margin-top: 50px; padding-top: 30px; border-top: 2px solid #e5e7eb;">
+          <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #1f2937;">Related Jobs</h2>
+          <div class="related-jobs-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+            <% related_jobs.each do |related_job| %>
+              <% related_link = related_job.link.presence || job_post_path(related_job.slug) %>
+              <% related_link = related_link.start_with?('/') ? related_link : (related_link.start_with?('http') ? related_link : "/#{related_link}") %>
+              <div class="related-job-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                <a href="<%= related_link %>" style="text-decoration: none; color: inherit;">
+                  <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #0056b3;"><%= related_job.title %></h3>
+                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <% if related_job.post_type.present? %>
+                      <span style="background: #e5e7eb; padding: 4px 10px; border-radius: 12px; font-size: 12px;"><%= related_job.post_type.humanize %></span>
+                    <% end %>
+                    <% if related_job.badge_type == 'new' %>
+                      <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
+                    <% end %>
+                  </div>
+                </a>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
 
       <% if user_signed_in? && (current_user == @job_post.user || current_user.any_admin?) %>
         <div class="job-post-actions" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
