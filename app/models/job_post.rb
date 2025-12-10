@@ -39,6 +39,27 @@ class JobPost < ApplicationRecord
     "/jobs/#{slug}"
   end
 
+  def badge_type
+    return nil unless published_at
+    # New badge: published within last 3 days
+    return 'new' if published_at > 3.days.ago
+    # Last day badge: if there's a deadline and it's within 24 hours
+    # Note: This assumes link might contain deadline info, or you can add a deadline_date field
+    nil
+  end
+
+  def related_jobs(limit: 4)
+    JobPost.available
+      .where.not(id: id)
+      .where(post_type: post_type)
+      .recent
+      .limit(limit)
+  end
+
+  def available?
+    published? && approved?
+  end
+
   private
 
   def generate_slug
@@ -55,26 +76,5 @@ class JobPost < ApplicationRecord
 
   def set_published_at
     self.published_at = Time.current if published? && published_at.nil?
-  end
-
-  def available?
-    published? && approved?
-  end
-
-  def badge_type
-    return nil unless published_at
-    # New badge: published within last 3 days
-    return 'new' if published_at > 3.days.ago
-    # Last day badge: if there's a deadline and it's within 24 hours
-    # Note: This assumes link might contain deadline info, or you can add a deadline_date field
-    nil
-  end
-
-  def related_jobs(limit: 4)
-    JobPost.available
-      .where.not(id: id)
-      .where(post_type: post_type)
-      .recent
-      .limit(limit)
   end
 end
