@@ -22,10 +22,6 @@
           <%= form.text_field :title, required: true, style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" %>
         </div>
 
-        <div class="form-group" style="margin-bottom: 24px;">
-          <%= form.label :description, "Description", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
-          <%= form.text_area :description, rows: 10, style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px; font-family: inherit;" %>
-        </div>
 
         <div class="form-group" style="margin-bottom: 24px;">
           <%= form.label :post_type, "Post Type", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
@@ -43,8 +39,9 @@
         </div>
 
         <div class="form-group" style="margin-bottom: 24px;">
-          <%= form.label :link, "Application/External Link", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
-          <%= form.url_field :link, style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" %>
+          <%= form.label :link, "Application/External Link *", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
+          <%= form.url_field :link, required: true, style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;", placeholder: "https://example.com/apply" %>
+          <small style="color: #6b7280; font-size: 14px; margin-top: 4px; display: block;">This link will be used when users click on the job post.</small>
         </div>
 
         <div class="form-group" style="margin-bottom: 24px;">
@@ -52,12 +49,6 @@
           <%= form.text_field :color, placeholder: "#3b82f6", style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" %>
         </div>
 
-        <div class="form-group" style="margin-bottom: 24px;">
-          <%= form.label :published, style: "display: flex; align-items: center; gap: 8px; font-weight: 600; color: #374151;" do %>
-            <%= form.check_box :published, style: "width: 18px; height: 18px;" %>
-            Publish immediately
-          <% end %>
-        </div>
 
         <div class="form-actions" style="display: flex; gap: 12px; margin-top: 32px;">
           <%= form.submit "Update Job Post", class: "crayons-btn crayons-btn--primary", style: "padding: 12px 24px; font-size: 16px; font-weight: 600;" %>

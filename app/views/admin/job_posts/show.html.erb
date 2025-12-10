@@ -1,0 +1,80 @@
+<header class="mb-4">
+  <h1 class="crayons-title mb-0"><%= @job_post.title %></h1>
+  <p class="color-secondary">Job Post Details</p>
+</header>
+
+<div class="crayons-card p-6">
+  <div class="mb-4">
+    <h2 class="crayons-subtitle-2 mb-2">Information</h2>
+    <dl class="flex flex-col gap-2">
+      <div class="flex">
+        <dt class="fw-bold" style="min-width: 150px;">Title:</dt>
+        <dd><%= @job_post.title %></dd>
+      </div>
+      <div class="flex">
+        <dt class="fw-bold" style="min-width: 150px;">Post Type:</dt>
+        <dd><%= @job_post.post_type&.humanize || "N/A" %></dd>
+      </div>
+      <div class="flex">
+        <dt class="fw-bold" style="min-width: 150px;">Category:</dt>
+        <dd><%= @job_post.category || "N/A" %></dd>
+      </div>
+      <div class="flex">
+        <dt class="fw-bold" style="min-width: 150px;">Link:</dt>
+        <dd>
+          <% if @job_post.link.present? %>
+            <a href="<%= @job_post.link %>" target="_blank" rel="noopener" class="c-link">
+              <%= @job_post.link %>
+            </a>
+          <% else %>
+            N/A
+          <% end %>
+        </dd>
+      </div>
+      <div class="flex">
+        <dt class="fw-bold" style="min-width: 150px;">Color:</dt>
+        <dd>
+          <% if @job_post.color.present? %>
+            <span style="display: inline-block; width: 20px; height: 20px; background-color: <%= @job_post.color %>; border: 1px solid #ccc; border-radius: 3px; vertical-align: middle; margin-right: 8px;"></span>
+            <%= @job_post.color %>
+          <% else %>
+            N/A
+          <% end %>
+        </dd>
+      </div>
+      <div class="flex">
+        <dt class="fw-bold" style="min-width: 150px;">Position:</dt>
+        <dd><%= @job_post.position %></dd>
+      </div>
+      <div class="flex">
+        <dt class="fw-bold" style="min-width: 150px;">Status:</dt>
+        <dd>
+          <% if @job_post.approved? && @job_post.published? %>
+            <span class="c-indicator c-indicator--success">Published</span>
+          <% elsif @job_post.approved? %>
+            <span class="c-indicator c-indicator--warning">Approved (Unpublished)</span>
+          <% else %>
+            <span class="c-indicator c-indicator--info">Pending Approval</span>
+          <% end %>
+        </dd>
+      </div>
+      <div class="flex">
+        <dt class="fw-bold" style="min-width: 150px;">Created by:</dt>
+        <dd><%= link_to @job_post.user.name, admin_user_path(@job_post.user), class: "c-link" %></dd>
+      </div>
+      <div class="flex">
+        <dt class="fw-bold" style="min-width: 150px;">Created at:</dt>
+        <dd><%= @job_post.created_at.strftime("%B %d, %Y at %I:%M %p") %></dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="flex gap-2">
+    <%= link_to "Edit", edit_admin_job_post_path(@job_post), class: "crayons-btn crayons-btn--primary" %>
+    <% unless @job_post.approved? %>
+      <%= button_to "Approve & Publish", approve_admin_job_post_path(@job_post), method: :post, class: "crayons-btn crayons-btn--success" %>
+    <% end %>
+    <%= link_to "Back to List", admin_job_posts_path, class: "crayons-btn crayons-btn--secondary" %>
+  </div>
+</div>
+

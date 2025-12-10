@@ -3,6 +3,11 @@
 <div class="crayons-layout crayons-layout--limited-l">
   <div class="crayons-layout__content">
     <div class="job-posts-container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+      <% if user_signed_in? %>
+        <div style="margin-bottom: 30px; text-align: right;">
+          <%= link_to "Create Post", new_job_post_path, class: "crayons-btn crayons-btn--primary", style: "padding: 12px 24px; font-size: 16px; font-weight: 600;" %>
+        </div>
+      <% end %>
       <!-- Featured Job Posts Grid -->
       <div class="featured-job-posts" style="margin-bottom: 40px;">
         <h2 class="screen-reader-only">Featured Job Recruitments</h2>
@@ -73,11 +78,6 @@
                   <li style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f3f4f6;">
                     <a href="<%= job_post_path(job_post.slug) %>" style="color: #3b82f6; text-decoration: none; font-size: 14px; line-height: 1.5; display: block;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
                       <%= job_post.title %>
-                      <% if job_post.link.present? %>
-                        <span style="color: #6b7280; font-size: 12px; display: block; margin-top: 4px;">
-                          <%= job_post.link %>
-                        </span>
-                      <% end %>
                     </a>
                   </li>
                 <% end %>
