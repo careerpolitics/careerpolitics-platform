@@ -28,7 +28,7 @@ class JobPost < ApplicationRecord
   end
 
   def path
-    "/job-posts/#{slug}"
+    "/jobs/#{slug}"
   end
 
   private

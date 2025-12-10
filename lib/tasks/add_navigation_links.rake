@@ -161,7 +161,7 @@ namespace :navigation_links do
     )
     NavigationLink.create_or_update_by_identity(
       url: "#{base_url}/jobs",
-      name: "Job Posts",
+      name: "Jobs",
       icon: mic_icon,
       display_to: :all,
       position: 5,
