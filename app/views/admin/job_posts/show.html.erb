@@ -70,9 +70,9 @@
   </div>
 
   <div class="flex gap-2">
-    <%= link_to "Edit", edit_admin_job_post_path(@job_post), class: "crayons-btn crayons-btn--primary" %>
+    <%= link_to "Edit", edit_admin_job_post_path(@job_post.id), class: "crayons-btn crayons-btn--primary" %>
     <% unless @job_post.approved? %>
-      <%= button_to "Approve & Publish", approve_admin_job_post_path(@job_post), method: :post, class: "crayons-btn crayons-btn--success" %>
+      <%= button_to "Approve & Publish", approve_admin_job_post_path(@job_post.id), method: :post, class: "crayons-btn crayons-btn--success" %>
     <% end %>
     <%= link_to "Back to List", admin_job_posts_path, class: "crayons-btn crayons-btn--secondary" %>
   </div>
