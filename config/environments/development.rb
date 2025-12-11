@@ -110,27 +110,17 @@ Rails.application.configure do
 
   config.app_domain = ENV.fetch("APP_DOMAIN", "localhost:3000")
 
-  # Use SendGrid Web API if API key is present, otherwise fall back to SMTP
-  if ENV["SENDGRID_API_KEY"].present?
-    config.action_mailer.delivery_method = :sendgrid_api
-    config.action_mailer.sendgrid_api_settings = {
-      api_key: ENV["SENDGRID_API_KEY"],
-      api_host: ENV.fetch("SENDGRID_API_HOST", "https://api.sendgrid.com")
-    }
-  else
-    config.action_mailer.delivery_method = :smtp
-    config.action_mailer.smtp_settings = {
-      address: ENV.fetch("SMTP_ADDRESS", nil),
-      port: ENV.fetch("SMTP_PORT", nil),
-      authentication: ENV["SMTP_AUTHENTICATION"].presence || :plain,
-      user_name: ENV.fetch("SMTP_USER_NAME", nil),
-      password: ENV.fetch("SMTP_PASSWORD", nil),
-      domain: ENV["SMTP_DOMAIN"].presence || config.app_domain
-    }
-  end
-  
+  config.action_mailer.delivery_method = :smtp
   config.action_mailer.perform_deliveries = true
   config.action_mailer.default_url_options = { host: config.app_domain }
+  config.action_mailer.smtp_settings = {
+    address: ENV.fetch("SMTP_ADDRESS", nil),
+    port: ENV.fetch("SMTP_PORT", nil),
+    authentication: ENV["SMTP_AUTHENTICATION"].presence || :plain,
+    user_name: ENV.fetch("SMTP_USER_NAME", nil),
+    password: ENV.fetch("SMTP_PASSWORD", nil),
+    domain: ENV["SMTP_DOMAIN"].presence || config.app_domain
+  }
 
   config.action_mailer.preview_path = Rails.root.join("spec/mailers/previews")
 
