@@ -131,21 +131,7 @@ Rails.application.configure do
     }
   else
     config.action_mailer.delivery_method = :smtp
-    # Use Settings::SMTP if available, otherwise fall back to environment variables
-    # This handles cases where Settings isn't loaded yet (e.g., during asset precompilation)
-    if defined?(Settings) && defined?(Settings::SMTP)
-      config.action_mailer.smtp_settings = Settings::SMTP.settings
-    else
-      # Fallback to environment variables if Settings isn't loaded yet
-      config.action_mailer.smtp_settings = {
-        address: ENV["SMTP_ADDRESS"] || "smtp.sendgrid.net",
-        port: ENV["SMTP_PORT"]&.to_i || 587,
-        authentication: (ENV["SMTP_AUTHENTICATION"] || "plain").to_sym,
-        user_name: ENV["SMTP_USER_NAME"] || "apikey",
-        password: ENV["SMTP_PASSWORD"] || ENV["SENDGRID_API_KEY"],
-        domain: ENV["SMTP_DOMAIN"] || ENV["APP_DOMAIN"]
-      }
-    end
+    config.action_mailer.smtp_settings = Settings::SMTP.settings
   end
   
   config.action_mailer.perform_deliveries = true
