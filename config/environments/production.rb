@@ -122,8 +122,19 @@ Rails.application.configure do
 
   protocol = ENV.fetch("APP_PROTOCOL", "http://")
 
-  config.action_mailer.delivery_method = :smtp
-  config.action_mailer.perform_deliveries = false
+  # Use SendGrid Web API if API key is present, otherwise fall back to SMTP
+  if ENV["SENDGRID_API_KEY"].present?
+    config.action_mailer.delivery_method = :sendgrid_api
+    config.action_mailer.sendgrid_api_settings = {
+      api_key: ENV["SENDGRID_API_KEY"],
+      api_host: ENV.fetch("SENDGRID_API_HOST", "https://api.sendgrid.com")
+    }
+  else
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = Settings::SMTP.settings
+  end
+  
+  config.action_mailer.perform_deliveries = true
   config.action_mailer.default_url_options = { host: protocol + ENV["APP_DOMAIN"].to_s }
 
   if ENV["HEROKU_APP_URL"].present? && ENV["HEROKU_APP_URL"] != ENV["APP_DOMAIN"]
