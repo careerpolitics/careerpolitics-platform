@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: careerpolitics-worker
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: careerpolitics
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: careerpolitics
+        component: worker
+    spec:
+      containers:
+        - name: worker
+          image: muraridevv/careerpolitics-platform:latest
+          command: ["bundle", "exec", "sidekiq"]
+          envFrom:
+            - secretRef:
+                name: careerpolitics-secrets
+            - configMapRef:
+                name: careerpolitics-config

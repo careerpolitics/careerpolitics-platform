@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: careerpolitics-web
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: careerpolitics
+      component: web
+  template:
+    metadata:
+      labels:
+        app: careerpolitics
+        component: web
+    spec:
+      containers:
+        - name: web
+          image: muraridevv/careerpolitics-platform:latest
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: careerpolitics-secrets
+            - configMapRef:
+                name: careerpolitics-config
