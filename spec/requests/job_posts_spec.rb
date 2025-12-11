@@ -3,42 +3,42 @@ require 'rails_helper'
 RSpec.describe "JobPosts", type: :request do
   describe "GET /index" do
     it "returns http success" do
-      get "/jobs/index"
+      get "/job_posts/index"
       expect(response).to have_http_status(:success)
     end
   end
 
   describe "GET /show" do
     it "returns http success" do
-      get "/jobs/show"
+      get "/job_posts/show"
       expect(response).to have_http_status(:success)
     end
   end
 
   describe "GET /new" do
     it "returns http success" do
-      get "/jobs/new"
+      get "/job_posts/new"
       expect(response).to have_http_status(:success)
     end
   end
 
   describe "GET /create" do
     it "returns http success" do
-      get "/jobs/create"
+      get "/job_posts/create"
       expect(response).to have_http_status(:success)
     end
   end
 
   describe "GET /edit" do
     it "returns http success" do
-      get "/jobs/edit"
+      get "/job_posts/edit"
       expect(response).to have_http_status(:success)
     end
   end
 
   describe "GET /update" do
     it "returns http success" do
-      get "/jobs/update"
+      get "/job_posts/update"
       expect(response).to have_http_status(:success)
     end
   end
