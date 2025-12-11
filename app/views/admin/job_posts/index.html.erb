@@ -1,0 +1,80 @@
+<header class="mb-4">
+  <h1 class="crayons-title mb-0">Job Posts</h1>
+  <p class="color-secondary">Manage and approve job post submissions.</p>
+</header>
+
+<div class="crayons-card p-6">
+  <%= form_with url: admin_job_posts_path, method: :get, local: true, class: "mb-4" do |form| %>
+    <div class="flex gap-2">
+      <%= form.text_field :search, placeholder: "Search job posts...", value: params[:search], class: "crayons-textfield" %>
+      <%= form.submit "Search", class: "crayons-btn crayons-btn--secondary" %>
+    </div>
+  <% end %>
+
+  <div class="table-responsive">
+    <table class="crayons-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Category</th>
+          <th>User</th>
+          <th>Status</th>
+          <th>Position</th>
+      <th>Featured</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @job_posts.each do |job_post| %>
+          <tr>
+            <td>
+              <strong><%= job_post.title %></strong>
+              <% if job_post.link.present? %>
+                <br>
+                <small class="color-secondary">
+                  <a href="<%= job_post.link %>" target="_blank" rel="noopener" class="c-link">
+                    <%= truncate(job_post.link, length: 50) %>
+                  </a>
+                </small>
+              <% end %>
+            </td>
+            <td><%= job_post.post_type&.humanize || "N/A" %></td>
+            <td><%= job_post.category || "N/A" %></td>
+            <td><%= link_to job_post.user.name, admin_user_path(job_post.user), class: "c-link" %></td>
+            <td>
+              <% if job_post.approved? && job_post.published? %>
+                <span class="c-indicator c-indicator--success">Published</span>
+              <% elsif job_post.approved? %>
+                <span class="c-indicator c-indicator--warning">Approved (Unpublished)</span>
+              <% else %>
+                <span class="c-indicator c-indicator--info">Pending</span>
+              <% end %>
+            </td>
+            <td><%= job_post.position %></td>
+            <td><%= job_post.featured? ? "Yes" : "No" %></td>
+            <td><%= job_post.created_at.strftime("%b %d, %Y") %></td>
+            <td>
+              <div class="flex gap-2">
+              <%= link_to "View", admin_job_post_path(job_post.id), class: "crayons-btn crayons-btn--s crayons-btn--secondary" %>
+              <%= link_to "Edit", edit_admin_job_post_path(job_post.id), class: "crayons-btn crayons-btn--s crayons-btn--secondary" %>
+                <% unless job_post.approved? %>
+                <%= button_to "Approve", approve_admin_job_post_path(job_post.id), method: :post, class: "crayons-btn crayons-btn--s crayons-btn--success" %>
+                <% end %>
+              <%= link_to "Delete", admin_job_post_path(job_post.id), method: :delete, 
+                    data: { confirm: "Are you sure you want to delete this job post?" }, 
+                    class: "crayons-btn crayons-btn--s crayons-btn--danger" %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-4">
+    <%= paginate @job_posts %>
+  </div>
+</div>
+

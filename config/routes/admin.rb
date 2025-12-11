@@ -120,6 +120,11 @@ namespace :admin do
         post :add_owner
       end
     end
+    resources :job_posts, only: %i[index show edit update destroy] do
+      member do
+        post :approve
+      end
+    end
     resources :tags, only: %i[index new create update edit] do
       resource :moderator, only: %i[create destroy], module: "tags"
     end
