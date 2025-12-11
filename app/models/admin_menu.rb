@@ -21,6 +21,7 @@ class AdminMenu
            ]),
       item(name: "organizations"),
       item(name: "podcasts"),
+      item(name: "job posts", controller: "job_posts"),
       item(name: "tags"),
       item(name: "emails"),
     ]

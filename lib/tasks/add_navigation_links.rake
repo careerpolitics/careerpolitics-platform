@@ -160,11 +160,19 @@ namespace :navigation_links do
       section: :default,
     )
     NavigationLink.create_or_update_by_identity(
+      url: "#{base_url}/jobs",
+      name: "Jobs",
+      icon: mic_icon,
+      display_to: :all,
+      position: 5,
+      section: :default,
+    )
+    NavigationLink.create_or_update_by_identity(
       url: "#{base_url}/videos",
       name: "Videos",
       icon: camera_icon,
       display_to: :all,
-      position: 5,
+      position: 6,
       section: :default,
     )
     NavigationLink.create_or_update_by_identity(

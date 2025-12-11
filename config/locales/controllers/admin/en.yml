@@ -139,6 +139,8 @@ en:
       no_such_user: No such user
       scheduled: "Podcast's episodes fetching was scheduled (%{title}, #%{id})"
       updated: Podcast updated
+    job_posts_controller:
+      updated: Job post updated successfully.
     profile_field_groups_controller:
       deleted: Group %{group} deleted
       updated: Group %{group} updated
