@@ -48,9 +48,9 @@ module ConsumerApps
       # If the ConsumerApp doesn't have credentials there's no need to create it
       return if consumer_app.auth_credentials.blank?
 
-      app = Rpush::Gcm::App.new
+      app = Rpush::Fcm::App.new
       app.name = app_name
-      app.auth_key = consumer_app.auth_credentials.to_s
+      app.json_key = consumer_app.auth_credentials.to_s
       app.connections = 1
       app.save!
       app

@@ -35,6 +35,37 @@ class DevicesController < ApplicationController
     end
   end
 
+  def fcm_token
+    unless params[:fcm_token].present?
+      return render json: { error: "FCM token is required" }, status: :bad_request
+    end
+
+    app_bundle = params[:app_bundle].presence || "com.murari.careerpolitics"
+    platform   = "android"
+
+    consumer_app = ConsumerApp.find_or_create_by!(
+      app_bundle: app_bundle,
+      platform: platform
+    )
+
+    device = Device.find_or_initialize_by(
+      user: current_user,
+      consumer_app: consumer_app,
+      platform: platform
+    )
+
+    device.device_token = params[:fcm_token]
+
+    if device.save
+      render json: { success: true }, status: :ok
+    else
+      render json: {
+        error: "Failed to register device",
+        details: device.errors.full_messages
+      }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def device_params

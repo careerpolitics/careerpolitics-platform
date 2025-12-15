@@ -1,5 +1,9 @@
 class CreateJobPosts < ActiveRecord::Migration[7.0]
+  # Required for concurrent index creation
+  disable_ddl_transaction!
+
   def change
+    # Table creation is safe inside transaction
     create_table :job_posts do |t|
       t.string :title, null: false
       t.text :description
@@ -10,7 +14,7 @@ class CreateJobPosts < ActiveRecord::Migration[7.0]
       t.boolean :published, default: false
       t.datetime :published_at
       t.references :user, null: false, foreign_key: true
-      t.string :slug # For friendly URLs
+      t.string :slug
       t.boolean :approved, default: false, null: false
       t.integer :position, default: 0, null: false
       t.boolean :featured, default: false, null: false
@@ -18,25 +22,27 @@ class CreateJobPosts < ActiveRecord::Migration[7.0]
       t.timestamps
     end
 
-    # Single column indexes
-    add_index :job_posts, :published
-    add_index :job_posts, :post_type
-    add_index :job_posts, :category
-    add_index :job_posts, :slug, unique: true
-    add_index :job_posts, :published_at
-    add_index :job_posts, :approved
-    add_index :job_posts, :position
-    add_index :job_posts, :featured
+    # Safe single-column indexes (concurrently)
+    add_index :job_posts, :published, algorithm: :concurrently
+    add_index :job_posts, :post_type, algorithm: :concurrently
+    add_index :job_posts, :category, algorithm: :concurrently
+    add_index :job_posts, :slug, unique: true, algorithm: :concurrently
+    add_index :job_posts, :published_at, algorithm: :concurrently
+    add_index :job_posts, :approved, algorithm: :concurrently
+    add_index :job_posts, :position, algorithm: :concurrently
+    add_index :job_posts, :featured, algorithm: :concurrently
 
-    # Composite indexes for optimized queries
+    # Composite indexes (concurrently + smaller column sets)
     add_index :job_posts,
-              [:published, :approved, :post_type, :position, :published_at, :created_at],
+              [:published, :approved, :post_type, :position],
               name: 'index_job_posts_on_available_query',
-              where: "published = true AND approved = true"
+              where: "published = true AND approved = true",
+              algorithm: :concurrently
 
     add_index :job_posts,
-              [:featured, :published, :approved, :position, :published_at, :created_at],
+              [:featured, :published, :approved, :position],
               name: 'index_job_posts_on_featured_query',
-              where: "published = true AND approved = true AND featured = true"
+              where: "published = true AND approved = true AND featured = true",
+              algorithm: :concurrently
   end
 end

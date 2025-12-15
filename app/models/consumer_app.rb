@@ -38,7 +38,7 @@ class ConsumerApp < ApplicationRecord
     if forem_app? && ios?
       ApplicationConfig["RPUSH_IOS_PEM"]
     elsif forem_app? && android?
-      ApplicationConfig["RPUSH_FCM_KEY"]
+      ApplicationConfig["RPUSH_FCM_JSON"] || ApplicationConfig["RPUSH_FCM_KEY"]
     else
       auth_key
     end
