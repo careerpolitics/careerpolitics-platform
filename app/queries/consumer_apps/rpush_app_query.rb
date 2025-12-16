@@ -50,7 +50,7 @@ module ConsumerApps
 
       app = Rpush::Gcm::App.new
       app.name = app_name
-      app.json_key = consumer_app.auth_credentials.to_s
+      app.auth_key = consumer_app.auth_credentials.to_s
       app.connections = 1
       app.save!
       app
