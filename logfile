@@ -1,0 +1,416 @@
+Your comment could not be posted due to an error: There was an error in your markdown: uninitialized constant Rpush::Client::Redis::Gcm
+
+web log
+------------------
+Follow Logs:
+Show timestamp:
+Since:
+-1
+Tail:
+-1
+Destination:
+Filter:
+Enter your keywords
+Wrap lines:
+Running command:
+bundle exec rails server -b 0.0.0.0 -p 3000
+=> Booting Puma
+=> Rails 7.0.8.7 application starting in production
+=> Run `bin/rails server --help` for more startup options
+service_name is unknown, will set to unknown_service:rails
+dataset will be ignored, sending data to unknown_service:rails
+/opt/apps/forem/app/services/images/generate_subforem_images.rb:2: warning: already initialized constant Images::TEMPLATE_PATH
+/opt/apps/forem/app/services/images/generate_social_image_magickally.rb:4: warning: previous definition of TEMPLATE_PATH was here
+/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:44: warning: already initialized constant Net::HTTP::Purge::METHOD
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:166: warning: previous definition of METHOD was here
+/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:45: warning: already initialized constant Net::HTTP::Purge::REQUEST_HAS_BODY
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:167: warning: previous definition of REQUEST_HAS_BODY was here
+/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:46: warning: already initialized constant Net::HTTP::Purge::RESPONSE_HAS_BODY
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:168: warning: previous definition of RESPONSE_HAS_BODY was here
+I, [2025-12-17T09:20:07.187156 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2025-12-17T09:20:07.217677 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-17T09:20:07+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+I, [2025-12-17T09:20:16.607504 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
+I, [2025-12-17T09:20:18.040998 #1]  INFO -- : FCM is configured for Android push notifications
+I, [2025-12-17T09:20:18.139235 #1]  INFO -- : CareerPolitics Android consumer app initialized
+[1] Puma starting in cluster mode...
+[1] * Puma version: 5.6.9 (ruby 3.3.0-p0) ("Birdie's Version")
+[1] *  Min threads: 2
+[1] *  Max threads: 2
+[1] *  Environment: production
+[1] *   Master PID: 1
+[1] *      Workers: 2
+[1] *     Restarts: (✔) hot (✖) phased
+[1] * Preloading application
+[1] * Listening on http://0.0.0.0:3000
+[1] Use Ctrl-C to stop
+[1] ! Promoting existing objects to old generation...
+[1] ! Compacting...
+[1] ! Friendly fork preparation complete.
+[1] - Worker 0 (PID: 56) booted in 0.04s, phase: 0
+[1] - Worker 1 (PID: 63) booted in 0.03s, phase: 0
+E, [2025-12-17T09:20:55.715414 #63] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
+I, [2025-12-17T09:20:55.738622 #63]  INFO -- : [600579fc17deaf23e55bbb1348bd193f] Started GET "/the_cp_admin/meme-monday-19o2" for 103.24.87.149 at 2025-12-17 09:20:55 +0000
+I, [2025-12-17T09:20:55.929225 #63]  INFO -- : [600579fc17deaf23e55bbb1348bd193f] Processing by StoriesController#show as HTML
+I, [2025-12-17T09:20:55.929755 #63]  INFO -- : [600579fc17deaf23e55bbb1348bd193f]   Parameters: {"locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-19o2"}
+I, [2025-12-17T09:20:56.949681 #63]  INFO -- : [600579fc17deaf23e55bbb1348bd193f]   Rendered articles/show.html.erb within layouts/application (Duration: 558.1ms | Allocations: 106896)
+I, [2025-12-17T09:20:57.631470 #63]  INFO -- : [600579fc17deaf23e55bbb1348bd193f]   Rendered layout layouts/application.html.erb (Duration: 1240.1ms | Allocations: 236523)
+I, [2025-12-17T09:20:57.632574 #63]  INFO -- : [600579fc17deaf23e55bbb1348bd193f] Completed 200 OK in 1702ms (Views: 1163.7ms | ActiveRecord: 240.5ms | Allocations: 361625)
+I, [2025-12-17T09:20:57.932528 #63]  INFO -- : [f32c517fc87183e94aaa349e4d353774] Started GET "/reactions?article_id=13" for 103.24.87.149 at 2025-12-17 09:20:57 +0000
+I, [2025-12-17T09:20:57.973110 #63]  INFO -- : [f32c517fc87183e94aaa349e4d353774] Processing by ReactionsController#index as */*
+I, [2025-12-17T09:20:57.973397 #63]  INFO -- : [f32c517fc87183e94aaa349e4d353774]   Parameters: {"article_id"=>"13", "locale"=>nil}
+I, [2025-12-17T09:20:57.994439 #63]  INFO -- : [f32c517fc87183e94aaa349e4d353774] Completed 200 OK in 20ms (Views: 0.2ms | ActiveRecord: 8.4ms | Allocations: 3563)
+I, [2025-12-17T09:20:58.040449 #63]  INFO -- : [79fc156f9687a76d27bc88e71f2c3c03] Started GET "/notifications/counts" for 103.24.87.149 at 2025-12-17 09:20:58 +0000
+I, [2025-12-17T09:20:58.072640 #63]  INFO -- : [79fc156f9687a76d27bc88e71f2c3c03] Processing by Notifications::CountsController#index as */*
+I, [2025-12-17T09:20:58.073090 #63]  INFO -- : [79fc156f9687a76d27bc88e71f2c3c03]   Parameters: {"locale"=>nil}
+I, [2025-12-17T09:20:58.094827 #63]  INFO -- : [79fc156f9687a76d27bc88e71f2c3c03]   Rendered text template (Duration: 0.2ms | Allocations: 34)
+I, [2025-12-17T09:20:58.096120 #63]  INFO -- : [79fc156f9687a76d27bc88e71f2c3c03] Completed 200 OK in 23ms (Views: 3.1ms | ActiveRecord: 7.5ms | Allocations: 3783)
+I, [2025-12-17T09:20:58.194259 #63]  INFO -- : [c9ed318f3cf235bc8152df99fc00b7fe] Started GET "/async_info/base_data" for 103.24.87.149 at 2025-12-17 09:20:58 +0000
+E, [2025-12-17T09:20:58.199754 #56] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
+I, [2025-12-17T09:20:58.214243 #56]  INFO -- : [901907b41c8b5e7d9b08afa32aabde90] Started GET "/reactions?commentable_id=13&commentable_type=Article" for 103.24.87.149 at 2025-12-17 09:20:58 +0000
+I, [2025-12-17T09:20:58.244651 #56]  INFO -- : [80f449dde6aecf043116d156bcd6f3c2] Started GET "/follows/bulk_show?ids%5B%5D=1&ids%5B%5D=5&ids%5B%5D=6&followable_type=User" for 103.24.87.149 at 2025-12-17 09:20:58 +0000
+I, [2025-12-17T09:20:58.277702 #63]  INFO -- : [c9ed318f3cf235bc8152df99fc00b7fe] Processing by AsyncInfoController#base_data as JSON
+I, [2025-12-17T09:20:58.279748 #63]  INFO -- : [c9ed318f3cf235bc8152df99fc00b7fe]   Parameters: {"locale"=>nil}
+I, [2025-12-17T09:20:58.283136 #63]  INFO -- : [2cbc07b82211835cad8b0541bcad8ba4] Started GET "/the_cp_admin/meme-monday-19o2/bb/post_sidebar" for 103.24.87.149 at 2025-12-17 09:20:58 +0000
+I, [2025-12-17T09:20:58.456211 #63]  INFO -- : [c9ed318f3cf235bc8152df99fc00b7fe] Completed 200 OK in 175ms (Views: 0.6ms | ActiveRecord: 80.8ms | Allocations: 31216)
+I, [2025-12-17T09:20:58.462337 #56]  INFO -- : [901907b41c8b5e7d9b08afa32aabde90] Processing by ReactionsController#index as */*
+I, [2025-12-17T09:20:58.466179 #56]  INFO -- : [901907b41c8b5e7d9b08afa32aabde90]   Parameters: {"commentable_id"=>"13", "commentable_type"=>"Article", "locale"=>nil}
+I, [2025-12-17T09:20:58.466089 #56]  INFO -- : [80f449dde6aecf043116d156bcd6f3c2] Processing by FollowsController#bulk_show as JSON
+I, [2025-12-17T09:20:58.469606 #56]  INFO -- : [80f449dde6aecf043116d156bcd6f3c2]   Parameters: {"ids"=>["1", "5", "6"], "followable_type"=>"User", "locale"=>nil}
+I, [2025-12-17T09:20:58.493522 #63]  INFO -- : [2cbc07b82211835cad8b0541bcad8ba4] Processing by BillboardsController#show as */*
+I, [2025-12-17T09:20:58.494843 #63]  INFO -- : [2cbc07b82211835cad8b0541bcad8ba4]   Parameters: {"locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-19o2", "placement_area"=>"post_sidebar"}
+I, [2025-12-17T09:20:58.559965 #56]  INFO -- : [901907b41c8b5e7d9b08afa32aabde90] Completed 200 OK in 93ms (Views: 0.5ms | ActiveRecord: 40.2ms | Allocations: 16517)
+I, [2025-12-17T09:20:58.564272 #63]  INFO -- : [7edf48bf30b34bdbf0622d2576b4af73] Started GET "/user_subscriptions/subscribed?source_type=Article&source_id=13" for 103.24.87.149 at 2025-12-17 09:20:58 +0000
+I, [2025-12-17T09:20:58.608533 #63]  INFO -- : [2cbc07b82211835cad8b0541bcad8ba4]   Rendered billboards/show.html.erb (Duration: 12.9ms | Allocations: 1279)
+I, [2025-12-17T09:20:58.622456 #63]  INFO -- : [2cbc07b82211835cad8b0541bcad8ba4] Completed 200 OK in 127ms (Views: 32.8ms | ActiveRecord: 41.6ms | Allocations: 15618)
+I, [2025-12-17T09:20:58.638269 #56]  INFO -- : [80f449dde6aecf043116d156bcd6f3c2] Completed 200 OK in 168ms (Views: 0.3ms | ActiveRecord: 81.7ms | Allocations: 24021)
+I, [2025-12-17T09:20:58.650744 #63]  INFO -- : [7edf48bf30b34bdbf0622d2576b4af73] Processing by UserSubscriptionsController#subscribed as JSON
+I, [2025-12-17T09:20:58.651213 #63]  INFO -- : [7edf48bf30b34bdbf0622d2576b4af73]   Parameters: {"source_type"=>"Article", "source_id"=>"13", "locale"=>nil}
+I, [2025-12-17T09:20:58.673862 #63]  INFO -- : [7edf48bf30b34bdbf0622d2576b4af73] Completed 200 OK in 21ms (Views: 0.3ms | ActiveRecord: 6.0ms | Allocations: 3743)
+I, [2025-12-17T09:20:58.813142 #56]  INFO -- : [c650f3b9a4de0fa1b4559a814749dfc4] Started GET "/the_cp_admin/meme-monday-19o2/bb/post_comments" for 103.24.87.149 at 2025-12-17 09:20:58 +0000
+I, [2025-12-17T09:20:58.848420 #56]  INFO -- : [c650f3b9a4de0fa1b4559a814749dfc4] Processing by BillboardsController#show as */*
+I, [2025-12-17T09:20:58.848827 #56]  INFO -- : [c650f3b9a4de0fa1b4559a814749dfc4]   Parameters: {"locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-19o2", "placement_area"=>"post_comments"}
+I, [2025-12-17T09:20:58.856124 #63]  INFO -- : [8bc557fc480822017dfd41d8b841d17c] Started GET "/the_cp_admin/meme-monday-19o2/bb/post_fixed_bottom" for 103.24.87.149 at 2025-12-17 09:20:58 +0000
+I, [2025-12-17T09:20:58.896479 #63]  INFO -- : [8bc557fc480822017dfd41d8b841d17c] Processing by BillboardsController#show as */*
+I, [2025-12-17T09:20:58.897149 #63]  INFO -- : [8bc557fc480822017dfd41d8b841d17c]   Parameters: {"locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-19o2", "placement_area"=>"post_fixed_bottom"}
+I, [2025-12-17T09:20:58.900033 #63]  INFO -- : [10bd5af647560d545b21352bdcf4a85b] Started GET "/notifications?i=i" for 103.24.87.149 at 2025-12-17 09:20:58 +0000
+I, [2025-12-17T09:20:58.962029 #63]  INFO -- : [10bd5af647560d545b21352bdcf4a85b] Processing by NotificationsController#index as */*
+I, [2025-12-17T09:20:58.962466 #63]  INFO -- : [10bd5af647560d545b21352bdcf4a85b]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2025-12-17T09:20:58.969210 #63]  INFO -- : [8bc557fc480822017dfd41d8b841d17c]   Rendered billboards/show.html.erb (Duration: 1.5ms | Allocations: 34)
+I, [2025-12-17T09:20:58.970305 #63]  INFO -- : [8bc557fc480822017dfd41d8b841d17c] Completed 200 OK in 73ms (Views: 3.9ms | ActiveRecord: 38.1ms | Allocations: 15191)
+I, [2025-12-17T09:20:59.060383 #63]  INFO -- : [8045bf0776da4d2a40806b07ebd8cacd] Started GET "/notification_subscriptions/Article/13" for 103.24.87.149 at 2025-12-17 09:20:59 +0000
+I, [2025-12-17T09:20:59.132961 #63]  INFO -- : [10bd5af647560d545b21352bdcf4a85b]   Rendered notifications/index.html.erb within layouts/application (Duration: 61.5ms | Allocations: 5691)
+I, [2025-12-17T09:20:59.135219 #63]  INFO -- : [10bd5af647560d545b21352bdcf4a85b]   Rendered layout layouts/application.html.erb (Duration: 63.8ms | Allocations: 6572)
+I, [2025-12-17T09:20:59.140406 #63]  INFO -- : [10bd5af647560d545b21352bdcf4a85b] Completed 200 OK in 178ms (Views: 76.8ms | ActiveRecord: 57.8ms | Allocations: 21419)
+I, [2025-12-17T09:20:59.186360 #63]  INFO -- : [8045bf0776da4d2a40806b07ebd8cacd] Processing by NotificationSubscriptionsController#show as JSON
+I, [2025-12-17T09:20:59.187566 #63]  INFO -- : [8045bf0776da4d2a40806b07ebd8cacd]   Parameters: {"locale"=>nil, "notifiable_type"=>"Article", "notifiable_id"=>"13"}
+I, [2025-12-17T09:20:59.219061 #63]  INFO -- : [8045bf0776da4d2a40806b07ebd8cacd] Completed 200 OK in 31ms (Views: 0.7ms | ActiveRecord: 16.3ms | Allocations: 3103)
+I, [2025-12-17T09:20:59.389259 #63]  INFO -- : [3da7b757ed50e731ee14e431bc5f4357] Started GET "/t/meme?i=i" for 103.24.87.149 at 2025-12-17 09:20:59 +0000
+I, [2025-12-17T09:20:59.520142 #63]  INFO -- : [3da7b757ed50e731ee14e431bc5f4357] Processing by Stories::TaggedArticlesController#index as */*
+I, [2025-12-17T09:20:59.520693 #63]  INFO -- : [3da7b757ed50e731ee14e431bc5f4357]   Parameters: {"i"=>"i", "locale"=>nil, "tag"=>"meme"}
+I, [2025-12-17T09:20:59.673700 #63]  INFO -- : [548b24665dec94c6b5623b8eadcff4af] Started GET "/bottom_items?article_id=13" for 103.24.87.149 at 2025-12-17 09:20:59 +0000
+I, [2025-12-17T09:20:59.710419 #63]  INFO -- : [3da7b757ed50e731ee14e431bc5f4357]   Rendered stories/tagged_articles/index.html.erb within layouts/application (Duration: 122.5ms | Allocations: 28618)
+I, [2025-12-17T09:20:59.712562 #63]  INFO -- : [3da7b757ed50e731ee14e431bc5f4357]   Rendered layout layouts/application.html.erb (Duration: 124.7ms | Allocations: 29507)
+I, [2025-12-17T09:20:59.716178 #63]  INFO -- : [3da7b757ed50e731ee14e431bc5f4357] Completed 200 OK in 195ms (Views: 120.1ms | ActiveRecord: 31.9ms | Allocations: 40745)
+I, [2025-12-17T09:20:59.723110 #63]  INFO -- : [548b24665dec94c6b5623b8eadcff4af] Processing by BottomItemsController#index as */*
+I, [2025-12-17T09:20:59.723706 #63]  INFO -- : [548b24665dec94c6b5623b8eadcff4af]   Parameters: {"article_id"=>"13", "locale"=>nil}
+I, [2025-12-17T09:20:59.751585 #63]  INFO -- : [548b24665dec94c6b5623b8eadcff4af]   Rendered bottom_items/index.html.erb (Duration: 3.3ms | Allocations: 982)
+I, [2025-12-17T09:20:59.752594 #63]  INFO -- : [548b24665dec94c6b5623b8eadcff4af] Completed 200 OK in 25ms (Views: 6.0ms | ActiveRecord: 6.5ms | Allocations: 5857)
+I, [2025-12-17T09:21:00.037348 #63]  INFO -- : [62b069bfe5ecdb73bee213190e999eb7] Started POST "/page_views" for 103.24.87.149 at 2025-12-17 09:21:00 +0000
+I, [2025-12-17T09:21:00.238760 #56]  INFO -- : [c650f3b9a4de0fa1b4559a814749dfc4]   Rendered billboards/show.html.erb (Duration: 2.0ms | Allocations: 291)
+I, [2025-12-17T09:21:00.240595 #56]  INFO -- : [c650f3b9a4de0fa1b4559a814749dfc4] Completed 200 OK in 1391ms (Views: 9.9ms | ActiveRecord: 1212.3ms | Allocations: 530836)
+I, [2025-12-17T09:21:15.044508 #63]  INFO -- : [a3dc95eca8340273ba3fed760e5a5f5f] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-17 09:21:15 +0000
+I, [2025-12-17T09:21:23.349207 #63]  INFO -- : [d452023126a565a640e289ef68030501] Started POST "/comments" for 103.24.87.149 at 2025-12-17 09:21:23 +0000
+I, [2025-12-17T09:21:23.384190 #63]  INFO -- : [d452023126a565a640e289ef68030501] Processing by CommentsController#create as */*
+I, [2025-12-17T09:21:23.384645 #63]  INFO -- : [d452023126a565a640e289ef68030501]   Parameters: {"comment"=>{"body_markdown"=>"Good Meme 6", "commentable_id"=>"13", "commentable_type"=>"Article", "parent_id"=>nil}, "locale"=>nil}
+I, [2025-12-17T09:21:23.813135 #63]  INFO -- : [d452023126a565a640e289ef68030501] Completed 422 Unprocessable Entity in 428ms (Views: 0.3ms | ActiveRecord: 157.6ms | Allocations: 61840)
+I, [2025-12-17T09:21:30.043922 #63]  INFO -- : [cf3da3b04758a5910f4bcf75169d0e45] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-17 09:21:30 +0000
+I, [2025-12-17T09:21:45.047272 #63]  INFO -- : [a898a825a8c92343fc9809bfc18e736e] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-17 09:21:45 +0000
+
+
+
+
+worker log
+------------------
+Follow Logs:
+Show timestamp:
+Since:
+-1
+Tail:
+-1
+Destination:
+Filter:
+Enter your keywords
+Wrap lines:
+I, [2025-12-17T07:50:01.509646 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-17T07:50:01.510Z pid=1 tid=4mj1 class=ScheduledAutomations::ProcessWorker jid=41f63a69e061a09000fdbe69 elapsed=0.018 INFO: done
+2025-12-17T07:55:16.354Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=1ae5586c7bd91210c1ac531a INFO: start
+2025-12-17T07:55:16.391Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=aea69ed81d5037186255b2b0 INFO: start
+2025-12-17T07:55:16.469Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=1ae5586c7bd91210c1ac531a elapsed=0.116 INFO: done
+2025-12-17T07:55:16.500Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=aea69ed81d5037186255b2b0 elapsed=0.11 INFO: done
+2025-12-17T07:55:59.916Z pid=1 tid=4sj5 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T07:55:59.917Z pid=1 tid=4sj5 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T08:00:15.911Z pid=1 tid=4mj1 class=Metrics::RecordBackgroundQueueStatsWorker jid=967e099a636aff30ef0eeb16 INFO: start
+2025-12-17T08:00:15.954Z pid=1 tid=4mrd class=BustCachePathWorker jid=3233007151383f493e20eb1e INFO: start
+2025-12-17T08:00:16.120Z pid=1 tid=4mrd class=BustCachePathWorker jid=3233007151383f493e20eb1e elapsed=0.166 INFO: done
+2025-12-17T08:00:16.123Z pid=1 tid=4mrd class=Articles::PublishWorker jid=0239a6ff20aee2953f935a9a INFO: start
+2025-12-17T08:00:16.134Z pid=1 tid=4mj1 class=Metrics::RecordBackgroundQueueStatsWorker jid=967e099a636aff30ef0eeb16 elapsed=0.223 INFO: done
+2025-12-17T08:00:16.137Z pid=1 tid=4mj1 class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=3b119210320b9407790c7df9 INFO: start
+2025-12-17T08:00:16.179Z pid=1 tid=4mj1 class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=3b119210320b9407790c7df9 elapsed=0.042 INFO: done
+2025-12-17T08:00:16.183Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=20d97d1401f4ec83bb6ea243 INFO: start
+2025-12-17T08:00:16.186Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=20d97d1401f4ec83bb6ea243 elapsed=0.003 INFO: done
+2025-12-17T08:00:16.188Z pid=1 tid=4mj1 class=ScheduledAutomations::ProcessWorker jid=71438a3326e7051df7ec44d8 INFO: start
+I, [2025-12-17T08:00:16.189957 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2025-12-17T08:00:16.198Z pid=1 tid=4mrd class=Articles::PublishWorker jid=0239a6ff20aee2953f935a9a elapsed=0.075 INFO: done
+I, [2025-12-17T08:00:16.201462 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-17T08:00:16.202Z pid=1 tid=4mj1 class=ScheduledAutomations::ProcessWorker jid=71438a3326e7051df7ec44d8 elapsed=0.013 INFO: done
+2025-12-17T08:05:37.032Z pid=1 tid=4mj1 class=Podcasts::EnqueueGetEpisodesWorker jid=ce859f0d0c1e9493366449aa INFO: start
+2025-12-17T08:05:37.075Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=c89b6d759b7458eef77c4397 INFO: start
+2025-12-17T08:05:37.172Z pid=1 tid=4mj1 class=Podcasts::EnqueueGetEpisodesWorker jid=ce859f0d0c1e9493366449aa elapsed=0.14 INFO: done
+2025-12-17T08:05:37.175Z pid=1 tid=4mj1 class=Podcasts::GetEpisodesWorker jid=9fa22b6a75ae1a21f071543d INFO: start
+2025-12-17T08:05:37.182Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=c89b6d759b7458eef77c4397 elapsed=0.108 INFO: done
+2025-12-17T08:05:37.192Z pid=1 tid=4mrd class=Podcasts::GetEpisodesWorker jid=ea182b10c70563ab095e45bf INFO: start
+2025-12-17T08:05:37.886Z pid=1 tid=4mrd class=Podcasts::GetEpisodesWorker jid=ea182b10c70563ab095e45bf elapsed=0.694 INFO: done
+2025-12-17T08:05:37.889Z pid=1 tid=4mrd class=Podcasts::GetEpisodesWorker jid=2e0cf7afa5ae14cfdc54eeec INFO: start
+2025-12-17T08:05:38.105Z pid=1 tid=4mrd class=Podcasts::GetEpisodesWorker jid=2e0cf7afa5ae14cfdc54eeec elapsed=0.216 INFO: done
+2025-12-17T08:05:38.108Z pid=1 tid=4mrd class=Articles::PublishWorker jid=c77c8cc4c453f2a4b4775416 INFO: start
+2025-12-17T08:05:38.129Z pid=1 tid=4mrd class=Articles::PublishWorker jid=c77c8cc4c453f2a4b4775416 elapsed=0.021 INFO: done
+2025-12-17T08:05:42.535Z pid=1 tid=4mj1 class=Podcasts::GetEpisodesWorker jid=9fa22b6a75ae1a21f071543d elapsed=5.36 INFO: done
+2025-12-17T08:05:59.924Z pid=1 tid=4ts5 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T08:05:59.926Z pid=1 tid=4ts5 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T08:08:16.892Z pid=1 tid=4mj1 class=Articles::QualityReactionWorker jid=b0b516614ffd5e34323cad7e INFO: start
+2025-12-17T08:08:16.981Z pid=1 tid=4mj1 class=Articles::QualityReactionWorker jid=b0b516614ffd5e34323cad7e elapsed=0.09 INFO: done
+2025-12-17T08:10:35.441Z pid=1 tid=4mj1 class=Metrics::RecordBackgroundQueueStatsWorker jid=c85bb0c7284cad6bd35c377a INFO: start
+2025-12-17T08:10:35.455Z pid=1 tid=4mrd class=Metrics::RecordDataCountsWorker jid=0ed3d5253c1b30d9e3d05674 INFO: start
+I, [2025-12-17T08:10:35.584241 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"users", :table_size=>6}}
+I, [2025-12-17T08:10:35.590954 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"articles", :table_size=>15}}
+I, [2025-12-17T08:10:35.595644 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"organizations", :table_size=>1}}
+I, [2025-12-17T08:10:35.599761 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"comments", :table_size=>10}}
+I, [2025-12-17T08:10:35.604192 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"podcasts", :table_size=>3}}
+2025-12-17T08:10:35.604Z pid=1 tid=4mj1 class=Metrics::RecordBackgroundQueueStatsWorker jid=c85bb0c7284cad6bd35c377a elapsed=0.163 INFO: done
+2025-12-17T08:10:35.608Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=ea7f8ef3556d5de4694a5771 INFO: start
+I, [2025-12-17T08:10:35.619754 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"podcast_episodes", :table_size=>29}}
+I, [2025-12-17T08:10:35.624036 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"classified_listings", :table_size=>0}}
+I, [2025-12-17T08:10:35.628166 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"page_views", :table_size=>181}}
+2025-12-17T08:10:35.631Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=ea7f8ef3556d5de4694a5771 elapsed=0.023 INFO: done
+2025-12-17T08:10:35.634Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=891b0b5228b2ac04d5d4695e INFO: start
+I, [2025-12-17T08:10:35.635944 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"notifications", :table_size=>8}}
+2025-12-17T08:10:35.637Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=891b0b5228b2ac04d5d4695e elapsed=0.004 INFO: done
+2025-12-17T08:10:35.640Z pid=1 tid=4mj1 class=ScheduledAutomations::ProcessWorker jid=b8a28ba37936ddce7a662959 INFO: start
+I, [2025-12-17T08:10:35.641298 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+I, [2025-12-17T08:10:35.642975 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"profiles", :table_size=>6}}
+2025-12-17T08:10:35.643Z pid=1 tid=4mrd class=Metrics::RecordDataCountsWorker jid=0ed3d5253c1b30d9e3d05674 elapsed=0.188 INFO: done
+I, [2025-12-17T08:10:35.649289 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-17T08:10:35.649Z pid=1 tid=4mj1 class=ScheduledAutomations::ProcessWorker jid=b8a28ba37936ddce7a662959 elapsed=0.01 INFO: done
+2025-12-17T08:15:37.363Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=f8887b332009a3dff6df65fd INFO: start
+2025-12-17T08:15:37.427Z pid=1 tid=4mrd class=Articles::PublishWorker jid=48b790fd9e1dc57019f44fc7 INFO: start
+2025-12-17T08:15:37.527Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=f8887b332009a3dff6df65fd elapsed=0.164 INFO: done
+2025-12-17T08:15:37.583Z pid=1 tid=4mrd class=Articles::PublishWorker jid=48b790fd9e1dc57019f44fc7 elapsed=0.156 INFO: done
+2025-12-17T08:15:59.933Z pid=1 tid=4uod uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T08:15:59.934Z pid=1 tid=4uod uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T08:18:17.783Z pid=1 tid=4mrd class=Emails::RemoveOldEmailsWorker jid=cd72a6fd62edafabaa927af1 INFO: start
+I, [2025-12-17T08:18:17.926259 #1]  INFO -- : {:tag=>"notification_delete", :statement=>"DELETE FROM ahoy_messages\nWHERE ahoy_messages.id IN (\n  SELECT ahoy_messages.id\n  FROM ahoy_messages\n  WHERE sent_at < '2025-10-17 08:18:17.785385' AND feedback_message_id IS NULL\n  LIMIT 50000\n)\n", :rows_deleted=>0, :duration=>0.022618880961090326}
+2025-12-17T08:18:17.926Z pid=1 tid=4mrd class=Emails::RemoveOldEmailsWorker jid=cd72a6fd62edafabaa927af1 elapsed=0.143 INFO: done
+2025-12-17T08:20:07.466Z pid=1 tid=4mrd class=Feeds::ImportArticlesWorker jid=2a2c454347040b329094ca2b INFO: start
+2025-12-17T08:20:07.549Z pid=1 tid=4mj1 class=Metrics::RecordBackgroundQueueStatsWorker jid=7944f77a57eca28b9b6fc0ab INFO: start
+2025-12-17T08:20:07.674Z pid=1 tid=4mj1 class=Metrics::RecordBackgroundQueueStatsWorker jid=7944f77a57eca28b9b6fc0ab elapsed=0.124 INFO: done
+2025-12-17T08:20:07.676Z pid=1 tid=4mj1 class=BadgeAchievements::BadgeAwardWorker jid=e55483e7e103369079e9bdac INFO: start
+2025-12-17T08:20:07.692Z pid=1 tid=4mrd class=Feeds::ImportArticlesWorker jid=2a2c454347040b329094ca2b elapsed=0.225 INFO: done
+2025-12-17T08:20:07.694Z pid=1 tid=4mrd class=Articles::PublishWorker jid=1e788816b31374d188affd86 INFO: start
+2025-12-17T08:20:07.711Z pid=1 tid=4mj1 class=BadgeAchievements::BadgeAwardWorker jid=e55483e7e103369079e9bdac elapsed=0.035 INFO: done
+2025-12-17T08:20:07.714Z pid=1 tid=4mj1 class=PushNotifications::CleanupWorker jid=7fdfb74fbe4ecca099c81af1 INFO: start
+2025-12-17T08:20:07.727Z pid=1 tid=4mrd class=Articles::PublishWorker jid=1e788816b31374d188affd86 elapsed=0.033 INFO: done
+2025-12-17T08:20:07.733Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=afa47ca051294a145d7792ac INFO: start
+2025-12-17T08:20:07.758Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=afa47ca051294a145d7792ac elapsed=0.025 INFO: done
+2025-12-17T08:20:07.761Z pid=1 tid=4mrd class=ScheduledAutomations::ProcessWorker jid=588bc8056f6fc09a0e13170f INFO: start
+I, [2025-12-17T08:20:07.762591 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+I, [2025-12-17T08:20:07.811295 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-17T08:20:07.813Z pid=1 tid=4mrd class=ScheduledAutomations::ProcessWorker jid=588bc8056f6fc09a0e13170f elapsed=0.051 INFO: done
+2025-12-17T08:20:07.860Z pid=1 tid=4mj1 class=PushNotifications::CleanupWorker jid=7fdfb74fbe4ecca099c81af1 elapsed=0.146 INFO: done
+2025-12-17T08:25:20.186Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=e5e12e79dd5ef858ecd73399 INFO: start
+2025-12-17T08:25:20.216Z pid=1 tid=4mrd class=Articles::PublishWorker jid=0ed74f05269554f0ed0c405d INFO: start
+2025-12-17T08:25:20.321Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=e5e12e79dd5ef858ecd73399 elapsed=0.134 INFO: done
+2025-12-17T08:25:20.330Z pid=1 tid=4mrd class=Articles::PublishWorker jid=0ed74f05269554f0ed0c405d elapsed=0.114 INFO: done
+2025-12-17T08:25:59.948Z pid=1 tid=4vh9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T08:25:59.949Z pid=1 tid=4vh9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T08:30:14.018Z pid=1 tid=4mj1 class=Metrics::RecordBackgroundQueueStatsWorker jid=da64debe65837047df915764 INFO: start
+2025-12-17T08:30:14.038Z pid=1 tid=4mrd class=Metrics::CheckDataUpdateScriptStatuses jid=91065dbca8a5d14c2533bde6 INFO: start
+2025-12-17T08:30:14.220Z pid=1 tid=4mrd class=Metrics::CheckDataUpdateScriptStatuses jid=91065dbca8a5d14c2533bde6 elapsed=0.182 INFO: done
+2025-12-17T08:30:14.222Z pid=1 tid=4mrd class=Articles::PublishWorker jid=0272dcb24e623f27f366a408 INFO: start
+2025-12-17T08:30:14.239Z pid=1 tid=4mj1 class=Metrics::RecordBackgroundQueueStatsWorker jid=da64debe65837047df915764 elapsed=0.221 INFO: done
+2025-12-17T08:30:14.242Z pid=1 tid=4mj1 class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=7ec22a28902730f2db487491 INFO: start
+2025-12-17T08:30:14.268Z pid=1 tid=4mrd class=Articles::PublishWorker jid=0272dcb24e623f27f366a408 elapsed=0.046 INFO: done
+2025-12-17T08:30:14.271Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=398c90e2c06389bbda10bcee INFO: start
+2025-12-17T08:30:14.275Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=398c90e2c06389bbda10bcee elapsed=0.004 INFO: done
+2025-12-17T08:30:14.281Z pid=1 tid=4mrd class=ScheduledAutomations::ProcessWorker jid=a49c01f3113d9bc3dc08f3af INFO: start
+I, [2025-12-17T08:30:14.282541 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2025-12-17T08:30:14.286Z pid=1 tid=4mj1 class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=7ec22a28902730f2db487491 elapsed=0.044 INFO: done
+I, [2025-12-17T08:30:14.290992 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-17T08:30:14.291Z pid=1 tid=4mrd class=ScheduledAutomations::ProcessWorker jid=a49c01f3113d9bc3dc08f3af elapsed=0.01 INFO: done
+2025-12-17T08:35:24.395Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=646a3cd6a4b1fc146b932955 INFO: start
+2025-12-17T08:35:24.412Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=4cf2a2527d2fba1d015f332e INFO: start
+2025-12-17T08:35:24.481Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=646a3cd6a4b1fc146b932955 elapsed=0.085 INFO: done
+2025-12-17T08:35:24.519Z pid=1 tid=4mrd class=Articles::LabelCleanupWorker jid=44e83a9957336af03514af6c INFO: start
+I, [2025-12-17T08:35:24.529990 #1]  INFO -- : LabelCleanupWorker: No eligible articles found for processing
+2025-12-17T08:35:24.530Z pid=1 tid=4mrd class=Articles::LabelCleanupWorker jid=44e83a9957336af03514af6c elapsed=0.011 INFO: done
+2025-12-17T08:35:24.606Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=4cf2a2527d2fba1d015f332e elapsed=0.194 INFO: done
+2025-12-17T08:35:59.956Z pid=1 tid=4w3h uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T08:35:59.957Z pid=1 tid=4w3h uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T08:37:25.037Z pid=1 tid=4mj1 class=Emails::DripEmailWorker jid=645d5df9939bbd2d81d2938e INFO: start
+2025-12-17T08:37:25.158Z pid=1 tid=4mj1 class=Emails::DripEmailWorker jid=645d5df9939bbd2d81d2938e elapsed=0.121 INFO: done
+2025-12-17T08:40:16.199Z pid=1 tid=4mj1 class=Metrics::RecordBackgroundQueueStatsWorker jid=eefb563e45cbf516db5f8ed0 INFO: start
+2025-12-17T08:40:16.279Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=6037591393af0b17f3dafb2b INFO: start
+2025-12-17T08:40:16.434Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=6037591393af0b17f3dafb2b elapsed=0.155 INFO: done
+2025-12-17T08:40:16.437Z pid=1 tid=4mrd class=Articles::PublishWorker jid=01fcddcd64a1f5680bfbf31d INFO: start
+2025-12-17T08:40:16.451Z pid=1 tid=4mj1 class=Metrics::RecordBackgroundQueueStatsWorker jid=eefb563e45cbf516db5f8ed0 elapsed=0.252 INFO: done
+2025-12-17T08:40:16.453Z pid=1 tid=4mj1 class=ScheduledAutomations::ProcessWorker jid=79a5290490eb36dc3dddb5ba INFO: start
+I, [2025-12-17T08:40:16.454864 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2025-12-17T08:40:16.459Z pid=1 tid=4mrd class=Articles::PublishWorker jid=01fcddcd64a1f5680bfbf31d elapsed=0.022 INFO: done
+I, [2025-12-17T08:40:16.463627 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-17T08:40:16.464Z pid=1 tid=4mj1 class=ScheduledAutomations::ProcessWorker jid=79a5290490eb36dc3dddb5ba elapsed=0.01 INFO: done
+2025-12-17T08:45:07.377Z pid=1 tid=4mrd class=GithubRepos::UpdateLatestWorker jid=67b7de4cdc7ec89b8e9d98d7 INFO: start
+2025-12-17T08:45:07.417Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=a30a314238246568aa527b14 INFO: start
+2025-12-17T08:45:07.486Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=a30a314238246568aa527b14 elapsed=0.069 INFO: done
+2025-12-17T08:45:07.488Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=5eb41be6c79844f36ffbf7fd INFO: start
+2025-12-17T08:45:07.502Z pid=1 tid=4mrd class=GithubRepos::UpdateLatestWorker jid=67b7de4cdc7ec89b8e9d98d7 elapsed=0.125 INFO: done
+2025-12-17T08:45:07.507Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=5eb41be6c79844f36ffbf7fd elapsed=0.019 INFO: done
+2025-12-17T08:45:59.965Z pid=1 tid=4wnh uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T08:45:59.966Z pid=1 tid=4wnh uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T08:50:04.302Z pid=1 tid=4mrd class=Metrics::RecordBackgroundQueueStatsWorker jid=390d242712c7d8b66a9c039f INFO: start
+2025-12-17T08:50:04.321Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=d7db879bcac9c102a61a902e INFO: start
+2025-12-17T08:50:04.455Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=d7db879bcac9c102a61a902e elapsed=0.135 INFO: done
+2025-12-17T08:50:04.504Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=975b02074baf0e20366c8802 INFO: start
+2025-12-17T08:50:04.705Z pid=1 tid=4mrd class=Metrics::RecordBackgroundQueueStatsWorker jid=390d242712c7d8b66a9c039f elapsed=0.402 INFO: done
+2025-12-17T08:50:04.711Z pid=1 tid=4mrd class=ScheduledAutomations::ProcessWorker jid=141497f483f78016c1e29ecd INFO: start
+I, [2025-12-17T08:50:04.712329 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+I, [2025-12-17T08:50:04.724961 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-17T08:50:04.725Z pid=1 tid=4mrd class=ScheduledAutomations::ProcessWorker jid=141497f483f78016c1e29ecd elapsed=0.015 INFO: done
+2025-12-17T08:50:04.817Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=975b02074baf0e20366c8802 elapsed=0.312 INFO: done
+2025-12-17T08:55:14.731Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=f66e2653c1a1adb2d7125f6a INFO: start
+2025-12-17T08:55:14.742Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=b9f526e9e60c85a1a3f75876 INFO: start
+2025-12-17T08:55:14.865Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=f66e2653c1a1adb2d7125f6a elapsed=0.134 INFO: done
+2025-12-17T08:55:14.881Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=b9f526e9e60c85a1a3f75876 elapsed=0.139 INFO: done
+2025-12-17T08:55:59.974Z pid=1 tid=4x4p uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T08:55:59.976Z pid=1 tid=4x4p uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T09:00:13.290Z pid=1 tid=4mrd class=Metrics::RecordBackgroundQueueStatsWorker jid=c7b2366526422d934ab49724 INFO: start
+2025-12-17T09:00:13.327Z pid=1 tid=4mj1 class=BustCachePathWorker jid=b87181ee4e1bdc108f027cf8 INFO: start
+2025-12-17T09:00:13.449Z pid=1 tid=4mj1 class=BustCachePathWorker jid=b87181ee4e1bdc108f027cf8 elapsed=0.122 INFO: done
+2025-12-17T09:00:13.452Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=56c8e7bb4dfe4ee437ca9c10 INFO: start
+2025-12-17T09:00:13.481Z pid=1 tid=4mrd class=Metrics::RecordBackgroundQueueStatsWorker jid=c7b2366526422d934ab49724 elapsed=0.191 INFO: done
+2025-12-17T09:00:13.483Z pid=1 tid=4mrd class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=8fa1f4bd1270f3b478bd7148 INFO: start
+2025-12-17T09:00:13.487Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=56c8e7bb4dfe4ee437ca9c10 elapsed=0.035 INFO: done
+2025-12-17T09:00:13.489Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=d3191c47eab47f10b440b7eb INFO: start
+2025-12-17T09:00:13.491Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=d3191c47eab47f10b440b7eb elapsed=0.002 INFO: done
+2025-12-17T09:00:13.494Z pid=1 tid=4mj1 class=ScheduledAutomations::ProcessWorker jid=58341d39fc35e0b49dc3e29f INFO: start
+I, [2025-12-17T09:00:13.495051 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+I, [2025-12-17T09:00:13.502667 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-17T09:00:13.503Z pid=1 tid=4mj1 class=ScheduledAutomations::ProcessWorker jid=58341d39fc35e0b49dc3e29f elapsed=0.009 INFO: done
+2025-12-17T09:00:13.516Z pid=1 tid=4mrd class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=8fa1f4bd1270f3b478bd7148 elapsed=0.033 INFO: done
+2025-12-17T09:05:13.955Z pid=1 tid=4mrd class=Podcasts::EnqueueGetEpisodesWorker jid=dae419ae9c7c72ddcf1760e3 INFO: start
+2025-12-17T09:05:13.983Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=9111b4a0ac4d1c1322deb8a3 INFO: start
+2025-12-17T09:05:14.117Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=9111b4a0ac4d1c1322deb8a3 elapsed=0.134 INFO: done
+2025-12-17T09:05:14.122Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=52aadbac9faa4b3ad9156c72 INFO: start
+2025-12-17T09:05:14.152Z pid=1 tid=4mrd class=Podcasts::EnqueueGetEpisodesWorker jid=dae419ae9c7c72ddcf1760e3 elapsed=0.196 INFO: done
+2025-12-17T09:05:14.154Z pid=1 tid=4mrd class=Podcasts::GetEpisodesWorker jid=c234904c0b63edadd5230a95 INFO: start
+2025-12-17T09:05:14.160Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=52aadbac9faa4b3ad9156c72 elapsed=0.038 INFO: done
+2025-12-17T09:05:14.163Z pid=1 tid=4mj1 class=Podcasts::GetEpisodesWorker jid=ce19cd1f623e6350167ae02e INFO: start
+2025-12-17T09:05:14.944Z pid=1 tid=4mrd class=Podcasts::GetEpisodesWorker jid=c234904c0b63edadd5230a95 elapsed=0.791 INFO: done
+2025-12-17T09:05:14.951Z pid=1 tid=4mrd class=Podcasts::GetEpisodesWorker jid=ce7dd33a229fd8954dc1ba01 INFO: start
+2025-12-17T09:05:15.371Z pid=1 tid=4mrd class=Podcasts::GetEpisodesWorker jid=ce7dd33a229fd8954dc1ba01 elapsed=0.42 INFO: done
+2025-12-17T09:05:19.219Z pid=1 tid=4mj1 class=Podcasts::GetEpisodesWorker jid=ce19cd1f623e6350167ae02e elapsed=5.056 INFO: done
+2025-12-17T09:05:59.985Z pid=1 tid=4ydp uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T09:05:59.986Z pid=1 tid=4ydp uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T09:08:28.974Z pid=1 tid=4mj1 class=Articles::QualityReactionWorker jid=6250b459e209f344c02704ce INFO: start
+2025-12-17T09:08:29.090Z pid=1 tid=4mj1 class=Articles::QualityReactionWorker jid=6250b459e209f344c02704ce elapsed=0.115 INFO: done
+2025-12-17T09:10:01.886Z pid=1 tid=4mrd class=Metrics::RecordBackgroundQueueStatsWorker jid=8718294a5eb4d4c947720e09 INFO: start
+2025-12-17T09:10:01.920Z pid=1 tid=4mj1 class=Metrics::RecordDataCountsWorker jid=3765eb6754c78fb44c9e7118 INFO: start
+2025-12-17T09:10:02.190Z pid=1 tid=4mrd class=Metrics::RecordBackgroundQueueStatsWorker jid=8718294a5eb4d4c947720e09 elapsed=0.305 INFO: done
+2025-12-17T09:10:02.195Z pid=1 tid=4mrd class=Articles::PublishWorker jid=a4f199f8acc4ade61b081a72 INFO: start
+2025-12-17T09:10:02.257Z pid=1 tid=4mrd class=Articles::PublishWorker jid=a4f199f8acc4ade61b081a72 elapsed=0.061 INFO: done
+I, [2025-12-17T09:10:02.263864 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"users", :table_size=>6}}
+I, [2025-12-17T09:10:02.270989 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"articles", :table_size=>15}}
+I, [2025-12-17T09:10:02.280223 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"organizations", :table_size=>1}}
+I, [2025-12-17T09:10:02.286908 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"comments", :table_size=>10}}
+2025-12-17T09:10:02.290Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=7576dde363860f4e14ee7df9 INFO: start
+2025-12-17T09:10:02.294Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=7576dde363860f4e14ee7df9 elapsed=0.004 INFO: done
+2025-12-17T09:10:02.297Z pid=1 tid=4mrd class=ScheduledAutomations::ProcessWorker jid=ce9dca967a56656696342c71 INFO: start
+I, [2025-12-17T09:10:02.298412 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+I, [2025-12-17T09:10:02.300863 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"podcasts", :table_size=>3}}
+I, [2025-12-17T09:10:02.308337 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"podcast_episodes", :table_size=>29}}
+I, [2025-12-17T09:10:02.310539 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-17T09:10:02.311Z pid=1 tid=4mrd class=ScheduledAutomations::ProcessWorker jid=ce9dca967a56656696342c71 elapsed=0.014 INFO: done
+I, [2025-12-17T09:10:02.318519 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"classified_listings", :table_size=>0}}
+I, [2025-12-17T09:10:02.325217 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"page_views", :table_size=>181}}
+I, [2025-12-17T09:10:02.332378 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"notifications", :table_size=>8}}
+I, [2025-12-17T09:10:02.355176 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"profiles", :table_size=>6}}
+2025-12-17T09:10:02.356Z pid=1 tid=4mj1 class=Metrics::RecordDataCountsWorker jid=3765eb6754c78fb44c9e7118 elapsed=0.435 INFO: done
+2025-12-17T09:15:18.196Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=1761aa1b73cdf6f51c211ae6 INFO: start
+2025-12-17T09:15:18.226Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=c3588b9e90d05cdbb6fd24f8 INFO: start
+2025-12-17T09:15:18.336Z pid=1 tid=4mrd class=CaptureQueryStatsWorker jid=1761aa1b73cdf6f51c211ae6 elapsed=0.14 INFO: done
+2025-12-17T09:15:18.349Z pid=1 tid=4mj1 class=Articles::PublishWorker jid=c3588b9e90d05cdbb6fd24f8 elapsed=0.122 INFO: done
+2025-12-17T09:15:59.996Z pid=1 tid=4z9x uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T09:15:59.999Z pid=1 tid=4z9x uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-17T09:18:29.215Z pid=1 tid=4mj1 class=Emails::RemoveOldEmailsWorker jid=e4d5bbe6f1297b24f6a3f793 INFO: start
+I, [2025-12-17T09:18:29.385081 #1]  INFO -- : {:tag=>"notification_delete", :statement=>"DELETE FROM ahoy_messages\nWHERE ahoy_messages.id IN (\n  SELECT ahoy_messages.id\n  FROM ahoy_messages\n  WHERE sent_at < '2025-10-17 09:18:29.217125' AND feedback_message_id IS NULL\n  LIMIT 50000\n)\n", :rows_deleted=>0, :duration=>0.02686921413987875}
+2025-12-17T09:18:29.385Z pid=1 tid=4mj1 class=Emails::RemoveOldEmailsWorker jid=e4d5bbe6f1297b24f6a3f793 elapsed=0.17 INFO: done
+2025-12-17T09:20:04.622Z pid=1 tid=4mrd class=Feeds::ImportArticlesWorker jid=756d7c5172283a910a1f3244 INFO: start
+2025-12-17T09:20:04.783Z pid=1 tid=4mj1 class=Metrics::RecordBackgroundQueueStatsWorker jid=96157b5ae533d3f23f9d0928 INFO: start
+2025-12-17T09:20:05.342Z pid=1 tid=4mj1 class=Metrics::RecordBackgroundQueueStatsWorker jid=96157b5ae533d3f23f9d0928 elapsed=0.559 INFO: done
+2025-12-17T09:20:05.356Z pid=1 tid=4mj1 class=BadgeAchievements::BadgeAwardWorker jid=cd9f0419fd4d955594fd40c6 INFO: start
+2025-12-17T09:20:05.407Z pid=1 tid=4mrd class=Feeds::ImportArticlesWorker jid=756d7c5172283a910a1f3244 elapsed=0.784 INFO: done
+2025-12-17T09:20:05.416Z pid=1 tid=4mrd class=Articles::PublishWorker jid=29a0949720d2848d889777db INFO: start
+2025-12-17T09:20:05.443Z pid=1 tid=4mj1 class=BadgeAchievements::BadgeAwardWorker jid=cd9f0419fd4d955594fd40c6 elapsed=0.087 INFO: done
+2025-12-17T09:20:05.445Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=22a8c6d9853c14e935754431 INFO: start
+2025-12-17T09:20:05.448Z pid=1 tid=4mrd class=Articles::PublishWorker jid=29a0949720d2848d889777db elapsed=0.032 INFO: done
+2025-12-17T09:20:05.451Z pid=1 tid=4mrd class=ScheduledAutomations::ProcessWorker jid=c6158b47f366e3c8de1eba7d INFO: start
+I, [2025-12-17T09:20:05.453378 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2025-12-17T09:20:05.452Z pid=1 tid=4mj1 class=CaptureQueryStatsWorker jid=22a8c6d9853c14e935754431 elapsed=0.006 INFO: done
+I, [2025-12-17T09:20:05.460411 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-17T09:20:05.461Z pid=1 tid=4mrd class=ScheduledAutomations::ProcessWorker jid=c6158b47f366e3c8de1eba7d elapsed=0.009 INFO: done
+2025-12-17T09:21:23.536Z pid=1 tid=4mj1 class=Comments::HandleSpamWorker jid=bb593449593f887841915763 INFO: start
+2025-12-17T09:21:23.560Z pid=1 tid=4mrd class=Comments::BustCacheWorker jid=17ccbfa8056f6412104da64f INFO: start
+2025-12-17T09:21:23.759Z pid=1 tid=4mrd class=Comments::BustCacheWorker jid=17ccbfa8056f6412104da64f elapsed=0.198 INFO: done
+2025-12-17T09:21:23.763Z pid=1 tid=4mrd class=Users::BustCacheWorker jid=fad69ba9d04be1d1a1966efe INFO: start
+2025-12-17T09:21:23.770Z pid=1 tid=4mj1 class=Comments::HandleSpamWorker jid=bb593449593f887841915763 elapsed=0.234 INFO: done
+2025-12-17T09:21:23.772Z pid=1 tid=4mj1 class=Reactions::UpdateRelevantScoresWorker jid=c40d5567b761644291d36b9f INFO: start
+2025-12-17T09:21:23.782Z pid=1 tid=4mrd class=Users::BustCacheWorker jid=fad69ba9d04be1d1a1966efe elapsed=0.019 INFO: done
+2025-12-17T09:21:23.788Z pid=1 tid=4mrd class=Reactions::BustReactableCacheWorker jid=ed2cb3aaed64f89069aa0660 INFO: start
+2025-12-17T09:21:23.823Z pid=1 tid=4mrd class=Reactions::BustReactableCacheWorker jid=ed2cb3aaed64f89069aa0660 elapsed=0.035 INFO: done
+2025-12-17T09:21:23.834Z pid=1 tid=4mrd class=Reactions::BustHomepageCacheWorker jid=91180f772f4e6b482b1c3d08 INFO: start
+2025-12-17T09:21:23.843Z pid=1 tid=4mrd class=Reactions::BustHomepageCacheWorker jid=91180f772f4e6b482b1c3d08 elapsed=0.009 INFO: done
+2025-12-17T09:21:23.846Z pid=1 tid=4mrd class=Comments::CalculateScoreWorker jid=593fb242a84736c4fe4d1410 INFO: start
+2025-12-17T09:21:24.017Z pid=1 tid=4mrd class=Comments::CalculateScoreWorker jid=593fb242a84736c4fe4d1410 elapsed=0.171 INFO: done
+2025-12-17T09:21:24.021Z pid=1 tid=4mrd class=Users::BustCacheWorker jid=2e31ba1f36c3d062dc5b9599 INFO: start
+2025-12-17T09:21:24.036Z pid=1 tid=4mrd class=Users::BustCacheWorker jid=2e31ba1f36c3d062dc5b9599 elapsed=0.015 INFO: done
+2025-12-17T09:21:24.038Z pid=1 tid=4mrd class=Comments::HandleSpamWorker jid=218ccb8baba4c2a13b35f818 INFO: start
+2025-12-17T09:21:24.063Z pid=1 tid=4mrd class=Comments::HandleSpamWorker jid=218ccb8baba4c2a13b35f818 elapsed=0.024 INFO: done
+2025-12-17T09:21:24.066Z pid=1 tid=4mrd class=Comments::BustCacheWorker jid=e75f7717c9be5afff8736475 INFO: start
+2025-12-17T09:21:24.071Z pid=1 tid=4mj1 class=Reactions::UpdateRelevantScoresWorker jid=c40d5567b761644291d36b9f elapsed=0.298 INFO: done
+2025-12-17T09:21:24.073Z pid=1 tid=4mj1 class=AlgoliaSearch::SearchIndexWorker jid=36678d4021093210361c50ca tags=algolia INFO: start
+2025-12-17T09:21:24.093Z pid=1 tid=4mrd class=Comments::BustCacheWorker jid=e75f7717c9be5afff8736475 elapsed=0.027 INFO: done
+2025-12-17T09:21:24.096Z pid=1 tid=4mrd class=Users::BustCacheWorker jid=6a8ee23408d37ceca530391f INFO: start
+2025-12-17T09:21:24.109Z pid=1 tid=4mrd class=Users::BustCacheWorker jid=6a8ee23408d37ceca530391f elapsed=0.013 INFO: done
+2025-12-17T09:21:24.112Z pid=1 tid=4mrd class=Articles::ScoreCalcWorker jid=e4a9afc3d6fd1239e93a23a6 INFO: start
+2025-12-17T09:21:24.172Z pid=1 tid=4mrd class=Articles::ScoreCalcWorker jid=e4a9afc3d6fd1239e93a23a6 elapsed=0.06 INFO: done
+2025-12-17T09:21:24.174Z pid=1 tid=4mrd class=Articles::ScoreCalcWorker jid=84401e96b4bbd163c256098c INFO: start
+2025-12-17T09:21:24.230Z pid=1 tid=4mrd class=Articles::ScoreCalcWorker jid=84401e96b4bbd163c256098c elapsed=0.056 INFO: done
+2025-12-17T09:21:24.233Z pid=1 tid=4mrd class=Comments::CalculateScoreWorker jid=aa35f3faee3a291584fb20e6 INFO: start
+2025-12-17T09:21:24.413Z pid=1 tid=4mrd class=Comments::CalculateScoreWorker jid=aa35f3faee3a291584fb20e6 elapsed=0.18 INFO: done
+2025-12-17T09:21:24.490Z pid=1 tid=4mrd class=Users::BustCacheWorker jid=5dc5ee76776361ec314122bc INFO: start
+2025-12-17T09:21:24.522Z pid=1 tid=4mrd class=Users::BustCacheWorker jid=5dc5ee76776361ec314122bc elapsed=0.032 INFO: done
+2025-12-17T09:21:24.524Z pid=1 tid=4mrd class=AlgoliaSearch::SearchIndexWorker jid=c79983213578d13c3f384e86 tags=algolia INFO: start
+2025-12-17T09:21:25.886Z pid=1 tid=4mj1 class=AlgoliaSearch::SearchIndexWorker jid=36678d4021093210361c50ca tags=algolia elapsed=1.813 INFO: done
+2025-12-17T09:21:25.889Z pid=1 tid=4mj1 class=Users::RecordFieldTestEventWorker jid=1934f8ff7a01172ebb2d5efe INFO: start
+2025-12-17T09:21:25.919Z pid=1 tid=4mj1 class=Users::RecordFieldTestEventWorker jid=1934f8ff7a01172ebb2d5efe elapsed=0.031 INFO: done
+2025-12-17T09:21:25.922Z pid=1 tid=4mj1 class=Articles::ScoreCalcWorker jid=9e7ee3abdfaaccc172ea80d4 INFO: start
+2025-12-17T09:21:25.979Z pid=1 tid=4mrd class=AlgoliaSearch::SearchIndexWorker jid=c79983213578d13c3f384e86 tags=algolia elapsed=1.454 INFO: done
+2025-12-17T09:21:25.981Z pid=1 tid=4mrd class=Articles::ScoreCalcWorker jid=47837679eea06ee1f6856641 INFO: start
+2025-12-17T09:21:25.990Z pid=1 tid=4mj1 class=Articles::ScoreCalcWorker jid=9e7ee3abdfaaccc172ea80d4 elapsed=0.068 INFO: done
+2025-12-17T09:21:25.993Z pid=1 tid=4mj1 class=Users::RecordFieldTestEventWorker jid=0a5fccba139579f21e9e4f06 INFO: start
+2025-12-17T09:21:26.039Z pid=1 tid=4mj1 class=Users::RecordFieldTestEventWorker jid=0a5fccba139579f21e9e4f06 elapsed=0.046 INFO: done
+2025-12-17T09:21:26.044Z pid=1 tid=4mj1 class=Users::RecordFieldTestEventWorker jid=657d9d567976b352ee597934 INFO: start
+2025-12-17T09:21:26.095Z pid=1 tid=4mj1 class=Users::RecordFieldTestEventWorker jid=657d9d567976b352ee597934 elapsed=0.052 INFO: done
+2025-12-17T09:21:26.100Z pid=1 tid=4mj1 class=Users::RecordFieldTestEventWorker jid=887ff6e8c53e219d818a9573 INFO: start
+2025-12-17T09:21:26.108Z pid=1 tid=4mrd class=Articles::ScoreCalcWorker jid=47837679eea06ee1f6856641 elapsed=0.127 INFO: done
+2025-12-17T09:21:26.111Z pid=1 tid=4mrd class=Users::RecordFieldTestEventWorker jid=df8c11ee3318c851fec7fc9b INFO: start
+2025-12-17T09:21:26.188Z pid=1 tid=4mj1 class=Users::RecordFieldTestEventWorker jid=887ff6e8c53e219d818a9573 elapsed=0.087 INFO: done
+2025-12-17T09:21:26.207Z pid=1 tid=4mrd class=Users::RecordFieldTestEventWorker jid=df8c11ee3318c851fec7fc9b elapsed=0.096 INFO: done

@@ -38,7 +38,7 @@ class ConsumerApp < ApplicationRecord
     if forem_app? && ios?
       ApplicationConfig["RPUSH_IOS_PEM"]
     elsif forem_app? && android?
-      ApplicationConfig["RPUSH_FCM_KEY"]
+      ApplicationConfig["RPUSH_FCM_JSON"] || ApplicationConfig["RPUSH_FCM_KEY"]
     else
       auth_key
     end
@@ -54,7 +54,7 @@ class ConsumerApp < ApplicationRecord
     when Device::IOS
       Rpush::Apns2::App.where(name: app_name).first&.destroy
     when Device::ANDROID
-      Rpush::Gcm::App.where(name: app_name).first&.destroy
+      Rpush::Client::Redis::Fcm::App.where(name: app_name).first&.destroy
     end
 
     # This prevents the `destroy` method to return true or false in a callback

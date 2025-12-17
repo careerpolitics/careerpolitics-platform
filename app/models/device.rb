@@ -32,7 +32,7 @@ class Device < ApplicationRecord
     n.app = ConsumerApps::RpushAppQuery.call(
       app_bundle: consumer_app.app_bundle,
       platform: platform,
-    )
+      )
     n.data = {
       aps: {
         alert: {
@@ -51,11 +51,11 @@ class Device < ApplicationRecord
   end
 
   def android_notification(title, body, payload)
-    n = Rpush::Gcm::Notification.new
+    n = Rpush::Client::Redis::Fcm::Notification.new
     n.app = ConsumerApps::RpushAppQuery.call(
       app_bundle: consumer_app.app_bundle,
       platform: platform,
-    )
+      )
     n.registration_ids = [token]
     n.priority = "high"
     n.content_available = true

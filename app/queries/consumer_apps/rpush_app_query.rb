@@ -12,12 +12,12 @@ module ConsumerApps
       @consumer_app = ConsumerApps::FindOrCreateByQuery.call(
         app_bundle: @app_bundle,
         platform: @platform,
-      )
+        )
     end
 
     def call
       if consumer_app.android?
-        android_app = Rpush::Gcm::App.where(name: app_name).first
+        android_app = Rpush::Client::Redis::Fcm::App.where(name: app_name).first
         android_app || recreate_android_app!
       elsif consumer_app.ios?
         ios_app = Rpush::Apns2::App.where(name: app_name).first
@@ -48,9 +48,15 @@ module ConsumerApps
       # If the ConsumerApp doesn't have credentials there's no need to create it
       return if consumer_app.auth_credentials.blank?
 
-      app = Rpush::Gcm::App.new
+      app = Rpush::Client::Redis::Fcm::App.new
       app.name = app_name
-      app.auth_key = consumer_app.auth_credentials.to_s
+      credentials = consumer_app.auth_credentials.to_s
+      if credentials.start_with?('{')
+        app.json_key = credentials
+      else
+        app.auth_key = credentials
+      end
+
       app.connections = 1
       app.save!
       app
