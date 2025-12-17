@@ -12,7 +12,6 @@ module PushNotifications
       # Deliver all pending Push Notifications
       Rpush.push
       # Callback for feedback (see `config/initializers/rpush.rb`)
-      Rpush.apns_feedback
     end
   end
 end

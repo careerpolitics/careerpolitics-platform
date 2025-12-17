@@ -53,8 +53,13 @@ module ConsumerApps
       credentials = consumer_app.auth_credentials.to_s
       if credentials.start_with?('{')
         app.json_key = credentials
-      else
-        app.auth_key = credentials
+        begin
+          parsed_creds = JSON.parse(credential)
+          app.firebase_project_id= parsed_creds['project_id']
+        rescue JSON::ParserError =>e
+          Rails.logger.error("Failed to parse FCM Json credentials: #{e.message}")
+          return nil
+        end
       end
 
       app.connections = 1
