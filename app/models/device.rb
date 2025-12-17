@@ -61,9 +61,7 @@ class Device < ApplicationRecord
     n.content_available = true
     n.notification = {
       title: title,
-      body: body,
-      sound: "default",
-      click_action: ".presentation.home.HomeActivity"
+      body: body
     }
     n.data = { data: payload }
     n.save!
