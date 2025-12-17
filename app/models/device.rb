@@ -56,7 +56,7 @@ class Device < ApplicationRecord
       app_bundle: consumer_app.app_bundle,
       platform: platform,
       )
-    n.registration_ids = [token]
+    n.device_token = token
     n.priority = "high"
     n.content_available = true
     n.notification = {
