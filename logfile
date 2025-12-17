@@ -1,23 +1,20 @@
-025-12-17T13:07:03.356412+00:00 app[web.1]: I, [2025-12-17T13:07:03.356295 #46]  INFO -- : [dd84d650-b928-e49a-bda9-5dcb450ca7f8] Completed 200 OK in 8ms (Views: 0.1ms | ActiveRecord: 1.1ms | Allocations: 2215)
-2025-12-17T13:07:07.532192+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=04cf9a33-2f5c-da26-1908-f40efc779553 fwd="103.24.87.149" dyno=web.1 connect=0ms service=45ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
-2025-12-17T13:07:07.488283+00:00 app[web.1]: I, [2025-12-17T13:07:07.488210 #46]  INFO -- : [04cf9a33-2f5c-da26-1908-f40efc779553] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-17 13:07:07 +0000
-2025-12-17T13:07:13.781183+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Articles::UpdatePageViewsWorker jid=20aae44813a91e12d14617ad INFO: start
-2025-12-17T13:07:13.815981+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Users::UpdateUserActivitiesWorker jid=f9173a0de6b3d92e7d7ec2c0 INFO: start
-2025-12-17T13:07:13.831355+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Articles::UpdatePageViewsWorker jid=20aae44813a91e12d14617ad elapsed=0.05 INFO: done
-2025-12-17T13:07:13.874684+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Users::UpdateUserActivitiesWorker jid=f9173a0de6b3d92e7d7ec2c0 elapsed=0.059 INFO: done
-2025-12-17T13:07:22.510059+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=5446c6ea-3f51-6ff4-ac27-b4f213cd5e1d fwd="103.24.87.149" dyno=web.1 connect=0ms service=34ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
-2025-12-17T13:07:22.477049+00:00 app[web.1]: I, [2025-12-17T13:07:22.476979 #46]  INFO -- : [5446c6ea-3f51-6ff4-ac27-b4f213cd5e1d] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-17 13:07:22 +0000
-2025-12-17T13:07:35.090509+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=PushNotifications::DeliverWorker jid=9971520d1f619e3f8a06057b INFO: start
-2025-12-17T13:07:35.096521+00:00 app[sidekiq_worker.1]: I, [2025-12-17T13:07:35.096412 #2]  INFO -- : [2025-12-17 13:07:35][com.murari.careerpolitics.android] Starting 1 dispatcher...
-2025-12-17T13:07:35.104262+00:00 app[sidekiq_worker.1]: E, [2025-12-17T13:07:35.104212 #2] ERROR -- : [2025-12-17 13:07:35][ERROR] Cannot find necessary configuration! Please make sure you have set all necessary ENV variables or firebase_project_id and json_key attributes.
-2025-12-17T13:07:35.104342+00:00 app[sidekiq_worker.1]: E, [2025-12-17T13:07:35.104323 #2] ERROR -- : [2025-12-17 13:07:35][ERROR] NoMethodError, undefined method `notification_processed' for nil
-2025-12-17T13:07:35.104343+00:00 app[sidekiq_worker.1]: /app/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/fcm/delivery.rb:33:in `ensure in perform'
-2025-12-17T13:07:35.104344+00:00 app[sidekiq_worker.1]: /app/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/fcm/delivery.rb:33:in `perform'
-2025-12-17T13:07:35.104344+00:00 app[sidekiq_worker.1]: /app/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/dispatcher/http.rb:12:in `dispatch'
-2025-12-17T13:07:35.104344+00:00 app[sidekiq_worker.1]: /app/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/dispatcher_loop.rb:66:in `dispatch'
-2025-12-17T13:07:35.104345+00:00 app[sidekiq_worker.1]: /app/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/dispatcher_loop.rb:35:in `block (2 levels) in start'
-2025-12-17T13:07:35.104345+00:00 app[sidekiq_worker.1]: <internal:kernel>:187:in `loop'
-2025-12-17T13:07:35.104345+00:00 app[sidekiq_worker.1]: /app/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/dispatcher_loop.rb:25:in `block in start'
-2025-12-17T13:07:35.107308+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=PushNotifications::DeliverWorker jid=9971520d1f619e3f8a06057b elapsed=0.017 INFO: done
-2025-12-17T13:07:37.526127+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=ed447bfe-c2ab-5868-f54a-638788c852be fwd="103.24.87.149" dyno=web.1 connect=0ms service=39ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
-2025-12-17T13:07:37.487823+00:00 app[web.1]: I, [2025-12-17T13:07:37.487748 #46]  INFO -- : [ed447bfe-c2ab-5868-f54a-638788c852be] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-17 13:07:37 +0000
+fwd="103.24.87.149" dyno=web.1 connect=0ms service=57ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-17T14:36:05.196396+00:00 app[web.1]: I, [2025-12-17T14:36:05.196333 #61]  INFO -- : [5fa60277-1725-1997-2071-cc4793ca1156] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-17 14:36:05 +0000
+2025-12-17T14:36:19.530987+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=PushNotifications::DeliverWorker jid=cf5c23e7e3023fd22c331d0b INFO: start
+2025-12-17T14:36:19.576496+00:00 app[sidekiq_worker.1]: I, [2025-12-17T14:36:19.576418 #2]  INFO -- : [2025-12-17 14:36:19][com.murari.careerpolitics.android] Starting 1 dispatcher...
+2025-12-17T14:36:19.678613+00:00 app[sidekiq_worker.1]: I, [2025-12-17T14:36:19.678536 #2]  INFO -- honeybadger: ** [Honeybadger] Reporting error id=74b773ce-1031-42f5-92c7-c5761f6b8d2c level=1 pid=2
+2025-12-17T14:36:19.680349+00:00 app[sidekiq_worker.1]: E, [2025-12-17T14:36:19.680291 #2] ERROR -- : [2025-12-17 14:36:19][ERROR] Rpush::DeliveryError, Unable to deliver notification 7, received error 400 (FCM failed to handle the JSON request. (INVALID_ARGUMENT: Invalid JSON payload received. Unknown name "url" at 'message.data[0].value': Cannot find field.
+2025-12-17T14:36:19.680351+00:00 app[sidekiq_worker.1]: Invalid JSON payload received. Unknown name "type" at 'message.data[0].value': Cannot find field.))
+2025-12-17T14:36:19.680351+00:00 app[sidekiq_worker.1]: /app/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/fcm/delivery.rb:72:in `bad_request'
+2025-12-17T14:36:19.680351+00:00 app[sidekiq_worker.1]: /app/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/fcm/delivery.rb:43:in `handle_response'
+2025-12-17T14:36:19.680352+00:00 app[sidekiq_worker.1]: /app/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/fcm/delivery.rb:25:in `perform'
+2025-12-17T14:36:19.680352+00:00 app[sidekiq_worker.1]: /app/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/dispatcher/http.rb:12:in `dispatch'
+2025-12-17T14:36:19.680352+00:00 app[sidekiq_worker.1]: /app/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/dispatcher_loop.rb:66:in `dispatch'
+2025-12-17T14:36:19.680353+00:00 app[sidekiq_worker.1]: /app/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/dispatcher_loop.rb:35:in `block (2 levels) in start'
+2025-12-17T14:36:19.680354+00:00 app[sidekiq_worker.1]: <internal:kernel>:187:in `loop'
+2025-12-17T14:36:19.680355+00:00 app[sidekiq_worker.1]: /app/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/dispatcher_loop.rb:25:in `block in start'
+2025-12-17T14:36:19.681720+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=PushNotifications::DeliverWorker jid=cf5c23e7e3023fd22c331d0b elapsed=0.151 INFO: done
+2025-12-17T14:36:19.721598+00:00 app[sidekiq_worker.1]: I, [2025-12-17T14:36:19.721528 #2]  INFO -- honeybadger: ** [Honeybadger] Success ⚡ https://app.honeybadger.io/notice/74b773ce-1031-42f5-92c7-c5761f6b8d2c id=74b773ce-1031-42f5-92c7-c5761f6b8d2c code=201 level=1 pid=2
+2025-12-17T14:36:20.248550+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=60c278c3-43e7-6848-9954-7a0dbfedf6c1 fwd="103.24.87.149" dyno=web.1 connect=0ms service=39ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-17T14:36:20.210488+00:00 app[web.1]: I, [2025-12-17T14:36:20.210425 #61]  INFO -- : [60c278c3-43e7-6848-9954-7a0dbfedf6c1] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-17 14:36:20 +0000
+2025-12-17T14:36:35.246532+00:00 heroku[router]: at=info method=PATCH path="/page_view
