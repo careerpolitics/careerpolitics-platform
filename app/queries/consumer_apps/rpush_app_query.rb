@@ -48,7 +48,7 @@ module ConsumerApps
       # If the ConsumerApp doesn't have credentials there's no need to create it
       return if consumer_app.auth_credentials.blank?
 
-      app = Rpush::Fcm::App.new
+      app = Rpush::Client::Redis::Fcm::App.new
       app.name = app_name
 
       credentials = consumer_app.auth_credentials.to_s
