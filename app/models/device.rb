@@ -63,7 +63,7 @@ class Device < ApplicationRecord
       title: title,
       body: body
     }
-    n.data = { data: payload }
+    n.data = { data: payload.to_json }
     n.save!
   end
 end
