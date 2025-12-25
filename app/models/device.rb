@@ -54,16 +54,42 @@ class Device < ApplicationRecord
     n = Rpush::Client::Redis::Fcm::Notification.new
     n.app = ConsumerApps::RpushAppQuery.call(
       app_bundle: consumer_app.app_bundle,
-      platform: platform,
-      )
+      platform: platform
+    )
+
     n.device_token = token
-    n.priority = "high"
+    n.priority = payload.is_a?(Hash) && payload[:priority] == "high" ? "high" : "normal"
     n.content_available = true
-    n.notification = {
-      title: title,
-      body: body
-    }
+
+    # ---------------------------------------
+    # Support rich payloads
+    # ---------------------------------------
+    if payload.is_a?(Hash)
+      notification_hash = {
+        title: title,
+        body: body
+      }
+
+      # Android-specific fields from payload
+      notification_hash[:android_channel_id] = payload[:channel] if payload[:channel].present?
+      notification_hash[:color] = payload[:color] if payload[:color].present?
+      notification_hash[:icon] = payload[:icon] if payload[:icon].present?
+
+      # Remove nil values
+      notification_hash.compact!
+
+      n.notification = notification_hash
+    else
+      # ---------------------------------------
+      # Backward compatibility (simple payloads)
+      # ---------------------------------------
+      n.notification = {
+        title: title,
+        body: body
+      }
+    end
     n.data = { payload: payload.to_json }
     n.save!
   end
+
 end

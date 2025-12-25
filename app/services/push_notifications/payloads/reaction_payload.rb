@@ -48,10 +48,10 @@ module PushNotifications
       def build_body
         reactable= reaction.reactable
         title= reactable.title
+        emoji= emoji_for_category(reaction.category)
 
         if notification_type==:reaction_multiple
           usernames= aggregated_siblings.first(3).map{|r| r[:user][:username]}
-          emoji= emoji_for_category(reaction.category)
 
           if aggregated_siblings.size>3
             others_count= aggregated_siblings.size-3
@@ -68,10 +68,8 @@ module PushNotifications
                    title: title)
           end
         else
-          emoji= emoji_for_category(reaction.category)
           I18n.t("services.notifications.push_notifications.reaction.single_body",
                  emoji: emoji,
-                 users: usernames.join(", "),
                  title: title)
         end
       end

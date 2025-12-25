@@ -31,8 +31,8 @@ en:
           multiple_title: "%{count} people reacted to your post"
 
           single_body: "%{emoji} on %{title}"
-          multiple_body: "%{emoji} %{users} on %{title}"
-          multiple_body_with_others: "%{emoji} %{users} and %{count} others on %{title}"
+          multiple_body: "%{emoji} %{users} reacted to %{title}"
+          multiple_body_with_others: "%{emoji} %{users} and %{count} others reacted to %{title}"
 
 
         # -------------------------

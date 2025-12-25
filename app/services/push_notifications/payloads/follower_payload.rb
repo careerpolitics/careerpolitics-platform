@@ -16,7 +16,7 @@ module PushNotifications
           title: build_title,
           body: build_body,
           target: build_follower_target,
-          actor: build_actor(follow.follower),
+          actor: build_actor(follower),
           action_context: build_action_context
         )
       end
@@ -45,8 +45,6 @@ module PushNotifications
       # Target
       # -------------------------
       def build_follow_target
-        followable = follow.followable
-
         build_target(
           type: followable.class.name,
           id: followable.id,
@@ -60,11 +58,10 @@ module PushNotifications
       # -------------------------
       def build_action_context
         {
-          follow_id: follow.id,
-          followable_type: follow.followable_type,
-          followable_id: follow.followable_id,
-          follower_count: aggregated_siblings.size,
-          recent_followers: aggregated_siblings.first(5).map { |f| f[:user] }
+          follower_id: follower.id,
+          follower_username: follower.username,
+          followable_type: followable.class.name,
+          followable_id: followable.id,
         }
       end
     end

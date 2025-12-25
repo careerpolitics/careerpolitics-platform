@@ -94,6 +94,35 @@ module Notifications
 
         user_ids_for("only_author_comments")
       end
+
+      def send_push_notification(user_ids)
+        return if user_ids.empty?
+
+        notification_type = determine_notification_type
+
+        payload_builder = PushNotifications::Payload::CommentPayload.new(
+          comment: comment,
+          notification_type: notification_type
+        )
+
+        PushNotifications::UnifiedNotifier.call(
+          user_ids: user_ids,
+          payload_builder: payload_builder,
+          preference_key: :mobile_comment_notifications
+        )
+      end
+
+      def determine_notification_type
+        if comment.parent_id.present?
+          :comment_reply
+        elsif comment.ancestry.blank?
+          :comment_article
+        else
+          :comment_thread
+        end
+      end
+
+
     end
   end
 end

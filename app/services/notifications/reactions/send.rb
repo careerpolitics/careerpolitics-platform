@@ -143,6 +143,19 @@ module Notifications
           }
         }
       end
+
+      def send_push_notification(user, recent_reaction, aggregated_siblings)
+        payload_builder = PushNotifications::Payload::ReactionPayload.new(
+          reaction: recent_reaction,
+          aggregated_siblings: aggregated_siblings,
+        )
+
+        PushNotifications::UnifiedNotifier.call(
+          user_ids: [user.id],
+          payload_builder: payload_builder,
+          preference_key: :mobile_reaction_notifications,
+        )
+      end
     end
   end
 end

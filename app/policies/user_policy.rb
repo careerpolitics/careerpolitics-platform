@@ -34,6 +34,11 @@ class UserPolicy < ApplicationPolicy
     inbox_guidelines
     inbox_type
     mobile_comment_notifications
+    mobile_mention_notifications
+    mobile_reaction_notifications
+    mobile_follower_notifications
+    mobile_badge_notifications
+    mobile_milestone_notifications
     mod_roundrobin_notifications
     welcome_notifications
     name

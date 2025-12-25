@@ -81,6 +81,20 @@ module Notifications
           milestones[milestones.index(closest_number) - 1]
         end
       end
+
+      def send_push_notification(user_id)
+        payload_builder = PushNotifications::Payload::MilestonePayload.new(
+          article: article,
+          milestone_type: type,
+          milestone_count: @next_milestone,
+        )
+
+        PushNotifications::UnifiedNotifier.call(
+          user_ids: [user_id],
+          payload_builder: payload_builder,
+          preference_key: :mobile_milestone_notifications,
+        )
+      end
     end
   end
 end
