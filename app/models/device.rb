@@ -62,7 +62,7 @@ class Device < ApplicationRecord
     n.content_available = true
 
     # ---------------------------------------
-    # Support rich payloads
+    # Support rich payload
     # ---------------------------------------
     if payload.is_a?(Hash)
       notification_hash = {
@@ -81,7 +81,7 @@ class Device < ApplicationRecord
       n.notification = notification_hash
     else
       # ---------------------------------------
-      # Backward compatibility (simple payloads)
+      # Backward compatibility (simple payload)
       # ---------------------------------------
       n.notification = {
         title: title,
