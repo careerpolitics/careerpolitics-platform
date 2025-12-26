@@ -1,52 +1,40 @@
-+ [[ '' = \b\l\o\c\k\e\d ]]
+ [[ '' = \b\l\o\c\k\e\d ]]
 + STATEMENT_TIMEOUT=4500000
 + bundle exec rails app_initializer:setup
 service_name is unknown, will set to unknown_service:rails
 dataset will be ignored, sending data to unknown_service:rails
-I, [2025-12-25T14:29:51.552656 #18]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2025-12-25T14:29:51.565264 #18]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-25T14:29:51+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
-I, [2025-12-25T14:29:52.552296 #18]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=18
-W, [2025-12-25T14:29:52.899362 #18]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
-I, [2025-12-25T14:29:52.961978 #18]  INFO -- : CareerPolitics Android consumer app initialized
+I, [2025-12-26T00:46:37.671663 #19]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2025-12-26T00:46:37.684458 #19]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-26T00:46:37+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+I, [2025-12-26T00:46:38.493214 #19]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=19
+W, [2025-12-26T00:46:38.800109 #19]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
+I, [2025-12-26T00:46:38.853143 #19]  INFO -- : CareerPolitics Android consumer app initialized
 == Preparing database ==
 service_name is unknown, will set to unknown_service:rails
 dataset will be ignored, sending data to unknown_service:rails
-[strong_migrations] DANGER: No lock timeout set
-I, [2025-12-25T14:29:55.685032 #59]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2025-12-25T14:29:55.689884 #59]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-25T14:29:55+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
-I, [2025-12-25T14:29:56.260474 #59]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=59
-W, [2025-12-25T14:29:56.617648 #59]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
-I, [2025-12-25T14:29:56.680368 #59]  INFO -- : CareerPolitics Android consumer app initialized
-I, [2025-12-25T14:29:57.064899 #59]  INFO -- : Migrating to AddMobileNotificationSettings (20251225120000)
-== 20251225120000 AddMobileNotificationSettings: migrating ====================
--- add_column(:users_notification_settings, :mobile_reaction_notifications, :boolean, {:default=>true, :null=>false})
-   -> 0.0304s
--- add_column(:users_notification_settings, :mobile_follower_notifications, :boolean, {:default=>true, :null=>false})
-   -> 0.0023s
--- add_column(:users_notification_settings, :mobile_badge_notifications, :boolean, {:default=>true, :null=>false})
-   -> 0.0019s
--- add_column(:users_notification_settings, :mobile_milestone_notifications, :boolean, {:default=>true, :null=>false})
-   -> 0.0018s
-== 20251225120000 AddMobileNotificationSettings: migrated (0.0404s) ===========
+I, [2025-12-26T00:46:41.149417 #61]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2025-12-26T00:46:41.152498 #61]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-26T00:46:41+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+I, [2025-12-26T00:46:41.660439 #61]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=61
+W, [2025-12-26T00:46:41.989092 #61]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
+I, [2025-12-26T00:46:42.045602 #61]  INFO -- : CareerPolitics Android consumer app initialized
 == Performing setup tasks ==
-I, [2025-12-25T14:29:57.462006 #18]  INFO -- : Skipping creation of navigation links
+I, [2025-12-26T00:46:42.628590 #19]  INFO -- : Skipping creation of navigation links
 == Updating Data ==
 == Bust Caches ==
 + bundle exec rake fastly:update_configs
 service_name is unknown, will set to unknown_service:rake
 dataset will be ignored, sending data to unknown_service:rake
-I, [2025-12-25T14:30:00.247384 #120]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2025-12-25T14:30:00.251715 #120]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-25T14:30:00+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rake","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
-I, [2025-12-25T14:30:00.901969 #120]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=120
-W, [2025-12-25T14:30:01.359881 #120]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
-I, [2025-12-25T14:30:01.434766 #120]  INFO -- : CareerPolitics Android consumer app initialized
-I, [2025-12-25T14:30:01.734271 #120]  INFO -- : Fastly not configured. Please set FASTLY_API_KEY, FASTLY_SERVICE_ID in your environment.
+I, [2025-12-26T00:46:44.917098 #120]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2025-12-26T00:46:44.920445 #120]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-26T00:46:44+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rake","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+I, [2025-12-26T00:46:45.389183 #120]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=120
+W, [2025-12-26T00:46:45.728719 #120]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
+I, [2025-12-26T00:46:45.779259 #120]  INFO -- : CareerPolitics Android consumer app initialized
+I, [2025-12-26T00:46:45.960125 #120]  INFO -- : Fastly not configured. Please set FASTLY_API_KEY, FASTLY_SERVICE_ID in your environment.
 + bundle exec rails runner 'puts '\''app load success'\'''
 service_name is unknown, will set to unknown_service:rails
 dataset will be ignored, sending data to unknown_service:rails
 /app/app/services/images/generate_subforem_images.rb:2: warning: already initialized constant Images::TEMPLATE_PATH
 /app/app/services/images/generate_social_image_magickally.rb:4: warning: previous definition of TEMPLATE_PATH was here
-/app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/callbacks.rb:33:in `on_file_autoloaded': expected file /app/app/services/push_notifications/base_payloads.rb to define constant PushNotifications::BasePayloads, but didn't (Zeitwerk::NameError)
+/app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/callbacks.rb:33:in `on_file_autoloaded': expected file /app/app/services/push_notifications/base_payload.rb to define constant PushNotifications::BasePayload, but didn't (Zeitwerk::NameError)
       raise Zeitwerk::NameError.new(msg, cref.last)
       ^^^^^
 	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/kernel.rb:27:in `require'
@@ -99,8 +87,8 @@ dataset will be ignored, sending data to unknown_service:rails
 	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/bundled_gems.rb:74:in `block (2 levels) in replace_require'
 	from /app/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
 	from bin/rails:4:in `<main>'
-I, [2025-12-25T14:30:05.420100 #162]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2025-12-25T14:30:05.425472 #162]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-25T14:30:05+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+I, [2025-12-26T00:46:48.287071 #162]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2025-12-26T00:46:48.290421 #162]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-26T00:46:48+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
 ++ notify
 +++ caller
 ++ FAILED_COMMAND='20 ./release-tasks.sh: bundle exec rails runner "puts '\''app load success'\''"'
@@ -109,7 +97,7 @@ service_name is unknown, will set to unknown_service:rails
 dataset will be ignored, sending data to unknown_service:rails
 /app/app/services/images/generate_subforem_images.rb:2: warning: already initialized constant Images::TEMPLATE_PATH
 /app/app/services/images/generate_social_image_magickally.rb:4: warning: previous definition of TEMPLATE_PATH was here
-/app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/callbacks.rb:33:in `on_file_autoloaded': expected file /app/app/services/push_notifications/base_payloads.rb to define constant PushNotifications::BasePayloads, but didn't (Zeitwerk::NameError)
+/app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/callbacks.rb:33:in `on_file_autoloaded': expected file /app/app/services/push_notifications/base_payload.rb to define constant PushNotifications::BasePayload, but didn't (Zeitwerk::NameError)
       raise Zeitwerk::NameError.new(msg, cref.last)
       ^^^^^
 	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/kernel.rb:27:in `require'
@@ -162,5 +150,5 @@ dataset will be ignored, sending data to unknown_service:rails
 	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/bundled_gems.rb:74:in `block (2 levels) in replace_require'
 	from /app/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
 	from bin/rails:4:in `<main>'
-I, [2025-12-25T14:30:10.956853 #201]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2025-12-25T14:30:10.961745 #201]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-25T14:30:10+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+I, [2025-12-26T00:46:52.366034 #202]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2025-12-26T00:46:52.369208 #202]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-26T00:46:52+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
