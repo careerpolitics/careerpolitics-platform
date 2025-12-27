@@ -7,8 +7,8 @@ module PushNotifications
 
       def initialize(follower:, followable:)
         super(:new_follower)
-        follower = follower
-        followable = followable
+        @follower = follower
+        @followable = followable
       end
 
       def build
