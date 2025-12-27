@@ -65,7 +65,7 @@ module Notifications
           notification.read = false if json_data[:reaction][:aggregated_siblings].size > previous_siblings_size
 
           notification_id = save_notification(notification_params, notification)
-
+          send_push_notification(receiver, recent_reaction,aggregated_reaction_siblings) if receiver.is_a?(User)
           Response.new(:saved, notification_id)
         end
       end
