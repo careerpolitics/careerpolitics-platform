@@ -1,154 +1,246 @@
- [[ '' = \b\l\o\c\k\e\d ]]
-+ STATEMENT_TIMEOUT=4500000
-+ bundle exec rails app_initializer:setup
-service_name is unknown, will set to unknown_service:rails
-dataset will be ignored, sending data to unknown_service:rails
-I, [2025-12-26T00:46:37.671663 #19]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2025-12-26T00:46:37.684458 #19]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-26T00:46:37+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
-I, [2025-12-26T00:46:38.493214 #19]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=19
-W, [2025-12-26T00:46:38.800109 #19]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
-I, [2025-12-26T00:46:38.853143 #19]  INFO -- : CareerPolitics Android consumer app initialized
-== Preparing database ==
-service_name is unknown, will set to unknown_service:rails
-dataset will be ignored, sending data to unknown_service:rails
-I, [2025-12-26T00:46:41.149417 #61]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2025-12-26T00:46:41.152498 #61]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-26T00:46:41+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
-I, [2025-12-26T00:46:41.660439 #61]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=61
-W, [2025-12-26T00:46:41.989092 #61]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
-I, [2025-12-26T00:46:42.045602 #61]  INFO -- : CareerPolitics Android consumer app initialized
-== Performing setup tasks ==
-I, [2025-12-26T00:46:42.628590 #19]  INFO -- : Skipping creation of navigation links
-== Updating Data ==
-== Bust Caches ==
-+ bundle exec rake fastly:update_configs
-service_name is unknown, will set to unknown_service:rake
-dataset will be ignored, sending data to unknown_service:rake
-I, [2025-12-26T00:46:44.917098 #120]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2025-12-26T00:46:44.920445 #120]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-26T00:46:44+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rake","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
-I, [2025-12-26T00:46:45.389183 #120]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=120
-W, [2025-12-26T00:46:45.728719 #120]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
-I, [2025-12-26T00:46:45.779259 #120]  INFO -- : CareerPolitics Android consumer app initialized
-I, [2025-12-26T00:46:45.960125 #120]  INFO -- : Fastly not configured. Please set FASTLY_API_KEY, FASTLY_SERVICE_ID in your environment.
-+ bundle exec rails runner 'puts '\''app load success'\'''
-service_name is unknown, will set to unknown_service:rails
-dataset will be ignored, sending data to unknown_service:rails
-/app/app/services/images/generate_subforem_images.rb:2: warning: already initialized constant Images::TEMPLATE_PATH
-/app/app/services/images/generate_social_image_magickally.rb:4: warning: previous definition of TEMPLATE_PATH was here
-/app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/callbacks.rb:33:in `on_file_autoloaded': expected file /app/app/services/push_notifications/base_payload.rb to define constant PushNotifications::BasePayload, but didn't (Zeitwerk::NameError)
-      raise Zeitwerk::NameError.new(msg, cref.last)
-      ^^^^^
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/kernel.rb:27:in `require'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/helpers.rb:135:in `const_get'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/helpers.rb:135:in `cget'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:175:in `block in actual_eager_load_dir'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/helpers.rb:40:in `block in ls'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/helpers.rb:25:in `each'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/helpers.rb:25:in `ls'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:170:in `actual_eager_load_dir'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:17:in `block (2 levels) in eager_load'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:16:in `each'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:16:in `block in eager_load'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:10:in `synchronize'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:10:in `eager_load'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader.rb:379:in `block in eager_load_all'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader.rb:377:in `each'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader.rb:377:in `eager_load_all'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/application/finisher.rb:74:in `block in <module:Finisher>'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/initializable.rb:32:in `instance_exec'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/initializable.rb:32:in `run'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/initializable.rb:61:in `block in run_initializers'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:231:in `block in tsort_each'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:353:in `block (2 levels) in each_strongly_connected_component'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:434:in `each_strongly_connected_component_from'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:352:in `block in each_strongly_connected_component'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:350:in `each'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:350:in `call'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:350:in `each_strongly_connected_component'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:229:in `tsort_each'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:208:in `tsort_each'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/initializable.rb:60:in `run_initializers'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/application.rb:372:in `initialize!'
-	from /app/config/environment.rb:5:in `<main>'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/bundled_gems.rb:74:in `require'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/bundled_gems.rb:74:in `block (2 levels) in replace_require'
-	from /app/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/kernel.rb:34:in `require'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/application.rb:348:in `require_environment!'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command/actions.rb:28:in `require_environment!'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command/actions.rb:15:in `require_application_and_environment!'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/runner/runner_command.rb:33:in `perform'
-	from /app/vendor/bundle/ruby/3.3.0/gems/thor-1.3.1/lib/thor/command.rb:28:in `run'
-	from /app/vendor/bundle/ruby/3.3.0/gems/thor-1.3.1/lib/thor/invocation.rb:127:in `invoke_command'
-	from /app/vendor/bundle/ruby/3.3.0/gems/thor-1.3.1/lib/thor.rb:527:in `dispatch'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command/base.rb:87:in `perform'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command.rb:48:in `invoke'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands.rb:18:in `<main>'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/bundled_gems.rb:74:in `require'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/bundled_gems.rb:74:in `block (2 levels) in replace_require'
-	from /app/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
-	from bin/rails:4:in `<main>'
-I, [2025-12-26T00:46:48.287071 #162]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2025-12-26T00:46:48.290421 #162]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-26T00:46:48+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
-++ notify
-+++ caller
-++ FAILED_COMMAND='20 ./release-tasks.sh: bundle exec rails runner "puts '\''app load success'\''"'
-++ bundle exec rails runner ReleasePhaseNotifier.ping_slack
-service_name is unknown, will set to unknown_service:rails
-dataset will be ignored, sending data to unknown_service:rails
-/app/app/services/images/generate_subforem_images.rb:2: warning: already initialized constant Images::TEMPLATE_PATH
-/app/app/services/images/generate_social_image_magickally.rb:4: warning: previous definition of TEMPLATE_PATH was here
-/app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/callbacks.rb:33:in `on_file_autoloaded': expected file /app/app/services/push_notifications/base_payload.rb to define constant PushNotifications::BasePayload, but didn't (Zeitwerk::NameError)
-      raise Zeitwerk::NameError.new(msg, cref.last)
-      ^^^^^
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/kernel.rb:27:in `require'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/helpers.rb:135:in `const_get'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/helpers.rb:135:in `cget'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:175:in `block in actual_eager_load_dir'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/helpers.rb:40:in `block in ls'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/helpers.rb:25:in `each'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/helpers.rb:25:in `ls'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:170:in `actual_eager_load_dir'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:17:in `block (2 levels) in eager_load'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:16:in `each'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:16:in `block in eager_load'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:10:in `synchronize'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader/eager_load.rb:10:in `eager_load'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader.rb:379:in `block in eager_load_all'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader.rb:377:in `each'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/loader.rb:377:in `eager_load_all'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/application/finisher.rb:74:in `block in <module:Finisher>'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/initializable.rb:32:in `instance_exec'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/initializable.rb:32:in `run'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/initializable.rb:61:in `block in run_initializers'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:231:in `block in tsort_each'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:353:in `block (2 levels) in each_strongly_connected_component'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:434:in `each_strongly_connected_component_from'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:352:in `block in each_strongly_connected_component'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:350:in `each'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:350:in `call'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:350:in `each_strongly_connected_component'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:229:in `tsort_each'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/tsort.rb:208:in `tsort_each'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/initializable.rb:60:in `run_initializers'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/application.rb:372:in `initialize!'
-	from /app/config/environment.rb:5:in `<main>'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/bundled_gems.rb:74:in `require'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/bundled_gems.rb:74:in `block (2 levels) in replace_require'
-	from /app/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
-	from /app/vendor/bundle/ruby/3.3.0/gems/zeitwerk-2.6.13/lib/zeitwerk/kernel.rb:34:in `require'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/application.rb:348:in `require_environment!'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command/actions.rb:28:in `require_environment!'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command/actions.rb:15:in `require_application_and_environment!'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/runner/runner_command.rb:33:in `perform'
-	from /app/vendor/bundle/ruby/3.3.0/gems/thor-1.3.1/lib/thor/command.rb:28:in `run'
-	from /app/vendor/bundle/ruby/3.3.0/gems/thor-1.3.1/lib/thor/invocation.rb:127:in `invoke_command'
-	from /app/vendor/bundle/ruby/3.3.0/gems/thor-1.3.1/lib/thor.rb:527:in `dispatch'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command/base.rb:87:in `perform'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command.rb:48:in `invoke'
-	from /app/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands.rb:18:in `<main>'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/bundled_gems.rb:74:in `require'
-	from /app/vendor/ruby-3.3.0/lib/ruby/3.3.0/bundled_gems.rb:74:in `block (2 levels) in replace_require'
-	from /app/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
-	from bin/rails:4:in `<main>'
-I, [2025-12-26T00:46:52.366034 #202]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2025-12-26T00:46:52.369208 #202]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-26T00:46:52+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+Error on screen: Your comment could not be posted due to an error: There was an error in your markdown: undefined method `empty' for an instance of Array
+
+2025-12-27T05:30:06.239299+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Articles::PublishWorker jid=7d4e9ce305c66ea92c16eff9 elapsed=0.015 INFO: done
+2025-12-27T05:30:06.240174+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=CaptureQueryStatsWorker jid=28eb32066cccc42ee05a4038 elapsed=0.002 INFO: done
+2025-12-27T05:30:06.241593+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=ScheduledAutomations::ProcessWorker jid=ab4e1d5743af92f7fb699b7c INFO: start
+2025-12-27T05:30:06.241838+00:00 app[sidekiq_worker.1]: I, [2025-12-27T05:30:06.241798 #2]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2025-12-27T05:30:06.244382+00:00 app[sidekiq_worker.1]: I, [2025-12-27T05:30:06.244327 #2]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-27T05:30:06.244547+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=ScheduledAutomations::ProcessWorker jid=ab4e1d5743af92f7fb699b7c elapsed=0.003 INFO: done
+2025-12-27T05:32:09.205227+00:00 app[web.1]: I, [2025-12-27T05:32:09.205162 #55]  INFO -- : [04ab488e-db2c-b052-0da4-a4ef9ec07c73] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-27 05:32:09 +0000
+2025-12-27T05:32:09.280324+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=04ab488e-db2c-b052-0da4-a4ef9ec07c73 fwd="103.24.87.149" dyno=web.1 connect=0ms service=76ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:32:18.052605+00:00 app[web.1]: I, [2025-12-27T05:32:18.052531 #55]  INFO -- : [61780810-2b00-c640-7600-aea8a1701074] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-27 05:32:18 +0000
+2025-12-27T05:32:18.079219+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=61780810-2b00-c640-7600-aea8a1701074 fwd="103.24.87.149" dyno=web.1 connect=0ms service=28ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:32:33.064646+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=cad9a5b6-0816-1201-8d2a-de805ebf5ec7 fwd="103.24.87.149" dyno=web.1 connect=0ms service=26ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:32:33.040032+00:00 app[web.1]: I, [2025-12-27T05:32:33.039966 #55]  INFO -- : [cad9a5b6-0816-1201-8d2a-de805ebf5ec7] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-27 05:32:33 +0000
+2025-12-27T05:32:48.788114+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=5a393d98-36da-3616-f63b-f2bba097e552 fwd="103.24.87.149" dyno=web.1 connect=0ms service=28ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:32:48.761414+00:00 app[web.1]: I, [2025-12-27T05:32:48.761339 #55]  INFO -- : [5a393d98-36da-3616-f63b-f2bba097e552] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-27 05:32:48 +0000
+2025-12-27T05:33:03.056893+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=abf9bb41-5ba0-d3cd-8888-00781f494fbe fwd="103.24.87.149" dyno=web.1 connect=0ms service=30ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:03.028204+00:00 app[web.1]: I, [2025-12-27T05:33:03.028134 #55]  INFO -- : [abf9bb41-5ba0-d3cd-8888-00781f494fbe] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-27 05:33:03 +0000
+2025-12-27T05:33:04.587022+00:00 heroku[router]: at=info method=POST path="/comments" host=format-forge.in request_id=a35ce83e-bb65-d11e-a8cd-e0a5c3d3d230 fwd="103.24.87.149" dyno=web.1 connect=0ms service=51ms status=422 bytes=73 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:04.536946+00:00 app[web.1]: I, [2025-12-27T05:33:04.536885 #55]  INFO -- : [a35ce83e-bb65-d11e-a8cd-e0a5c3d3d230] Started POST "/comments" for 103.24.87.149 at 2025-12-27 05:33:04 +0000
+2025-12-27T05:33:04.553054+00:00 app[web.1]: I, [2025-12-27T05:33:04.552971 #55]  INFO -- : [a35ce83e-bb65-d11e-a8cd-e0a5c3d3d230] Processing by CommentsController#create as */*
+2025-12-27T05:33:04.553097+00:00 app[web.1]: I, [2025-12-27T05:33:04.553068 #55]  INFO -- : [a35ce83e-bb65-d11e-a8cd-e0a5c3d3d230]   Parameters: {"comment"=>{"body_markdown"=>"enhanced notification", "commentable_id"=>"5", "commentable_type"=>"Article", "parent_id"=>nil}, "locale"=>nil}
+2025-12-27T05:33:04.582309+00:00 app[web.1]: I, [2025-12-27T05:33:04.582234 #55]  INFO -- : [a35ce83e-bb65-d11e-a8cd-e0a5c3d3d230] Completed 422 Unprocessable Entity in 29ms (Views: 0.2ms | ActiveRecord: 8.7ms | Allocations: 13230)
+2025-12-27T05:33:09.758368+00:00 heroku[router]: sock=client at=warning code=H27 desc="Client Request Interrupted" method=GET path="/?i=i" host=format-forge.in request_id=f2409663-db66-3c5e-f212-d29e0f91d19e fwd="103.24.87.149" dyno=web.1 connect=0ms service=97ms status=200 bytes=0 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:09.662865+00:00 app[web.1]: I, [2025-12-27T05:33:09.662782 #55]  INFO -- : [f2409663-db66-3c5e-f212-d29e0f91d19e] Started GET "/?i=i" for 103.24.87.149 at 2025-12-27 05:33:09 +0000
+2025-12-27T05:33:09.679660+00:00 app[web.1]: I, [2025-12-27T05:33:09.679587 #55]  INFO -- : [f2409663-db66-3c5e-f212-d29e0f91d19e] Processing by StoriesController#index as */*
+2025-12-27T05:33:09.679683+00:00 app[web.1]: I, [2025-12-27T05:33:09.679660 #55]  INFO -- : [f2409663-db66-3c5e-f212-d29e0f91d19e]   Parameters: {"i"=>"i", "locale"=>nil}
+2025-12-27T05:33:09.753525+00:00 app[web.1]: I, [2025-12-27T05:33:09.753448 #55]  INFO -- : [f2409663-db66-3c5e-f212-d29e0f91d19e]   Rendered articles/index.html.erb within layouts/application (Duration: 55.7ms | Allocations: 72105)
+2025-12-27T05:33:09.754468+00:00 app[web.1]: I, [2025-12-27T05:33:09.754407 #55]  INFO -- : [f2409663-db66-3c5e-f212-d29e0f91d19e]   Rendered layout layouts/application.html.erb (Duration: 56.7ms | Allocations: 73206)
+2025-12-27T05:33:09.754776+00:00 app[web.1]: I, [2025-12-27T05:33:09.754742 #55]  INFO -- : [f2409663-db66-3c5e-f212-d29e0f91d19e] Completed 200 OK in 75ms (Views: 43.9ms | ActiveRecord: 16.6ms | Allocations: 77902)
+2025-12-27T05:33:10.707806+00:00 app[web.1]: I, [2025-12-27T05:33:10.707736 #55]  INFO -- : [20fa9b0d-cd81-74c9-cfc8-b5ebeadd4412] Started GET "/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i" for 103.24.87.149 at 2025-12-27 05:33:10 +0000
+2025-12-27T05:33:10.725172+00:00 app[web.1]: I, [2025-12-27T05:33:10.725075 #55]  INFO -- : [20fa9b0d-cd81-74c9-cfc8-b5ebeadd4412] Processing by StoriesController#show as HTML
+2025-12-27T05:33:10.725227+00:00 app[web.1]: I, [2025-12-27T05:33:10.725193 #55]  INFO -- : [20fa9b0d-cd81-74c9-cfc8-b5ebeadd4412]   Parameters: {"locale"=>nil, "username"=>"muraridevv", "slug"=>"top-10-highest-paying-government-jobs-in-india-2025-2g1i"}
+2025-12-27T05:33:10.903206+00:00 app[web.1]: I, [2025-12-27T05:33:10.903132 #55]  INFO -- : [20fa9b0d-cd81-74c9-cfc8-b5ebeadd4412]   Rendered articles/show.html.erb within layouts/application (Duration: 130.1ms | Allocations: 94065)
+2025-12-27T05:33:10.951148+00:00 app[web.1]: I, [2025-12-27T05:33:10.951072 #55]  INFO -- : [20fa9b0d-cd81-74c9-cfc8-b5ebeadd4412]   Rendered layout layouts/application.html.erb (Duration: 178.1ms | Allocations: 179839)
+2025-12-27T05:33:10.951427+00:00 app[web.1]: I, [2025-12-27T05:33:10.951383 #55]  INFO -- : [20fa9b0d-cd81-74c9-cfc8-b5ebeadd4412] Completed 200 OK in 226ms (Views: 168.1ms | ActiveRecord: 24.4ms | Allocations: 201246)
+2025-12-27T05:33:10.959194+00:00 heroku[router]: at=info method=GET path="/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i" host=format-forge.in request_id=20fa9b0d-cd81-74c9-cfc8-b5ebeadd4412 fwd="103.24.87.149" dyno=web.1 connect=0ms service=252ms status=200 bytes=33257 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:11.260036+00:00 heroku[router]: at=info method=GET path="/reactions?article_id=5" host=format-forge.in request_id=6d84830d-abe2-732e-ff13-f4fbdb424525 fwd="103.24.87.149" dyno=web.1 connect=0ms service=37ms status=200 bytes=246 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:11.461941+00:00 heroku[router]: at=info method=GET path="/notifications/counts" host=format-forge.in request_id=059e7e5d-a743-80b3-4d4f-1070ec5412fa fwd="103.24.87.149" dyno=web.1 connect=0ms service=30ms status=200 bytes=27 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:11.224195+00:00 app[web.1]: I, [2025-12-27T05:33:11.224132 #55]  INFO -- : [6d84830d-abe2-732e-ff13-f4fbdb424525] Started GET "/reactions?article_id=5" for 103.24.87.149 at 2025-12-27 05:33:11 +0000
+2025-12-27T05:33:11.242837+00:00 app[web.1]: I, [2025-12-27T05:33:11.242756 #55]  INFO -- : [6d84830d-abe2-732e-ff13-f4fbdb424525] Processing by ReactionsController#index as */*
+2025-12-27T05:33:11.242902+00:00 app[web.1]: I, [2025-12-27T05:33:11.242870 #55]  INFO -- : [6d84830d-abe2-732e-ff13-f4fbdb424525]   Parameters: {"article_id"=>"5", "locale"=>nil}
+2025-12-27T05:33:11.255884+00:00 app[web.1]: I, [2025-12-27T05:33:11.255820 #55]  INFO -- : [6d84830d-abe2-732e-ff13-f4fbdb424525] Completed 200 OK in 13ms (Views: 0.1ms | ActiveRecord: 2.8ms | Allocations: 4035)
+2025-12-27T05:33:11.432365+00:00 app[web.1]: I, [2025-12-27T05:33:11.432303 #55]  INFO -- : [059e7e5d-a743-80b3-4d4f-1070ec5412fa] Started GET "/notifications/counts" for 103.24.87.149 at 2025-12-27 05:33:11 +0000
+2025-12-27T05:33:11.448854+00:00 app[web.1]: I, [2025-12-27T05:33:11.448778 #55]  INFO -- : [059e7e5d-a743-80b3-4d4f-1070ec5412fa] Processing by Notifications::CountsController#index as */*
+2025-12-27T05:33:11.448895+00:00 app[web.1]: I, [2025-12-27T05:33:11.448869 #55]  INFO -- : [059e7e5d-a743-80b3-4d4f-1070ec5412fa]   Parameters: {"locale"=>nil}
+2025-12-27T05:33:11.457848+00:00 app[web.1]: I, [2025-12-27T05:33:11.457777 #55]  INFO -- : [059e7e5d-a743-80b3-4d4f-1070ec5412fa]   Rendered text template (Duration: 0.1ms | Allocations: 31)
+2025-12-27T05:33:11.458241+00:00 app[web.1]: I, [2025-12-27T05:33:11.458200 #55]  INFO -- : [059e7e5d-a743-80b3-4d4f-1070ec5412fa] Completed 200 OK in 9ms (Views: 0.5ms | ActiveRecord: 2.0ms | Allocations: 2916)
+2025-12-27T05:33:11.570162+00:00 heroku[router]: at=info method=GET path="/async_info/base_data" host=format-forge.in request_id=651ad232-d493-94c9-fdd4-8c298f4f4d2b fwd="103.24.87.149" dyno=web.1 connect=0ms service=70ms status=200 bytes=770 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:11.620228+00:00 heroku[router]: at=info method=GET path="/follows/bulk_show?ids%5B%5D=1&ids%5B%5D=3&followable_type=User" host=format-forge.in request_id=6ccf6ad0-a070-820c-cf3d-d9b58e3eefd0 fwd="103.24.87.149" dyno=web.1 connect=0ms service=120ms status=200 bytes=49 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:11.643118+00:00 heroku[router]: at=info method=GET path="/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i/bb/post_comments_mid" host=format-forge.in request_id=63315a35-46be-e2f6-d397-c2936ac6f986 fwd="103.24.87.149" dyno=web.1 connect=0ms service=49ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:11.667612+00:00 heroku[router]: at=info method=GET path="/stories/feed/?page=1&type_of=discover&passed_domain=careerpolitics.com" host=format-forge.in request_id=7c0183b0-5439-0680-ad25-94a1a401d986 fwd="103.24.87.149" dyno=web.1 connect=0ms service=167ms status=200 bytes=2999 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:11.700507+00:00 heroku[router]: at=info method=GET path="/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i/bb/post_body_bottom" host=format-forge.in request_id=b909ef3f-e4e1-03f1-5add-681622092251 fwd="103.24.87.149" dyno=web.1 connect=0ms service=106ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:11.501036+00:00 app[web.1]: I, [2025-12-27T05:33:11.500976 #55]  INFO -- : [651ad232-d493-94c9-fdd4-8c298f4f4d2b] Started GET "/async_info/base_data" for 103.24.87.149 at 2025-12-27 05:33:11 +0000
+2025-12-27T05:33:11.503596+00:00 app[web.1]: I, [2025-12-27T05:33:11.503544 #48]  INFO -- : [6ccf6ad0-a070-820c-cf3d-d9b58e3eefd0] Started GET "/follows/bulk_show?ids%5B%5D=1&ids%5B%5D=3&followable_type=User" for 103.24.87.149 at 2025-12-27 05:33:11 +0000
+2025-12-27T05:33:11.504763+00:00 app[web.1]: I, [2025-12-27T05:33:11.504719 #48]  INFO -- : [7c0183b0-5439-0680-ad25-94a1a401d986] Started GET "/stories/feed/?page=1&type_of=discover&passed_domain=careerpolitics.com" for 103.24.87.149 at 2025-12-27 05:33:11 +0000
+2025-12-27T05:33:11.518477+00:00 app[web.1]: I, [2025-12-27T05:33:11.518414 #55]  INFO -- : [651ad232-d493-94c9-fdd4-8c298f4f4d2b] Processing by AsyncInfoController#base_data as JSON
+2025-12-27T05:33:11.518591+00:00 app[web.1]: I, [2025-12-27T05:33:11.518530 #55]  INFO -- : [651ad232-d493-94c9-fdd4-8c298f4f4d2b]   Parameters: {"locale"=>nil}
+2025-12-27T05:33:11.565087+00:00 app[web.1]: I, [2025-12-27T05:33:11.565018 #55]  INFO -- : [651ad232-d493-94c9-fdd4-8c298f4f4d2b] Completed 200 OK in 46ms (Views: 0.2ms | ActiveRecord: 12.1ms | Allocations: 16492)
+2025-12-27T05:33:11.573218+00:00 app[web.1]: I, [2025-12-27T05:33:11.573148 #48]  INFO -- : [7c0183b0-5439-0680-ad25-94a1a401d986] Processing by Stories::FeedsController#show as JSON
+2025-12-27T05:33:11.573705+00:00 app[web.1]: I, [2025-12-27T05:33:11.573661 #48]  INFO -- : [7c0183b0-5439-0680-ad25-94a1a401d986]   Parameters: {"page"=>"1", "type_of"=>"discover", "passed_domain"=>"careerpolitics.com", "locale"=>nil}
+2025-12-27T05:33:11.584347+00:00 app[web.1]: I, [2025-12-27T05:33:11.584269 #48]  INFO -- : [6ccf6ad0-a070-820c-cf3d-d9b58e3eefd0] Processing by FollowsController#bulk_show as JSON
+2025-12-27T05:33:11.586029+00:00 app[web.1]: I, [2025-12-27T05:33:11.585965 #48]  INFO -- : [6ccf6ad0-a070-820c-cf3d-d9b58e3eefd0]   Parameters: {"ids"=>["1", "3"], "followable_type"=>"User", "locale"=>nil}
+2025-12-27T05:33:11.595760+00:00 app[web.1]: I, [2025-12-27T05:33:11.595694 #55]  INFO -- : [63315a35-46be-e2f6-d397-c2936ac6f986] Started GET "/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i/bb/post_comments_mid" for 103.24.87.149 at 2025-12-27 05:33:11 +0000
+2025-12-27T05:33:11.596963+00:00 app[web.1]: I, [2025-12-27T05:33:11.596928 #55]  INFO -- : [b909ef3f-e4e1-03f1-5add-681622092251] Started GET "/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i/bb/post_body_bottom" for 103.24.87.149 at 2025-12-27 05:33:11 +0000
+2025-12-27T05:33:11.611366+00:00 app[web.1]: I, [2025-12-27T05:33:11.611300 #48]  INFO -- : [6ccf6ad0-a070-820c-cf3d-d9b58e3eefd0] Completed 200 OK in 25ms (Views: 0.2ms | ActiveRecord: 4.8ms | Allocations: 11003)
+2025-12-27T05:33:11.615256+00:00 app[web.1]: I, [2025-12-27T05:33:11.615188 #55]  INFO -- : [63315a35-46be-e2f6-d397-c2936ac6f986] Processing by BillboardsController#show as */*
+2025-12-27T05:33:11.615350+00:00 app[web.1]: I, [2025-12-27T05:33:11.615319 #55]  INFO -- : [63315a35-46be-e2f6-d397-c2936ac6f986]   Parameters: {"locale"=>nil, "username"=>"muraridevv", "slug"=>"top-10-highest-paying-government-jobs-in-india-2025-2g1i", "placement_area"=>"post_comments_mid"}
+2025-12-27T05:33:11.626557+00:00 app[web.1]: I, [2025-12-27T05:33:11.626491 #48]  INFO -- : [6c016e33-f41e-8fda-7056-d3842ae85c88] Started GET "/notifications?i=i" for 103.24.87.149 at 2025-12-27 05:33:11 +0000
+2025-12-27T05:33:11.637860+00:00 app[web.1]: I, [2025-12-27T05:33:11.637786 #55]  INFO -- : [63315a35-46be-e2f6-d397-c2936ac6f986]   Rendered billboards/show.html.erb (Duration: 0.1ms | Allocations: 34)
+2025-12-27T05:33:11.638342+00:00 app[web.1]: I, [2025-12-27T05:33:11.638298 #55]  INFO -- : [63315a35-46be-e2f6-d397-c2936ac6f986] Completed 200 OK in 23ms (Views: 0.7ms | ActiveRecord: 6.1ms | Allocations: 7225)
+2025-12-27T05:33:11.660259+00:00 app[web.1]: I, [2025-12-27T05:33:11.660198 #48]  INFO -- : [7c0183b0-5439-0680-ad25-94a1a401d986]   Rendered stories/feeds/show.json.jbuilder (Duration: 52.3ms | Allocations: 33381)
+2025-12-27T05:33:11.661459+00:00 app[web.1]: I, [2025-12-27T05:33:11.661407 #48]  INFO -- : [7c0183b0-5439-0680-ad25-94a1a401d986] Completed 200 OK in 88ms (Views: 51.3ms | ActiveRecord: 13.4ms | Allocations: 50280)
+2025-12-27T05:33:11.662131+00:00 app[web.1]: I, [2025-12-27T05:33:11.660977 #48]  INFO -- : [6c016e33-f41e-8fda-7056-d3842ae85c88] Processing by NotificationsController#index as */*
+2025-12-27T05:33:11.662268+00:00 app[web.1]: I, [2025-12-27T05:33:11.662214 #48]  INFO -- : [6c016e33-f41e-8fda-7056-d3842ae85c88]   Parameters: {"i"=>"i", "locale"=>nil}
+2025-12-27T05:33:11.670779+00:00 app[web.1]: I, [2025-12-27T05:33:11.670718 #55]  INFO -- : [b909ef3f-e4e1-03f1-5add-681622092251] Processing by BillboardsController#show as */*
+2025-12-27T05:33:11.670849+00:00 app[web.1]: I, [2025-12-27T05:33:11.670820 #55]  INFO -- : [b909ef3f-e4e1-03f1-5add-681622092251]   Parameters: {"locale"=>nil, "username"=>"muraridevv", "slug"=>"top-10-highest-paying-government-jobs-in-india-2025-2g1i", "placement_area"=>"post_body_bottom"}
+2025-12-27T05:33:11.696238+00:00 app[web.1]: I, [2025-12-27T05:33:11.696171 #55]  INFO -- : [b909ef3f-e4e1-03f1-5add-681622092251]   Rendered billboards/show.html.erb (Duration: 0.1ms | Allocations: 34)
+2025-12-27T05:33:11.696644+00:00 app[web.1]: I, [2025-12-27T05:33:11.696595 #55]  INFO -- : [b909ef3f-e4e1-03f1-5add-681622092251] Completed 200 OK in 26ms (Views: 0.6ms | ActiveRecord: 10.2ms | Allocations: 6783)
+2025-12-27T05:33:11.826941+00:00 heroku[router]: at=info method=GET path="/notifications?i=i" host=format-forge.in request_id=6c016e33-f41e-8fda-7056-d3842ae85c88 fwd="103.24.87.149" dyno=web.1 connect=0ms service=201ms status=200 bytes=6972 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:11.907036+00:00 heroku[router]: at=info method=GET path="/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i/bb/post_comments" host=format-forge.in request_id=e7a1ddab-868c-22b4-7b8f-ffc79341c0fc fwd="103.24.87.149" dyno=web.1 connect=0ms service=312ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:11.860753+00:00 heroku[router]: at=info method=GET path="/user_subscriptions/subscribed?source_type=Article&source_id=5" host=format-forge.in request_id=68a91790-29e3-5b65-80e0-3cf6484e3330 fwd="103.24.87.149" dyno=web.1 connect=0ms service=41ms status=200 bytes=64 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:11.954155+00:00 heroku[router]: at=info method=GET path="/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i/actions_panel" host=format-forge.in request_id=d70aa29c-890b-0943-66e9-e36063b2e8fd fwd="103.24.87.149" dyno=web.1 connect=0ms service=137ms status=200 bytes=16820 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:11.818098+00:00 app[web.1]: I, [2025-12-27T05:33:11.817955 #48]  INFO -- : [6c016e33-f41e-8fda-7056-d3842ae85c88]   Rendered notifications/index.html.erb within layouts/application (Duration: 139.4ms | Allocations: 142438)
+2025-12-27T05:33:11.819090+00:00 app[web.1]: I, [2025-12-27T05:33:11.819029 #48]  INFO -- : [6c016e33-f41e-8fda-7056-d3842ae85c88]   Rendered layout layouts/application.html.erb (Duration: 140.5ms | Allocations: 143318)
+2025-12-27T05:33:11.819545+00:00 app[web.1]: I, [2025-12-27T05:33:11.819500 #48]  INFO -- : [6c016e33-f41e-8fda-7056-d3842ae85c88] Completed 200 OK in 157ms (Views: 123.3ms | ActiveRecord: 24.1ms | Allocations: 149649)
+2025-12-27T05:33:11.821501+00:00 app[web.1]: I, [2025-12-27T05:33:11.821462 #48]  INFO -- : [68a91790-29e3-5b65-80e0-3cf6484e3330] Started GET "/user_subscriptions/subscribed?source_type=Article&source_id=5" for 103.24.87.149 at 2025-12-27 05:33:11 +0000
+2025-12-27T05:33:11.827507+00:00 app[web.1]: I, [2025-12-27T05:33:11.827455 #55]  INFO -- : [d70aa29c-890b-0943-66e9-e36063b2e8fd] Started GET "/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i/actions_panel" for 103.24.87.149 at 2025-12-27 05:33:11 +0000
+2025-12-27T05:33:11.839801+00:00 app[web.1]: I, [2025-12-27T05:33:11.839714 #48]  INFO -- : [68a91790-29e3-5b65-80e0-3cf6484e3330] Processing by UserSubscriptionsController#subscribed as JSON
+2025-12-27T05:33:11.839828+00:00 app[web.1]: I, [2025-12-27T05:33:11.839804 #48]  INFO -- : [68a91790-29e3-5b65-80e0-3cf6484e3330]   Parameters: {"source_type"=>"Article", "source_id"=>"5", "locale"=>nil}
+2025-12-27T05:33:11.845342+00:00 app[web.1]: I, [2025-12-27T05:33:11.845288 #55]  INFO -- : [d70aa29c-890b-0943-66e9-e36063b2e8fd] Processing by ModerationsController#actions_panel as HTML
+2025-12-27T05:33:11.845428+00:00 app[web.1]: I, [2025-12-27T05:33:11.845404 #55]  INFO -- : [d70aa29c-890b-0943-66e9-e36063b2e8fd]   Parameters: {"locale"=>nil, "username"=>"muraridevv", "slug"=>"top-10-highest-paying-government-jobs-in-india-2025-2g1i"}
+2025-12-27T05:33:11.846672+00:00 app[web.1]: I, [2025-12-27T05:33:11.846627 #55]  INFO -- : [e7a1ddab-868c-22b4-7b8f-ffc79341c0fc] Started GET "/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i/bb/post_comments" for 103.24.87.149 at 2025-12-27 05:33:11 +0000
+2025-12-27T05:33:11.856631+00:00 app[web.1]: I, [2025-12-27T05:33:11.856567 #48]  INFO -- : [68a91790-29e3-5b65-80e0-3cf6484e3330] Completed 200 OK in 17ms (Views: 0.2ms | ActiveRecord: 5.2ms | Allocations: 4348)
+2025-12-27T05:33:11.870118+00:00 app[web.1]: I, [2025-12-27T05:33:11.870059 #55]  INFO -- : [e7a1ddab-868c-22b4-7b8f-ffc79341c0fc] Processing by BillboardsController#show as */*
+2025-12-27T05:33:11.870921+00:00 app[web.1]: I, [2025-12-27T05:33:11.870893 #55]  INFO -- : [e7a1ddab-868c-22b4-7b8f-ffc79341c0fc]   Parameters: {"locale"=>nil, "username"=>"muraridevv", "slug"=>"top-10-highest-paying-government-jobs-in-india-2025-2g1i", "placement_area"=>"post_comments"}
+2025-12-27T05:33:11.900586+00:00 app[web.1]: I, [2025-12-27T05:33:11.900516 #55]  INFO -- : [e7a1ddab-868c-22b4-7b8f-ffc79341c0fc]   Rendered billboards/show.html.erb (Duration: 0.1ms | Allocations: 34)
+2025-12-27T05:33:11.900992+00:00 app[web.1]: I, [2025-12-27T05:33:11.900950 #55]  INFO -- : [e7a1ddab-868c-22b4-7b8f-ffc79341c0fc] Completed 200 OK in 30ms (Views: 0.6ms | ActiveRecord: 9.6ms | Allocations: 16536)
+2025-12-27T05:33:11.937674+00:00 app[web.1]: I, [2025-12-27T05:33:11.937597 #55]  INFO -- : [d70aa29c-890b-0943-66e9-e36063b2e8fd]   Rendered moderations/actions_panel.html.erb within layouts/application (Duration: 71.4ms | Allocations: 48726)
+2025-12-27T05:33:11.947651+00:00 app[web.1]: I, [2025-12-27T05:33:11.947585 #55]  INFO -- : [d70aa29c-890b-0943-66e9-e36063b2e8fd]   Rendered layout layouts/application.html.erb (Duration: 81.4ms | Allocations: 55249)
+2025-12-27T05:33:11.947984+00:00 app[web.1]: I, [2025-12-27T05:33:11.947929 #55]  INFO -- : [d70aa29c-890b-0943-66e9-e36063b2e8fd] Completed 200 OK in 102ms (Views: 68.7ms | ActiveRecord: 19.0ms | Allocations: 65398)
+2025-12-27T05:33:12.149907+00:00 heroku[router]: at=info method=GET path="/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i/bb/post_fixed_bottom" host=format-forge.in request_id=a31b99e1-eb69-4ed5-a88b-23950f4286d1 fwd="103.24.87.149" dyno=web.1 connect=0ms service=554ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:12.201523+00:00 heroku[router]: at=info method=GET path="/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i/bb/post_sidebar" host=format-forge.in request_id=1c551f71-89a3-7e0d-a4e0-67dd8b810540 fwd="103.24.87.149" dyno=web.1 connect=0ms service=606ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:12.269992+00:00 heroku[router]: at=info method=GET path="/async_info/base_data" host=format-forge.in request_id=0d7b2073-a817-950b-7afa-da32dfd53188 fwd="103.24.87.149" dyno=web.1 connect=0ms service=35ms status=200 bytes=765 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:12.223331+00:00 heroku[router]: at=info method=GET path="/reactions?commentable_id=5&commentable_type=Article" host=format-forge.in request_id=65d4e2f7-b62a-dcc6-53a2-1a19e7ca35d5 fwd="103.24.87.149" dyno=web.1 connect=0ms service=723ms status=200 bytes=386 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:12.285496+00:00 heroku[router]: at=info method=GET path="/notifications/counts" host=format-forge.in request_id=f71d7da1-907d-a57d-fdf7-bc06d48ed565 fwd="103.24.87.149" dyno=web.1 connect=0ms service=51ms status=200 bytes=27 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:12.326014+00:00 heroku[router]: at=info method=GET path="/stories/feed/?page=1&type_of=discover&passed_domain=careerpolitics.com" host=format-forge.in request_id=b1aae1ff-42b4-d914-b49a-2c6a315b585c fwd="103.24.87.149" dyno=web.1 connect=0ms service=91ms status=200 bytes=2999 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:12.342090+00:00 heroku[router]: at=info method=GET path="/notification_subscriptions/Article/5" host=format-forge.in request_id=fd376cbe-7319-42f0-8f58-555115f518b2 fwd="103.24.87.149" dyno=web.1 connect=0ms service=39ms status=200 bytes=51 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:12.108508+00:00 app[web.1]: I, [2025-12-27T05:33:12.108452 #55]  INFO -- : [a31b99e1-eb69-4ed5-a88b-23950f4286d1] Started GET "/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i/bb/post_fixed_bottom" for 103.24.87.149 at 2025-12-27 05:33:12 +0000
+2025-12-27T05:33:12.125722+00:00 app[web.1]: I, [2025-12-27T05:33:12.125642 #55]  INFO -- : [a31b99e1-eb69-4ed5-a88b-23950f4286d1] Processing by BillboardsController#show as */*
+2025-12-27T05:33:12.125842+00:00 app[web.1]: I, [2025-12-27T05:33:12.125782 #55]  INFO -- : [a31b99e1-eb69-4ed5-a88b-23950f4286d1]   Parameters: {"locale"=>nil, "username"=>"muraridevv", "slug"=>"top-10-highest-paying-government-jobs-in-india-2025-2g1i", "placement_area"=>"post_fixed_bottom"}
+2025-12-27T05:33:12.145585+00:00 app[web.1]: I, [2025-12-27T05:33:12.145515 #55]  INFO -- : [a31b99e1-eb69-4ed5-a88b-23950f4286d1]   Rendered billboards/show.html.erb (Duration: 0.1ms | Allocations: 34)
+2025-12-27T05:33:12.145987+00:00 app[web.1]: I, [2025-12-27T05:33:12.145944 #55]  INFO -- : [a31b99e1-eb69-4ed5-a88b-23950f4286d1] Completed 200 OK in 20ms (Views: 0.6ms | ActiveRecord: 4.2ms | Allocations: 6573)
+2025-12-27T05:33:12.155332+00:00 app[web.1]: I, [2025-12-27T05:33:12.155281 #55]  INFO -- : [1c551f71-89a3-7e0d-a4e0-67dd8b810540] Started GET "/muraridevv/top-10-highest-paying-government-jobs-in-india-2025-2g1i/bb/post_sidebar" for 103.24.87.149 at 2025-12-27 05:33:12 +0000
+2025-12-27T05:33:12.173080+00:00 app[web.1]: I, [2025-12-27T05:33:12.173013 #55]  INFO -- : [1c551f71-89a3-7e0d-a4e0-67dd8b810540] Processing by BillboardsController#show as */*
+2025-12-27T05:33:12.173147+00:00 app[web.1]: I, [2025-12-27T05:33:12.173118 #55]  INFO -- : [1c551f71-89a3-7e0d-a4e0-67dd8b810540]   Parameters: {"locale"=>nil, "username"=>"muraridevv", "slug"=>"top-10-highest-paying-government-jobs-in-india-2025-2g1i", "placement_area"=>"post_sidebar"}
+2025-12-27T05:33:12.174432+00:00 app[web.1]: I, [2025-12-27T05:33:12.174384 #48]  INFO -- : [65d4e2f7-b62a-dcc6-53a2-1a19e7ca35d5] Started GET "/reactions?commentable_id=5&commentable_type=Article" for 103.24.87.149 at 2025-12-27 05:33:12 +0000
+2025-12-27T05:33:12.196336+00:00 app[web.1]: I, [2025-12-27T05:33:12.196268 #55]  INFO -- : [1c551f71-89a3-7e0d-a4e0-67dd8b810540]   Rendered billboards/show.html.erb (Duration: 0.1ms | Allocations: 34)
+2025-12-27T05:33:12.196873+00:00 app[web.1]: I, [2025-12-27T05:33:12.196824 #55]  INFO -- : [1c551f71-89a3-7e0d-a4e0-67dd8b810540] Completed 200 OK in 24ms (Views: 0.7ms | ActiveRecord: 4.4ms | Allocations: 6571)
+2025-12-27T05:33:12.205453+00:00 app[web.1]: I, [2025-12-27T05:33:12.205391 #48]  INFO -- : [65d4e2f7-b62a-dcc6-53a2-1a19e7ca35d5] Processing by ReactionsController#index as */*
+2025-12-27T05:33:12.205482+00:00 app[web.1]: I, [2025-12-27T05:33:12.205460 #48]  INFO -- : [65d4e2f7-b62a-dcc6-53a2-1a19e7ca35d5]   Parameters: {"commentable_id"=>"5", "commentable_type"=>"Article", "locale"=>nil}
+2025-12-27T05:33:12.219527+00:00 app[web.1]: I, [2025-12-27T05:33:12.219468 #48]  INFO -- : [65d4e2f7-b62a-dcc6-53a2-1a19e7ca35d5] Completed 200 OK in 14ms (Views: 0.1ms | ActiveRecord: 2.1ms | Allocations: 8148)
+2025-12-27T05:33:12.235450+00:00 app[web.1]: I, [2025-12-27T05:33:12.235395 #48]  INFO -- : [0d7b2073-a817-950b-7afa-da32dfd53188] Started GET "/async_info/base_data" for 103.24.87.149 at 2025-12-27 05:33:12 +0000
+2025-12-27T05:33:12.235983+00:00 app[web.1]: I, [2025-12-27T05:33:12.235941 #55]  INFO -- : [f71d7da1-907d-a57d-fdf7-bc06d48ed565] Started GET "/notifications/counts" for 103.24.87.149 at 2025-12-27 05:33:12 +0000
+2025-12-27T05:33:12.237463+00:00 app[web.1]: I, [2025-12-27T05:33:12.236361 #55]  INFO -- : [b1aae1ff-42b4-d914-b49a-2c6a315b585c] Started GET "/stories/feed/?page=1&type_of=discover&passed_domain=careerpolitics.com" for 103.24.87.149 at 2025-12-27 05:33:12 +0000
+2025-12-27T05:33:12.252262+00:00 app[web.1]: I, [2025-12-27T05:33:12.252189 #48]  INFO -- : [0d7b2073-a817-950b-7afa-da32dfd53188] Processing by AsyncInfoController#base_data as JSON
+2025-12-27T05:33:12.252339+00:00 app[web.1]: I, [2025-12-27T05:33:12.252308 #48]  INFO -- : [0d7b2073-a817-950b-7afa-da32dfd53188]   Parameters: {"locale"=>nil}
+2025-12-27T05:33:12.254307+00:00 app[web.1]: I, [2025-12-27T05:33:12.254242 #55]  INFO -- : [b1aae1ff-42b4-d914-b49a-2c6a315b585c] Processing by Stories::FeedsController#show as JSON
+2025-12-27T05:33:12.255224+00:00 app[web.1]: I, [2025-12-27T05:33:12.255167 #55]  INFO -- : [b1aae1ff-42b4-d914-b49a-2c6a315b585c]   Parameters: {"page"=>"1", "type_of"=>"discover", "passed_domain"=>"careerpolitics.com", "locale"=>nil}
+2025-12-27T05:33:12.259268+00:00 app[web.1]: I, [2025-12-27T05:33:12.259216 #55]  INFO -- : [f71d7da1-907d-a57d-fdf7-bc06d48ed565] Processing by Notifications::CountsController#index as */*
+2025-12-27T05:33:12.259343+00:00 app[web.1]: I, [2025-12-27T05:33:12.259316 #55]  INFO -- : [f71d7da1-907d-a57d-fdf7-bc06d48ed565]   Parameters: {"locale"=>nil}
+2025-12-27T05:33:12.265685+00:00 app[web.1]: I, [2025-12-27T05:33:12.265619 #48]  INFO -- : [0d7b2073-a817-950b-7afa-da32dfd53188] Completed 200 OK in 13ms (Views: 0.2ms | ActiveRecord: 2.6ms | Allocations: 4239)
+2025-12-27T05:33:12.277828+00:00 app[web.1]: I, [2025-12-27T05:33:12.277734 #55]  INFO -- : [f71d7da1-907d-a57d-fdf7-bc06d48ed565]   Rendered text template (Duration: 0.1ms | Allocations: 31)
+2025-12-27T05:33:12.278346+00:00 app[web.1]: I, [2025-12-27T05:33:12.278291 #55]  INFO -- : [f71d7da1-907d-a57d-fdf7-bc06d48ed565] Completed 200 OK in 19ms (Views: 0.7ms | ActiveRecord: 2.9ms | Allocations: 7561)
+2025-12-27T05:33:12.304120+00:00 app[web.1]: I, [2025-12-27T05:33:12.304049 #55]  INFO -- : [fd376cbe-7319-42f0-8f58-555115f518b2] Started GET "/notification_subscriptions/Article/5" for 103.24.87.149 at 2025-12-27 05:33:12 +0000
+2025-12-27T05:33:12.318840+00:00 app[web.1]: I, [2025-12-27T05:33:12.318764 #55]  INFO -- : [b1aae1ff-42b4-d914-b49a-2c6a315b585c]   Rendered stories/feeds/show.json.jbuilder (Duration: 29.7ms | Allocations: 16393)
+2025-12-27T05:33:12.319350+00:00 app[web.1]: I, [2025-12-27T05:33:12.319294 #55]  INFO -- : [b1aae1ff-42b4-d914-b49a-2c6a315b585c] Completed 200 OK in 64ms (Views: 30.3ms | ActiveRecord: 9.3ms | Allocations: 32167)
+2025-12-27T05:33:12.329068+00:00 app[web.1]: I, [2025-12-27T05:33:12.329010 #55]  INFO -- : [fd376cbe-7319-42f0-8f58-555115f518b2] Processing by NotificationSubscriptionsController#show as JSON
+2025-12-27T05:33:12.329134+00:00 app[web.1]: I, [2025-12-27T05:33:12.329104 #55]  INFO -- : [fd376cbe-7319-42f0-8f58-555115f518b2]   Parameters: {"locale"=>nil, "notifiable_type"=>"Article", "notifiable_id"=>"5"}
+2025-12-27T05:33:12.338270+00:00 app[web.1]: I, [2025-12-27T05:33:12.338214 #55]  INFO -- : [fd376cbe-7319-42f0-8f58-555115f518b2] Completed 200 OK in 9ms (Views: 0.1ms | ActiveRecord: 1.6ms | Allocations: 2792)
+2025-12-27T05:33:12.586680+00:00 heroku[router]: at=info method=GET path="/notifications?i=i" host=format-forge.in request_id=2f5ee215-521a-9337-c4db-22dfdef473cb fwd="103.24.87.149" dyno=web.1 connect=0ms service=330ms status=200 bytes=6972 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:12.527491+00:00 app[web.1]: I, [2025-12-27T05:33:12.527426 #55]  INFO -- : [2f5ee215-521a-9337-c4db-22dfdef473cb] Started GET "/notifications?i=i" for 103.24.87.149 at 2025-12-27 05:33:12 +0000
+2025-12-27T05:33:12.543921+00:00 app[web.1]: I, [2025-12-27T05:33:12.543845 #55]  INFO -- : [2f5ee215-521a-9337-c4db-22dfdef473cb] Processing by NotificationsController#index as */*
+2025-12-27T05:33:12.543967+00:00 app[web.1]: I, [2025-12-27T05:33:12.543937 #55]  INFO -- : [2f5ee215-521a-9337-c4db-22dfdef473cb]   Parameters: {"i"=>"i", "locale"=>nil}
+2025-12-27T05:33:12.580991+00:00 app[web.1]: I, [2025-12-27T05:33:12.580916 #55]  INFO -- : [2f5ee215-521a-9337-c4db-22dfdef473cb]   Rendered notifications/index.html.erb within layouts/application (Duration: 21.2ms | Allocations: 9189)
+2025-12-27T05:33:12.581817+00:00 app[web.1]: I, [2025-12-27T05:33:12.581746 #55]  INFO -- : [2f5ee215-521a-9337-c4db-22dfdef473cb]   Rendered layout layouts/application.html.erb (Duration: 22.1ms | Allocations: 10069)
+2025-12-27T05:33:12.582088+00:00 app[web.1]: I, [2025-12-27T05:33:12.582049 #55]  INFO -- : [2f5ee215-521a-9337-c4db-22dfdef473cb] Completed 200 OK in 38ms (Views: 20.6ms | ActiveRecord: 5.9ms | Allocations: 15004)
+2025-12-27T05:33:13.377583+00:00 heroku[router]: at=info method=POST path="/page_views" host=format-forge.in request_id=95c50aa8-ea5c-c399-ecf4-3ed8eb98366e fwd="103.24.87.149" dyno=web.1 connect=0ms service=78ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:13.300050+00:00 app[web.1]: I, [2025-12-27T05:33:13.299983 #55]  INFO -- : [95c50aa8-ea5c-c399-ecf4-3ed8eb98366e] Started POST "/page_views" for 103.24.87.149 at 2025-12-27 05:33:13 +0000
+2025-12-27T05:33:14.783325+00:00 heroku[router]: at=info method=GET path="/muraridevv?i=i" host=format-forge.in request_id=7b9d034f-10df-126d-fb07-59be40d8e9f5 fwd="103.24.87.149" dyno=web.1 connect=0ms service=96ms status=200 bytes=7009 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:14.688729+00:00 app[web.1]: I, [2025-12-27T05:33:14.688635 #55]  INFO -- : [7b9d034f-10df-126d-fb07-59be40d8e9f5] Started GET "/muraridevv?i=i" for 103.24.87.149 at 2025-12-27 05:33:14 +0000
+2025-12-27T05:33:14.704993+00:00 app[web.1]: I, [2025-12-27T05:33:14.704929 #55]  INFO -- : [7b9d034f-10df-126d-fb07-59be40d8e9f5] Processing by StoriesController#index as */*
+2025-12-27T05:33:14.705047+00:00 app[web.1]: I, [2025-12-27T05:33:14.705024 #55]  INFO -- : [7b9d034f-10df-126d-fb07-59be40d8e9f5]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"muraridevv"}
+2025-12-27T05:33:14.779050+00:00 app[web.1]: I, [2025-12-27T05:33:14.778979 #55]  INFO -- : [7b9d034f-10df-126d-fb07-59be40d8e9f5]   Rendered users/show.html.erb within layouts/application (Duration: 43.7ms | Allocations: 22924)
+2025-12-27T05:33:14.779732+00:00 app[web.1]: I, [2025-12-27T05:33:14.779689 #55]  INFO -- : [7b9d034f-10df-126d-fb07-59be40d8e9f5]   Rendered layout layouts/application.html.erb (Duration: 44.5ms | Allocations: 23790)
+2025-12-27T05:33:14.780045+00:00 app[web.1]: I, [2025-12-27T05:33:14.780005 #55]  INFO -- : [7b9d034f-10df-126d-fb07-59be40d8e9f5] Completed 200 OK in 75ms (Views: 39.9ms | ActiveRecord: 16.2ms | Allocations: 35388)
+2025-12-27T05:33:16.388287+00:00 heroku[router]: at=info method=GET path="/bottom_items?article_id=5" host=format-forge.in request_id=289f0a6d-32ee-8288-9c49-7788806d889d fwd="103.24.87.149" dyno=web.1 connect=0ms service=37ms status=200 bytes=29 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:16.352080+00:00 app[web.1]: I, [2025-12-27T05:33:16.352024 #55]  INFO -- : [289f0a6d-32ee-8288-9c49-7788806d889d] Started GET "/bottom_items?article_id=5" for 103.24.87.149 at 2025-12-27 05:33:16 +0000
+2025-12-27T05:33:16.370144+00:00 app[web.1]: I, [2025-12-27T05:33:16.370080 #55]  INFO -- : [289f0a6d-32ee-8288-9c49-7788806d889d] Processing by BottomItemsController#index as */*
+2025-12-27T05:33:16.370196+00:00 app[web.1]: I, [2025-12-27T05:33:16.370172 #55]  INFO -- : [289f0a6d-32ee-8288-9c49-7788806d889d]   Parameters: {"article_id"=>"5", "locale"=>nil}
+2025-12-27T05:33:16.385572+00:00 app[web.1]: I, [2025-12-27T05:33:16.385502 #55]  INFO -- : [289f0a6d-32ee-8288-9c49-7788806d889d]   Rendered bottom_items/index.html.erb (Duration: 2.4ms | Allocations: 986)
+2025-12-27T05:33:16.385949+00:00 app[web.1]: I, [2025-12-27T05:33:16.385913 #55]  INFO -- : [289f0a6d-32ee-8288-9c49-7788806d889d] Completed 200 OK in 16ms (Views: 4.0ms | ActiveRecord: 2.7ms | Allocations: 5071)
+2025-12-27T05:33:19.092336+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=9808b386-c45f-c4c1-8540-2d90738d2473 fwd="103.24.87.149" dyno=web.1 connect=0ms service=46ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:19.159485+00:00 heroku[router]: sock=client at=warning code=H27 desc="Client Request Interrupted" method=GET path="/muraridevv?i=i" host=format-forge.in request_id=2f28379c-2a4d-a38c-c328-0326188b867e fwd="103.24.87.149" dyno=web.1 connect=0ms service=113ms status=200 bytes=0 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:19.047607+00:00 app[web.1]: I, [2025-12-27T05:33:19.047540 #55]  INFO -- : [2f28379c-2a4d-a38c-c328-0326188b867e] Started GET "/muraridevv?i=i" for 103.24.87.149 at 2025-12-27 05:33:19 +0000
+2025-12-27T05:33:19.048442+00:00 app[web.1]: I, [2025-12-27T05:33:19.048406 #55]  INFO -- : [9808b386-c45f-c4c1-8540-2d90738d2473] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-27 05:33:19 +0000
+2025-12-27T05:33:19.074564+00:00 app[web.1]: I, [2025-12-27T05:33:19.074495 #55]  INFO -- : [2f28379c-2a4d-a38c-c328-0326188b867e] Processing by StoriesController#index as */*
+2025-12-27T05:33:19.075490+00:00 app[web.1]: I, [2025-12-27T05:33:19.075445 #55]  INFO -- : [2f28379c-2a4d-a38c-c328-0326188b867e]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"muraridevv"}
+2025-12-27T05:33:19.155196+00:00 app[web.1]: I, [2025-12-27T05:33:19.155119 #55]  INFO -- : [2f28379c-2a4d-a38c-c328-0326188b867e]   Rendered users/show.html.erb within layouts/application (Duration: 46.6ms | Allocations: 22936)
+2025-12-27T05:33:19.155875+00:00 app[web.1]: I, [2025-12-27T05:33:19.155829 #55]  INFO -- : [2f28379c-2a4d-a38c-c328-0326188b867e]   Rendered layout layouts/application.html.erb (Duration: 47.3ms | Allocations: 23805)
+2025-12-27T05:33:19.156154+00:00 app[web.1]: I, [2025-12-27T05:33:19.156120 #55]  INFO -- : [2f28379c-2a4d-a38c-c328-0326188b867e] Completed 200 OK in 80ms (Views: 43.0ms | ActiveRecord: 17.5ms | Allocations: 40681)
+2025-12-27T05:33:21.100112+00:00 heroku[router]: at=info method=GET path="/muraridevv?i=i" host=format-forge.in request_id=5fa95f41-e9bb-1048-6533-26d6a6be882e fwd="103.24.87.149" dyno=web.1 connect=0ms service=106ms status=200 bytes=7006 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:20.995352+00:00 app[web.1]: I, [2025-12-27T05:33:20.995287 #55]  INFO -- : [5fa95f41-e9bb-1048-6533-26d6a6be882e] Started GET "/muraridevv?i=i" for 103.24.87.149 at 2025-12-27 05:33:20 +0000
+2025-12-27T05:33:21.022222+00:00 app[web.1]: I, [2025-12-27T05:33:21.022147 #55]  INFO -- : [5fa95f41-e9bb-1048-6533-26d6a6be882e] Processing by StoriesController#index as */*
+2025-12-27T05:33:21.022286+00:00 app[web.1]: I, [2025-12-27T05:33:21.022262 #55]  INFO -- : [5fa95f41-e9bb-1048-6533-26d6a6be882e]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"muraridevv"}
+2025-12-27T05:33:21.095856+00:00 app[web.1]: I, [2025-12-27T05:33:21.095785 #55]  INFO -- : [5fa95f41-e9bb-1048-6533-26d6a6be882e]   Rendered users/show.html.erb within layouts/application (Duration: 44.7ms | Allocations: 22897)
+2025-12-27T05:33:21.096618+00:00 app[web.1]: I, [2025-12-27T05:33:21.096577 #55]  INFO -- : [5fa95f41-e9bb-1048-6533-26d6a6be882e]   Rendered layout layouts/application.html.erb (Duration: 45.5ms | Allocations: 23762)
+2025-12-27T05:33:21.096916+00:00 app[web.1]: I, [2025-12-27T05:33:21.096882 #55]  INFO -- : [5fa95f41-e9bb-1048-6533-26d6a6be882e] Completed 200 OK in 74ms (Views: 41.5ms | ActiveRecord: 13.9ms | Allocations: 35499)
+2025-12-27T05:33:28.345555+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=8d55bafe-4077-2460-0661-7f2763288c8a fwd="103.24.87.149" dyno=web.1 connect=0ms service=43ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:28.303278+00:00 app[web.1]: I, [2025-12-27T05:33:28.303198 #55]  INFO -- : [8d55bafe-4077-2460-0661-7f2763288c8a] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-27 05:33:28 +0000
+2025-12-27T05:33:33.072987+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=5457c256-39a3-4eeb-544b-9856face0468 fwd="103.24.87.149" dyno=web.1 connect=0ms service=34ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:33.040149+00:00 app[web.1]: I, [2025-12-27T05:33:33.040074 #55]  INFO -- : [5457c256-39a3-4eeb-544b-9856face0468] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-27 05:33:33 +0000
+2025-12-27T05:33:43.331476+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=e91a603d-fb18-b8ae-fb9c-90e530a90e00 fwd="103.24.87.149" dyno=web.1 connect=0ms service=30ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:32:17.005156+00:00 app[api]: Log session created by user murarikumar42@gmail.com
+2025-12-27T05:33:43.302360+00:00 app[web.1]: I, [2025-12-27T05:33:43.302292 #55]  INFO -- : [e91a603d-fb18-b8ae-fb9c-90e530a90e00] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-27 05:33:43 +0000
+2025-12-27T05:33:45.855656+00:00 heroku[router]: at=info method=POST path="/comments" host=format-forge.in request_id=ea7e1119-7c0f-3fdb-172a-67fb7b81cc56 fwd="103.24.87.149" dyno=web.1 connect=0ms service=171ms status=422 bytes=111 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:45.685263+00:00 app[web.1]: I, [2025-12-27T05:33:45.685184 #55]  INFO -- : [ea7e1119-7c0f-3fdb-172a-67fb7b81cc56] Started POST "/comments" for 103.24.87.149 at 2025-12-27 05:33:45 +0000
+2025-12-27T05:33:45.703451+00:00 app[web.1]: I, [2025-12-27T05:33:45.703382 #55]  INFO -- : [ea7e1119-7c0f-3fdb-172a-67fb7b81cc56] Processing by CommentsController#create as */*
+2025-12-27T05:33:45.703519+00:00 app[web.1]: I, [2025-12-27T05:33:45.703493 #55]  INFO -- : [ea7e1119-7c0f-3fdb-172a-67fb7b81cc56]   Parameters: {"comment"=>{"body_markdown"=>"enhanced notification 1", "commentable_id"=>"5", "commentable_type"=>"Article", "parent_id"=>nil}, "locale"=>nil}
+2025-12-27T05:33:45.850332+00:00 app[web.1]: I, [2025-12-27T05:33:45.850259 #55]  INFO -- : [ea7e1119-7c0f-3fdb-172a-67fb7b81cc56] Completed 422 Unprocessable Entity in 147ms (Views: 0.2ms | ActiveRecord: 58.9ms | Allocations: 39272)
+2025-12-27T05:33:45.751224+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Comments::HandleSpamWorker jid=c574e386b9eb5fcce7d608dd INFO: start
+2025-12-27T05:33:45.763177+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Comments::BustCacheWorker jid=ee0ea30861e411c3bd9b0464 INFO: start
+2025-12-27T05:33:45.814137+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Comments::HandleSpamWorker jid=c574e386b9eb5fcce7d608dd elapsed=0.063 INFO: done
+2025-12-27T05:33:45.816622+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::BustCacheWorker jid=aa2cc674a04fc121ecc9037c INFO: start
+2025-12-27T05:33:45.826282+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::BustCacheWorker jid=aa2cc674a04fc121ecc9037c elapsed=0.01 INFO: done
+2025-12-27T05:33:45.828218+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Reactions::UpdateRelevantScoresWorker jid=ecdcf1934222171ce1273545 INFO: start
+2025-12-27T05:33:45.844748+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Comments::BustCacheWorker jid=ee0ea30861e411c3bd9b0464 elapsed=0.082 INFO: done
+2025-12-27T05:33:45.848043+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Reactions::BustReactableCacheWorker jid=5083dd9cf07e4875051f2cca INFO: start
+2025-12-27T05:33:45.860172+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Reactions::BustReactableCacheWorker jid=5083dd9cf07e4875051f2cca elapsed=0.012 INFO: done
+2025-12-27T05:33:45.862677+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Reactions::BustHomepageCacheWorker jid=4b6ab48c4b33a2047697fe55 INFO: start
+2025-12-27T05:33:45.867447+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Reactions::BustHomepageCacheWorker jid=4b6ab48c4b33a2047697fe55 elapsed=0.005 INFO: done
+2025-12-27T05:33:45.869204+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Comments::HandleSpamWorker jid=b3b7b154f48ba1ec9d605bcf INFO: start
+2025-12-27T05:33:45.874865+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Comments::HandleSpamWorker jid=b3b7b154f48ba1ec9d605bcf elapsed=0.006 INFO: done
+2025-12-27T05:33:45.876851+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Comments::BustCacheWorker jid=91d9e3860cc3c76501212152 INFO: start
+2025-12-27T05:33:45.887383+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Reactions::UpdateRelevantScoresWorker jid=ecdcf1934222171ce1273545 elapsed=0.059 INFO: done
+2025-12-27T05:33:45.889019+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::BustCacheWorker jid=4878d9de4cee9017c1d4c4a7 INFO: start
+2025-12-27T05:33:45.890513+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Comments::BustCacheWorker jid=91d9e3860cc3c76501212152 elapsed=0.014 INFO: done
+2025-12-27T05:33:45.892398+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Comments::CalculateScoreWorker jid=05fef8cb7c0909bba9cad3f9 INFO: start
+2025-12-27T05:33:45.899160+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::BustCacheWorker jid=4878d9de4cee9017c1d4c4a7 elapsed=0.01 INFO: done
+2025-12-27T05:33:45.901031+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=AlgoliaSearch::SearchIndexWorker jid=2d89fd849b37f190fc407d6a tags=algolia INFO: start
+2025-12-27T05:33:45.983527+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Comments::CalculateScoreWorker jid=05fef8cb7c0909bba9cad3f9 elapsed=0.091 INFO: done
+2025-12-27T05:33:45.985416+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Articles::ScoreCalcWorker jid=ff8deeecdac82fa4e409d648 INFO: start
+2025-12-27T05:33:46.012507+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Articles::ScoreCalcWorker jid=ff8deeecdac82fa4e409d648 elapsed=0.027 INFO: done
+2025-12-27T05:33:46.014331+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Users::BustCacheWorker jid=85a25872e7ea0c41a6a74db4 INFO: start
+2025-12-27T05:33:46.025225+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Users::BustCacheWorker jid=85a25872e7ea0c41a6a74db4 elapsed=0.011 INFO: done
+2025-12-27T05:33:46.026861+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Comments::CalculateScoreWorker jid=e0d20292826dcf0e6983e432 INFO: start
+2025-12-27T05:33:46.076753+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Comments::CalculateScoreWorker jid=e0d20292826dcf0e6983e432 elapsed=0.05 INFO: done
+2025-12-27T05:33:46.078420+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Users::BustCacheWorker jid=065294e5de77845d4d25f3cd INFO: start
+2025-12-27T05:33:46.087825+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=Users::BustCacheWorker jid=065294e5de77845d4d25f3cd elapsed=0.009 INFO: done
+2025-12-27T05:33:46.089499+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=AlgoliaSearch::SearchIndexWorker jid=7ec3b66412406f2e469f4325 tags=algolia INFO: start
+2025-12-27T05:33:46.200313+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=AlgoliaSearch::SearchIndexWorker jid=2d89fd849b37f190fc407d6a tags=algolia elapsed=0.299 INFO: done
+2025-12-27T05:33:46.202553+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Articles::ScoreCalcWorker jid=f8e6292b42b9cf8998de0776 INFO: start
+2025-12-27T05:33:46.238791+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Articles::ScoreCalcWorker jid=f8e6292b42b9cf8998de0776 elapsed=0.036 INFO: done
+2025-12-27T05:33:46.240977+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Articles::ScoreCalcWorker jid=f45719d36f879083533ab149 INFO: start
+2025-12-27T05:33:46.271057+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Articles::ScoreCalcWorker jid=f45719d36f879083533ab149 elapsed=0.03 INFO: done
+2025-12-27T05:33:46.273247+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Articles::ScoreCalcWorker jid=261bc4d0ea7f9577f73e0444 INFO: start
+2025-12-27T05:33:46.304340+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Articles::ScoreCalcWorker jid=261bc4d0ea7f9577f73e0444 elapsed=0.031 INFO: done
+2025-12-27T05:33:46.306245+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::RecordFieldTestEventWorker jid=bcc8ea6071343891c2c9b58c INFO: start
+2025-12-27T05:33:46.316683+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::RecordFieldTestEventWorker jid=bcc8ea6071343891c2c9b58c elapsed=0.01 INFO: done
+2025-12-27T05:33:46.318363+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::RecordFieldTestEventWorker jid=627f13b55d18ec7d202ff89f INFO: start
+2025-12-27T05:33:46.330830+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::RecordFieldTestEventWorker jid=627f13b55d18ec7d202ff89f elapsed=0.012 INFO: done
+2025-12-27T05:33:46.332410+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::RecordFieldTestEventWorker jid=479a1293514e103cadc8dfd1 INFO: start
+2025-12-27T05:33:46.343991+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::RecordFieldTestEventWorker jid=479a1293514e103cadc8dfd1 elapsed=0.012 INFO: done
+2025-12-27T05:33:46.345691+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::RecordFieldTestEventWorker jid=b5ddeb87edde1ab5ab3e6ae9 INFO: start
+2025-12-27T05:33:46.357094+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::RecordFieldTestEventWorker jid=b5ddeb87edde1ab5ab3e6ae9 elapsed=0.011 INFO: done
+2025-12-27T05:33:46.358612+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::RecordFieldTestEventWorker jid=09092473925258b01d2818b9 INFO: start
+2025-12-27T05:33:46.367699+00:00 app[sidekiq_worker.1]: pid=2 tid=4mga class=AlgoliaSearch::SearchIndexWorker jid=7ec3b66412406f2e469f4325 tags=algolia elapsed=0.278 INFO: done
+2025-12-27T05:33:46.370083+00:00 app[sidekiq_worker.1]: pid=2 tid=4mj2 class=Users::RecordFieldTestEventWorker jid=09092473925258b01d2818b9 elapsed=0.011 INFO: done
+2025-12-27T05:33:59.065509+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=dab08c83-c21b-752a-360d-c8fccea43c55 fwd="103.24.87.149" dyno=web.1 connect=0ms service=31ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:33:59.036193+00:00 app[web.1]: I, [2025-12-27T05:33:59.036120 #55]  INFO -- : [dab08c83-c21b-752a-360d-c8fccea43c55] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-27 05:33:59 +0000
+2025-12-27T05:34:14.058053+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=bb61e6d4-6a20-3903-3195-cee8737eb313 fwd="103.24.87.149" dyno=web.1 connect=0ms service=29ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:34:14.030213+00:00 app[web.1]: I, [2025-12-27T05:34:14.030147 #55]  INFO -- : [bb61e6d4-6a20-3903-3195-cee8737eb313] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-27 05:34:14 +0000
+2025-12-27T05:34:15.062488+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=dc28021e-2585-5b45-e69d-bfd7b2517557 fwd="103.24.87.149" dyno=web.1 connect=0ms service=30ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:34:15.035035+00:00 app[web.1]: I, [2025-12-27T05:34:15.034954 #48]  INFO -- : [dc28021e-2585-5b45-e69d-bfd7b2517557] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-27 05:34:15 +0000
+2025-12-27T05:34:29.074628+00:00 heroku[router]: at=info method=PATCH path="/page_views/5" host=format-forge.in request_id=53468c29-15ca-f806-79ba-78f3ce72d35e fwd="103.24.87.149" dyno=web.1 connect=0ms service=32ms status=200 bytes=20 protocol=http2.0 tls=true tls_version=tls1.3
+2025-12-27T05:34:29.044034+00:00 app[web.1]: I, [2025-12-27T05:34:29.043960 #55]  INFO -- : [53468c29-15ca-f806-79ba-78f3ce72d35e] Started PATCH "/page_views/5" for 103.24.87.149 at 2025-12-27 05:34:29 +0000
