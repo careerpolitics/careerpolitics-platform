@@ -11,8 +11,8 @@ en:
           article_title: "New comment from @%{username}"
           thread_title: "New comment in thread"
 
-          article_body: "in %{article}: %{text}"
-          thread_body: "in %{article}: %{text}"
+          article_body: "in %{article}: %{comment}"
+          thread_body: "in %{article}: %{comment}"
 
         # -------------------------
         # Mention Notifications

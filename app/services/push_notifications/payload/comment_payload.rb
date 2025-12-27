@@ -5,7 +5,7 @@ module PushNotifications
     class CommentPayload < BasePayload
       attr_reader :comment
 
-      def initialize(comment:, actor:, notification_type:)
+      def initialize(comment:, notification_type:)
         super(notification_type)
         @comment = comment
       end

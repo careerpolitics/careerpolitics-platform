@@ -58,6 +58,16 @@ module PushNotifications
         actions:   %i[reply like view mark_read]
       },
 
+      comment_article: {
+        category:  CATEGORY_COMMENT,
+        priority:  PRIORITY_DEFAULT,
+        channel:   CHANNEL_COMMENT_THREADS,
+        icon:      "comment",
+        color:     COLOR_PRIMARY,
+        groupable: true,
+        actions:   %i[reply view mark_read]
+      },
+
       comment_thread: {
         category:  CATEGORY_COMMENT,
         priority:  PRIORITY_DEFAULT,

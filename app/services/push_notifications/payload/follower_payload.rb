@@ -44,7 +44,7 @@ module PushNotifications
       # -------------------------
       # Target
       # -------------------------
-      def build_follow_target
+      def build_follower_target
         build_target(
           type: followable.class.name,
           id: followable.id,
