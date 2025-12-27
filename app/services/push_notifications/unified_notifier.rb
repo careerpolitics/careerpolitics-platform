@@ -14,7 +14,7 @@ module PushNotifications
     end
 
     def call
-      return if user_ids.empty
+      return if user_ids.empty?
       filtered_user_ids = filter_users_by_preference
 
       return if filtered_user_ids.empty?
