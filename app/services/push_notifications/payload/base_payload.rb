@@ -32,7 +32,8 @@ module PushNotifications
           channel: config[:channel],
           icon: config[:icon],
           color: config[:color],
-          timestamp: Time.current.to_i
+          timestamp: Time.current.to_i,
+          url: target&.dig(:url)
         }.tap do |payload|
           payload[:actor] = actor if actor.present?
           payload[:target] = target if target.present?
