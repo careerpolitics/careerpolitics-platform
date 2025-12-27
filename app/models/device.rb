@@ -62,33 +62,29 @@ class Device < ApplicationRecord
     n.content_available = true
 
     # ---------------------------------------
-    # Support rich payload
+    # Notification (visible UI)
     # ---------------------------------------
-    if payload.is_a?(Hash)
-      notification_hash = {
-        title: title,
-        body: body
-      }
+    notification_hash = {
+      title: title,
+      body: body
+    }
 
-      # Android-specific fields from payload
+    if payload.is_a?(Hash)
       notification_hash[:channel_id] = payload[:channel] if payload[:channel].present?
       notification_hash[:color] = payload[:color] if payload[:color].present?
       notification_hash[:icon] = payload[:icon] if payload[:icon].present?
-
-      # Remove nil values
-      notification_hash.compact!
-
-      n.notification = notification_hash
-    else
-      # ---------------------------------------
-      # Backward compatibility (simple payload)
-      # ---------------------------------------
-      n.notification = {
-        title: title,
-        body: body
-      }
     end
-    n.data = { payload: payload.to_json }
+
+    notification_hash.compact!
+    n.notification = notification_hash
+
+    # ---------------------------------------
+    # Data payload (DEEPLINK MUST BE HERE)
+    # ---------------------------------------
+    data_payload = payload.is_a?(Hash) ? payload : {}
+
+    n.data = data_payload
+
     # ---------------------------------------
     # 🔍 DEBUG LOGS
     # ---------------------------------------
@@ -96,7 +92,9 @@ class Device < ApplicationRecord
     Rails.logger.info("[FCM][ANDROID] notification=#{notification_hash}")
     Rails.logger.info("[FCM][ANDROID] data_payload=#{data_payload}")
     Rails.logger.info("[FCM][ANDROID] deeplink_url=#{data_payload[:url]}")
+
     n.save!
   end
+
 
 end
