@@ -71,7 +71,7 @@ class Device < ApplicationRecord
       }
 
       # Android-specific fields from payload
-      notification_hash[:channel_id] = payload[:channel] if payload[:channel].present?
+      notification_hash[:android_channel_id] = payload[:channel] if payload[:channel].present?
       notification_hash[:color] = payload[:color] if payload[:color].present?
       notification_hash[:icon] = payload[:icon] if payload[:icon].present?
 
