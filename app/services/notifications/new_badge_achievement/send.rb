@@ -20,6 +20,9 @@ module Notifications
           action: nil,
           json_data: json_data,
         )
+
+      #   Send push notification to User
+        send_push_notification
       end
 
       private

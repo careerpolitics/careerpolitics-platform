@@ -19,6 +19,10 @@ module Notifications
         return unless should_send_milestone?
 
         create_notification(user_id: article.user_id)
+
+        # send push notification to article author
+        send_push_notification(article.user_id)
+
         return unless article.organization_id
 
         create_notification(organization_id: article.organization_id)
