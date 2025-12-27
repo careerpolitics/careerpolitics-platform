@@ -54,6 +54,8 @@ module Notifications
           notification.notified_at = Time.current
           notification.read = is_read
           notification.save!
+
+          send_push_notification(followable_id, follower) if followable_type == "User"
         end
         notification
       end
