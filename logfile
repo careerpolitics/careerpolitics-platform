@@ -8,13 +8,11 @@ Destination:
 Filter:
 Enter your keywords
 Wrap lines:
-Running command:
-bundle exec rails server -b 0.0.0.0 -p 3000
-=> Booting Puma
-=> Rails 7.0.8.7 application starting in production 
-=> Run `bin/rails server --help` for more startup options
-service_name is unknown, will set to unknown_service:rails
-dataset will be ignored, sending data to unknown_service:rails
+I, [2025-12-28T23:18:13.135630 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2025-12-28T23:18:13.144563 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-28T23:18:13+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"sidekiq","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+service_name is unknown, will set to unknown_service:sidekiq
+dataset will be ignored, sending data to unknown_service:sidekiq
+2025-12-28T23:18:13.525Z pid=1 tid=kf1 INFO: Booting Sidekiq 6.5.12 with Sidekiq::RedisConnection::RedisAdapter options {:url=>"redis://:REDACTED@careerpolitics-redis-master.redis.svc.cluster.local:6379"}
 /opt/apps/forem/app/services/images/generate_subforem_images.rb:2: warning: already initialized constant Images::TEMPLATE_PATH
 /opt/apps/forem/app/services/images/generate_social_image_magickally.rb:4: warning: previous definition of TEMPLATE_PATH was here
 /opt/apps/forem/app/services/push_notifications/unified_notifier.rb:25: warning: key :payload is duplicated and overwritten on line 28
@@ -24,56 +22,686 @@ dataset will be ignored, sending data to unknown_service:rails
 /opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:167: warning: previous definition of REQUEST_HAS_BODY was here
 /opt/apps/forem/app/services/edge_cache/bust/nginx.rb:46: warning: already initialized constant Net::HTTP::Purge::RESPONSE_HAS_BODY
 /opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:168: warning: previous definition of RESPONSE_HAS_BODY was here
-I, [2025-12-28T23:17:48.305639 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2025-12-28T23:17:48.318700 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2025-12-28T23:17:48+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
-I, [2025-12-28T23:17:54.392195 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
-W, [2025-12-28T23:17:55.754529 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
-I, [2025-12-28T23:17:55.839999 #1]  INFO -- : CareerPolitics Android consumer app initialized
-[1] Puma starting in cluster mode...
-[1] * Puma version: 5.6.9 (ruby 3.3.0-p0) ("Birdie's Version")
-[1] *  Min threads: 2
-[1] *  Max threads: 2
-[1] *  Environment: production
-[1] *   Master PID: 1
-[1] *      Workers: 2
-[1] *     Restarts: (✔) hot (✖) phased
-[1] * Preloading application
-[1] * Listening on http://0.0.0.0:3000
-[1] Use Ctrl-C to stop
-[1] ! Promoting existing objects to old generation...
-[1] ! Compacting...
-[1] ! Friendly fork preparation complete.
-[1] - Worker 0 (PID: 55) booted in 0.01s, phase: 0
-[1] - Worker 1 (PID: 62) booted in 0.01s, phase: 0
-E, [2025-12-28T23:18:02.672887 #55] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
-I, [2025-12-28T23:18:02.685567 #55]  INFO -- : [077fc458573ae9503f3d4104049737a8] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:18:02 +0000
-I, [2025-12-28T23:18:17.669700 #55]  INFO -- : [8e88d86265fb0758bfa27c69ac7a5956] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:18:17 +0000
-I, [2025-12-28T23:18:29.674784 #55]  INFO -- : [28ebc8bd957534480311622f1ba45095] Started GET "/the_cp_admin/meme-monday-19o2?i=i" for 103.24.87.149 at 2025-12-28 23:18:29 +0000
-E, [2025-12-28T23:18:29.685569 #62] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
-I, [2025-12-28T23:18:29.702476 #62]  INFO -- : [9e4305e44005a099efd2ecb1f83a4336] Started GET "/the_cp_admin/meme-monday-199o?i=i" for 103.24.87.149 at 2025-12-28 23:18:29 +0000
-I, [2025-12-28T23:18:29.713728 #55]  INFO -- : [28ebc8bd957534480311622f1ba45095] Processing by StoriesController#show as */*
-I, [2025-12-28T23:18:29.714177 #55]  INFO -- : [28ebc8bd957534480311622f1ba45095]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-19o2"}
-I, [2025-12-28T23:18:29.894987 #62]  INFO -- : [9e4305e44005a099efd2ecb1f83a4336] Processing by StoriesController#show as */*
-I, [2025-12-28T23:18:29.895288 #62]  INFO -- : [9e4305e44005a099efd2ecb1f83a4336]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-199o"}
-I, [2025-12-28T23:18:30.756707 #55]  INFO -- : [28ebc8bd957534480311622f1ba45095]   Rendered articles/show.html.erb within layouts/application (Duration: 582.8ms | Allocations: 73218)
-I, [2025-12-28T23:18:30.765335 #55]  INFO -- : [28ebc8bd957534480311622f1ba45095]   Rendered layout layouts/application.html.erb (Duration: 591.7ms | Allocations: 76343)
-I, [2025-12-28T23:18:30.766623 #55]  INFO -- : [28ebc8bd957534480311622f1ba45095] Completed 200 OK in 1052ms (Views: 555.1ms | ActiveRecord: 228.0ms | Allocations: 196036)
-I, [2025-12-28T23:18:30.810144 #62]  INFO -- : [9e4305e44005a099efd2ecb1f83a4336]   Rendered articles/show.html.erb within layouts/application (Duration: 424.1ms | Allocations: 67982)
-I, [2025-12-28T23:18:30.818508 #62]  INFO -- : [9e4305e44005a099efd2ecb1f83a4336]   Rendered layout layouts/application.html.erb (Duration: 432.7ms | Allocations: 71126)
-I, [2025-12-28T23:18:30.819729 #62]  INFO -- : [9e4305e44005a099efd2ecb1f83a4336] Completed 200 OK in 924ms (Views: 397.8ms | ActiveRecord: 252.4ms | Allocations: 161125)
-I, [2025-12-28T23:18:30.895605 #62]  INFO -- : [04e0a3e7b781f888ca90bfc34876c087] Started GET "/bottom_items?article_id=13" for 103.24.87.149 at 2025-12-28 23:18:30 +0000
-I, [2025-12-28T23:18:31.069732 #62]  INFO -- : [04e0a3e7b781f888ca90bfc34876c087] Processing by BottomItemsController#index as */*
-I, [2025-12-28T23:18:31.070130 #62]  INFO -- : [04e0a3e7b781f888ca90bfc34876c087]   Parameters: {"article_id"=>"13", "locale"=>nil}
-I, [2025-12-28T23:18:31.089364 #62]  INFO -- : [04e0a3e7b781f888ca90bfc34876c087]   Rendered bottom_items/index.html.erb (Duration: 3.1ms | Allocations: 969)
-I, [2025-12-28T23:18:31.090295 #62]  INFO -- : [04e0a3e7b781f888ca90bfc34876c087] Completed 200 OK in 20ms (Views: 6.1ms | ActiveRecord: 5.4ms | Allocations: 4081)
-I, [2025-12-28T23:18:32.461952 #62]  INFO -- : [bd1c9dcb3bf9b6aae2dcfda75cdb45cf] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:18:32 +0000
-I, [2025-12-28T23:18:43.859486 #62]  INFO -- : [06b084ede935c5113da8ea67719c4a3e] Started POST "/comments" for 103.24.87.149 at 2025-12-28 23:18:43 +0000
-I, [2025-12-28T23:18:43.892305 #62]  INFO -- : [06b084ede935c5113da8ea67719c4a3e] Processing by CommentsController#create as */*
-I, [2025-12-28T23:18:43.892681 #62]  INFO -- : [06b084ede935c5113da8ea67719c4a3e]   Parameters: {"comment"=>{"body_markdown"=>"Nice comment for this", "commentable_id"=>"13", "commentable_type"=>"Article", "parent_id"=>nil}, "locale"=>nil}
-I, [2025-12-28T23:18:44.285322 #62]  INFO -- : [06b084ede935c5113da8ea67719c4a3e] [FCM][ANDROID] device_token=dWOH5nyzTRmcGJElT...
-I, [2025-12-28T23:18:44.285730 #62]  INFO -- : [06b084ede935c5113da8ea67719c4a3e] [FCM][ANDROID] notification={:title=>"New comment from @murari_kumar_38d8e39a8450", :body=>"in Meme Monday: Nice comment for this", :channel_id=>"comment_threads", :color=>"#3b49df", :icon=>"comment"}
-I, [2025-12-28T23:18:44.286090 #62]  INFO -- : [06b084ede935c5113da8ea67719c4a3e] [FCM][ANDROID] data_payload={:notification_type=>"comment_article", :category=>"comment", :priority=>"default", :title=>"New comment from @murari_kumar_38d8e39a8450", :body=>"in Meme Monday: Nice comment for this", :channel=>"comment_threads", :icon=>"comment", :color=>"#3b49df", :timestamp=>1766963924, :url=>"https://careerpolitics.com/murari_kumar_38d8e39a8450/comment/n", :actor=>{:id=>6, :username=>"murari_kumar_38d8e39a8450", :name=>"Murari Kumar", :avatar_url=>"https://res.cloudinary.com/dbdlrqwdt/image/fetch/s--DRjxqIo_--/c_fill,f_auto,fl_progressive,h_90,q_auto,w_90/https://careerpolitics-images-bucket.s3.amazonaws.com/uploads/user/profile_image/6/cc588957-f403-4963-9521-b0de353fc61a.jpg"}, :target=>{:type=>"Comment", :id=>23, :title=>"Meme Monday", :url=>"https://careerpolitics.com/murari_kumar_38d8e39a8450/comment/n"}, :action_context=>{:comment_id=>23, :article_id=>13, :article_title=>"Meme Monday", :parent_comment_id=>nil, :thread_depth=>0, :commentable_type=>"Article", :subforem_id=>nil}, :group_key=>"comment_23", :actions=>[{:id=>"reply", :label=>"Reply", :type=>"text_input", :icon=>"reply"}, {:id=>"view", :label=>"View", :type=>"navigation", :icon=>"open"}, {:id=>"mark_read", :label=>"Mark as read", :type=>"button", :icon=>"check"}]}
-I, [2025-12-28T23:18:44.286268 #62]  INFO -- : [06b084ede935c5113da8ea67719c4a3e] [FCM][ANDROID] deeplink_url=https://careerpolitics.com/murari_kumar_38d8e39a8450/comment/n
+I, [2025-12-28T23:18:18.716304 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
+W, [2025-12-28T23:18:19.826986 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
+I, [2025-12-28T23:18:19.901932 #1]  INFO -- : CareerPolitics Android consumer app initialized
+2025-12-28T23:18:20.311Z pid=1 tid=kf1 INFO: Booted Rails 7.0.8.7 application in production environment
+2025-12-28T23:18:20.312Z pid=1 tid=kf1 INFO: Running in ruby 3.3.0 (2023-12-25 revision 5124f9ac75) [x86_64-linux]
+2025-12-28T23:18:20.312Z pid=1 tid=kf1 INFO: See LICENSE and the LGPL-3.0 for licensing details.
+2025-12-28T23:18:20.312Z pid=1 tid=kf1 INFO: Upgrade to Sidekiq Pro for more features and support: https://sidekiq.org
+2025-12-28T23:18:20.348Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: feeds_import
+2025-12-28T23:18:20.353Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: log_worker_queue_stats
+2025-12-28T23:18:20.356Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: record_daily_usage
+2025-12-28T23:18:20.361Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: record_daily_notifications
+2025-12-28T23:18:20.364Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: record_data_counts
+2025-12-28T23:18:20.369Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: check_data_update_script_statuses
+2025-12-28T23:18:20.374Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: award_yearly_club_badges
+2025-12-28T23:18:20.378Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: award_beloved_comment_badges
+2025-12-28T23:18:20.382Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: award_four_week_streak_badge
+2025-12-28T23:18:20.386Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: award_eight_week_streak_badge
+2025-12-28T23:18:20.390Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: award_sixteen_week_streak_badge
+2025-12-28T23:18:20.394Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: award_weekly_tag_badges
+2025-12-28T23:18:20.397Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: award_contributor_badges_from_github
+2025-12-28T23:18:20.401Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: award_community_wellness_badges
+2025-12-28T23:18:20.405Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: award_thumbs_up_badges
+2025-12-28T23:18:20.408Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: award_first_post_badges
+2025-12-28T23:18:20.412Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: resave_supported_tags
+2025-12-28T23:18:20.416Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: send_welcome_notifications
+2025-12-28T23:18:20.421Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: hourly_feed_cache_bust
+2025-12-28T23:18:20.424Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: daily_home_cache_bust
+2025-12-28T23:18:20.430Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: send_email_digest
+2025-12-28T23:18:20.434Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: remove_old_notifications
+2025-12-28T23:18:20.438Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: remove_old_emails
+2025-12-28T23:18:20.442Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: sync_credits_counter_cache
+2025-12-28T23:18:20.445Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: get_podcast_episodes
+2025-12-28T23:18:20.449Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: update_latest_github_repos
+2025-12-28T23:18:20.454Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: push_notifications_cleanup
+2025-12-28T23:18:20.458Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: capture_query_stats
+2025-12-28T23:18:20.462Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: notify_about_published_articles
+2025-12-28T23:18:20.465Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: billboard_event_rollup
+2025-12-28T23:18:20.469Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: audience_segment_refresh
+2025-12-28T23:18:20.472Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: drip_email_worker
+2025-12-28T23:18:20.476Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: article_quality_reactions
+2025-12-28T23:18:20.480Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: article_label_cleanup
+2025-12-28T23:18:20.485Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: scheduled_automations_process
+2025-12-28T23:18:20.488Z pid=1 tid=kf1 INFO: Cron Jobs - added job with name: track_promotional_billboard_impressions
+2025-12-28T23:18:20.494Z pid=1 tid=kf1 uniquejobs=upgrade_locks INFO: Already upgraded to 7.1.33
+2025-12-28T23:18:20.496Z pid=1 tid=kf1 uniquejobs=reaper INFO: Starting Reaper
+2025-12-28T23:18:20.537Z pid=1 tid=4mg9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-28T23:18:20.538Z pid=1 tid=4mg9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-28T23:18:34.402Z pid=1 tid=4mhd class=Emails::RemoveOldEmailsWorker jid=ad4ab5911c7540b8e38367a1 INFO: start
+I, [2025-12-28T23:18:34.492777 #1]  INFO -- : {:tag=>"notification_delete", :statement=>"DELETE FROM ahoy_messages\nWHERE ahoy_messages.id IN (\n  SELECT ahoy_messages.id\n  FROM ahoy_messages\n  WHERE sent_at < '2025-10-28 23:18:34.410260' AND feedback_message_id IS NULL\n  LIMIT 50000\n)\n", :rows_deleted=>0, :duration=>0.019881090003764257}
+2025-12-28T23:18:34.493Z pid=1 tid=4mhd class=Emails::RemoveOldEmailsWorker jid=ad4ab5911c7540b8e38367a1 elapsed=0.09 INFO: done
+2025-12-28T23:18:43.998Z pid=1 tid=4mhd class=Comments::HandleSpamWorker jid=a2f2d4b5e164c5e7ce7a9200 INFO: start
+2025-12-28T23:18:44.016Z pid=1 tid=4mhd class=Comments::HandleSpamWorker jid=a2f2d4b5e164c5e7ce7a9200 elapsed=0.018 INFO: done
+2025-12-28T23:18:44.024Z pid=1 tid=4mqt class=Comments::BustCacheWorker jid=30b94d9af73ff3c8f9bc964f INFO: start
+2025-12-28T23:18:44.032Z pid=1 tid=4mhd class=Comments::CalculateScoreWorker jid=e3aedf83a5c2987e07f1ba05 INFO: start
+2025-12-28T23:18:44.158Z pid=1 tid=4mqt class=Comments::BustCacheWorker jid=30b94d9af73ff3c8f9bc964f elapsed=0.134 INFO: done
+2025-12-28T23:18:44.160Z pid=1 tid=4mqt class=Users::BustCacheWorker jid=ff5b13d0952358c0b62de511 INFO: start
+2025-12-28T23:18:44.174Z pid=1 tid=4mqt class=Users::BustCacheWorker jid=ff5b13d0952358c0b62de511 elapsed=0.013 INFO: done
+2025-12-28T23:18:44.175Z pid=1 tid=4mqt class=Reactions::UpdateRelevantScoresWorker jid=353b6e376bcc942e4a869bef INFO: start
+2025-12-28T23:18:44.487Z pid=1 tid=4mqt class=Reactions::UpdateRelevantScoresWorker jid=353b6e376bcc942e4a869bef elapsed=0.312 INFO: done
+2025-12-28T23:18:44.490Z pid=1 tid=4mqt class=Reactions::BustReactableCacheWorker jid=728dadad4d6dd78d585d8717 INFO: start
+2025-12-28T23:18:44.510Z pid=1 tid=4mqt class=Reactions::BustReactableCacheWorker jid=728dadad4d6dd78d585d8717 elapsed=0.02 INFO: done
+2025-12-28T23:18:44.512Z pid=1 tid=4mqt class=Reactions::BustHomepageCacheWorker jid=5d687e05ee4bf54217641d9d INFO: start
+2025-12-28T23:18:44.515Z pid=1 tid=4mhd class=Comments::CalculateScoreWorker jid=e3aedf83a5c2987e07f1ba05 elapsed=0.483 INFO: done
+2025-12-28T23:18:44.520Z pid=1 tid=4mhd class=Comments::HandleSpamWorker jid=1963ae6c8da0ce48cae3bbbd INFO: start
+2025-12-28T23:18:44.524Z pid=1 tid=4mqt class=Reactions::BustHomepageCacheWorker jid=5d687e05ee4bf54217641d9d elapsed=0.012 INFO: done
+2025-12-28T23:18:44.529Z pid=1 tid=4mqt class=AlgoliaSearch::SearchIndexWorker jid=3ccf044db8bb3e591bbeec4a tags=algolia INFO: start
+2025-12-28T23:18:44.572Z pid=1 tid=4mhd class=Comments::HandleSpamWorker jid=1963ae6c8da0ce48cae3bbbd elapsed=0.052 INFO: done
+2025-12-28T23:18:44.575Z pid=1 tid=4mhd class=Users::BustCacheWorker jid=75adbf0909b6869cbc8307f1 INFO: start
+2025-12-28T23:18:44.594Z pid=1 tid=4mhd class=Users::BustCacheWorker jid=75adbf0909b6869cbc8307f1 elapsed=0.019 INFO: done
+2025-12-28T23:18:44.598Z pid=1 tid=4mhd class=Comments::BustCacheWorker jid=6012003f6a42e35450cdfca5 INFO: start
+2025-12-28T23:18:44.615Z pid=1 tid=4mhd class=Comments::BustCacheWorker jid=6012003f6a42e35450cdfca5 elapsed=0.017 INFO: done
+2025-12-28T23:18:44.618Z pid=1 tid=4mhd class=Users::BustCacheWorker jid=8873ff36a66a661f9ad5c3bb INFO: start
+2025-12-28T23:18:44.630Z pid=1 tid=4mhd class=Users::BustCacheWorker jid=8873ff36a66a661f9ad5c3bb elapsed=0.012 INFO: done
+2025-12-28T23:18:44.634Z pid=1 tid=4mhd class=Articles::ScoreCalcWorker jid=64df78da29f54f7d7bc08aeb INFO: start
+2025-12-28T23:18:44.702Z pid=1 tid=4mhd class=Articles::ScoreCalcWorker jid=64df78da29f54f7d7bc08aeb elapsed=0.068 INFO: done
+2025-12-28T23:18:44.706Z pid=1 tid=4mhd class=Notifications::UpdateWorker jid=5788ffaddceba7bc7bdfd852 INFO: start
+2025-12-28T23:18:44.724Z pid=1 tid=4mhd class=Notifications::UpdateWorker jid=5788ffaddceba7bc7bdfd852 elapsed=0.017 INFO: done
+2025-12-28T23:18:44.727Z pid=1 tid=4mhd class=Comments::CalculateScoreWorker jid=ea8fbe42ae7eb7b2867ddbcd INFO: start
+2025-12-28T23:18:44.843Z pid=1 tid=4mhd class=Comments::CalculateScoreWorker jid=ea8fbe42ae7eb7b2867ddbcd elapsed=0.116 INFO: done
+2025-12-28T23:18:44.846Z pid=1 tid=4mhd class=Users::BustCacheWorker jid=1db32506ecf26a3f1e37bdde INFO: start
+2025-12-28T23:18:44.863Z pid=1 tid=4mhd class=Users::BustCacheWorker jid=1db32506ecf26a3f1e37bdde elapsed=0.017 INFO: done
+2025-12-28T23:18:44.866Z pid=1 tid=4mhd class=Users::RecordFieldTestEventWorker jid=9e34de4d06d69279dce29c35 INFO: start
+2025-12-28T23:18:44.941Z pid=1 tid=4mhd class=Users::RecordFieldTestEventWorker jid=9e34de4d06d69279dce29c35 elapsed=0.075 INFO: done
+2025-12-28T23:18:44.943Z pid=1 tid=4mhd class=AlgoliaSearch::SearchIndexWorker jid=bb3e9e246a5e2e45fb23d6ef tags=algolia INFO: start
+2025-12-28T23:18:46.206Z pid=1 tid=4mqt class=AlgoliaSearch::SearchIndexWorker jid=3ccf044db8bb3e591bbeec4a tags=algolia elapsed=1.677 INFO: done
+2025-12-28T23:18:46.209Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=259528bd46e58a7916e16268 INFO: start
+2025-12-28T23:18:46.278Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=259528bd46e58a7916e16268 elapsed=0.07 INFO: done
+2025-12-28T23:18:46.281Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=86a69c8a8f5e451b9fdd32ac INFO: start
+2025-12-28T23:18:46.302Z pid=1 tid=4mhd class=AlgoliaSearch::SearchIndexWorker jid=bb3e9e246a5e2e45fb23d6ef tags=algolia elapsed=1.359 INFO: done
+2025-12-28T23:18:46.306Z pid=1 tid=4mhd class=Mentions::CreateAllWorker jid=d241e7dcfb01999a55a8fe5d INFO: start
+2025-12-28T23:18:46.332Z pid=1 tid=4mhd class=Mentions::CreateAllWorker jid=d241e7dcfb01999a55a8fe5d elapsed=0.027 INFO: done
+2025-12-28T23:18:46.337Z pid=1 tid=4mhd class=Notifications::UpdateWorker jid=2b03f43e178c4e720c18876e INFO: start
+2025-12-28T23:18:46.377Z pid=1 tid=4mhd class=Notifications::UpdateWorker jid=2b03f43e178c4e720c18876e elapsed=0.04 INFO: done
+2025-12-28T23:18:46.390Z pid=1 tid=4mhd class=Notifications::UpdateWorker jid=4cb53886fa1ab2e8e27aae38 INFO: start
+2025-12-28T23:18:46.521Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=86a69c8a8f5e451b9fdd32ac elapsed=0.24 INFO: done
+2025-12-28T23:18:46.523Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=d58a9ea6704284374a9c25c5 INFO: start
+2025-12-28T23:18:46.526Z pid=1 tid=4mhd class=Notifications::UpdateWorker jid=4cb53886fa1ab2e8e27aae38 elapsed=0.136 INFO: done
+2025-12-28T23:18:46.530Z pid=1 tid=4mhd class=Notifications::UpdateWorker jid=4123617934ff93408f874b99 INFO: start
+2025-12-28T23:18:46.548Z pid=1 tid=4mhd class=Notifications::UpdateWorker jid=4123617934ff93408f874b99 elapsed=0.018 INFO: done
+2025-12-28T23:18:46.551Z pid=1 tid=4mhd class=Users::RecordFieldTestEventWorker jid=cae43007f58deb48594fcb7e INFO: start
+2025-12-28T23:18:46.586Z pid=1 tid=4mhd class=Users::RecordFieldTestEventWorker jid=cae43007f58deb48594fcb7e elapsed=0.036 INFO: done
+2025-12-28T23:18:46.589Z pid=1 tid=4mhd class=Users::RecordFieldTestEventWorker jid=bf360d21a26b1dc491af4174 INFO: start
+2025-12-28T23:18:46.622Z pid=1 tid=4mhd class=Users::RecordFieldTestEventWorker jid=bf360d21a26b1dc491af4174 elapsed=0.033 INFO: done
+2025-12-28T23:18:46.624Z pid=1 tid=4mhd class=Users::RecordFieldTestEventWorker jid=d0d013c53e3496fc36dda3f7 INFO: start
+2025-12-28T23:18:46.625Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=d58a9ea6704284374a9c25c5 elapsed=0.101 INFO: done
+2025-12-28T23:18:46.627Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=a099fa28ba2efffc7d1a438d INFO: start
+2025-12-28T23:18:46.661Z pid=1 tid=4mhd class=Users::RecordFieldTestEventWorker jid=d0d013c53e3496fc36dda3f7 elapsed=0.037 INFO: done
+2025-12-28T23:18:46.663Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=a099fa28ba2efffc7d1a438d elapsed=0.036 INFO: done
+2025-12-28T23:19:14.365Z pid=1 tid=4mqt class=PushNotifications::DeliverWorker jid=1b6d7421d0e5e483dfad65d8 INFO: start
+I, [2025-12-28T23:19:14.429827 #1]  INFO -- : [2025-12-28 23:19:14][com.murari.careerpolitics.android] Starting 1 dispatcher... 
+I, [2025-12-28T23:19:14.748995 #1]  INFO -- honeybadger: ** [Honeybadger] Reporting error id=f3b82fa4-2f50-40e8-82a0-731be2263ed7 level=1 pid=1
+E, [2025-12-28T23:19:14.750607 #1] ERROR -- : [2025-12-28 23:19:14][ERROR] Rpush::DeliveryError, Unable to deliver notification 10, received error 400 (FCM failed to handle the JSON request. (INVALID_ARGUMENT: Invalid value at 'message.data[8].value' (TYPE_STRING), 1766963924
+Invalid JSON payload received. Unknown name "id" at 'message.data[10].value': Cannot find field.
+Invalid JSON payload received. Unknown name "username" at 'message.data[10].value': Cannot find field.
+Invalid JSON payload received. Unknown name "name" at 'message.data[10].value': Cannot find field.
+Invalid JSON payload received. Unknown name "avatar_url" at 'message.data[10].value': Cannot find field.
+Invalid JSON payload received. Unknown name "type" at 'message.data[11].value': Cannot find field.
+Invalid JSON payload received. Unknown name "id" at 'message.data[11].value': Cannot find field.
+Invalid JSON payload received. Unknown name "title" at 'message.data[11].value': Cannot find field.
+Invalid JSON payload received. Unknown name "url" at 'message.data[11].value': Cannot find field.
+Invalid JSON payload received. Unknown name "comment_id" at 'message.data[12].value': Cannot find field.
+Invalid JSON payload received. Unknown name "article_id" at 'message.data[12].value': Cannot find field.
+Invalid JSON payload received. Unknown name "article_title" at 'message.data[12].value': Cannot find field.
+Invalid JSON payload received. Unknown name "parent_comment_id" at 'message.data[12].value': Cannot find field.
+Invalid JSON payload received. Unknown name "thread_depth" at 'message.data[12].value': Cannot find field.
+Invalid JSON payload received. Unknown name "commentable_type" at 'message.data[12].value': Cannot find field.
+Invalid JSON payload received. Unknown name "subforem_id" at 'message.data[12].value': Cannot find field.
+Invalid value at 'message.data[14].value' (Map), Cannot have repeated items ('actions') within a map.
+Invalid JSON payload received. Unknown name "" at 'message.data[14].value': Proto fields must have a name.
+Invalid JSON payload received. Unknown name "" at 'message.data[14].value': Proto fields must have a name.
+Invalid JSON payload received. Unknown name "" at 'message.data[14].value': Proto fields must have a name.))
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/fcm/delivery.rb:72:in `bad_request'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/fcm/delivery.rb:43:in `handle_response'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/fcm/delivery.rb:25:in `perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/dispatcher/http.rb:12:in `dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/dispatcher_loop.rb:66:in `dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/dispatcher_loop.rb:35:in `block (2 levels) in start'
+<internal:kernel>:187:in `loop'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/daemon/dispatcher_loop.rb:25:in `block in start'
+2025-12-28T23:19:14.762Z pid=1 tid=4mqt class=PushNotifications::DeliverWorker jid=1b6d7421d0e5e483dfad65d8 elapsed=0.397 INFO: done
+I, [2025-12-28T23:19:15.741275 #1]  INFO -- honeybadger: ** [Honeybadger] Success ⚡ https://app.honeybadger.io/notice/f3b82fa4-2f50-40e8-82a0-731be2263ed7 id=f3b82fa4-2f50-40e8-82a0-731be2263ed7 code=201 level=1 pid=1
+2025-12-28T23:20:34.678Z pid=1 tid=4mhd class=Feeds::ImportArticlesWorker jid=42103cd41c5446cba446c280 INFO: start
+2025-12-28T23:20:34.762Z pid=1 tid=4mqt class=Metrics::RecordBackgroundQueueStatsWorker jid=3123be73e77bd5bcf7242b86 INFO: start
+2025-12-28T23:20:34.801Z pid=1 tid=4mhd class=Feeds::ImportArticlesWorker jid=42103cd41c5446cba446c280 elapsed=0.123 INFO: done
+2025-12-28T23:20:34.804Z pid=1 tid=4mhd class=BadgeAchievements::BadgeAwardWorker jid=fab456b73e2355f004283f19 INFO: start
+2025-12-28T23:20:34.832Z pid=1 tid=4mhd class=BadgeAchievements::BadgeAwardWorker jid=fab456b73e2355f004283f19 elapsed=0.028 INFO: done
+2025-12-28T23:20:34.835Z pid=1 tid=4mhd class=Articles::PublishWorker jid=ed06785dff3549af5156500e INFO: start
+2025-12-28T23:20:34.863Z pid=1 tid=4mhd class=Articles::PublishWorker jid=ed06785dff3549af5156500e elapsed=0.028 INFO: done
+2025-12-28T23:20:34.866Z pid=1 tid=4mhd class=CaptureQueryStatsWorker jid=882cc0c63b0eb2b8f2b8953d INFO: start
+2025-12-28T23:20:34.869Z pid=1 tid=4mhd class=CaptureQueryStatsWorker jid=882cc0c63b0eb2b8f2b8953d elapsed=0.004 INFO: done
+2025-12-28T23:20:34.872Z pid=1 tid=4mhd class=ScheduledAutomations::ProcessWorker jid=3f9bf3377f5f431e159e1e40 INFO: start
+I, [2025-12-28T23:20:34.873413 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+I, [2025-12-28T23:20:34.886906 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-28T23:20:34.887Z pid=1 tid=4mhd class=ScheduledAutomations::ProcessWorker jid=3f9bf3377f5f431e159e1e40 elapsed=0.015 INFO: done
+2025-12-28T23:20:34.906Z pid=1 tid=4mqt class=Metrics::RecordBackgroundQueueStatsWorker jid=3123be73e77bd5bcf7242b86 elapsed=0.143 INFO: done
+2025-12-28T23:25:04.200Z pid=1 tid=4mhd class=CaptureQueryStatsWorker jid=f3005f5963c389826d1535bc INFO: start
+2025-12-28T23:25:04.208Z pid=1 tid=4mqt class=Articles::PublishWorker jid=35f9d7513059afa087789dba INFO: start
+2025-12-28T23:25:04.298Z pid=1 tid=4mhd class=CaptureQueryStatsWorker jid=f3005f5963c389826d1535bc elapsed=0.099 INFO: done
+2025-12-28T23:25:04.311Z pid=1 tid=4mqt class=Articles::PublishWorker jid=35f9d7513059afa087789dba elapsed=0.103 INFO: done
+2025-12-28T23:28:20.545Z pid=1 tid=4mg9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-28T23:28:20.546Z pid=1 tid=4mg9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-28T23:29:08.382Z pid=1 tid=4mhd class=Notifications::NewReactionWorker jid=dacb17f0d1b5d9eab7649064 INFO: start
+I, [2025-12-28T23:29:08.600369 #1]  INFO -- : [FCM][ANDROID] device_token=dWOH5nyzTRmcGJElT...
+I, [2025-12-28T23:29:08.600594 #1]  INFO -- : [FCM][ANDROID] notification={:title=>"@murari_kumar_38d8e39a8450 reacted to your post", :body=>"👍 on Meme Monday", :channel_id=>"reactions", :color=>"#805ad5", :icon=>"reaction"}
+I, [2025-12-28T23:29:08.600930 #1]  INFO -- : [FCM][ANDROID] data_payload={:notification_type=>"reaction_single", :category=>"reaction", :priority=>"default", :title=>"@murari_kumar_38d8e39a8450 reacted to your post", :body=>"👍 on Meme Monday", :channel=>"reactions", :icon=>"reaction", :color=>"#805ad5", :timestamp=>1766964548, :url=>"https://careerpolitics.com/the_cp_admin/meme-monday-19o2", :actor=>{:id=>6, :username=>"murari_kumar_38d8e39a8450", :name=>"Murari Kumar", :avatar_url=>"https://res.cloudinary.com/dbdlrqwdt/image/fetch/s--DRjxqIo_--/c_fill,f_auto,fl_progressive,h_90,q_auto,w_90/https://careerpolitics-images-bucket.s3.amazonaws.com/uploads/user/profile_image/6/cc588957-f403-4963-9521-b0de353fc61a.jpg"}, :target=>{:type=>"Article", :id=>13, :title=>"Meme Monday", :url=>"https://careerpolitics.com/the_cp_admin/meme-monday-19o2"}, :action_context=>{:reaction_id=>35, :reactable_type=>"Article", :reactable_id=>13, :reaction_category=>"like", :reaction_count=>1, :reaction_types=>["like"], :recent_reactors=>[{:id=>6, :class=>{:name=>"User"}, :name=>"Murari Kumar", :username=>"murari_kumar_38d8e39a8450", :path=>"/murari_kumar_38d8e39a8450", :profile_image_90=>"https://res.cloudinary.com/dbdlrqwdt/image/fetch/s--DRjxqIo_--/c_fill,f_auto,fl_progressive,h_90,q_auto,w_90/https://careerpolitics-images-bucket.s3.amazonaws.com/uploads/user/profile_image/6/cc588957-f403-4963-9521-b0de353fc61a.jpg", :comments_count=>3, :created_at=>Tue, 16 Dec 2025 01:42:51.614379000 UTC +00:00}]}, :actions=>[{:id=>"view", :label=>"View", :type=>"navigation", :icon=>"open"}, {:id=>"mark_read", :label=>"Mark as read", :type=>"button", :icon=>"check"}]}
+I, [2025-12-28T23:29:08.600976 #1]  INFO -- : [FCM][ANDROID] deeplink_url=https://careerpolitics.com/the_cp_admin/meme-monday-19o2
+2025-12-28T23:29:08.604Z pid=1 tid=4mhd class=Notifications::NewReactionWorker jid=dacb17f0d1b5d9eab7649064 elapsed=0.222 INFO: fail
+2025-12-28T23:29:08.604Z pid=1 tid=4mhd WARN: {"context":"Job raised exception","job":{"retry":10,"queue":"medium_priority","args":[{"reactable_id":13,"reactable_type":"Article","reactable_user_id":1,"reactable_subforem_id":null},{"klass":"User","id":1}],"class":"Notifications::NewReactionWorker","jid":"dacb17f0d1b5d9eab7649064","created_at":1766963391.1883874,"enqueued_at":1766964548.3810616,"error_message":"undefined method `to_msgpack' for an instance of ActiveSupport::TimeWithZone","error_class":"NoMethodError","failed_at":1766963391.591539,"retry_count":5,"retried_at":1766963877.307851}}
+2025-12-28T23:29:08.604Z pid=1 tid=4mhd WARN: NoMethodError: undefined method `to_msgpack' for an instance of ActiveSupport::TimeWithZone
+2025-12-28T23:29:08.604Z pid=1 tid=4mhd WARN: /opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/time_with_zone.rb:551:in `method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/msgpack-1.7.2/lib/msgpack.rb:41:in `write'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/msgpack-1.7.2/lib/msgpack.rb:41:in `pack'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/persistence.rb:181:in `coerce_for_persistence'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/persistence.rb:241:in `block in coerced_attributes'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/persistence.rb:240:in `each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/persistence.rb:240:in `coerced_attributes'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/persistence.rb:214:in `block (4 levels) in persist'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/redis-4.7.1/lib/redis/pipeline.rb:22:in `pipelined'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/persistence.rb:213:in `block (3 levels) in persist'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:107:in `run_callbacks'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/persistence.rb:212:in `block (2 levels) in persist'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:99:in `run_callbacks'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/persistence.rb:211:in `block in persist'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/transaction.rb:11:in `block (2 levels) in transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/redis-4.7.1/lib/redis.rb:226:in `block in multi'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/redis-4.7.1/lib/redis.rb:264:in `block in synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/redis-4.7.1/lib/redis.rb:264:in `synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/redis-4.7.1/lib/redis.rb:264:in `synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/redis-4.7.1/lib/redis.rb:221:in `multi'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/transaction.rb:11:in `block in transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis.rb:48:in `block in with_connection'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/connection_pool-2.4.1/lib/connection_pool.rb:110:in `block (2 levels) in with'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/connection_pool-2.4.1/lib/connection_pool.rb:109:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/connection_pool-2.4.1/lib/connection_pool.rb:109:in `block in with'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/connection_pool-2.4.1/lib/connection_pool.rb:106:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/connection_pool-2.4.1/lib/connection_pool.rb:106:in `with'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis.rb:48:in `with_connection'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/transaction.rb:11:in `transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/persistence.rb:210:in `persist'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/persistence.rb:186:in `create_or_update'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/modis-4.0.1/lib/modis/persistence.rb:132:in `save!'
+/opt/apps/forem/app/models/device.rb:96:in `android_notification'
+/opt/apps/forem/app/models/device.rb:21:in `create_notification'
+/opt/apps/forem/app/services/push_notifications/send.rb:18:in `block in call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:71:in `each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:71:in `block in find_each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:138:in `block in find_in_batches'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:245:in `block in in_batches'
+<internal:kernel>:187:in `loop'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:229:in `in_batches'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:137:in `find_in_batches'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:70:in `find_each'
+/opt/apps/forem/app/services/push_notifications/send.rb:17:in `call'
+/opt/apps/forem/app/services/push_notifications/send.rb:4:in `call'
+/opt/apps/forem/app/services/push_notifications/unified_notifier.rb:24:in `call'
+/opt/apps/forem/app/services/push_notifications/unified_notifier.rb:7:in `call'
+/opt/apps/forem/app/services/notifications/reactions/send.rb:153:in `send_push_notification'
+/opt/apps/forem/app/services/notifications/reactions/send.rb:68:in `call'
+/opt/apps/forem/app/services/notifications/reactions/send.rb:8:in `call'
+/opt/apps/forem/app/workers/notifications/new_reaction_worker.rb:16:in `perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:202:in `execute_job'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:170:in `block (2 levels) in process'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:177:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware.rb:36:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/lib/sidekiq/sidekiq_connection_cleanup.rb:6:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware.rb:36:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/lib/sidekiq/honeycomb_middleware.rb:16:in `block in call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/client.rb:65:in `start_span'
+/usr/local/lib/ruby/3.3.0/forwardable.rb:240:in `start_span'
+/opt/apps/forem/lib/sidekiq/honeycomb_middleware.rb:8:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/lib/sidekiq/transaction_safe_rescue.rb:13:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/contrib/sidekiq/server_tracer.rb:79:in `block in call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/tracer.rb:529:in `skip_trace'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/tracer.rb:136:in `trace'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing.rb:18:in `trace'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/contrib/sidekiq/server_tracer.rb:40:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeybadger-4.12.2/lib/honeybadger/plugins/sidekiq.rb:10:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:182:in `invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:169:in `block in process'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:136:in `block (6 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_retry.rb:113:in `local'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:135:in `block (5 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/rails.rb:14:in `block in call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/execution_wrapper.rb:92:in `wrap'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/reloader.rb:72:in `block in wrap'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/execution_wrapper.rb:92:in `wrap'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/reloader.rb:71:in `wrap'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/rails.rb:13:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:131:in `block (4 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:263:in `stats'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:126:in `block (3 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_logger.rb:13:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:125:in `block (2 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_retry.rb:80:in `global'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:124:in `block in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_logger.rb:39:in `prepare'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:123:in `dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:168:in `process'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:78:in `process_one'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:68:in `run'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/component.rb:8:in `watchdog'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/component.rb:17:in `block in safe_thread'
+2025-12-28T23:30:31.507Z pid=1 tid=4mqt class=Metrics::RecordBackgroundQueueStatsWorker jid=221d89affa04420202e2f88b INFO: start
+2025-12-28T23:30:31.591Z pid=1 tid=4uzh class=Metrics::CheckDataUpdateScriptStatuses jid=7f501260688b4932f54cb7fc INFO: start
+2025-12-28T23:30:31.704Z pid=1 tid=4mqt class=Metrics::RecordBackgroundQueueStatsWorker jid=221d89affa04420202e2f88b elapsed=0.197 INFO: done
+2025-12-28T23:30:31.706Z pid=1 tid=4mqt class=CaptureQueryStatsWorker jid=938a6e92e54220da2e3c3aff INFO: start
+2025-12-28T23:30:31.712Z pid=1 tid=4mqt class=CaptureQueryStatsWorker jid=938a6e92e54220da2e3c3aff elapsed=0.005 INFO: done
+2025-12-28T23:30:31.714Z pid=1 tid=4mqt class=Articles::PublishWorker jid=face47d7f2919644badf9a7f INFO: start
+2025-12-28T23:30:31.731Z pid=1 tid=4uzh class=Metrics::CheckDataUpdateScriptStatuses jid=7f501260688b4932f54cb7fc elapsed=0.139 INFO: done
+2025-12-28T23:30:31.734Z pid=1 tid=4uzh class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=9408cc937794c635e365d4da INFO: start
+2025-12-28T23:30:31.737Z pid=1 tid=4mqt class=Articles::PublishWorker jid=face47d7f2919644badf9a7f elapsed=0.023 INFO: done
+2025-12-28T23:30:31.740Z pid=1 tid=4mqt class=ScheduledAutomations::ProcessWorker jid=b1c54619f3e5e4962bf27c8c INFO: start
+I, [2025-12-28T23:30:31.741220 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+I, [2025-12-28T23:30:31.750219 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-28T23:30:31.750Z pid=1 tid=4mqt class=ScheduledAutomations::ProcessWorker jid=b1c54619f3e5e4962bf27c8c elapsed=0.01 INFO: done
+2025-12-28T23:30:31.768Z pid=1 tid=4uzh class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=9408cc937794c635e365d4da elapsed=0.034 INFO: done
+2025-12-28T23:35:24.172Z pid=1 tid=4uzh class=CaptureQueryStatsWorker jid=ae5717d0aa58fc55d9aa95f7 INFO: start
+2025-12-28T23:35:24.173Z pid=1 tid=4mqt class=Articles::PublishWorker jid=b2d0c57de58c862ac30f7d41 INFO: start
+2025-12-28T23:35:24.251Z pid=1 tid=4uzh class=CaptureQueryStatsWorker jid=ae5717d0aa58fc55d9aa95f7 elapsed=0.079 INFO: done
+2025-12-28T23:35:24.253Z pid=1 tid=4uzh class=Articles::LabelCleanupWorker jid=49ed86f2413a9d2e56f9f768 INFO: start
+2025-12-28T23:35:24.262Z pid=1 tid=4mqt class=Articles::PublishWorker jid=b2d0c57de58c862ac30f7d41 elapsed=0.089 INFO: done
+I, [2025-12-28T23:35:24.264811 #1]  INFO -- : LabelCleanupWorker: No eligible articles found for processing
+2025-12-28T23:35:24.265Z pid=1 tid=4uzh class=Articles::LabelCleanupWorker jid=49ed86f2413a9d2e56f9f768 elapsed=0.012 INFO: done
+2025-12-28T23:37:31.034Z pid=1 tid=4mqt class=Emails::DripEmailWorker jid=38f6b92d8aee32041401f3e9 INFO: start
+2025-12-28T23:37:31.141Z pid=1 tid=4mqt class=Emails::DripEmailWorker jid=38f6b92d8aee32041401f3e9 elapsed=0.107 INFO: done
+2025-12-28T23:38:20.562Z pid=1 tid=4mg9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-28T23:38:20.631Z pid=1 tid=4mg9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-28T23:40:09.900Z pid=1 tid=4uzh class=Metrics::RecordBackgroundQueueStatsWorker jid=c5ccff713641ca8ac0653d74 INFO: start
+2025-12-28T23:40:09.969Z pid=1 tid=4mqt class=CaptureQueryStatsWorker jid=c218ae48d3529057279e2057 INFO: start
+2025-12-28T23:40:10.061Z pid=1 tid=4mqt class=CaptureQueryStatsWorker jid=c218ae48d3529057279e2057 elapsed=0.091 INFO: done
+2025-12-28T23:40:10.063Z pid=1 tid=4mqt class=Articles::PublishWorker jid=ec74da73c54b42487bba9367 INFO: start
+2025-12-28T23:40:10.071Z pid=1 tid=4uzh class=Metrics::RecordBackgroundQueueStatsWorker jid=c5ccff713641ca8ac0653d74 elapsed=0.171 INFO: done
+2025-12-28T23:40:10.074Z pid=1 tid=4uzh class=ScheduledAutomations::ProcessWorker jid=c29f6b3e723b6b5ba74c4268 INFO: start
+I, [2025-12-28T23:40:10.075541 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+I, [2025-12-28T23:40:10.088675 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-28T23:40:10.089Z pid=1 tid=4uzh class=ScheduledAutomations::ProcessWorker jid=c29f6b3e723b6b5ba74c4268 elapsed=0.015 INFO: done
+2025-12-28T23:40:10.093Z pid=1 tid=4mqt class=Articles::PublishWorker jid=ec74da73c54b42487bba9367 elapsed=0.03 INFO: done
+2025-12-28T23:45:44.750Z pid=1 tid=4mqt class=GithubRepos::UpdateLatestWorker jid=75c6fad98b187330f2b7e351 INFO: start
+2025-12-28T23:45:44.750Z pid=1 tid=4uzh class=CaptureQueryStatsWorker jid=6b78af277574aee14989007c INFO: start
+2025-12-28T23:45:44.849Z pid=1 tid=4uzh class=CaptureQueryStatsWorker jid=6b78af277574aee14989007c elapsed=0.098 INFO: done
+2025-12-28T23:45:44.853Z pid=1 tid=4uzh class=Articles::PublishWorker jid=287ed5878ac46f10bf50716d INFO: start
+2025-12-28T23:45:44.878Z pid=1 tid=4uzh class=Articles::PublishWorker jid=287ed5878ac46f10bf50716d elapsed=0.025 INFO: done
+2025-12-28T23:45:44.886Z pid=1 tid=4mqt class=GithubRepos::UpdateLatestWorker jid=75c6fad98b187330f2b7e351 elapsed=0.136 INFO: done
+2025-12-28T23:48:20.660Z pid=1 tid=4mg9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-28T23:48:20.661Z pid=1 tid=4mg9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2025-12-28T23:50:08.917Z pid=1 tid=4uzh class=Metrics::RecordBackgroundQueueStatsWorker jid=010cb6d6eaca9183e27500b3 INFO: start
+2025-12-28T23:50:08.962Z pid=1 tid=4mqt class=CaptureQueryStatsWorker jid=ca1bfdb5478e025ee4eb4f6d INFO: start
+2025-12-28T23:50:09.079Z pid=1 tid=4mqt class=CaptureQueryStatsWorker jid=ca1bfdb5478e025ee4eb4f6d elapsed=0.117 INFO: done
+2025-12-28T23:50:09.082Z pid=1 tid=4mqt class=Articles::PublishWorker jid=09c44831d31d95af1081f011 INFO: start
+2025-12-28T23:50:09.083Z pid=1 tid=4uzh class=Metrics::RecordBackgroundQueueStatsWorker jid=010cb6d6eaca9183e27500b3 elapsed=0.166 INFO: done
+2025-12-28T23:50:09.088Z pid=1 tid=4uzh class=ScheduledAutomations::ProcessWorker jid=891824e7aeb02527a76c7ff4 INFO: start
+I, [2025-12-28T23:50:09.090582 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+I, [2025-12-28T23:50:09.104196 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2025-12-28T23:50:09.105Z pid=1 tid=4uzh class=ScheduledAutomations::ProcessWorker jid=891824e7aeb02527a76c7ff4 elapsed=0.017 INFO: done
+2025-12-28T23:50:09.113Z pid=1 tid=4mqt class=Articles::PublishWorker jid=09c44831d31d95af1081f011 elapsed=0.031 INFO: done
+2025-12-28T23:50:56.827Z pid=1 tid=4mqt class=Reactions::UpdateRelevantScoresWorker jid=9465eb905113c7139ef6a013 INFO: start
+2025-12-28T23:50:56.836Z pid=1 tid=4uzh class=Reactions::BustHomepageCacheWorker jid=335e17bbb4ed19afd4687f0b INFO: start
+2025-12-28T23:50:56.850Z pid=1 tid=4uzh class=Reactions::BustHomepageCacheWorker jid=335e17bbb4ed19afd4687f0b elapsed=0.014 INFO: done
+2025-12-28T23:50:56.855Z pid=1 tid=4mqt class=Reactions::UpdateRelevantScoresWorker jid=9465eb905113c7139ef6a013 elapsed=0.028 INFO: done
+2025-12-28T23:50:56.861Z pid=1 tid=4mqt class=Follows::UpdatePointsWorker jid=85d00ae0b6e03f246216de3d INFO: start
+2025-12-28T23:50:56.856Z pid=1 tid=4uzh class=Articles::ScoreCalcWorker jid=c3ce2c1d94aa6e4849d4de68 INFO: start
+2025-12-28T23:50:56.982Z pid=1 tid=4mqt class=Follows::UpdatePointsWorker jid=85d00ae0b6e03f246216de3d elapsed=0.121 INFO: done
+2025-12-28T23:50:56.985Z pid=1 tid=4uzh class=Articles::ScoreCalcWorker jid=c3ce2c1d94aa6e4849d4de68 elapsed=0.13 INFO: done
+2025-12-28T23:51:06.052Z pid=1 tid=4mqt class=Billboards::DataUpdateWorker jid=26499796b6d3dcfad9e87526 INFO: start
+2025-12-28T23:51:06.121Z pid=1 tid=4mqt class=Billboards::DataUpdateWorker jid=26499796b6d3dcfad9e87526 elapsed=0.069 INFO: done
+2025-12-28T23:51:11.675Z pid=1 tid=4mqt class=Users::UpdateUserActivitiesWorker jid=df0eae0a0cd4390e06ec8c24 INFO: start
+2025-12-28T23:51:11.765Z pid=1 tid=4mqt class=Users::UpdateUserActivitiesWorker jid=df0eae0a0cd4390e06ec8c24 elapsed=0.089 INFO: done
+2025-12-28T23:51:23.800Z pid=1 tid=4mqt class=Comments::HandleSpamWorker jid=de3c72a0ac8d907e0a5c4a4f INFO: start
+2025-12-28T23:51:23.811Z pid=1 tid=4mqt class=Comments::HandleSpamWorker jid=de3c72a0ac8d907e0a5c4a4f elapsed=0.012 INFO: done
+2025-12-28T23:51:23.830Z pid=1 tid=4uzh class=Comments::BustCacheWorker jid=09528c81da8850dc114641d1 INFO: start
+2025-12-28T23:51:23.844Z pid=1 tid=4mqt class=Comments::CalculateScoreWorker jid=ad21b2a3c72aab8eeb2d19d7 INFO: start
+2025-12-28T23:51:23.853Z pid=1 tid=4uzh class=Comments::BustCacheWorker jid=09528c81da8850dc114641d1 elapsed=0.023 INFO: done
+2025-12-28T23:51:23.856Z pid=1 tid=4uzh class=Users::BustCacheWorker jid=d0cf563bda885ac0116cc598 INFO: start
+2025-12-28T23:51:23.897Z pid=1 tid=4uzh class=Users::BustCacheWorker jid=d0cf563bda885ac0116cc598 elapsed=0.041 INFO: done
+2025-12-28T23:51:23.912Z pid=1 tid=4uzh class=Reactions::UpdateRelevantScoresWorker jid=4fa218ba64d8e206f98540b4 INFO: start
+2025-12-28T23:51:24.029Z pid=1 tid=4mqt class=Comments::CalculateScoreWorker jid=ad21b2a3c72aab8eeb2d19d7 elapsed=0.185 INFO: done
+2025-12-28T23:51:24.034Z pid=1 tid=4mqt class=AlgoliaSearch::SearchIndexWorker jid=9573e831c9b73ba98e008bcb tags=algolia INFO: start
+2025-12-28T23:51:24.041Z pid=1 tid=4uzh class=Reactions::UpdateRelevantScoresWorker jid=4fa218ba64d8e206f98540b4 elapsed=0.128 INFO: done
+2025-12-28T23:51:24.049Z pid=1 tid=4uzh class=Reactions::BustReactableCacheWorker jid=24174bc2ab59fd4908b902d1 INFO: start
+2025-12-28T23:51:24.073Z pid=1 tid=4uzh class=Reactions::BustReactableCacheWorker jid=24174bc2ab59fd4908b902d1 elapsed=0.024 INFO: done
+2025-12-28T23:51:24.077Z pid=1 tid=4uzh class=Reactions::BustHomepageCacheWorker jid=7f6230d865f0cc6493a47fc3 INFO: start
+2025-12-28T23:51:24.084Z pid=1 tid=4uzh class=Reactions::BustHomepageCacheWorker jid=7f6230d865f0cc6493a47fc3 elapsed=0.007 INFO: done
+2025-12-28T23:51:24.087Z pid=1 tid=4uzh class=Users::BustCacheWorker jid=9e0562663c4c9875a34e3eb2 INFO: start
+2025-12-28T23:51:24.099Z pid=1 tid=4uzh class=Users::BustCacheWorker jid=9e0562663c4c9875a34e3eb2 elapsed=0.013 INFO: done
+2025-12-28T23:51:24.102Z pid=1 tid=4uzh class=Comments::HandleSpamWorker jid=f1589871e19bae3242f335d9 INFO: start
+2025-12-28T23:51:24.117Z pid=1 tid=4uzh class=Comments::HandleSpamWorker jid=f1589871e19bae3242f335d9 elapsed=0.015 INFO: done
+2025-12-28T23:51:24.119Z pid=1 tid=4uzh class=Comments::BustCacheWorker jid=d850970ed9a99d1ab8f1d3ea INFO: start
+2025-12-28T23:51:24.140Z pid=1 tid=4uzh class=Comments::BustCacheWorker jid=d850970ed9a99d1ab8f1d3ea elapsed=0.021 INFO: done
+2025-12-28T23:51:24.144Z pid=1 tid=4uzh class=Users::BustCacheWorker jid=9a6c0dc60309951a5b059dbe INFO: start
+2025-12-28T23:51:24.167Z pid=1 tid=4uzh class=Users::BustCacheWorker jid=9a6c0dc60309951a5b059dbe elapsed=0.023 INFO: done
+2025-12-28T23:51:24.169Z pid=1 tid=4uzh class=Articles::ScoreCalcWorker jid=828d309ae671ac289464afd0 INFO: start
+2025-12-28T23:51:24.228Z pid=1 tid=4uzh class=Articles::ScoreCalcWorker jid=828d309ae671ac289464afd0 elapsed=0.059 INFO: done
+2025-12-28T23:51:24.232Z pid=1 tid=4uzh class=Articles::ScoreCalcWorker jid=3b0c7d871823e583457c35fd INFO: start
+2025-12-28T23:51:24.295Z pid=1 tid=4uzh class=Articles::ScoreCalcWorker jid=3b0c7d871823e583457c35fd elapsed=0.063 INFO: done
+2025-12-28T23:51:24.298Z pid=1 tid=4uzh class=Comments::CalculateScoreWorker jid=7b27c098073a27f25b2df03f INFO: start
+2025-12-28T23:51:24.409Z pid=1 tid=4uzh class=Comments::CalculateScoreWorker jid=7b27c098073a27f25b2df03f elapsed=0.111 INFO: done
+2025-12-28T23:51:24.415Z pid=1 tid=4uzh class=Users::BustCacheWorker jid=a83c738b6e85e8cb26deca5f INFO: start
+2025-12-28T23:51:24.433Z pid=1 tid=4uzh class=Users::BustCacheWorker jid=a83c738b6e85e8cb26deca5f elapsed=0.018 INFO: done
+2025-12-28T23:51:24.436Z pid=1 tid=4uzh class=AlgoliaSearch::SearchIndexWorker jid=1255b306acaf1d564455d744 tags=algolia INFO: start
+2025-12-28T23:51:24.500Z pid=1 tid=4mqt class=AlgoliaSearch::SearchIndexWorker jid=9573e831c9b73ba98e008bcb tags=algolia elapsed=0.467 INFO: done
+2025-12-28T23:51:24.503Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=56c172d7aba7b40900d58053 INFO: start
+2025-12-28T23:51:24.565Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=56c172d7aba7b40900d58053 elapsed=0.062 INFO: done
+2025-12-28T23:51:24.568Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=bbb56f4c83a092118ce4b3f9 INFO: start
+2025-12-28T23:51:24.638Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=bbb56f4c83a092118ce4b3f9 elapsed=0.07 INFO: done
+2025-12-28T23:51:24.641Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=04541f36fe355397e092f72d INFO: start
+2025-12-28T23:51:24.670Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=04541f36fe355397e092f72d elapsed=0.029 INFO: done
+2025-12-28T23:51:24.672Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=bf5d39dbb0e720227333cbc9 INFO: start
+2025-12-28T23:51:24.706Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=bf5d39dbb0e720227333cbc9 elapsed=0.034 INFO: done
+2025-12-28T23:51:24.709Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=7c9eac43643731cd6680cf04 INFO: start
+2025-12-28T23:51:24.741Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=7c9eac43643731cd6680cf04 elapsed=0.032 INFO: done
+2025-12-28T23:51:24.753Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=51a769c871bbe80757b7ab98 INFO: start
+2025-12-28T23:51:24.780Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=51a769c871bbe80757b7ab98 elapsed=0.028 INFO: done
+2025-12-28T23:51:24.783Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=dcbf5771de10ad96d53cdf65 INFO: start
+2025-12-28T23:51:24.809Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=dcbf5771de10ad96d53cdf65 elapsed=0.027 INFO: done
+2025-12-28T23:51:24.812Z pid=1 tid=4mqt class=Mentions::CreateAllWorker jid=fa0f036b9cecb37f17853386 INFO: start
+2025-12-28T23:51:24.827Z pid=1 tid=4mqt class=Mentions::CreateAllWorker jid=fa0f036b9cecb37f17853386 elapsed=0.015 INFO: done
+2025-12-28T23:51:24.874Z pid=1 tid=4uzh class=AlgoliaSearch::SearchIndexWorker jid=1255b306acaf1d564455d744 tags=algolia elapsed=0.439 INFO: done
+2025-12-28T23:51:31.560Z pid=1 tid=4mqt class=Reactions::UpdateRelevantScoresWorker jid=7d2f2b83182df6643de8cbbb INFO: start
+2025-12-28T23:51:31.566Z pid=1 tid=4mqt class=Reactions::UpdateRelevantScoresWorker jid=7d2f2b83182df6643de8cbbb elapsed=0.006 INFO: done
+2025-12-28T23:51:31.566Z pid=1 tid=4uzh class=Reactions::BustHomepageCacheWorker jid=fb88dae4bc975d96174be8b5 INFO: start
+2025-12-28T23:51:31.573Z pid=1 tid=4uzh class=Reactions::BustHomepageCacheWorker jid=fb88dae4bc975d96174be8b5 elapsed=0.007 INFO: done
+2025-12-28T23:51:34.686Z pid=1 tid=4uzh class=Reactions::UpdateRelevantScoresWorker jid=e8f4862d89d7bab45365f32a INFO: start
+2025-12-28T23:51:34.689Z pid=1 tid=4mqt class=Reactions::BustReactableCacheWorker jid=4597ea1aca2976d2031e0c4c INFO: start
+2025-12-28T23:51:34.706Z pid=1 tid=4mqt class=Reactions::BustReactableCacheWorker jid=4597ea1aca2976d2031e0c4c elapsed=0.017 INFO: done
+2025-12-28T23:51:34.714Z pid=1 tid=4mqt class=Reactions::BustHomepageCacheWorker jid=83283da569cb3e9080b1ce61 INFO: start
+2025-12-28T23:51:34.726Z pid=1 tid=4mqt class=Reactions::BustHomepageCacheWorker jid=83283da569cb3e9080b1ce61 elapsed=0.012 INFO: done
+2025-12-28T23:51:34.733Z pid=1 tid=4mqt class=Users::BustCacheWorker jid=60bf33433936aefce4b58722 INFO: start
+2025-12-28T23:51:34.756Z pid=1 tid=4mqt class=Users::BustCacheWorker jid=60bf33433936aefce4b58722 elapsed=0.022 INFO: done
+2025-12-28T23:51:34.761Z pid=1 tid=4mqt class=Comments::HandleSpamWorker jid=c8a8d9cf239ab83115e9137b INFO: start
+2025-12-28T23:51:34.779Z pid=1 tid=4mqt class=Comments::HandleSpamWorker jid=c8a8d9cf239ab83115e9137b elapsed=0.017 INFO: done
+2025-12-28T23:51:34.785Z pid=1 tid=4mqt class=Comments::BustCacheWorker jid=020d1c14be8473c2761c0567 INFO: start
+2025-12-28T23:51:34.797Z pid=1 tid=4uzh class=Reactions::UpdateRelevantScoresWorker jid=e8f4862d89d7bab45365f32a elapsed=0.11 INFO: done
+2025-12-28T23:51:34.800Z pid=1 tid=4uzh class=Users::BustCacheWorker jid=fa41836e7d1cc158dbebe4a1 INFO: start
+2025-12-28T23:51:34.811Z pid=1 tid=4mqt class=Comments::BustCacheWorker jid=020d1c14be8473c2761c0567 elapsed=0.027 INFO: done
+2025-12-28T23:51:34.816Z pid=1 tid=4uzh class=Users::BustCacheWorker jid=fa41836e7d1cc158dbebe4a1 elapsed=0.016 INFO: done
+2025-12-28T23:51:34.816Z pid=1 tid=4mqt class=Comments::CalculateScoreWorker jid=3e4ed3b2c704b4e4cbafeaa9 INFO: start
+2025-12-28T23:51:34.819Z pid=1 tid=4uzh class=AlgoliaSearch::SearchIndexWorker jid=f840da88f3e98e3d9c8ee674 tags=algolia INFO: start
+2025-12-28T23:51:34.916Z pid=1 tid=4mqt class=Comments::CalculateScoreWorker jid=3e4ed3b2c704b4e4cbafeaa9 elapsed=0.1 INFO: done
+2025-12-28T23:51:34.919Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=b0968e7185e3524a4670304d INFO: start
+2025-12-28T23:51:34.970Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=b0968e7185e3524a4670304d elapsed=0.051 INFO: done
+2025-12-28T23:51:34.973Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=0a3c528972e5c91ee297ebb2 INFO: start
+2025-12-28T23:51:35.035Z pid=1 tid=4mqt class=Articles::ScoreCalcWorker jid=0a3c528972e5c91ee297ebb2 elapsed=0.062 INFO: done
+2025-12-28T23:51:35.037Z pid=1 tid=4mqt class=Users::BustCacheWorker jid=1c796aab8adbdb38ce5b1599 INFO: start
+2025-12-28T23:51:35.048Z pid=1 tid=4mqt class=Users::BustCacheWorker jid=1c796aab8adbdb38ce5b1599 elapsed=0.011 INFO: done
+2025-12-28T23:51:35.051Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=38521380eb85c9d76d1057c7 INFO: start
+2025-12-28T23:51:35.082Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=38521380eb85c9d76d1057c7 elapsed=0.03 INFO: done
+2025-12-28T23:51:35.084Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=964c4842654127d66de5c126 INFO: start
+2025-12-28T23:51:35.114Z pid=1 tid=4mqt class=Users::RecordFieldTestEventWorker jid=964c4842654127d66de5c126 elapsed=0.03 INFO: done
+2025-12-28T23:51:35.324Z pid=1 tid=4uzh class=AlgoliaSearch::SearchIndexWorker jid=f840da88f3e98e3d9c8ee674 tags=algolia elapsed=0.505 INFO: done
+2025-12-28T23:51:43.649Z pid=1 tid=4mqt class=Notifications::NewReactionWorker jid=dacb17f0d1b5d9eab7649064 INFO: start
+2025-12-28T23:51:43.676Z pid=1 tid=4mqt class=Notifications::NewReactionWorker jid=dacb17f0d1b5d9eab7649064 elapsed=0.026 INFO: done
+
+
+
+web logs
+Follow Logs: 
+Show timestamp: 
+Since:
+-1
+Tail: 
+-1
+Destination: 
+Filter:
+Enter your keywords
+Wrap lines:
+I, [2025-12-28T23:42:14.669628 #55]  INFO -- : [18db75b49410fa8ef434e86fa3d420d1] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:42:14 +0000
+I, [2025-12-28T23:43:14.676458 #62]  INFO -- : [666179b46ef1b7124f2a84267d7d161a] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:43:14 +0000
+I, [2025-12-28T23:44:14.666078 #62]  INFO -- : [0bb43ee247aa06ab236ac98dbedc8db8] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:44:14 +0000
+I, [2025-12-28T23:45:14.681304 #62]  INFO -- : [57aff94142dce7ed1faec1fd2b6e8a03] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:45:14 +0000
+I, [2025-12-28T23:46:14.699317 #55]  INFO -- : [09ecd0d503596c2a3914aec7fd6c6694] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:46:14 +0000
+I, [2025-12-28T23:47:14.664532 #55]  INFO -- : [761b6a39f4a59047790ebd34bdde23f1] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:47:14 +0000
+I, [2025-12-28T23:48:14.681615 #62]  INFO -- : [70612c8e8c16d5bda9ca3e0e513e4de1] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:48:14 +0000
+I, [2025-12-28T23:49:14.667650 #55]  INFO -- : [c1dcfcc8df519466813d2241a4dcaaba] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:49:14 +0000
+I, [2025-12-28T23:50:14.675180 #55]  INFO -- : [5631dda9e2e572c93590651c5f1c3b49] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:50:14 +0000
+I, [2025-12-28T23:50:50.845206 #55]  INFO -- : [775f5b8bffb7399484f04e597448afd8] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:50:50 +0000
+I, [2025-12-28T23:50:53.380017 #55]  INFO -- : [bb9c8026a4d4fb55c2895ae9884d1b13] Started GET "/the_cp_admin/meme-monday-19o2" for 103.24.87.149 at 2025-12-28 23:50:53 +0000
+I, [2025-12-28T23:50:53.419675 #55]  INFO -- : [bb9c8026a4d4fb55c2895ae9884d1b13] Processing by StoriesController#show as HTML
+I, [2025-12-28T23:50:53.420282 #55]  INFO -- : [bb9c8026a4d4fb55c2895ae9884d1b13]   Parameters: {"locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-19o2"}
+I, [2025-12-28T23:50:53.850314 #55]  INFO -- : [bb9c8026a4d4fb55c2895ae9884d1b13]   Rendered articles/show.html.erb within layouts/application (Duration: 323.8ms | Allocations: 78796)
+I, [2025-12-28T23:50:53.924410 #55]  INFO -- : [bb9c8026a4d4fb55c2895ae9884d1b13]   Rendered layout layouts/application.html.erb (Duration: 397.9ms | Allocations: 135572)
+I, [2025-12-28T23:50:53.925423 #55]  INFO -- : [bb9c8026a4d4fb55c2895ae9884d1b13] Completed 200 OK in 504ms (Views: 363.7ms | ActiveRecord: 87.0ms | Allocations: 152198)
+I, [2025-12-28T23:50:54.067277 #55]  INFO -- : [573cb525d02a38177ca65ac64942b3b0] Started GET "/reactions?article_id=13" for 103.24.87.149 at 2025-12-28 23:50:54 +0000
+I, [2025-12-28T23:50:54.110934 #55]  INFO -- : [573cb525d02a38177ca65ac64942b3b0] Processing by ReactionsController#index as */*
+I, [2025-12-28T23:50:54.111258 #55]  INFO -- : [573cb525d02a38177ca65ac64942b3b0]   Parameters: {"article_id"=>"13", "locale"=>nil}
+I, [2025-12-28T23:50:54.142492 #55]  INFO -- : [c0e45849932cdf7b5929098730be3fc9] Started GET "/notifications/counts" for 103.24.87.149 at 2025-12-28 23:50:54 +0000
+I, [2025-12-28T23:50:54.162706 #55]  INFO -- : [573cb525d02a38177ca65ac64942b3b0] Completed 200 OK in 51ms (Views: 0.2ms | ActiveRecord: 22.0ms | Allocations: 10121)
+I, [2025-12-28T23:50:54.227739 #62]  INFO -- : [e33a83f11a3edd804432626e38f22825] Started GET "/reactions?commentable_id=13&commentable_type=Article" for 103.24.87.149 at 2025-12-28 23:50:54 +0000
+I, [2025-12-28T23:50:54.236599 #55]  INFO -- : [3dfada686c6ab2197e2652de97a5ebb4] Started GET "/async_info/base_data" for 103.24.87.149 at 2025-12-28 23:50:54 +0000
+I, [2025-12-28T23:50:54.246506 #62]  INFO -- : [250b0540b4ae4b2604c4fd55cf3a7e0d] Started GET "/follows/bulk_show?ids%5B%5D=1&ids%5B%5D=5&ids%5B%5D=6&followable_type=User" for 103.24.87.149 at 2025-12-28 23:50:54 +0000
+I, [2025-12-28T23:50:54.274385 #55]  INFO -- : [c0e45849932cdf7b5929098730be3fc9] Processing by Notifications::CountsController#index as */*
+I, [2025-12-28T23:50:54.274860 #55]  INFO -- : [c0e45849932cdf7b5929098730be3fc9]   Parameters: {"locale"=>nil}
+I, [2025-12-28T23:50:54.328224 #55]  INFO -- : [3dfada686c6ab2197e2652de97a5ebb4] Processing by AsyncInfoController#base_data as JSON
+I, [2025-12-28T23:50:54.328830 #55]  INFO -- : [3dfada686c6ab2197e2652de97a5ebb4]   Parameters: {"locale"=>nil}
+I, [2025-12-28T23:50:54.391664 #55]  INFO -- : [c0e45849932cdf7b5929098730be3fc9]   Rendered text template (Duration: 0.6ms | Allocations: 33)
+I, [2025-12-28T23:50:54.396223 #55]  INFO -- : [c0e45849932cdf7b5929098730be3fc9] Completed 200 OK in 121ms (Views: 7.2ms | ActiveRecord: 82.9ms | Allocations: 13247)
+I, [2025-12-28T23:50:54.397330 #62]  INFO -- : [e33a83f11a3edd804432626e38f22825] Processing by ReactionsController#index as */*
+I, [2025-12-28T23:50:54.397805 #62]  INFO -- : [e33a83f11a3edd804432626e38f22825]   Parameters: {"commentable_id"=>"13", "commentable_type"=>"Article", "locale"=>nil}
+I, [2025-12-28T23:50:54.418973 #62]  INFO -- : [250b0540b4ae4b2604c4fd55cf3a7e0d] Processing by FollowsController#bulk_show as JSON
+I, [2025-12-28T23:50:54.419362 #62]  INFO -- : [250b0540b4ae4b2604c4fd55cf3a7e0d]   Parameters: {"ids"=>["1", "5", "6"], "followable_type"=>"User", "locale"=>nil}
+I, [2025-12-28T23:50:54.426204 #62]  INFO -- : [e33a83f11a3edd804432626e38f22825] Completed 200 OK in 28ms (Views: 0.2ms | ActiveRecord: 12.9ms | Allocations: 7862)
+I, [2025-12-28T23:50:54.475196 #62]  INFO -- : [250b0540b4ae4b2604c4fd55cf3a7e0d] Completed 200 OK in 55ms (Views: 0.3ms | ActiveRecord: 26.8ms | Allocations: 11309)
+I, [2025-12-28T23:50:54.508280 #55]  INFO -- : [3dfada686c6ab2197e2652de97a5ebb4] Completed 200 OK in 159ms (Views: 0.3ms | ActiveRecord: 76.4ms | Allocations: 28908)
+I, [2025-12-28T23:50:54.610458 #55]  INFO -- : [eee8a2d4abf549366e8f1057d19be040] Started GET "/the_cp_admin/meme-monday-19o2/bb/post_comments" for 103.24.87.149 at 2025-12-28 23:50:54 +0000
+I, [2025-12-28T23:50:54.638940 #55]  INFO -- : [290d35c0f4d3a4bc9d41687e762f5241] Started GET "/user_subscriptions/subscribed?source_type=Article&source_id=13" for 103.24.87.149 at 2025-12-28 23:50:54 +0000
+I, [2025-12-28T23:50:54.646919 #62]  INFO -- : [1bff6d1184b4629a8d4339764cbe34c1] Started GET "/the_cp_admin/meme-monday-19o2/bb/post_sidebar" for 103.24.87.149 at 2025-12-28 23:50:54 +0000
+I, [2025-12-28T23:50:54.667210 #55]  INFO -- : [eee8a2d4abf549366e8f1057d19be040] Processing by BillboardsController#show as */*
+I, [2025-12-28T23:50:54.667917 #55]  INFO -- : [eee8a2d4abf549366e8f1057d19be040]   Parameters: {"locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-19o2", "placement_area"=>"post_comments"}
+I, [2025-12-28T23:50:54.692666 #62]  INFO -- : [1bff6d1184b4629a8d4339764cbe34c1] Processing by BillboardsController#show as */*
+I, [2025-12-28T23:50:54.693989 #62]  INFO -- : [1bff6d1184b4629a8d4339764cbe34c1]   Parameters: {"locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-19o2", "placement_area"=>"post_sidebar"}
+I, [2025-12-28T23:50:54.697705 #62]  INFO -- : [bb94144c18c4dee745ed7ab3acadb8c2] Started GET "/the_cp_admin/meme-monday-19o2/bb/post_fixed_bottom" for 103.24.87.149 at 2025-12-28 23:50:54 +0000
+I, [2025-12-28T23:50:54.703105 #55]  INFO -- : [290d35c0f4d3a4bc9d41687e762f5241] Processing by UserSubscriptionsController#subscribed as JSON
+I, [2025-12-28T23:50:54.703703 #55]  INFO -- : [290d35c0f4d3a4bc9d41687e762f5241]   Parameters: {"source_type"=>"Article", "source_id"=>"13", "locale"=>nil}
+I, [2025-12-28T23:50:54.738363 #55]  INFO -- : [290d35c0f4d3a4bc9d41687e762f5241] Completed 200 OK in 34ms (Views: 0.4ms | ActiveRecord: 17.2ms | Allocations: 6603)
+I, [2025-12-28T23:50:54.760843 #62]  INFO -- : [bb94144c18c4dee745ed7ab3acadb8c2] Processing by BillboardsController#show as */*
+I, [2025-12-28T23:50:54.761486 #62]  INFO -- : [bb94144c18c4dee745ed7ab3acadb8c2]   Parameters: {"locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-19o2", "placement_area"=>"post_fixed_bottom"}
+I, [2025-12-28T23:50:54.786482 #55]  INFO -- : [eee8a2d4abf549366e8f1057d19be040]   Rendered billboards/show.html.erb (Duration: 1.3ms | Allocations: 185)
+I, [2025-12-28T23:50:54.787907 #55]  INFO -- : [eee8a2d4abf549366e8f1057d19be040] Completed 200 OK in 115ms (Views: 5.4ms | ActiveRecord: 67.3ms | Allocations: 17917)
+I, [2025-12-28T23:50:54.810834 #62]  INFO -- : [1bff6d1184b4629a8d4339764cbe34c1]   Rendered billboards/show.html.erb (Duration: 4.0ms | Allocations: 676)
+I, [2025-12-28T23:50:54.814796 #62]  INFO -- : [1bff6d1184b4629a8d4339764cbe34c1] Completed 200 OK in 120ms (Views: 10.4ms | ActiveRecord: 65.6ms | Allocations: 24059)
+I, [2025-12-28T23:50:54.831312 #62]  INFO -- : [bb94144c18c4dee745ed7ab3acadb8c2]   Rendered billboards/show.html.erb (Duration: 0.2ms | Allocations: 34)
+I, [2025-12-28T23:50:54.832244 #62]  INFO -- : [bb94144c18c4dee745ed7ab3acadb8c2] Completed 200 OK in 67ms (Views: 1.4ms | ActiveRecord: 31.3ms | Allocations: 12020)
+I, [2025-12-28T23:50:54.959310 #55]  INFO -- : [f3c02d9246e4aa183d28f795ed2090bc] Started GET "/notifications?i=i" for 103.24.87.149 at 2025-12-28 23:50:54 +0000
+I, [2025-12-28T23:50:55.009879 #55]  INFO -- : [f3c02d9246e4aa183d28f795ed2090bc] Processing by NotificationsController#index as */*
+I, [2025-12-28T23:50:55.010140 #55]  INFO -- : [f3c02d9246e4aa183d28f795ed2090bc]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2025-12-28T23:50:55.062956 #55]  INFO -- : [f3c02d9246e4aa183d28f795ed2090bc]   Rendered notifications/index.html.erb within layouts/application (Duration: 21.3ms | Allocations: 4447)
+I, [2025-12-28T23:50:55.065326 #55]  INFO -- : [f3c02d9246e4aa183d28f795ed2090bc]   Rendered layout layouts/application.html.erb (Duration: 23.7ms | Allocations: 5330)
+I, [2025-12-28T23:50:55.065978 #55]  INFO -- : [f3c02d9246e4aa183d28f795ed2090bc] Completed 200 OK in 56ms (Views: 27.1ms | ActiveRecord: 9.1ms | Allocations: 11156)
+I, [2025-12-28T23:50:55.083685 #55]  INFO -- : [ef4ec810f8d955841510cb0bba9542aa] Started GET "/notification_subscriptions/Article/13" for 103.24.87.149 at 2025-12-28 23:50:55 +0000
+I, [2025-12-28T23:50:55.115666 #55]  INFO -- : [ef4ec810f8d955841510cb0bba9542aa] Processing by NotificationSubscriptionsController#show as JSON
+I, [2025-12-28T23:50:55.116069 #55]  INFO -- : [ef4ec810f8d955841510cb0bba9542aa]   Parameters: {"locale"=>nil, "notifiable_type"=>"Article", "notifiable_id"=>"13"}
+I, [2025-12-28T23:50:55.144161 #55]  INFO -- : [ef4ec810f8d955841510cb0bba9542aa] Completed 200 OK in 27ms (Views: 0.2ms | ActiveRecord: 12.7ms | Allocations: 3111)
+I, [2025-12-28T23:50:56.040646 #55]  INFO -- : [186e425e84ba0a7795029b82084730fe] Started POST "/page_views" for 103.24.87.149 at 2025-12-28 23:50:56 +0000
+I, [2025-12-28T23:50:56.648042 #62]  INFO -- : [c702e69d116dc1686a72ca0658a22d1e] Started POST "/reactions" for 103.24.87.149 at 2025-12-28 23:50:56 +0000
+I, [2025-12-28T23:50:56.686764 #62]  INFO -- : [c702e69d116dc1686a72ca0658a22d1e] Processing by ReactionsController#create as */*
+I, [2025-12-28T23:50:56.687164 #62]  INFO -- : [c702e69d116dc1686a72ca0658a22d1e]   Parameters: {"reactable_type"=>"Article", "reactable_id"=>"13", "category"=>"like", "authenticity_token"=>"[FILTERED]", "locale"=>nil}
+I, [2025-12-28T23:50:56.906553 #62]  INFO -- : [c702e69d116dc1686a72ca0658a22d1e] Completed 200 OK in 219ms (Views: 0.9ms | ActiveRecord: 92.7ms | Allocations: 32672)
+I, [2025-12-28T23:50:58.254867 #62]  INFO -- : [8bd766f404afb45338c88e3932a6dd62] Started POST "/follows" for 103.24.87.149 at 2025-12-28 23:50:58 +0000
+I, [2025-12-28T23:50:58.284996 #62]  INFO -- : [8bd766f404afb45338c88e3932a6dd62] Processing by FollowsController#create as */*
+I, [2025-12-28T23:50:58.285430 #62]  INFO -- : [8bd766f404afb45338c88e3932a6dd62]   Parameters: {"followable_type"=>"User", "followable_id"=>"1", "verb"=>"unfollow", "authenticity_token"=>"[FILTERED]", "locale"=>nil}
+I, [2025-12-28T23:50:58.410861 #62]  INFO -- : [8bd766f404afb45338c88e3932a6dd62] Completed 200 OK in 125ms (Views: 0.2ms | ActiveRecord: 53.1ms | Allocations: 26170)
+I, [2025-12-28T23:50:58.600311 #62]  INFO -- : [e18d7b03e4677e4c56dfa487abe002db] Started GET "/the_cp_admin/meme-monday-199o?i=i" for 103.24.87.149 at 2025-12-28 23:50:58 +0000
+I, [2025-12-28T23:50:58.628841 #62]  INFO -- : [e18d7b03e4677e4c56dfa487abe002db] Processing by StoriesController#show as */*
+I, [2025-12-28T23:50:58.629228 #62]  INFO -- : [e18d7b03e4677e4c56dfa487abe002db]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-199o"}
+I, [2025-12-28T23:50:58.821060 #62]  INFO -- : [e18d7b03e4677e4c56dfa487abe002db]   Rendered articles/show.html.erb within layouts/application (Duration: 134.0ms | Allocations: 36303)
+I, [2025-12-28T23:50:58.822632 #62]  INFO -- : [e18d7b03e4677e4c56dfa487abe002db]   Rendered layout layouts/application.html.erb (Duration: 135.6ms | Allocations: 37195)
+I, [2025-12-28T23:50:58.823280 #62]  INFO -- : [e18d7b03e4677e4c56dfa487abe002db] Completed 200 OK in 194ms (Views: 109.0ms | ActiveRecord: 48.7ms | Allocations: 49686)
+I, [2025-12-28T23:51:01.942316 #62]  INFO -- : [197b677975df15cd2467a0ca4e218d77] Started GET "/?i=i" for 103.24.87.149 at 2025-12-28 23:51:01 +0000
+I, [2025-12-28T23:51:02.010957 #62]  INFO -- : [197b677975df15cd2467a0ca4e218d77] Processing by StoriesController#index as */*
+I, [2025-12-28T23:51:02.011296 #62]  INFO -- : [197b677975df15cd2467a0ca4e218d77]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2025-12-28T23:51:02.300191 #62]  INFO -- : [197b677975df15cd2467a0ca4e218d77]   Rendered articles/index.html.erb within layouts/application (Duration: 218.8ms | Allocations: 134010)
+I, [2025-12-28T23:51:02.302370 #62]  INFO -- : [197b677975df15cd2467a0ca4e218d77]   Rendered layout layouts/application.html.erb (Duration: 221.0ms | Allocations: 135124)
+I, [2025-12-28T23:51:02.303296 #62]  INFO -- : [197b677975df15cd2467a0ca4e218d77] Completed 200 OK in 292ms (Views: 181.8ms | ActiveRecord: 73.7ms | Allocations: 141344)
+I, [2025-12-28T23:51:02.507733 #62]  INFO -- : [09e38074f1df736fca51e5da59b178a2] Started GET "/notifications/counts" for 103.24.87.149 at 2025-12-28 23:51:02 +0000
+I, [2025-12-28T23:51:02.514550 #55]  INFO -- : [4b670d3613f00b351ddb9a144d0a132c] Started GET "/async_info/base_data" for 103.24.87.149 at 2025-12-28 23:51:02 +0000
+I, [2025-12-28T23:51:02.524242 #62]  INFO -- : [7fc861ec50ce698bc2ea895971b87d9c] Started GET "/bb/sidebar_left" for 103.24.87.149 at 2025-12-28 23:51:02 +0000
+I, [2025-12-28T23:51:02.528763 #55]  INFO -- : [dcf7afb49547bd133be9a4924ea4df85] Started GET "/bb/sidebar_left_2" for 103.24.87.149 at 2025-12-28 23:51:02 +0000
+I, [2025-12-28T23:51:02.584109 #62]  INFO -- : [09e38074f1df736fca51e5da59b178a2] Processing by Notifications::CountsController#index as */*
+I, [2025-12-28T23:51:02.588289 #62]  INFO -- : [09e38074f1df736fca51e5da59b178a2]   Parameters: {"locale"=>nil}
+I, [2025-12-28T23:51:02.589724 #55]  INFO -- : [4b670d3613f00b351ddb9a144d0a132c] Processing by AsyncInfoController#base_data as JSON
+I, [2025-12-28T23:51:02.590478 #55]  INFO -- : [4b670d3613f00b351ddb9a144d0a132c]   Parameters: {"locale"=>nil}
+I, [2025-12-28T23:51:02.588084 #62]  INFO -- : [7fc861ec50ce698bc2ea895971b87d9c] Processing by BillboardsController#show as */*
+I, [2025-12-28T23:51:02.590803 #62]  INFO -- : [7fc861ec50ce698bc2ea895971b87d9c]   Parameters: {"locale"=>nil, "placement_area"=>"sidebar_left"}
+I, [2025-12-28T23:51:02.613457 #62]  INFO -- : [09e38074f1df736fca51e5da59b178a2]   Rendered text template (Duration: 0.1ms | Allocations: 33)
+I, [2025-12-28T23:51:02.617876 #62]  INFO -- : [09e38074f1df736fca51e5da59b178a2] Completed 200 OK in 29ms (Views: 6.4ms | ActiveRecord: 10.3ms | Allocations: 6512)
+I, [2025-12-28T23:51:02.626802 #55]  INFO -- : [dcf7afb49547bd133be9a4924ea4df85] Processing by BillboardsController#show as */*
+I, [2025-12-28T23:51:02.627383 #55]  INFO -- : [dcf7afb49547bd133be9a4924ea4df85]   Parameters: {"locale"=>nil, "placement_area"=>"sidebar_left_2"}
+I, [2025-12-28T23:51:02.644601 #62]  INFO -- : [7fc861ec50ce698bc2ea895971b87d9c]   Rendered billboards/show.html.erb (Duration: 0.2ms | Allocations: 34)
+I, [2025-12-28T23:51:02.646714 #62]  INFO -- : [7fc861ec50ce698bc2ea895971b87d9c] Completed 200 OK in 56ms (Views: 2.1ms | ActiveRecord: 22.8ms | Allocations: 10115)
+I, [2025-12-28T23:51:02.652454 #55]  INFO -- : [4b670d3613f00b351ddb9a144d0a132c] Completed 200 OK in 61ms (Views: 0.3ms | ActiveRecord: 36.0ms | Allocations: 10070)
+I, [2025-12-28T23:51:02.683121 #55]  INFO -- : [dcf7afb49547bd133be9a4924ea4df85]   Rendered billboards/show.html.erb (Duration: 0.2ms | Allocations: 34)
+I, [2025-12-28T23:51:02.684235 #55]  INFO -- : [dcf7afb49547bd133be9a4924ea4df85] Completed 200 OK in 56ms (Views: 1.4ms | ActiveRecord: 25.2ms | Allocations: 9384)
+I, [2025-12-28T23:51:02.848795 #62]  INFO -- : [20ec7f36578863771b601b205f4dc441] Started GET "/bb/feed_first" for 103.24.87.149 at 2025-12-28 23:51:02 +0000
+I, [2025-12-28T23:51:02.859603 #62]  INFO -- : [d4c46b12a777ed81f6dc8a12699a11ea] Started GET "/stories/feed/?page=1&type_of=discover" for 103.24.87.149 at 2025-12-28 23:51:02 +0000
+I, [2025-12-28T23:51:02.874640 #55]  INFO -- : [c325f3afdbb292aec5ffbcaf041db413] Started GET "/sidebars/home" for 103.24.87.149 at 2025-12-28 23:51:02 +0000
+I, [2025-12-28T23:51:02.902959 #55]  INFO -- : [3878f8f38b0075bee540aea2728e4a7b] Started GET "/bb/feed_second" for 103.24.87.149 at 2025-12-28 23:51:02 +0000
+I, [2025-12-28T23:51:02.936328 #62]  INFO -- : [20ec7f36578863771b601b205f4dc441] Processing by BillboardsController#show as */*
+I, [2025-12-28T23:51:02.939478 #62]  INFO -- : [20ec7f36578863771b601b205f4dc441]   Parameters: {"locale"=>nil, "placement_area"=>"feed_first"}
+I, [2025-12-28T23:51:02.940949 #55]  INFO -- : [c325f3afdbb292aec5ffbcaf041db413] Processing by SidebarsController#show as */*
+I, [2025-12-28T23:51:02.941428 #55]  INFO -- : [c325f3afdbb292aec5ffbcaf041db413]   Parameters: {"locale"=>nil, "id"=>"home"}
+I, [2025-12-28T23:51:02.959799 #62]  INFO -- : [d4c46b12a777ed81f6dc8a12699a11ea] Processing by Stories::FeedsController#show as JSON
+I, [2025-12-28T23:51:02.962221 #62]  INFO -- : [d4c46b12a777ed81f6dc8a12699a11ea]   Parameters: {"page"=>"1", "type_of"=>"discover", "locale"=>nil}
+I, [2025-12-28T23:51:03.015557 #55]  INFO -- : [3878f8f38b0075bee540aea2728e4a7b] Processing by BillboardsController#show as */*
+I, [2025-12-28T23:51:03.018238 #62]  INFO -- : [20ec7f36578863771b601b205f4dc441]   Rendered billboards/show.html.erb (Duration: 0.2ms | Allocations: 34)
+I, [2025-12-28T23:51:03.018259 #55]  INFO -- : [3878f8f38b0075bee540aea2728e4a7b]   Parameters: {"locale"=>nil, "placement_area"=>"feed_second"}
+I, [2025-12-28T23:51:03.019623 #62]  INFO -- : [20ec7f36578863771b601b205f4dc441] Completed 200 OK in 80ms (Views: 1.6ms | ActiveRecord: 38.0ms | Allocations: 13614)
+I, [2025-12-28T23:51:03.127123 #55]  INFO -- : [3878f8f38b0075bee540aea2728e4a7b]   Rendered billboards/show.html.erb (Duration: 14.7ms | Allocations: 3333)
+I, [2025-12-28T23:51:03.129011 #55]  INFO -- : [3878f8f38b0075bee540aea2728e4a7b] Completed 200 OK in 110ms (Views: 16.6ms | ActiveRecord: 54.8ms | Allocations: 30457)
+I, [2025-12-28T23:51:03.181646 #62]  INFO -- : [d4c46b12a777ed81f6dc8a12699a11ea]   Rendered stories/feeds/show.json.jbuilder (Duration: 125.9ms | Allocations: 34986)
+I, [2025-12-28T23:51:03.183572 #62]  INFO -- : [d4c46b12a777ed81f6dc8a12699a11ea] Completed 200 OK in 221ms (Views: 121.3ms | ActiveRecord: 49.9ms | Allocations: 52739)
+I, [2025-12-28T23:51:03.241027 #62]  INFO -- : [116d3495ad8782b5fd28acecd4ec6b79] Started GET "/bb/feed_third" for 103.24.87.149 at 2025-12-28 23:51:03 +0000
+I, [2025-12-28T23:51:03.278602 #62]  INFO -- : [116d3495ad8782b5fd28acecd4ec6b79] Processing by BillboardsController#show as */*
+I, [2025-12-28T23:51:03.278949 #62]  INFO -- : [116d3495ad8782b5fd28acecd4ec6b79]   Parameters: {"locale"=>nil, "placement_area"=>"feed_third"}
+I, [2025-12-28T23:51:03.294038 #55]  INFO -- : [c325f3afdbb292aec5ffbcaf041db413]   Rendered sidebars/show.html.erb (Duration: 291.8ms | Allocations: 57041)
+I, [2025-12-28T23:51:03.321389 #62]  INFO -- : [116d3495ad8782b5fd28acecd4ec6b79]   Rendered billboards/show.html.erb (Duration: 0.4ms | Allocations: 34)
+I, [2025-12-28T23:51:03.323055 #62]  INFO -- : [116d3495ad8782b5fd28acecd4ec6b79] Completed 200 OK in 43ms (Views: 2.6ms | ActiveRecord: 10.7ms | Allocations: 6212)
+I, [2025-12-28T23:51:03.330730 #55]  INFO -- : [c325f3afdbb292aec5ffbcaf041db413] Completed 200 OK in 389ms (Views: 268.3ms | ActiveRecord: 87.9ms | Allocations: 73930)
+I, [2025-12-28T23:51:03.357673 #55]  INFO -- : [0250e931290d0e81800466b18848ed0b] Started GET "/search/feed_content?per_page=15&page=0&sort_by=hotness_score&sort_direction=desc&approved=&class_name=Article" for 103.24.87.149 at 2025-12-28 23:51:03 +0000
+I, [2025-12-28T23:51:03.396238 #55]  INFO -- : [0250e931290d0e81800466b18848ed0b] Processing by SearchController#feed_content as JSON
+I, [2025-12-28T23:51:03.396561 #55]  INFO -- : [0250e931290d0e81800466b18848ed0b]   Parameters: {"per_page"=>"15", "page"=>"0", "sort_by"=>"hotness_score", "sort_direction"=>"desc", "approved"=>"", "class_name"=>"Article", "locale"=>nil}
+I, [2025-12-28T23:51:03.443690 #55]  INFO -- : [cb0af76c7fa73f36ded35d8af6f64777] Started GET "/follows/bulk_show?ids%5B%5D=1&followable_type=User" for 103.24.87.149 at 2025-12-28 23:51:03 +0000
+I, [2025-12-28T23:51:03.491356 #55]  INFO -- : [0250e931290d0e81800466b18848ed0b] Completed 200 OK in 94ms (Views: 2.5ms | ActiveRecord: 20.6ms | Allocations: 26635)
+I, [2025-12-28T23:51:03.525111 #55]  INFO -- : [cb0af76c7fa73f36ded35d8af6f64777] Processing by FollowsController#bulk_show as JSON
+I, [2025-12-28T23:51:03.525458 #55]  INFO -- : [cb0af76c7fa73f36ded35d8af6f64777]   Parameters: {"ids"=>["1"], "followable_type"=>"User", "locale"=>nil}
+I, [2025-12-28T23:51:03.555624 #55]  INFO -- : [cb0af76c7fa73f36ded35d8af6f64777] Completed 200 OK in 30ms (Views: 0.3ms | ActiveRecord: 6.7ms | Allocations: 4452)
+I, [2025-12-28T23:51:03.935894 #55]  INFO -- : [666a1dd4cbf117df3d77a51148531f68] Started GET "/latest?i=i" for 103.24.87.149 at 2025-12-28 23:51:03 +0000
+I, [2025-12-28T23:51:03.981054 #55]  INFO -- : [666a1dd4cbf117df3d77a51148531f68] Processing by StoriesController#index as */*
+I, [2025-12-28T23:51:03.981730 #55]  INFO -- : [666a1dd4cbf117df3d77a51148531f68]   Parameters: {"i"=>"i", "locale"=>nil, "timeframe"=>"latest"}
+I, [2025-12-28T23:51:04.003558 #55]  INFO -- : [37c0c9b8248ddda93f6e2520bff46824] Started GET "/the_cp_team/intelligence-bureau-ib-mts-recruitment-2025-362-multi-tasking-staff-vacancies-220p?i=i" for 103.24.87.149 at 2025-12-28 23:51:04 +0000
+I, [2025-12-28T23:51:04.063487 #55]  INFO -- : [37c0c9b8248ddda93f6e2520bff46824] Processing by StoriesController#show as */*
+I, [2025-12-28T23:51:04.064256 #55]  INFO -- : [37c0c9b8248ddda93f6e2520bff46824]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"the_cp_team", "slug"=>"intelligence-bureau-ib-mts-recruitment-2025-362-multi-tasking-staff-vacancies-220p"}
+I, [2025-12-28T23:51:04.220512 #55]  INFO -- : [666a1dd4cbf117df3d77a51148531f68]   Rendered articles/index.html.erb within layouts/application (Duration: 202.1ms | Allocations: 103970)
+I, [2025-12-28T23:51:04.228469 #55]  INFO -- : [666a1dd4cbf117df3d77a51148531f68]   Rendered layout layouts/application.html.erb (Duration: 210.1ms | Allocations: 105262)
+I, [2025-12-28T23:51:04.232903 #55]  INFO -- : [666a1dd4cbf117df3d77a51148531f68] Completed 200 OK in 251ms (Views: 159.4ms | ActiveRecord: 65.6ms | Allocations: 113260)
+I, [2025-12-28T23:51:04.265389 #55]  INFO -- : [37c0c9b8248ddda93f6e2520bff46824]   Rendered articles/show.html.erb within layouts/application (Duration: 114.6ms | Allocations: 88491)
+I, [2025-12-28T23:51:04.267133 #55]  INFO -- : [37c0c9b8248ddda93f6e2520bff46824]   Rendered layout layouts/application.html.erb (Duration: 116.4ms | Allocations: 89400)
+I, [2025-12-28T23:51:04.267822 #55]  INFO -- : [37c0c9b8248ddda93f6e2520bff46824] Completed 200 OK in 203ms (Views: 94.3ms | ActiveRecord: 69.2ms | Allocations: 108197)
+I, [2025-12-28T23:51:05.451780 #55]  INFO -- : [fe02733ac2bb714acbcf31891de0611e] Started GET "/the_cp_team/rrb-group-d-admit-card-2025-released-download-now-for-32438-posts-1lom?i=i" for 103.24.87.149 at 2025-12-28 23:51:05 +0000
+I, [2025-12-28T23:51:05.483223 #55]  INFO -- : [fe02733ac2bb714acbcf31891de0611e] Processing by StoriesController#show as */*
+I, [2025-12-28T23:51:05.483590 #55]  INFO -- : [fe02733ac2bb714acbcf31891de0611e]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"the_cp_team", "slug"=>"rrb-group-d-admit-card-2025-released-download-now-for-32438-posts-1lom"}
+I, [2025-12-28T23:51:05.615662 #55]  INFO -- : [fe02733ac2bb714acbcf31891de0611e]   Rendered articles/show.html.erb within layouts/application (Duration: 71.4ms | Allocations: 29506)
+I, [2025-12-28T23:51:05.617651 #55]  INFO -- : [fe02733ac2bb714acbcf31891de0611e]   Rendered layout layouts/application.html.erb (Duration: 73.4ms | Allocations: 30413)
+I, [2025-12-28T23:51:05.618257 #55]  INFO -- : [fe02733ac2bb714acbcf31891de0611e] Completed 200 OK in 134ms (Views: 67.6ms | ActiveRecord: 36.6ms | Allocations: 39229)
+I, [2025-12-28T23:51:05.668618 #55]  INFO -- : [824913bcf29e65b6e6eeb01c84b4a251] Started POST "/bb_tabulations" for 103.24.87.149 at 2025-12-28 23:51:05 +0000
+I, [2025-12-28T23:51:08.470424 #55]  INFO -- : [51858291d8275b067a7b3bb581586531] Started GET "/the_cp_admin/meme-monday-19o2?i=i" for 103.24.87.149 at 2025-12-28 23:51:08 +0000
+I, [2025-12-28T23:51:08.499881 #62]  INFO -- : [e24dd7c687f2a066e5af4497a22598b3] Started POST "/feed_events" for 103.24.87.149 at 2025-12-28 23:51:08 +0000
+I, [2025-12-28T23:51:08.519781 #55]  INFO -- : [51858291d8275b067a7b3bb581586531] Processing by StoriesController#show as */*
+I, [2025-12-28T23:51:08.520252 #55]  INFO -- : [51858291d8275b067a7b3bb581586531]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-19o2"}
+I, [2025-12-28T23:51:08.711386 #55]  INFO -- : [51858291d8275b067a7b3bb581586531]   Rendered articles/show.html.erb within layouts/application (Duration: 114.5ms | Allocations: 36884)
+I, [2025-12-28T23:51:08.713038 #55]  INFO -- : [51858291d8275b067a7b3bb581586531]   Rendered layout layouts/application.html.erb (Duration: 116.1ms | Allocations: 37783)
+I, [2025-12-28T23:51:08.713844 #55]  INFO -- : [51858291d8275b067a7b3bb581586531] Completed 200 OK in 193ms (Views: 95.4ms | ActiveRecord: 52.2ms | Allocations: 54302)
+I, [2025-12-28T23:51:09.516808 #62]  INFO -- : [131dbd7214ba67bfa8a32cd42dc1ccb1] Started GET "/the_cp_admin/meme-monday-19o2" for 103.24.87.149 at 2025-12-28 23:51:09 +0000
+I, [2025-12-28T23:51:09.551796 #62]  INFO -- : [131dbd7214ba67bfa8a32cd42dc1ccb1] Processing by StoriesController#show as */*
+I, [2025-12-28T23:51:09.552074 #62]  INFO -- : [131dbd7214ba67bfa8a32cd42dc1ccb1]   Parameters: {"locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-19o2"}
+I, [2025-12-28T23:51:09.671662 #55]  INFO -- : [3670667349dcf766a3cbd19036e3af6a] Started GET "/the_cp_admin/upsssc-pet-2025-admit-card-released-exam-complete-result-awaited-fl2?i=i" for 103.24.87.149 at 2025-12-28 23:51:09 +0000
+I, [2025-12-28T23:51:09.704246 #55]  INFO -- : [3670667349dcf766a3cbd19036e3af6a] Processing by StoriesController#show as */*
+I, [2025-12-28T23:51:09.705952 #55]  INFO -- : [3670667349dcf766a3cbd19036e3af6a]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"the_cp_admin", "slug"=>"upsssc-pet-2025-admit-card-released-exam-complete-result-awaited-fl2"}
+I, [2025-12-28T23:51:09.778509 #62]  INFO -- : [131dbd7214ba67bfa8a32cd42dc1ccb1]   Rendered articles/show.html.erb within layouts/application (Duration: 157.5ms | Allocations: 37541)
+I, [2025-12-28T23:51:09.810303 #62]  INFO -- : [131dbd7214ba67bfa8a32cd42dc1ccb1]   Rendered layout layouts/application.html.erb (Duration: 189.3ms | Allocations: 48242)
+I, [2025-12-28T23:51:09.811369 #62]  INFO -- : [131dbd7214ba67bfa8a32cd42dc1ccb1] Completed 200 OK in 259ms (Views: 165.9ms | ActiveRecord: 49.6ms | Allocations: 64735)
+I, [2025-12-28T23:51:09.856400 #55]  INFO -- : [3670667349dcf766a3cbd19036e3af6a]   Rendered articles/show.html.erb within layouts/application (Duration: 93.2ms | Allocations: 29918)
+I, [2025-12-28T23:51:09.857879 #55]  INFO -- : [3670667349dcf766a3cbd19036e3af6a]   Rendered layout layouts/application.html.erb (Duration: 94.7ms | Allocations: 30821)
+I, [2025-12-28T23:51:09.858675 #55]  INFO -- : [3670667349dcf766a3cbd19036e3af6a] Completed 200 OK in 152ms (Views: 84.1ms | ActiveRecord: 35.4ms | Allocations: 39158)
+I, [2025-12-28T23:51:10.112599 #55]  INFO -- : [79504777adc3bf47cc59c2e8dde6f1e4] Started POST "/feed_events" for 103.24.87.149 at 2025-12-28 23:51:10 +0000
+I, [2025-12-28T23:51:10.447938 #55]  INFO -- : [b8e9bc7d1f5c0c9209b92801588f4ad5] Started GET "/notifications/counts" for 103.24.87.149 at 2025-12-28 23:51:10 +0000
+I, [2025-12-28T23:51:10.454395 #62]  INFO -- : [f0abb5688b6d019ac18e37e21b146c34] Started GET "/async_info/base_data" for 103.24.87.149 at 2025-12-28 23:51:10 +0000
+I, [2025-12-28T23:51:10.459576 #62]  INFO -- : [8a046f3337f2c0d0655905564b7ee663] Started GET "/follows/bulk_show?ids%5B%5D=1&followable_type=User" for 103.24.87.149 at 2025-12-28 23:51:10 +0000
+I, [2025-12-28T23:51:10.460617 #55]  INFO -- : [d716091114a0c697dc5b19267f4f94e8] Started GET "/reactions?commentable_id=12&commentable_type=Article" for 103.24.87.149 at 2025-12-28 23:51:10 +0000
+I, [2025-12-28T23:51:10.503384 #55]  INFO -- : [b8e9bc7d1f5c0c9209b92801588f4ad5] Processing by Notifications::CountsController#index as */*
+I, [2025-12-28T23:51:10.505315 #55]  INFO -- : [b8e9bc7d1f5c0c9209b92801588f4ad5]   Parameters: {"locale"=>nil}
+I, [2025-12-28T23:51:10.535465 #62]  INFO -- : [f0abb5688b6d019ac18e37e21b146c34] Processing by AsyncInfoController#base_data as JSON
+I, [2025-12-28T23:51:10.536833 #62]  INFO -- : [f0abb5688b6d019ac18e37e21b146c34]   Parameters: {"locale"=>nil}
+I, [2025-12-28T23:51:10.561910 #55]  INFO -- : [d716091114a0c697dc5b19267f4f94e8] Processing by ReactionsController#index as */*
+I, [2025-12-28T23:51:10.566686 #55]  INFO -- : [d716091114a0c697dc5b19267f4f94e8]   Parameters: {"commentable_id"=>"12", "commentable_type"=>"Article", "locale"=>nil}
+I, [2025-12-28T23:51:10.568485 #62]  INFO -- : [8a046f3337f2c0d0655905564b7ee663] Processing by FollowsController#bulk_show as JSON
+I, [2025-12-28T23:51:10.568932 #62]  INFO -- : [8a046f3337f2c0d0655905564b7ee663]   Parameters: {"ids"=>["1"], "followable_type"=>"User", "locale"=>nil}
+I, [2025-12-28T23:51:10.576588 #55]  INFO -- : [b8e9bc7d1f5c0c9209b92801588f4ad5]   Rendered text template (Duration: 0.1ms | Allocations: 31)
+I, [2025-12-28T23:51:10.579380 #55]  INFO -- : [b8e9bc7d1f5c0c9209b92801588f4ad5] Completed 200 OK in 69ms (Views: 2.9ms | ActiveRecord: 41.6ms | Allocations: 6259)
+I, [2025-12-28T23:51:10.657138 #55]  INFO -- : [d716091114a0c697dc5b19267f4f94e8] Completed 200 OK in 86ms (Views: 0.2ms | ActiveRecord: 14.3ms | Allocations: 5169)
+I, [2025-12-28T23:51:10.680311 #62]  INFO -- : [8a046f3337f2c0d0655905564b7ee663] Completed 200 OK in 100ms (Views: 0.2ms | ActiveRecord: 24.3ms | Allocations: 5431)
+I, [2025-12-28T23:51:10.688512 #62]  INFO -- : [f0abb5688b6d019ac18e37e21b146c34] Completed 200 OK in 131ms (Views: 0.3ms | ActiveRecord: 40.9ms | Allocations: 11481)
+I, [2025-12-28T23:51:10.810401 #55]  INFO -- : [dbab10abb5c2534907f16e171350d138] Started GET "/t/governmentjobs?i=i" for 103.24.87.149 at 2025-12-28 23:51:10 +0000
+I, [2025-12-28T23:51:10.883299 #55]  INFO -- : [0ac3bae0381acf580ee183550562d2c3] Started GET "/the_cp_admin/upsssc-pet-2025-admit-card-released-exam-complete-result-awaited-fl2/bb/post_comments" for 103.24.87.149 at 2025-12-28 23:51:10 +0000
+I, [2025-12-28T23:51:10.892959 #62]  INFO -- : [37be4d5ff93ee04fa77e81e70461bc4f] Started GET "/user_subscriptions/subscribed?source_type=Article&source_id=12" for 103.24.87.149 at 2025-12-28 23:51:10 +0000
+I, [2025-12-28T23:51:10.898338 #62]  INFO -- : [443c39513401ac2e012489c0931938cd] Started GET "/the_cp_admin/upsssc-pet-2025-admit-card-released-exam-complete-result-awaited-fl2/bb/post_body_bottom" for 103.24.87.149 at 2025-12-28 23:51:10 +0000
+I, [2025-12-28T23:51:11.051741 #55]  INFO -- : [dbab10abb5c2534907f16e171350d138] Processing by Stories::TaggedArticlesController#index as */*
+I, [2025-12-28T23:51:11.052020 #55]  INFO -- : [dbab10abb5c2534907f16e171350d138]   Parameters: {"i"=>"i", "locale"=>nil, "tag"=>"governmentjobs"}
+I, [2025-12-28T23:51:11.276839 #62]  INFO -- : [37be4d5ff93ee04fa77e81e70461bc4f] Processing by UserSubscriptionsController#subscribed as JSON
+I, [2025-12-28T23:51:11.278298 #62]  INFO -- : [37be4d5ff93ee04fa77e81e70461bc4f]   Parameters: {"source_type"=>"Article", "source_id"=>"12", "locale"=>nil}
+I, [2025-12-28T23:51:11.289078 #55]  INFO -- : [0ac3bae0381acf580ee183550562d2c3] Processing by BillboardsController#show as */*
+I, [2025-12-28T23:51:11.293794 #55]  INFO -- : [0ac3bae0381acf580ee183550562d2c3]   Parameters: {"locale"=>nil, "username"=>"the_cp_admin", "slug"=>"upsssc-pet-2025-admit-card-released-exam-complete-result-awaited-fl2", "placement_area"=>"post_comments"}
+I, [2025-12-28T23:51:11.313858 #62]  INFO -- : [443c39513401ac2e012489c0931938cd] Processing by BillboardsController#show as */*
+I, [2025-12-28T23:51:11.314287 #62]  INFO -- : [443c39513401ac2e012489c0931938cd]   Parameters: {"locale"=>nil, "username"=>"the_cp_admin", "slug"=>"upsssc-pet-2025-admit-card-released-exam-complete-result-awaited-fl2", "placement_area"=>"post_body_bottom"}
+I, [2025-12-28T23:51:11.329649 #62]  INFO -- : [37be4d5ff93ee04fa77e81e70461bc4f] Completed 200 OK in 49ms (Views: 0.4ms | ActiveRecord: 28.6ms | Allocations: 8118)
+I, [2025-12-28T23:51:11.375485 #55]  INFO -- : [0ac3bae0381acf580ee183550562d2c3]   Rendered billboards/show.html.erb (Duration: 0.1ms | Allocations: 34)
+I, [2025-12-28T23:51:11.376225 #62]  INFO -- : [443c39513401ac2e012489c0931938cd]   Rendered billboards/show.html.erb (Duration: 0.2ms | Allocations: 34)
+I, [2025-12-28T23:51:11.377415 #62]  INFO -- : [443c39513401ac2e012489c0931938cd] Completed 200 OK in 62ms (Views: 2.3ms | ActiveRecord: 29.0ms | Allocations: 10238)
+I, [2025-12-28T23:51:11.376698 #55]  INFO -- : [0ac3bae0381acf580ee183550562d2c3] Completed 200 OK in 82ms (Views: 1.3ms | ActiveRecord: 36.3ms | Allocations: 33333)
+I, [2025-12-28T23:51:11.535218 #55]  INFO -- : [dbab10abb5c2534907f16e171350d138]   Rendered stories/tagged_articles/index.html.erb within layouts/application (Duration: 329.5ms | Allocations: 86461)
+I, [2025-12-28T23:51:11.538216 #55]  INFO -- : [dbab10abb5c2534907f16e171350d138]   Rendered layout layouts/application.html.erb (Duration: 332.6ms | Allocations: 87349)
+I, [2025-12-28T23:51:11.539321 #55]  INFO -- : [dbab10abb5c2534907f16e171350d138] Completed 200 OK in 487ms (Views: 294.1ms | ActiveRecord: 68.6ms | Allocations: 99881)
+I, [2025-12-28T23:51:11.548241 #62]  INFO -- : [1d46445e495b1d99ff220f99c2e56dc1] Started GET "/notification_subscriptions/Article/12" for 103.24.87.149 at 2025-12-28 23:51:11 +0000
+I, [2025-12-28T23:51:11.579718 #62]  INFO -- : [1d46445e495b1d99ff220f99c2e56dc1] Processing by NotificationSubscriptionsController#show as JSON
+I, [2025-12-28T23:51:11.580249 #62]  INFO -- : [1d46445e495b1d99ff220f99c2e56dc1]   Parameters: {"locale"=>nil, "notifiable_type"=>"Article", "notifiable_id"=>"12"}
+I, [2025-12-28T23:51:11.593818 #55]  INFO -- : [6d28588e4c58f65419c941fe0cfc124e] Started GET "/the_cp_admin/upsssc-pet-2025-admit-card-released-exam-complete-result-awaited-fl2/bb/post_sidebar" for 103.24.87.149 at 2025-12-28 23:51:11 +0000
+I, [2025-12-28T23:51:11.595969 #62]  INFO -- : [920f465579072f18594059cc13c2428c] Started PATCH "/page_views/12" for 103.24.87.149 at 2025-12-28 23:51:11 +0000
+I, [2025-12-28T23:51:11.602981 #62]  INFO -- : [1d46445e495b1d99ff220f99c2e56dc1] Completed 200 OK in 22ms (Views: 0.2ms | ActiveRecord: 7.5ms | Allocations: 3893)
+I, [2025-12-28T23:51:11.637946 #55]  INFO -- : [6d28588e4c58f65419c941fe0cfc124e] Processing by BillboardsController#show as */*
+I, [2025-12-28T23:51:11.638424 #55]  INFO -- : [6d28588e4c58f65419c941fe0cfc124e]   Parameters: {"locale"=>nil, "username"=>"the_cp_admin", "slug"=>"upsssc-pet-2025-admit-card-released-exam-complete-result-awaited-fl2", "placement_area"=>"post_sidebar"}
+I, [2025-12-28T23:51:11.688853 #55]  INFO -- : [6d28588e4c58f65419c941fe0cfc124e]   Rendered billboards/show.html.erb (Duration: 0.2ms | Allocations: 34)
+I, [2025-12-28T23:51:11.690541 #55]  INFO -- : [6d28588e4c58f65419c941fe0cfc124e] Completed 200 OK in 52ms (Views: 2.1ms | ActiveRecord: 15.4ms | Allocations: 7075)
+I, [2025-12-28T23:51:11.751743 #55]  INFO -- : [0d2b6204c6f4db78a1361d8e322686fb] Started GET "/notifications?i=i" for 103.24.87.149 at 2025-12-28 23:51:11 +0000
+I, [2025-12-28T23:51:11.788912 #55]  INFO -- : [0d2b6204c6f4db78a1361d8e322686fb] Processing by NotificationsController#index as */*
+I, [2025-12-28T23:51:11.789512 #55]  INFO -- : [0d2b6204c6f4db78a1361d8e322686fb]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2025-12-28T23:51:11.816844 #62]  INFO -- : [f4b583eda6793473d3cbe15e29e1b4d1] Started GET "/reactions?article_id=12" for 103.24.87.149 at 2025-12-28 23:51:11 +0000
+I, [2025-12-28T23:51:11.828428 #55]  INFO -- : [0d2b6204c6f4db78a1361d8e322686fb]   Rendered notifications/index.html.erb within layouts/application (Duration: 7.3ms | Allocations: 2133)
+I, [2025-12-28T23:51:11.830974 #55]  INFO -- : [0d2b6204c6f4db78a1361d8e322686fb]   Rendered layout layouts/application.html.erb (Duration: 10.8ms | Allocations: 3018)
+I, [2025-12-28T23:51:11.832024 #55]  INFO -- : [0d2b6204c6f4db78a1361d8e322686fb] Completed 200 OK in 42ms (Views: 12.1ms | ActiveRecord: 9.7ms | Allocations: 7370)
+I, [2025-12-28T23:51:11.857475 #62]  INFO -- : [f4b583eda6793473d3cbe15e29e1b4d1] Processing by ReactionsController#index as */*
+I, [2025-12-28T23:51:11.858210 #62]  INFO -- : [f4b583eda6793473d3cbe15e29e1b4d1]   Parameters: {"article_id"=>"12", "locale"=>nil}
+I, [2025-12-28T23:51:11.891451 #62]  INFO -- : [f4b583eda6793473d3cbe15e29e1b4d1] Completed 200 OK in 32ms (Views: 0.2ms | ActiveRecord: 9.3ms | Allocations: 5053)
+I, [2025-12-28T23:51:12.251641 #62]  INFO -- : [683ce3abc1525a0e1b60b99f741d60d9] Started POST "/page_views" for 103.24.87.149 at 2025-12-28 23:51:12 +0000
+I, [2025-12-28T23:51:17.775153 #62]  INFO -- : [53f33dee7ba8cc603bfa0d98c59eab2f] Started GET "/bottom_items?article_id=12" for 103.24.87.149 at 2025-12-28 23:51:17 +0000
+I, [2025-12-28T23:51:17.817293 #62]  INFO -- : [53f33dee7ba8cc603bfa0d98c59eab2f] Processing by BottomItemsController#index as */*
+I, [2025-12-28T23:51:17.817629 #62]  INFO -- : [53f33dee7ba8cc603bfa0d98c59eab2f]   Parameters: {"article_id"=>"12", "locale"=>nil}
+I, [2025-12-28T23:51:17.863132 #62]  INFO -- : [53f33dee7ba8cc603bfa0d98c59eab2f]   Rendered bottom_items/index.html.erb (Duration: 22.9ms | Allocations: 3547)
+I, [2025-12-28T23:51:17.864339 #62]  INFO -- : [53f33dee7ba8cc603bfa0d98c59eab2f] Completed 200 OK in 46ms (Views: 15.6ms | ActiveRecord: 17.5ms | Allocations: 6583)
+I, [2025-12-28T23:51:23.682311 #62]  INFO -- : [6a69e7aa7dae6b859df0d4f529be252e] Started POST "/comments" for 103.24.87.149 at 2025-12-28 23:51:23 +0000
+I, [2025-12-28T23:51:23.716024 #62]  INFO -- : [6a69e7aa7dae6b859df0d4f529be252e] Processing by CommentsController#create as */*
+I, [2025-12-28T23:51:23.716508 #62]  INFO -- : [6a69e7aa7dae6b859df0d4f529be252e]   Parameters: {"comment"=>{"body_markdown"=>"Hello", "commentable_id"=>"12", "commentable_type"=>"Article", "parent_id"=>nil}, "locale"=>nil}
+I, [2025-12-28T23:51:23.969859 #62]  INFO -- : [6a69e7aa7dae6b859df0d4f529be252e] [FCM][ANDROID] device_token=dWOH5nyzTRmcGJElT...
+I, [2025-12-28T23:51:23.971938 #62]  INFO -- : [6a69e7aa7dae6b859df0d4f529be252e] [FCM][ANDROID] notification={:title=>"New comment from @murari_kumar_38d8e39a8450", :body=>"in UPSSSC PET 2025: Admit Card Released & Exam Complete - Result Awaited: Hello", :channel_id=>"comment_threads", :color=>"#3b49df", :icon=>"comment"}
+I, [2025-12-28T23:51:23.972240 #62]  INFO -- : [6a69e7aa7dae6b859df0d4f529be252e] [FCM][ANDROID] data_payload={:notification_type=>"comment_article", :category=>"comment", :priority=>"default", :title=>"New comment from @murari_kumar_38d8e39a8450", :body=>"in UPSSSC PET 2025: Admit Card Released & Exam Complete - Result Awaited: Hello", :channel=>"comment_threads", :icon=>"comment", :color=>"#3b49df", :timestamp=>1766965883, :url=>"https://careerpolitics.com/murari_kumar_38d8e39a8450/comment/o", :actor=>{:id=>6, :username=>"murari_kumar_38d8e39a8450", :name=>"Murari Kumar", :avatar_url=>"https://res.cloudinary.com/dbdlrqwdt/image/fetch/s--DRjxqIo_--/c_fill,f_auto,fl_progressive,h_90,q_auto,w_90/https://careerpolitics-images-bucket.s3.amazonaws.com/uploads/user/profile_image/6/cc588957-f403-4963-9521-b0de353fc61a.jpg"}, :target=>{:type=>"Comment", :id=>24, :title=>"UPSSSC PET 2025: Admit Card Released & Exam Complete - Result Awaited", :url=>"https://careerpolitics.com/murari_kumar_38d8e39a8450/comment/o"}, :action_context=>{:comment_id=>24, :article_id=>12, :article_title=>"UPSSSC PET 2025: Admit Card Released & Exam Complete - Result Awaited", :parent_comment_id=>nil, :thread_depth=>0, :commentable_type=>"Article", :subforem_id=>nil}, :group_key=>"comment_24", :actions=>[{:id=>"reply", :label=>"Reply", :type=>"text_input", :icon=>"reply"}, {:id=>"view", :label=>"View", :type=>"navigation", :icon=>"open"}, {:id=>"mark_read", :label=>"Mark as read", :type=>"button", :icon=>"check"}]}
+I, [2025-12-28T23:51:23.972382 #62]  INFO -- : [6a69e7aa7dae6b859df0d4f529be252e] [FCM][ANDROID] deeplink_url=https://careerpolitics.com/murari_kumar_38d8e39a8450/comment/o
 Pipelining commands on a Redis instance is deprecated and will be removed in Redis 5.0.0.
 redis.multi do
   redis.get("key")
@@ -83,30 +711,31 @@ redis.multi do |pipeline|
   pipeline.get("key")
 end
 (called from /opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rpush-9.2.0/lib/rpush/client/redis/notification.rb:70:in `block in register_notification'}
-I, [2025-12-28T23:18:44.361466 #62]  INFO -- : [06b084ede935c5113da8ea67719c4a3e] Completed 200 OK in 468ms (Views: 6.4ms | ActiveRecord: 173.8ms | Allocations: 96223)
-I, [2025-12-28T23:18:44.459313 #62]  INFO -- : [2df03e45affb262fe4421681d0cd6a6e] Started GET "/reactions?commentable_id=13&commentable_type=Article" for 103.24.87.149 at 2025-12-28 23:18:44 +0000
-I, [2025-12-28T23:18:44.464505 #55]  INFO -- : [ce401df86c383630fba52eb619907676] Started GET "/profile_preview_cards/6" for 103.24.87.149 at 2025-12-28 23:18:44 +0000
-I, [2025-12-28T23:18:44.522697 #62]  INFO -- : [2df03e45affb262fe4421681d0cd6a6e] Processing by ReactionsController#index as */*
-I, [2025-12-28T23:18:44.523321 #62]  INFO -- : [2df03e45affb262fe4421681d0cd6a6e]   Parameters: {"commentable_id"=>"13", "commentable_type"=>"Article", "locale"=>nil}
-I, [2025-12-28T23:18:44.536007 #55]  INFO -- : [ce401df86c383630fba52eb619907676] Processing by ProfilePreviewCardsController#show as */*
-I, [2025-12-28T23:18:44.537997 #55]  INFO -- : [ce401df86c383630fba52eb619907676]   Parameters: {"locale"=>nil, "id"=>"6"}
-I, [2025-12-28T23:18:44.559463 #62]  INFO -- : [2df03e45affb262fe4421681d0cd6a6e] Completed 200 OK in 36ms (Views: 0.7ms | ActiveRecord: 4.9ms | Allocations: 6070)
-I, [2025-12-28T23:18:44.588409 #55]  INFO -- : [ce401df86c383630fba52eb619907676]   Rendered profile_preview_cards/show.html.erb (Duration: 12.4ms | Allocations: 2081)
-I, [2025-12-28T23:18:44.590202 #55]  INFO -- : [ce401df86c383630fba52eb619907676] Completed 200 OK in 51ms (Views: 13.5ms | ActiveRecord: 8.8ms | Allocations: 6274)
-I, [2025-12-28T23:18:44.721465 #55]  INFO -- : [ac588decc3cc2bcce43af3250d400cb7] Started GET "/follows/bulk_show?ids%5B%5D=6&followable_type=User" for 103.24.87.149 at 2025-12-28 23:18:44 +0000
-I, [2025-12-28T23:18:44.755465 #55]  INFO -- : [ac588decc3cc2bcce43af3250d400cb7] Processing by FollowsController#bulk_show as JSON
-I, [2025-12-28T23:18:44.755876 #55]  INFO -- : [ac588decc3cc2bcce43af3250d400cb7]   Parameters: {"ids"=>["6"], "followable_type"=>"User", "locale"=>nil}
-I, [2025-12-28T23:18:44.767509 #55]  INFO -- : [ac588decc3cc2bcce43af3250d400cb7] Completed 200 OK in 11ms (Views: 0.4ms | ActiveRecord: 1.7ms | Allocations: 2011)
-I, [2025-12-28T23:18:47.459473 #55]  INFO -- : [5eae6813bc66e83b5dd79a443ca2f187] Started PATCH "/page_views/13" for 103.24.87.149 at 2025-12-28 23:18:47 +0000
-I, [2025-12-28T23:18:50.680496 #55]  INFO -- : [2660a0d51baa1004a3588026c2e2a1d6] Started GET "/the_cp_admin/meme-monday-199o?i=i" for 103.24.87.149 at 2025-12-28 23:18:50 +0000
-I, [2025-12-28T23:18:50.702589 #62]  INFO -- : [3ed218361a9da9455fe65f6062481268] Started GET "/the_cp_admin/series/1?i=i" for 103.24.87.149 at 2025-12-28 23:18:50 +0000
-I, [2025-12-28T23:18:50.956261 #55]  INFO -- : [2660a0d51baa1004a3588026c2e2a1d6] Processing by StoriesController#show as */*
-I, [2025-12-28T23:18:50.956491 #55]  INFO -- : [2660a0d51baa1004a3588026c2e2a1d6]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"the_cp_admin", "slug"=>"meme-monday-199o"}
-I, [2025-12-28T23:18:51.045092 #62]  INFO -- : [3ed218361a9da9455fe65f6062481268] Processing by CollectionsController#show as */*
-I, [2025-12-28T23:18:51.045317 #62]  INFO -- : [3ed218361a9da9455fe65f6062481268]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"the_cp_admin", "id"=>"1"}
-I, [2025-12-28T23:18:51.221156 #62]  INFO -- : [3ed218361a9da9455fe65f6062481268]   Rendered collections/show.html.erb within layouts/application (Duration: 69.5ms | Allocations: 14844)
-I, [2025-12-28T23:18:51.223076 #62]  INFO -- : [3ed218361a9da9455fe65f6062481268]   Rendered layout layouts/application.html.erb (Duration: 71.4ms | Allocations: 15729)
-I, [2025-12-28T23:18:51.224123 #62]  INFO -- : [3ed218361a9da9455fe65f6062481268] Completed 200 OK in 178ms (Views: 67.8ms | ActiveRecord: 17.2ms | Allocations: 19660)
-I, [2025-12-28T23:18:51.323984 #55]  INFO -- : [2660a0d51baa1004a3588026c2e2a1d6]   Rendered articles/show.html.erb within layouts/application (Duration: 157.4ms | Allocations: 35865)
-I, [2025-12-28T23:18:51.328390 #55]  INFO -- : [2660a0d51baa1004a3588026c2e2a1d6]   Rendered layout layouts/application.html.erb (Duration: 161.8ms | Allocations: 36760)
-I, [2025-12-28T23:18:51.329378 #55]  INFO -- : [2660a0d51baa1004a3588026c2e2a1d6] Completed 200 OK in 371ms (Views: 137.5ms | ActiveRecord: 49.9ms | Allocations: 48792)
+I, [2025-12-28T23:51:24.038278 #62]  INFO -- : [6a69e7aa7dae6b859df0d4f529be252e] Completed 200 OK in 321ms (Views: 4.8ms | ActiveRecord: 109.6ms | Allocations: 64239)
+I, [2025-12-28T23:51:24.130855 #62]  INFO -- : [45cb7cb06deabb6ea3f550228fcfc881] Started GET "/reactions?commentable_id=12&commentable_type=Article" for 103.24.87.149 at 2025-12-28 23:51:24 +0000
+I, [2025-12-28T23:51:24.140232 #55]  INFO -- : [dfa1ae283597f7c5b22d90f7a48f977a] Started GET "/profile_preview_cards/6" for 103.24.87.149 at 2025-12-28 23:51:24 +0000
+I, [2025-12-28T23:51:24.189606 #62]  INFO -- : [45cb7cb06deabb6ea3f550228fcfc881] Processing by ReactionsController#index as */*
+I, [2025-12-28T23:51:24.192046 #62]  INFO -- : [45cb7cb06deabb6ea3f550228fcfc881]   Parameters: {"commentable_id"=>"12", "commentable_type"=>"Article", "locale"=>nil}
+I, [2025-12-28T23:51:24.212953 #55]  INFO -- : [dfa1ae283597f7c5b22d90f7a48f977a] Processing by ProfilePreviewCardsController#show as */*
+I, [2025-12-28T23:51:24.213548 #55]  INFO -- : [dfa1ae283597f7c5b22d90f7a48f977a]   Parameters: {"locale"=>nil, "id"=>"6"}
+I, [2025-12-28T23:51:24.220178 #62]  INFO -- : [45cb7cb06deabb6ea3f550228fcfc881] Completed 200 OK in 27ms (Views: 0.7ms | ActiveRecord: 5.4ms | Allocations: 2718)
+I, [2025-12-28T23:51:24.263218 #55]  INFO -- : [dfa1ae283597f7c5b22d90f7a48f977a]   Rendered profile_preview_cards/show.html.erb (Duration: 11.2ms | Allocations: 1758)
+I, [2025-12-28T23:51:24.264326 #55]  INFO -- : [dfa1ae283597f7c5b22d90f7a48f977a] Completed 200 OK in 48ms (Views: 8.4ms | ActiveRecord: 13.4ms | Allocations: 5404)
+I, [2025-12-28T23:51:24.353148 #55]  INFO -- : [a8c08612446d78e73c18034ea70b88c2] Started GET "/follows/bulk_show?ids%5B%5D=6&followable_type=User" for 103.24.87.149 at 2025-12-28 23:51:24 +0000
+I, [2025-12-28T23:51:24.413129 #55]  INFO -- : [a8c08612446d78e73c18034ea70b88c2] Processing by FollowsController#bulk_show as JSON
+I, [2025-12-28T23:51:24.413364 #55]  INFO -- : [a8c08612446d78e73c18034ea70b88c2]   Parameters: {"ids"=>["6"], "followable_type"=>"User", "locale"=>nil}
+I, [2025-12-28T23:51:24.424283 #55]  INFO -- : [a8c08612446d78e73c18034ea70b88c2] Completed 200 OK in 10ms (Views: 0.2ms | ActiveRecord: 1.9ms | Allocations: 1784)
+I, [2025-12-28T23:51:26.041902 #55]  INFO -- : [400970ac5c36a772d8a5eaa36204c68b] Started PATCH "/page_views/12" for 103.24.87.149 at 2025-12-28 23:51:26 +0000
+I, [2025-12-28T23:51:27.261095 #55]  INFO -- : [0a32b729f6428720981dd3b7363c77ef] Started PATCH "/page_views/12" for 103.24.87.149 at 2025-12-28 23:51:27 +0000
+I, [2025-12-28T23:51:31.473270 #55]  INFO -- : [f9ec0138e209edb692665b9a0c7ef6fd] Started POST "/reactions" for 103.24.87.149 at 2025-12-28 23:51:31 +0000
+I, [2025-12-28T23:51:31.507824 #55]  INFO -- : [f9ec0138e209edb692665b9a0c7ef6fd] Processing by ReactionsController#create as */*
+I, [2025-12-28T23:51:31.508193 #55]  INFO -- : [f9ec0138e209edb692665b9a0c7ef6fd]   Parameters: {"reactable_type"=>"Comment", "reactable_id"=>"24", "authenticity_token"=>"[FILTERED]", "locale"=>nil}
+I, [2025-12-28T23:51:31.576291 #55]  INFO -- : [f9ec0138e209edb692665b9a0c7ef6fd] Completed 200 OK in 67ms (Views: 0.3ms | ActiveRecord: 22.5ms | Allocations: 10142)
+I, [2025-12-28T23:51:34.589417 #55]  INFO -- : [c6150a66c0a61150bfdaf247649c8ff8] Started POST "/reactions" for 103.24.87.149 at 2025-12-28 23:51:34 +0000
+I, [2025-12-28T23:51:34.621622 #55]  INFO -- : [c6150a66c0a61150bfdaf247649c8ff8] Processing by ReactionsController#create as */*
+I, [2025-12-28T23:51:34.621997 #55]  INFO -- : [c6150a66c0a61150bfdaf247649c8ff8]   Parameters: {"reactable_type"=>"Comment", "reactable_id"=>"24", "authenticity_token"=>"[FILTERED]", "locale"=>nil}
+I, [2025-12-28T23:51:34.720658 #55]  INFO -- : [c6150a66c0a61150bfdaf247649c8ff8] Completed 200 OK in 98ms (Views: 0.3ms | ActiveRecord: 35.9ms | Allocations: 17879)
+I, [2025-12-28T23:51:41.665588 #55]  INFO -- : [705b9c067f0a30383451f177c263dd0a] Started PATCH "/page_views/12" for 103.24.87.149 at 2025-12-28 23:51:41 +0000
+I, [2025-12-28T23:51:42.667013 #55]  INFO -- : [9012edbd0e8015ca270620d71607ffc8] Started PATCH "/page_views/12" for 103.24.87.149 at 2025-12-28 23:51:42 +0000
+I, [2025-12-28T23:51:56.673702 #55]  INFO -- : [2b44f65a021c8da498db4a56d6f9c159] Started PATCH "/page_views/12" for 103.24.87.149 at 2025-12-28 23:51:56 +0000
+I, [2025-12-28T23:51:57.675057 #55]  INFO -- : [b91141aebda5586344a4f138bf936da2] Started PATCH "/page_views/12" for 103.24.87.149 at 2025-12-28 23:51:57 +0000
