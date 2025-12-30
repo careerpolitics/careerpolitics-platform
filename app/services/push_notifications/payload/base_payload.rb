@@ -23,29 +23,34 @@ module PushNotifications
       end
 
       def base_payload(title:, body:, target:, actor: nil, action_context: {})
-        {
+        payload = {
           notification_type: notification_type.to_s,
-          category: config[:category],
-          priority: config[:priority],
-          title: title,
-          body: truncate_body(body),
-          channel: config[:channel],
-          icon: config[:icon],
-          color: config[:color],
-          timestamp: Time.current.to_i,
-          url: target&.dig(:url)
-        }.tap do |payload|
-          payload[:actor] = actor if actor.present?
-          payload[:target] = target if target.present?
-          payload[:action_context] = action_context if action_context.present?
+          category: config[:category].to_s,
+          priority: config[:priority].to_s,
+          title: title.to_s,
+          body: truncate_body(body).to_s,
+          channel: config[:channel].to_s,
+          icon: config[:icon].to_s,
+          color: config[:color].to_s,
+          timestamp: Time.current.to_i.to_s,
+          url: target&.dig(:url).to_s
+        }
 
-          if config[:groupable] && target.present?
-            payload[:group_key] = generate_group_key(target)
-          end
+        payload[:actor] = actor.to_json if actor.present?
+        payload[:target] = target.to_json if target.present?
+        payload[:action_context] = action_context.to_json if action_context.present?
 
-          payload[:actions] = build_actions if config[:actions].present?
+        if config[:groupable] && target.present?
+          payload[:group_key] = generate_group_key(target).to_s
         end
+
+        if config[:actions].present?
+          payload[:actions] = build_actions.to_json
+        end
+
+        payload
       end
+
 
       def build_actor(user)
         return nil unless user
