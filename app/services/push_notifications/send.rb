@@ -1,12 +1,11 @@
 module PushNotifications
   class Send
-    def self.call(user_ids:, title:, body:, payload:)
-      new(user_ids: user_ids, title: title, body: body, payload: payload).call
+    def self.call(user_ids:, body:, payload:)
+      new(user_ids: user_ids, body: body, payload: payload).call
     end
 
-    def initialize(user_ids:, title:, body:, payload:)
+    def initialize(user_ids:, body:, payload:)
       @user_ids = user_ids
-      @title = title
       @body = body
       @payload = payload
     end
@@ -14,8 +13,9 @@ module PushNotifications
     def call
       relation = Device.where(user_id: @user_ids)
 
+      title = @payload[:title] || @payload["title"]
       relation.find_each do |device|
-        device.create_notification(@title, @body, @payload)
+        device.create_notification(title, @body, @payload)
       end
 
       # perform_in(30.seconds) is key: The background worker will execute Rpush.push which will send out all

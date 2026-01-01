@@ -20,6 +20,9 @@ module Notifications
           action: nil,
           json_data: json_data,
         )
+
+      #   Send push notification to User
+        send_push_notification
       end
 
       private
@@ -41,6 +44,18 @@ module Notifications
             }
           }
         }
+      end
+
+      def send_push_notification
+        payload_builder = PushNotifications::Payload::BadgePayload.new(
+          badge_achievement: badge_achievement,
+        )
+
+        PushNotifications::UnifiedNotifier.call(
+          user_ids: [badge_achievement.user.id],
+          payload_builder: payload_builder,
+          preference_key: :mobile_badge_notifications,
+        )
       end
     end
   end

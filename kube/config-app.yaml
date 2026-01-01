@@ -53,3 +53,4 @@ data:
   SMTP_PORT: "587"
   WEB_CONCURRENCY: "2"
   REDIRECT_WWW_TO_ROOT: "true"
+  LOG_LEVEL: "info"
