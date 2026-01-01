@@ -12,6 +12,10 @@ FactoryBot.define do
     email_unread_notifications { true }
     mobile_comment_notifications { true }
     mobile_mention_notifications { true }
+    mobile_reaction_notifications { true }
+    mobile_follower_notifications { true }
+    mobile_badge_notifications { true }
+    mobile_milestone_notifications { true }
     mod_roundrobin_notifications { true }
     reaction_notifications { true }
     welcome_notifications { true }
