@@ -61,6 +61,7 @@ namespace :admin do
         post "send_email"
         post "verify_email_ownership"
         post "send_email_confirmation"
+        post "confirm_email"
         patch "unlock_access"
         post "unpublish_all_articles"
       end
@@ -102,6 +103,7 @@ namespace :admin do
       member do
         patch "update_org_credits"
         patch "update_fully_trusted"
+        patch "update_baseline_score"
       end
     end
     resources :emails
