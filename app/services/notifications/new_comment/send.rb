@@ -37,22 +37,8 @@ module Notifications
           )
         end
 
-        # Send PNs using Rpush - respecting users' notification delivery settings
-        targets = User.joins(:notification_setting)
-          .where(id: user_ids, notification_setting: { mobile_comment_notifications: true }).ids
-
-        PushNotifications::Send.call(
-          user_ids: targets,
-          title: I18n.t("services.notifications.new_comment.new"),
-          body: "#{I18n.t('views.notifications.comment.commented_html', user: comment.user.username,
-                                                                        title: comment.commentable.title.strip)}:\n" \
-                "#{strip_tags(comment.processed_html).strip}",
-          payload: {
-            url: URL.url(comment.path),
-            type: "new comment"
-          },
-        )
-
+        #Send enhanced push notification using UnifiedNotifier
+        send_push_notification(user_ids.to_a)
         return unless comment.commentable.organization_id
 
         Notification.create(
@@ -94,6 +80,35 @@ module Notifications
 
         user_ids_for("only_author_comments")
       end
+
+      def send_push_notification(user_ids)
+        return if user_ids.empty?
+
+        notification_type = determine_notification_type
+
+        payload_builder = PushNotifications::Payload::CommentPayload.new(
+          comment: comment,
+          notification_type: notification_type
+        )
+
+        PushNotifications::UnifiedNotifier.call(
+          user_ids: user_ids,
+          payload_builder: payload_builder,
+          preference_key: :mobile_comment_notifications
+        )
+      end
+
+      def determine_notification_type
+        if comment.parent_id.present?
+          :comment_reply
+        elsif comment.ancestry.blank?
+          :comment_article
+        else
+          :comment_thread
+        end
+      end
+
+
     end
   end
 end

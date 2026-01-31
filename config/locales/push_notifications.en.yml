@@ -1,0 +1,65 @@
+en:
+  services:
+    notifications:
+      push_notifications:
+
+        # -------------------------
+        # Comment Notifications
+        # -------------------------
+        comment:
+          reply_title: "Reply from @%{username}"
+          article_title: "New comment from @%{username}"
+          thread_title: "New comment in thread"
+
+          article_body: "in %{article}: %{comment}"
+          thread_body: "in %{article}: %{comment}"
+
+        # -------------------------
+        # Mention Notifications
+        # -------------------------
+        mention:
+          title: "@%{username} mentioned you"
+
+          article_body: "in article %{article}: %{text}"
+          comment_body: "in %{article}: %{text}"
+
+        # -------------------------
+        # Reaction Notifications
+        # -------------------------
+        reaction:
+          single_title: "@%{username} reacted to your post"
+          multiple_title: "%{count} people reacted to your post"
+
+          single_body: "%{emoji} on %{title}"
+          multiple_body: "%{emoji} %{users} reacted to %{title}"
+          multiple_body_with_others: "%{emoji} %{users} and %{count} others reacted to %{title}"
+
+
+        # -------------------------
+        # Social / Follow Notifications
+        # -------------------------
+        follower:
+          title: "New Follower"
+          user_body: "@%{username} started following you"
+          organization_body: "@%{username} started following %{organization}"
+
+        # -------------------------
+        # Badge Notifications
+        # -------------------------
+        badge:
+          title: "Badge Earned! 🏅"
+          body: "You earned the %{badge} badge"
+
+        # -------------------------
+        # Milestone Notifications
+        # -------------------------
+        milestone:
+          title: "Milestone Reached! 🎉"
+          views_body: "Your post %{title} reached %{count} views!"
+          reactions_body: "Your post %{title} reached %{count} reactions!"
+
+        # -------------------------
+        # Generic Notifications
+        # -------------------------
+        generic:
+          body: "Your post %{title} reached %{count} %{type}"

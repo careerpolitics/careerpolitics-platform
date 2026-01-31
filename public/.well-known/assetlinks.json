@@ -1,9 +1,28 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "com.forem.android",
-    "sha256_cert_fingerprints":
-    ["01:7B:DF:23:02:21:78:49:46:EC:48:89:5B:B0:A2:08:04:D8:D1:AE:E7:80:78:FB:E1:00:40:56:8B:C9:D8:B0"]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.forem.android",
+      "sha256_cert_fingerprints": [
+        "01:7B:DF:23:02:21:78:49:46:EC:48:89:5B:B0:A2:08:04:D8:D1:AE:E7:80:78:FB:E1:00:40:56:8B:C9:D8:B0"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.murari.careerpolitics",
+      "sha256_cert_fingerprints": [
+        "CD:E8:B1:DB:F2:C4:B6:CA:10:66:74:50:19:21:A2:AD:F0:D0:30:20:22:65:E3:E4:FC:AD:8B:4C:9E:DC:84:AB",
+        "53:F2:52:B5:16:55:91:A3:C7:2E:68:0B:C1:F2:8B:34:5D:C3:44:A3:8E:CC:00:58:19:EC:A5:8B:2E:1D:DA:50"
+      ]
+    }
   }
-}]
+]

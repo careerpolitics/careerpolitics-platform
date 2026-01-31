@@ -54,6 +54,8 @@ module Notifications
           notification.notified_at = Time.current
           notification.read = is_read
           notification.save!
+
+          send_push_notification(followable_id, follower) if followable_type == "User"
         end
         notification
       end
@@ -64,6 +66,20 @@ module Notifications
 
       def follower
         User.find(follower_id)
+      end
+
+      def send_push_notification(user_id, follower_user)
+        followable = User.find(user_id)
+
+        payload_builder = PushNotifications::Payload::FollowerPayload.new(
+          follower: follower_user,
+          followable: followable
+        )
+        PushNotifications::UnifiedNotifier.call(
+          user_ids: [user_id],
+          payload_builder: payload_builder,
+          preference_key: :mobile_follower_notifications,
+        )
       end
     end
   end

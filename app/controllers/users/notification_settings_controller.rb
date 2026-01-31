@@ -16,6 +16,10 @@ module Users
                         email_unread_notifications
                         mobile_comment_notifications
                         mobile_mention_notifications
+                        mobile_reaction_notifications
+                        mobile_follower_notifications
+                        mobile_badge_notifications
+                        mobile_milestone_notifications
                         mod_roundrobin_notifications
                         reaction_notifications
                         welcome_notifications].freeze

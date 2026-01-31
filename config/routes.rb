@@ -142,7 +142,11 @@ Rails.application.routes.draw do
         delete "spam", to: "users#toggle_spam"
       end
       collection do
-        resources :devices, only: %i[create destroy]
+        resources :devices, only: %i[create destroy] do
+          collection do
+            post :fcm_token
+          end
+        end
       end
     end
     namespace :users do

@@ -32,7 +32,7 @@ class Device < ApplicationRecord
     n.app = ConsumerApps::RpushAppQuery.call(
       app_bundle: consumer_app.app_bundle,
       platform: platform,
-    )
+      )
     n.data = {
       aps: {
         alert: {
@@ -51,21 +51,50 @@ class Device < ApplicationRecord
   end
 
   def android_notification(title, body, payload)
-    n = Rpush::Gcm::Notification.new
+    n = Rpush::Client::Redis::Fcm::Notification.new
     n.app = ConsumerApps::RpushAppQuery.call(
       app_bundle: consumer_app.app_bundle,
-      platform: platform,
+      platform: platform
     )
-    n.registration_ids = [token]
-    n.priority = "high"
+
+    n.device_token = token
+    n.priority = payload.is_a?(Hash) && payload[:priority] == "high" ? "high" : "normal"
     n.content_available = true
-    n.notification = {
+
+    # ---------------------------------------
+    # Notification (visible UI)
+    # ---------------------------------------
+    notification_hash = {
       title: title,
-      body: body,
-      sound: "default",
-      click_action: ".presentation.home.HomeActivity"
+      body: body
     }
-    n.data = { data: payload }
+
+    if payload.is_a?(Hash)
+      notification_hash[:channel_id] = payload[:channel] if payload[:channel].present?
+      notification_hash[:color] = payload[:color] if payload[:color].present?
+      notification_hash[:icon] = payload[:icon] if payload[:icon].present?
+    end
+
+    notification_hash.compact!
+    n.notification = notification_hash
+
+    # ---------------------------------------
+    # Data payload (DEEPLINK MUST BE HERE)
+    # ---------------------------------------
+    data_payload = payload.is_a?(Hash) ? payload : {}
+
+    n.data = data_payload
+
+    # ---------------------------------------
+    # 🔍 DEBUG LOGS
+    # ---------------------------------------
+    Rails.logger.info("[FCM][ANDROID] device_token=#{token.truncate(20)}")
+    Rails.logger.info("[FCM][ANDROID] notification=#{notification_hash}")
+    Rails.logger.info("[FCM][ANDROID] data_payload=#{data_payload}")
+    Rails.logger.info("[FCM][ANDROID] deeplink_url=#{data_payload[:url]}")
+
     n.save!
   end
+
+
 end
