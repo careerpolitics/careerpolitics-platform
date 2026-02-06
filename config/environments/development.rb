@@ -110,7 +110,8 @@ Rails.application.configure do
 
   config.app_domain = ENV.fetch("APP_DOMAIN", "localhost:3000")
 
-  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.delivery_method =
+    ENV["SENDGRID_API_KEY"].present? ? :sendgrid_api : :smtp
   config.action_mailer.perform_deliveries = true
   config.action_mailer.default_url_options = { host: config.app_domain }
   config.action_mailer.smtp_settings = {

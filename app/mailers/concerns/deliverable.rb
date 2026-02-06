@@ -11,6 +11,11 @@ module Deliverable
   end
 
   def set_delivery_options
-    mail.delivery_method.settings.merge!(Settings::SMTP.settings)
+    if ForemInstance.sendgrid_enabled?
+      mail.delivery_method :sendgrid_api, api_key: ENV["SENDGRID_API_KEY"]
+    else
+      mail.delivery_method :smtp, Settings::SMTP.settings
+    end
   end
+
 end

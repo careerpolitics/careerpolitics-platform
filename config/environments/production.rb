@@ -122,7 +122,8 @@ Rails.application.configure do
 
   protocol = ENV.fetch("APP_PROTOCOL", "http://")
 
-  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.delivery_method =
+    ENV["SENDGRID_API_KEY"].present? ? :sendgrid_api : :smtp
   config.action_mailer.perform_deliveries = false
   config.action_mailer.default_url_options = { host: protocol + ENV["APP_DOMAIN"].to_s }
 
