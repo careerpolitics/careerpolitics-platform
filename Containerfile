@@ -19,7 +19,8 @@ USER root
 # Since we wipe out node_modules as part of this image after calling
 # the bundler, we don't need these headers (or their sofile counterparts)
 # in any of the other build stages.
-RUN apt update && \
+RUN rm -f /etc/apt/sources.list.d/nodesource.list && \
+    apt update && \
     apt install -y \
         build-essential \
         libcurl4-openssl-dev \
