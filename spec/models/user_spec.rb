@@ -1040,6 +1040,40 @@ RSpec.describe User do
     end
   end
 
+  describe "profile cache busting" do
+    it "enqueues a profile identity cache bust when name changes" do
+      sidekiq_assert_enqueued_with(job: Users::BustProfileIdentityCacheWorker, args: [user.id]) do
+        user.update!(name: "New Name")
+      end
+    end
+
+    it "enqueues a profile details cache bust when social handle changes" do
+      sidekiq_assert_enqueued_with(job: Users::BustProfileDetailsCacheWorker, args: [user.id]) do
+        user.update!(twitter_username: "new_twitter")
+      end
+    end
+
+    it "does not enqueue identity cache bust for unrelated changes" do
+      sidekiq_assert_no_enqueued_jobs(only: Users::BustProfileIdentityCacheWorker) do
+        user.update!(last_comment_at: Time.current)
+      end
+    end
+  end
+
+  describe "profile spam checks" do
+    it "enqueues a profile spam check when name contains trigger terms" do
+      sidekiq_assert_enqueued_with(job: Users::HandleProfileSpamWorker, args: [user.id]) do
+        user.update!(name: "Best Casino Deals")
+      end
+    end
+
+    it "does not enqueue a profile spam check when name changes without trigger terms" do
+      sidekiq_assert_no_enqueued_jobs(only: Users::HandleProfileSpamWorker) do
+        user.update!(name: "Helpful Developer")
+      end
+    end
+  end
+
   context "when indexing with Algolia", :algolia do
     it "indexes the user on create" do
       allow(AlgoliaSearch::SearchIndexWorker).to receive(:perform_async)

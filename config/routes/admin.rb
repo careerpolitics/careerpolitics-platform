@@ -51,6 +51,7 @@ namespace :admin do
         post "banish"
         patch "reputation_modifier"
         patch "max_score"
+        patch "update_profile"
         patch "update_email"
         post "export_data"
         post "full_delete"
@@ -136,6 +137,7 @@ namespace :admin do
     resources :tags, only: %i[index new create update edit] do
       resource :moderator, only: %i[create destroy], module: "tags"
     end
+    resources :surveys
   end
 
   scope :customization do
