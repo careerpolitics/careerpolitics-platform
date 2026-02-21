@@ -24,6 +24,7 @@ class AdminMenu
       item(name: "job posts", controller: "job_posts"),
       item(name: "tags"),
       item(name: "emails"),
+      item(name: "surveys"),
     ]
 
     scope :customization, "tools-line", [
