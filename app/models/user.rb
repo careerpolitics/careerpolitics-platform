@@ -180,6 +180,19 @@ class User < ApplicationRecord
 
   scope :eager_load_serialized_data, -> { includes(:roles) }
   scope :registered, -> { where(registered: true) }
+  scope :email_eligible, -> {
+    if ENV["USE_BASE_EMAIL_ELIGIBLE_COLUMN"] == "true"
+      where(base_email_eligible: true)
+    else
+      registered
+        .joins(:notification_setting)
+        .without_role(:suspended)
+        .without_role(:spam)
+        .where(notification_setting: { email_newsletter: true })
+        .where.not(email: ["", nil])
+        .where("users.score >= 0")
+    end
+  }
   scope :invited, -> { where(registered: false) }
   # Unfortunately pg_search's default SQL query is not performant enough in this
   # particular case (~ 500ms). There are multiple reasons:
@@ -255,10 +268,14 @@ class User < ApplicationRecord
 
   after_create_commit :send_welcome_notification
 
+  after_save :sync_base_email_eligible!, if: -> { saved_changes.key?(:email) || saved_changes.key?(:registered) || saved_changes.key?(:score) }
   after_save :create_conditional_autovomits
   after_save :generate_social_images
   after_commit :subscribe_to_mailchimp_newsletter
-  after_commit :bust_cache
+  after_commit :bust_profile_identity_cache, on: :update, if: :profile_identity_changed_for_cache?
+  after_commit :bust_profile_details_cache, on: :update, if: :profile_details_changed_for_cache?
+  after_commit :bust_profile_image_cache, on: :update, if: :profile_image_changed_for_cache?
+  after_commit :enqueue_profile_spam_check, on: :update, if: :name_contains_spam_trigger_terms?
 
   def self.average_articles_count
     Rails.cache.fetch("established_user_article_count", expires_in: 1.day) do
@@ -331,6 +348,7 @@ class User < ApplicationRecord
     calculated_score = (badge_achievements_count * 10) + user_reaction_points
     calculated_score -= 500 if spam?
     update_column(:score, calculated_score)
+    sync_base_email_eligible!
     AlgoliaSearch::SearchIndexWorker.perform_async(self.class.name, id, false)
   end
 
@@ -620,6 +638,30 @@ class User < ApplicationRecord
     profile_image_url_for(length: 90)
   end
 
+  def profile_identity_record_key
+    "#{record_key}/profile_identity"
+  end
+
+  def profile_details_record_key
+    "#{record_key}/profile_details"
+  end
+
+  def profile_image_record_key
+    "#{record_key}/profile_image"
+  end
+
+  def profile_cache_keys
+    [profile_identity_record_key, profile_details_record_key, profile_image_record_key]
+  end
+
+  def profile_identity_cache_keys
+    [profile_identity_record_key, profile_image_record_key]
+  end
+
+  def profile_cache_bust_paths
+    [path, "/profile_preview_cards/#{id}", "/api/users/#{id}"]
+  end
+
   def remove_from_mailchimp_newsletters
     return if email.blank?
     return if Settings::General.mailchimp_api_key.blank?
@@ -707,6 +749,21 @@ class User < ApplicationRecord
     update_column(:last_presence_at, Time.current)
   end
 
+  def sync_base_email_eligible!
+    # User is eligible if they are registered, have an email, are not suspended,
+    # not marked as spam, have email_newsletter set to true, and their score is not below zero.
+    is_eligible = registered? &&
+                  email.present? &&
+                  !has_role?(:suspended) &&
+                  !has_role?(:spam) &&
+                  notification_setting&.email_newsletter? &&
+                  score.to_i >= 0
+                  
+    if has_attribute?(:base_email_eligible) && self[:base_email_eligible] != is_eligible
+      update_column(:base_email_eligible, is_eligible)
+    end
+  end
+
   protected
 
   # Send emails asynchronously
@@ -760,6 +817,44 @@ class User < ApplicationRecord
     Users::BustCacheWorker.perform_async(id)
   end
 
+  def bust_profile_identity_cache
+    Users::BustProfileIdentityCacheWorker.perform_async(id)
+  end
+
+  def bust_profile_details_cache
+    Users::BustProfileDetailsCacheWorker.perform_async(id)
+  end
+
+  def bust_profile_image_cache
+    Users::BustProfileImageCacheWorker.perform_async(id)
+  end
+
+  def profile_identity_changed_for_cache?
+    saved_change_to_name? || saved_change_to_username?
+  end
+
+  def profile_details_changed_for_cache?
+    saved_change_to_email? ||
+      saved_change_to_twitter_username? ||
+      saved_change_to_github_username? ||
+      saved_change_to_facebook_username?
+  end
+
+  def profile_image_changed_for_cache?
+    saved_change_to_profile_image? ||
+      (respond_to?(:saved_change_to_profile_image_url?) && saved_change_to_profile_image_url?)
+  end
+
+  def enqueue_profile_spam_check
+    Users::HandleProfileSpamWorker.perform_async(id)
+  end
+
+  def name_contains_spam_trigger_terms?
+    return false unless saved_change_to_name?
+
+    Spam::Handler.profile_spam_trigger_term_match?(name)
+  end
+
   def create_conditional_autovomits
     Spam::Handler.handle_user!(user: self)
   end
@@ -811,5 +906,7 @@ class User < ApplicationRecord
     if role.name.in?(%w[spam suspended])
       Spam::DomainDetector.new(self).check_and_block_domain!
     end
+
+    sync_base_email_eligible! if role.name == "suspended" || role.name == "spam"
   end
 end

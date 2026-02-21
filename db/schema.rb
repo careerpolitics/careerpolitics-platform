@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_01_28_210141) do
+ActiveRecord::Schema[7.0].define(version: 2026_02_19_204658) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "ltree"
@@ -153,6 +153,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_28_210141) do
     t.integer "score", default: 0
     t.string "search_optimized_description_replacement"
     t.string "search_optimized_title_preamble"
+    t.jsonb "semantic_interests", default: {}
     t.boolean "show_comments", default: true
     t.text "slug"
     t.string "social_image"
@@ -191,6 +192,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_28_210141) do
     t.index ["published"], name: "index_articles_on_published"
     t.index ["published_at"], name: "index_articles_on_published_at"
     t.index ["reading_list_document"], name: "index_articles_on_reading_list_document", using: :gin
+    t.index ["semantic_interests"], name: "index_articles_on_semantic_interests", using: :gin
     t.index ["slug", "user_id"], name: "index_articles_on_slug_and_user_id", unique: true
     t.index ["subforem_id", "published", "score", "published_at"], name: "index_articles_on_subforem_published_score_published_at"
     t.index ["subforem_id"], name: "index_articles_on_subforem_id"
@@ -638,6 +640,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_28_210141) do
     t.integer "recent_tag_count_min", default: 0
     t.float "recently_active_past_day_bonus_weight", default: 0.0, null: false
     t.float "score_weight", default: 1.0
+    t.float "semantic_match_weight", default: 0.0
     t.float "shuffle_weight", default: 0.0, null: false
     t.float "status_weight", default: 0.0, null: false
     t.float "subforem_follow_weight", default: 0.0, null: false
@@ -1145,6 +1148,8 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_28_210141) do
     t.integer "position", default: 0, null: false
     t.string "prompt_html"
     t.string "prompt_markdown"
+    t.integer "scale_max"
+    t.integer "scale_min"
     t.bigint "survey_id"
     t.integer "type_of", default: 0, null: false
     t.datetime "updated_at", precision: nil, null: false
@@ -1391,9 +1396,17 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_28_210141) do
     t.boolean "active", default: true
     t.boolean "allow_resubmission", default: false, null: false
     t.datetime "created_at", null: false
+    t.integer "daily_email_distributions", default: 0
     t.boolean "display_title", default: true
+    t.text "extra_email_context_paragraph"
+    t.string "old_old_slug"
+    t.string "old_slug"
+    t.string "slug"
     t.string "title", null: false
     t.datetime "updated_at", null: false
+    t.index ["old_old_slug"], name: "index_surveys_on_old_old_slug"
+    t.index ["old_slug"], name: "index_surveys_on_old_slug"
+    t.index ["slug"], name: "index_surveys_on_slug", unique: true
   end
 
   create_table "tag_adjustments", force: :cascade do |t|
@@ -1531,8 +1544,10 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_28_210141) do
     t.jsonb "recent_tags", default: []
     t.jsonb "recent_users", default: []
     t.jsonb "recently_viewed_articles", default: []
+    t.jsonb "semantic_interest_profile", default: {}
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["semantic_interest_profile"], name: "index_user_activities_on_semantic_interest_profile", using: :gin
     t.index ["user_id"], name: "index_user_activities_on_user_id"
   end
 
@@ -1603,6 +1618,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_28_210141) do
     t.string "apple_username"
     t.integer "articles_count", default: 0, null: false
     t.integer "badge_achievements_count", default: 0, null: false
+    t.boolean "base_email_eligible", default: false, null: false
     t.bigint "blocked_by_count", default: 0, null: false
     t.bigint "blocking_others_count", default: 0, null: false
     t.boolean "checked_code_of_conduct", default: false
@@ -1652,6 +1668,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_28_210141) do
     t.datetime "latest_article_updated_at", precision: nil
     t.datetime "locked_at", precision: nil
     t.integer "max_score", default: 0
+    t.string "mlh_username"
     t.string "name"
     t.string "old_old_username"
     t.string "old_username"
@@ -1690,6 +1707,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_28_210141) do
     t.index "to_tsvector('simple'::regconfig, COALESCE((name)::text, ''::text))", name: "index_users_on_name_as_tsvector", using: :gin
     t.index "to_tsvector('simple'::regconfig, COALESCE((username)::text, ''::text))", name: "index_users_on_username_as_tsvector", using: :gin
     t.index ["apple_username"], name: "index_users_on_apple_username"
+    t.index ["base_email_eligible"], name: "index_users_on_base_email_eligible", where: "(base_email_eligible = true)"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["created_at"], name: "index_users_on_created_at"
     t.index ["current_subscriber_status"], name: "index_users_on_current_subscriber_status"
@@ -1702,6 +1720,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_28_210141) do
     t.index ["invitations_count"], name: "index_users_on_invitations_count"
     t.index ["invited_by_id"], name: "index_users_on_invited_by_id"
     t.index ["invited_by_type", "invited_by_id"], name: "index_users_on_invited_by_type_and_invited_by_id"
+    t.index ["mlh_username"], name: "index_users_on_mlh_username"
     t.index ["old_old_username"], name: "index_users_on_old_old_username"
     t.index ["old_username"], name: "index_users_on_old_username"
     t.index ["onboarding_subforem_id"], name: "index_users_on_onboarding_subforem_id"
