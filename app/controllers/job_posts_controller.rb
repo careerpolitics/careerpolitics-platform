@@ -5,6 +5,14 @@ class JobPostsController < ApplicationController
 
   def index
     @featured_job_posts = JobPost.featured.includes(:user)
+
+    if params[:post_type].present? && request.format.html?
+      @selected_post_type = params[:post_type]
+      @selected_post_type_label = post_type_label(@selected_post_type)
+      @job_posts = JobPost.available.by_post_type(@selected_post_type).includes(:user).recent.page(params[:page] || 1).per(20)
+
+      render :post_type and return
+    end
     
     # Paginate each section with 10 items per page
     @new_updates = JobPost.available.by_post_type('new_update').includes(:user).recent.page(params[:new_updates_page] || 1).per(10)
@@ -108,5 +116,13 @@ class JobPostsController < ApplicationController
       badge_type: job_post.badge_type,
       post_type: job_post.post_type
     }
+  end
+
+  def post_type_label(post_type)
+    {
+      "new_update" => "New Update",
+      "admit_card" => "Admit Card",
+      "online_form" => "Top Online Form"
+    }.fetch(post_type, "Job Posts")
   end
 end
