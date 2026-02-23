@@ -22,12 +22,13 @@
 
     <div class="form-group mb-4">
       <%= form.label :post_type, "Post Type", class: "crayons-field__label" %>
-      <%= form.select :post_type, options_for_select([
-        ['Select a type...', ''],
-        ['New Update', 'new_update'],
-        ['Admit Card', 'admit_card'],
-        ['Online Form', 'online_form']
-      ], @job_post.post_type), {}, { class: "crayons-select" } %>
+      <%= form.text_field :post_type, class: "crayons-textfield", list: "job-post-types", placeholder: "e.g. new_update" %>
+      <datalist id="job-post-types">
+        <% JobPost.all_post_types.each do |post_type| %>
+          <option value="<%= post_type %>"><%= JobPost.post_type_label(post_type) %></option>
+        <% end %>
+      </datalist>
+      <small class="color-secondary">You can create a new category by entering a new post type value.</small>
     </div>
 
     <div class="form-group mb-4">

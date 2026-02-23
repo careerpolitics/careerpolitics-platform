@@ -25,12 +25,12 @@
 
         <div class="form-group" style="margin-bottom: 24px;">
           <%= form.label :post_type, "Post Type", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
-          <%= form.select :post_type, options_for_select([
-            ['Select a type...', ''],
-            ['New Update', 'new_update'],
-            ['Admit Card', 'admit_card'],
-            ['Online Form', 'online_form']
-          ], @job_post.post_type), {}, { style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" } %>
+          <%= form.text_field :post_type, list: "job-post-types", placeholder: "e.g. new_update", style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" %>
+          <datalist id="job-post-types">
+            <% JobPost.all_post_types.each do |post_type| %>
+              <option value="<%= post_type %>"><%= JobPost.post_type_label(post_type) %></option>
+            <% end %>
+          </datalist>
         </div>
 
         <div class="form-group" style="margin-bottom: 24px;">

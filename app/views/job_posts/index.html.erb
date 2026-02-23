@@ -24,16 +24,8 @@
   .jobs-card li:hover { background: #f8f9fa; }
   .jobs-card a { color: #0056b3; text-decoration: none; font-size: 1em; transition: color .3s ease, padding-left .3s ease; display: block; }
   .jobs-card a:hover { color: #003d82; padding-left: 8px; }
-  .jobs-dynamic { background: linear-gradient(135deg, #fff, #f0f4ff); padding: 20px; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,.05); margin-top: 20px; border-left: 5px solid #218838; }
-  .jobs-dynamic h3 { color: #218838; margin-bottom: 12px; font-size: 1.3em; font-weight: 700; text-transform: uppercase; }
-  .jobs-dynamic .meta { font-size: .9em; color: #666; font-style: italic; }
-  .jobs-loading { text-align: center; color: #666; margin: 20px 0; font-size: 1.1em; display: none; }
-  .load-more-btn { display: block; width: 100%; padding: 12px; margin-top: 15px; background: #0056b3; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background .3s ease; }
+  .load-more-btn { display: block; width: 100%; padding: 12px; margin-top: 15px; background: #0056b3; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background .3s ease; text-decoration: none; text-align: center; }
   .load-more-btn:hover { background: #003d82; }
-  .load-more-btn:disabled { background: #ccc; cursor: not-allowed; }
-  .load-more-btn.loading { position: relative; color: transparent; }
-  .load-more-btn.loading::after { content: ''; position: absolute; width: 20px; height: 20px; top: 50%; left: 50%; margin-left: -10px; margin-top: -10px; border: 3px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
   .pagination-links { display: none; } /* Hidden but present for SEO */
   @media (max-width: 600px) {
     .jobs-container { padding: 10px; }
@@ -41,7 +33,6 @@
     .jobs-grid { grid-template-columns: 1fr; }
     .jobs-btn { font-size: .9em; padding: 12px; }
     .jobs-card h2 { font-size: 1.2em; }
-    .jobs-dynamic h3 { font-size: 1.1em; }
   }
 </style>
 
@@ -59,98 +50,34 @@
     </div>
 
     <div class="jobs-grid">
-      <section class="jobs-card" data-post-type="new_update">
-        <h2><i class="fas fa-bell"></i>New Update</h2>
-        <ul id="new-updates-list">
-          <% @new_updates.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
-            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
-            <li>
-              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
-                <%= job_post.title %>
-                <% if job_post.badge_type == 'new' %>
-                  <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
-                <% elsif job_post.badge_type == 'last_day' %>
-                  <span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>
-                <% end %>
-              </a>
-            </li>
+      <% @job_post_sections.each do |section| %>
+        <section class="jobs-card" data-post-type="<%= section[:post_type] %>">
+          <h2><i class="<%= section[:icon] %>"></i><%= section[:title] %></h2>
+          <ul id="<%= "#{section[:post_type].tr('_', '-')}-list" %>">
+            <% section[:posts].each do |job_post| %>
+              <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
+              <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
+              <li>
+                <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
+                  <%= job_post.title %>
+                  <% if job_post.badge_type == 'new' %>
+                    <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
+                  <% elsif job_post.badge_type == 'last_day' %>
+                    <span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>
+                  <% end %>
+                </a>
+              </li>
+            <% end %>
+          </ul>
+          <% if section[:posts].next_page %>
+            <%= link_to "Load More", job_posts_path(post_type: section[:post_type], page: section[:posts].next_page), class: "load-more-btn" %>
           <% end %>
-        </ul>
-        <% if @new_updates.next_page %>
-          <button class="load-more-btn" data-post-type="new_update" data-page="<%= @new_updates.current_page %>" data-next-page="<%= @new_updates.next_page %>">
-            Load More
-          </button>
-        <% end %>
-        <div class="pagination-links">
-          <%= paginate @new_updates, param_name: :new_updates_page, params: { anchor: 'new-updates' } %>
-        </div>
-      </section>
-
-      <section class="jobs-card" data-post-type="admit_card">
-        <h2><i class="fas fa-ticket-alt"></i>Admit Card</h2>
-        <ul id="admit-cards-list">
-          <% @admit_cards.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
-            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
-            <li>
-              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
-                <%= job_post.title %>
-                <% if job_post.badge_type == 'new' %>
-                  <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
-                <% elsif job_post.badge_type == 'last_day' %>
-                  <span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>
-                <% end %>
-              </a>
-            </li>
-          <% end %>
-        </ul>
-        <% if @admit_cards.next_page %>
-          <button class="load-more-btn" data-post-type="admit_card" data-page="<%= @admit_cards.current_page %>" data-next-page="<%= @admit_cards.next_page %>">
-            Load More
-          </button>
-        <% end %>
-        <div class="pagination-links">
-          <%= paginate @admit_cards, param_name: :admit_cards_page, params: { anchor: 'admit-cards' } %>
-        </div>
-      </section>
-
-      <section class="jobs-card" data-post-type="online_form">
-        <h2><i class="fas fa-file-alt"></i>Top Online Form</h2>
-        <ul id="online-forms-list">
-          <% @online_forms.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
-            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
-            <li>
-              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
-                <%= job_post.title %>
-                <% if job_post.badge_type == 'new' %>
-                  <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
-                <% elsif job_post.badge_type == 'last_day' %>
-                  <span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>
-                <% end %>
-              </a>
-            </li>
-          <% end %>
-        </ul>
-        <% if @online_forms.next_page %>
-          <button class="load-more-btn" data-post-type="online_form" data-page="<%= @online_forms.current_page %>" data-next-page="<%= @online_forms.next_page %>">
-            Load More
-          </button>
-        <% end %>
-        <div class="pagination-links">
-          <%= paginate @online_forms, param_name: :online_forms_page, params: { anchor: 'online-forms' } %>
-        </div>
-      </section>
+          <div class="pagination-links">
+            <%= paginate section[:posts], param_name: section[:pagination_param] %>
+          </div>
+        </section>
+      <% end %>
     </div>
-
-    <% if @featured_job_posts.present? %>
-      <div id="dynamic-posts" class="jobs-dynamic">
-        <h3>New Job Alert</h3>
-        <p>Stay tuned for the latest government job alerts across India.</p>
-        <div class="meta">Updated regularly</div>
-      </div>
-    <% end %>
 
     <% if user_signed_in? %>
       <div style="margin-top: 30px; text-align: right;">
@@ -187,71 +114,5 @@
     script.type = 'application/ld+json';
     script.text = JSON.stringify(schema);
     document.head.appendChild(script);
-  })();
-
-  // Load More functionality
-  (function() {
-    const loadMoreButtons = document.querySelectorAll('.load-more-btn');
-    
-    loadMoreButtons.forEach(function(button) {
-      button.addEventListener('click', function() {
-        const postType = this.dataset.postType;
-        const nextPage = this.dataset.nextPage;
-        const listId = postType === 'new_update' ? 'new-updates-list' : 
-                      postType === 'admit_card' ? 'admit-cards-list' : 'online-forms-list';
-        const list = document.getElementById(listId);
-        
-        if (!list || !nextPage) return;
-        
-        // Disable button and show loading state
-        this.disabled = true;
-        this.classList.add('loading');
-        const originalText = this.textContent;
-        
-        // Fetch next page
-        fetch(`<%= job_posts_path(format: :json) %>?post_type=${postType}&page=${nextPage}`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          credentials: 'same-origin'
-        })
-        .then(response => response.json())
-        .then(function(data) {
-          // Append new items to list
-          data.job_posts.forEach(function(jobPost) {
-            const li = document.createElement('li');
-            let badgeHtml = '';
-            if (jobPost.badge_type === 'new') {
-              badgeHtml = '<span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>';
-            } else if (jobPost.badge_type === 'last_day') {
-              badgeHtml = '<span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>';
-            }
-            li.innerHTML = `<a href="${jobPost.link}" style="display: flex; align-items: center; gap: 8px;">${jobPost.title} ${badgeHtml}</a>`;
-            list.appendChild(li);
-          });
-          
-          // Update button state
-          if (data.has_next_page) {
-            button.dataset.page = data.current_page;
-            button.dataset.nextPage = data.next_page;
-            button.disabled = false;
-            button.classList.remove('loading');
-            button.textContent = originalText;
-          } else {
-            // No more pages, remove button
-            button.remove();
-          }
-        })
-        .catch(function(error) {
-          console.error('Error loading more job posts:', error);
-          button.disabled = false;
-          button.classList.remove('loading');
-          button.textContent = originalText;
-          alert('Failed to load more job posts. Please try again.');
-        });
-      });
-    });
   })();
 </script>
