@@ -6,8 +6,6 @@ metadata:
 data:
   RAILS_ENV: "production"
   NODE_ENV: "production"
-  ALGOLIA_DISPLAY_BRANDING: "true"
-  ALGOLIA_APPLICATION_ID: "EX5A5LT1RT"
   APP_DOMAIN: "careerpolitics.com"
   APP_PROTOCOL: "https://"
   AWS_BUCKET_NAME: "careerpolitics-images-bucket"
@@ -47,6 +45,8 @@ data:
   RAILS_SERVE_STATIC_FILES: "enabled"
   SESSION_EXPIRY_SECONDS: "1209600"
   SESSION_KEY: "_Career_Politics_Session"
+  SLACK_CHANNEL: "#activity"
+  SLACK_DEPLOY_CHANNEL: "#deploy"
   SMTP_ADDRESS: "smtp.hostinger.com"
   SMTP_AUTHENTICATION: "login"
   SMTP_DOMAIN: "careerpolitics.com"
