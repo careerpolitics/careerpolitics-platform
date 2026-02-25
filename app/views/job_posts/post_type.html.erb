@@ -1,0 +1,45 @@
+<% content_for :title, t("views.job_posts.hub.title", post_type: @post_type_label) %>
+<% content_for :page_meta do %>
+  <meta name="description" content="<%= t("views.job_posts.hub.description", post_type: @post_type_label) %>">
+  <meta property="og:title" content="<%= t("views.job_posts.hub.title", post_type: @post_type_label) %>">
+  <meta property="og:description" content="<%= t("views.job_posts.hub.description", post_type: @post_type_label) %>">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="<%= request.original_url %>">
+  <link rel="canonical" href="<%= request.original_url %>">
+<% end %>
+
+<main class="crayons-layout crayons-layout--limited-l p-4">
+  <section class="crayons-layout__content">
+    <h1 class="crayons-title"><%= t("views.job_posts.hub.heading", post_type: @post_type_label) %></h1>
+    <p class="mb-4"><%= t("views.job_posts.hub.subheading", post_type: @post_type_label) %></p>
+
+    <nav class="mb-4" aria-label="Job post type hubs">
+      <%= link_to t("views.job_posts.hub.types.new_update"), type_job_posts_path("new_update"), class: "crayons-btn crayons-btn--secondary mr-2" %>
+      <%= link_to t("views.job_posts.hub.types.admit_card"), type_job_posts_path("admit_card"), class: "crayons-btn crayons-btn--secondary mr-2" %>
+      <%= link_to t("views.job_posts.hub.types.online_form"), type_job_posts_path("online_form"), class: "crayons-btn crayons-btn--secondary" %>
+    </nav>
+
+    <div class="crayons-card p-4">
+      <% @job_posts.each do |job_post| %>
+        <article class="py-3" style="border-bottom: 1px solid #e5e7eb;">
+          <h2 class="crayons-subtitle-2 mb-1"><%= link_to job_post.title, job_post_path(job_post.slug) %></h2>
+          <p class="color-secondary fs-s">
+            <% if job_post.organization_name.present? %>
+              <span><%= job_post.organization_name %></span>
+            <% end %>
+            <% if job_post.location.present? %>
+              · <span><%= job_post.location %></span>
+            <% end %>
+            <% if job_post.deadline_at.present? %>
+              · <span><%= t("views.job_posts.hub.deadline", date: l(job_post.deadline_at.to_date)) %></span>
+            <% end %>
+          </p>
+        </article>
+      <% end %>
+
+      <div class="mt-4">
+        <%= paginate @job_posts %>
+      </div>
+    </div>
+  </section>
+</main>

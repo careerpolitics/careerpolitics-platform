@@ -1,0 +1,31 @@
+pt:
+  views:
+    job_posts:
+      show:
+        breadcrumb_home: Início
+        breadcrumb_jobs: Vagas
+        posted_by: "Publicado por %{name}"
+        deadline: "Prazo: %{date}"
+        organization: Organização
+        location: Localização
+        employment_type: Tipo de emprego
+        vacancies: Vagas
+        salary_range: Faixa salarial
+        category: Categoria
+        eligibility: Elegibilidade
+        important_dates: Datas importantes
+        application_link: Link de candidatura
+        source: Fonte
+        related_jobs: Vagas relacionadas
+        edit: Editar
+        back: Voltar para vagas
+      hub:
+        title: "Atualizações de vagas governamentais %{post_type}"
+        description: "Navegue por vagas %{post_type}, critérios e prazos."
+        heading: "Atualizações de vagas %{post_type}"
+        subheading: "Encontre publicações %{post_type} com critérios, local e prazo."
+        deadline: "Prazo: %{date}"
+        types:
+          new_update: Novas atualizações
+          admit_card: Cartões de admissão
+          online_form: Formulários online
