@@ -1,6 +1,7 @@
 class JobPostsController < ApplicationController
   before_action :authenticate_user!, except: %i[index show]
   before_action :set_job_post, only: %i[show edit update]
+  before_action :set_post_type, only: [:post_type]
   after_action :verify_authorized, except: %i[index show]
 
   def index
@@ -39,17 +40,19 @@ class JobPostsController < ApplicationController
     end
   end
 
+
+  def post_type
+    return redirect_to(job_posts_path) if @post_type.blank?
+
+    @featured_job_posts = JobPost.featured.includes(:user)
+    @job_posts = JobPost.available.by_post_type(@post_type).includes(:user).recent.page(params[:page] || 1).per(20)
+    @post_type_label = @post_type.humanize
+  end
+
   def show
     @job_post = JobPost.find_by!(slug: params[:slug] || params[:id])
-    return unless @job_post
-    
+
     @related_jobs = @job_post.related_jobs
-    
-    # Only redirect if link is an absolute external URL
-    if @job_post.link.present? && @job_post.link.match?(/\Ahttps?:\/\//)
-      redirect_to @job_post.link, allow_other_host: true
-    end
-    # Otherwise render the show page (for relative URLs or no link)
   end
 
   def new
@@ -94,7 +97,13 @@ class JobPostsController < ApplicationController
   end
 
   def job_post_params
-    params.require(:job_post).permit(:title, :post_type, :link, :color)
+    params.require(:job_post).permit(:title, :post_type, :category, :link, :color, :organization_name, :location,
+                                     :deadline_at, :employment_type, :salary_range, :qualification, :vacancies,
+                                     :source_name, :source_url, :important_dates)
+  end
+
+  def set_post_type
+    @post_type = JobPost::POST_TYPES[params[:post_type]&.to_sym]
   end
 
   def job_post_json(job_post)

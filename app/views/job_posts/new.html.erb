@@ -35,6 +35,31 @@
         </div>
 
         <div class="form-group" style="margin-bottom: 24px;">
+          <%= form.label :organization_name, "Organization", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
+          <%= form.text_field :organization_name, style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" %>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <%= form.label :location, "Location", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
+          <%= form.text_field :location, style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" %>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <%= form.label :deadline_at, "Deadline", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
+          <%= form.datetime_local_field :deadline_at, style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" %>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <%= form.label :employment_type, "Employment Type", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
+          <%= form.select :employment_type, options_for_select([["Select type...", ""], ["Full time", "full_time"], ["Part time", "part_time"], ["Contract", "contract"], ["Internship", "internship"], ["Temporary", "temporary"]], @job_post.employment_type), {}, { style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" } %>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+          <%= form.label :qualification, "Eligibility / Qualification", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
+          <%= form.text_area :qualification, rows: 3, style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" %>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
           <%= form.label :link, "Application/External Link *", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
           <%= form.text_field :link, required: true, style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;", placeholder: "https://example.com/apply or /relative/path" %>
           <small style="color: #6b7280; font-size: 14px; margin-top: 4px; display: block;">This link will be used when users click on the job post. You can use absolute URLs (https://...) or relative paths (starting with /).</small>

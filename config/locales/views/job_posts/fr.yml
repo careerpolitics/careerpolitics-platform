@@ -1,0 +1,31 @@
+fr:
+  views:
+    job_posts:
+      show:
+        breadcrumb_home: Accueil
+        breadcrumb_jobs: Emplois
+        posted_by: "Publié par %{name}"
+        deadline: "Date limite : %{date}"
+        organization: Organisation
+        location: Lieu
+        employment_type: Type d'emploi
+        vacancies: Postes
+        salary_range: Salaire
+        category: Catégorie
+        eligibility: Éligibilité
+        important_dates: Dates importantes
+        application_link: Lien de candidature
+        source: Source
+        related_jobs: Emplois similaires
+        edit: Modifier
+        back: Retour aux offres
+      hub:
+        title: "Mises à jour d'emplois publics %{post_type}"
+        description: "Parcourez les mises à jour %{post_type}, les critères et les échéances."
+        heading: "Mises à jour %{post_type}"
+        subheading: "Trouvez les dernières annonces %{post_type} avec critères, lieu et échéance."
+        deadline: "Date limite : %{date}"
+        types:
+          new_update: Nouvelles annonces
+          admit_card: Cartes d'admission
+          online_form: Formulaires en ligne

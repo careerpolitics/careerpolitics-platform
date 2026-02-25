@@ -58,6 +58,12 @@
       <% end %>
     </div>
 
+    <nav class="jobs-type-hubs" style="margin: 16px 0; display: flex; flex-wrap: wrap; gap: 8px;" aria-label="Job post type hubs">
+      <%= link_to t("views.job_posts.hub.types.new_update"), type_job_posts_path("new_update"), class: "crayons-btn crayons-btn--secondary" %>
+      <%= link_to t("views.job_posts.hub.types.admit_card"), type_job_posts_path("admit_card"), class: "crayons-btn crayons-btn--secondary" %>
+      <%= link_to t("views.job_posts.hub.types.online_form"), type_job_posts_path("online_form"), class: "crayons-btn crayons-btn--secondary" %>
+    </nav>
+
     <div class="jobs-grid">
       <section class="jobs-card" data-post-type="new_update">
         <h2><i class="fas fa-bell"></i>New Update</h2>

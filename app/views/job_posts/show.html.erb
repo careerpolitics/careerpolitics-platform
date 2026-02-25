@@ -5,42 +5,144 @@
   <meta property="og:description" content="<%= @job_post.title %> - <%= @job_post.post_type&.humanize || 'Government Job' %>">
   <meta property="og:type" content="article">
   <meta property="og:url" content="<%= request.original_url %>">
+  <link rel="canonical" href="<%= request.original_url %>">
 <% end %>
+
+<% breadcrumb_items = [
+  { name: t("views.job_posts.show.breadcrumb_home"), item: root_url },
+  { name: t("views.job_posts.show.breadcrumb_jobs"), item: job_posts_url },
+  (@job_post.post_type.present? ? { name: @job_post.post_type.humanize, item: type_job_posts_url(@job_post.post_type) } : nil),
+  { name: @job_post.title, item: request.original_url }
+].compact %>
+
+<% job_posting_schema = {
+  "@context" => "https://schema.org",
+  "@type" => "JobPosting",
+  "title" => @job_post.title,
+  "description" => [@job_post.qualification, @job_post.important_dates].compact.join("\n"),
+  "datePosted" => @job_post.published_at&.iso8601,
+  "validThrough" => @job_post.deadline_at&.iso8601,
+  "employmentType" => @job_post.employment_type_schema_value,
+  "hiringOrganization" => {
+    "@type" => "Organization",
+    "name" => @job_post.organization_name.presence || SiteConfig.community_name
+  },
+  "jobLocation" => (
+    @job_post.location.present? ? {
+      "@type" => "Place",
+      "address" => {
+        "@type" => "PostalAddress",
+        "addressLocality" => @job_post.location
+      }
+    } : nil
+  ),
+  "applicantLocationRequirements" => @job_post.location,
+  "url" => request.original_url
+}.compact %>
+
+<% breadcrumb_schema = {
+  "@context" => "https://schema.org",
+  "@type" => "BreadcrumbList",
+  "itemListElement" => breadcrumb_items.each_with_index.map do |item, index|
+    {
+      "@type" => "ListItem",
+      "position" => index + 1,
+      "name" => item[:name],
+      "item" => item[:item]
+    }
+  end
+} %>
+
+<script type="application/ld+json"><%= raw(job_posting_schema.to_json) %></script>
+<script type="application/ld+json"><%= raw(breadcrumb_schema.to_json) %></script>
 
 <div class="crayons-layout">
   <div class="crayons-layout__content">
     <article class="job-post-detail" style="max-width: 1000px; margin: 0 auto; padding: 40px 20px;">
+      <nav aria-label="breadcrumb" style="margin-bottom: 20px; font-size: 14px; color: #6b7280;">
+        <% breadcrumb_items.each_with_index do |item, index| %>
+          <% if index < breadcrumb_items.size - 1 %>
+            <%= link_to item[:name], item[:item], style: "color: #4b5563;" %> /
+          <% else %>
+            <span><%= item[:name] %></span>
+          <% end %>
+        <% end %>
+      </nav>
+
       <header style="margin-bottom: 30px;">
         <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 16px; color: #1f2937;">
           <%= @job_post.title %>
         </h1>
         <div class="job-post-meta" style="display: flex; gap: 20px; align-items: center; color: #6b7280; font-size: 14px; flex-wrap: wrap;">
-          <span>Posted by <%= @job_post.user.name %></span>
+          <span><%= t("views.job_posts.show.posted_by", name: @job_post.user.name) %></span>
           <% if @job_post.published_at %>
             <span><%= @job_post.published_at.strftime("%B %d, %Y") %></span>
           <% end %>
           <% if @job_post.badge_type == 'new' %>
             <span class="job-badge" style="background: #28a745; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">NEW</span>
           <% end %>
+          <% if @job_post.deadline_at.present? %>
+            <span><%= t("views.job_posts.show.deadline", date: l(@job_post.deadline_at.to_date)) %></span>
+          <% end %>
         </div>
       </header>
 
-      <div class="job-post-content" style="line-height: 1.8; color: #374151;">
-        <% if @job_post.link.present? %>
-          <% link_url = @job_post.link.start_with?('/') ? @job_post.link : (@job_post.link.start_with?('http') ? @job_post.link : "/#{@job_post.link}") %>
-          <div class="job-post-link" style="margin-top: 30px; padding: 20px; background-color: #f9fafb; border-radius: 8px; border-left: 4px solid #3b82f6;">
-            <p style="margin: 0 0 12px 0; font-weight: 600; color: #1f2937;">Application Link:</p>
-            <a href="<%= link_url %>" style="color: #3b82f6; text-decoration: none; font-size: 16px; word-break: break-all;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
-              <%= @job_post.link %>
-            </a>
-          </div>
+      <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 30px;">
+        <% if @job_post.organization_name.present? %>
+          <div class="crayons-card p-4"><strong><%= t("views.job_posts.show.organization") %>:</strong> <%= @job_post.organization_name %></div>
         <% end %>
-      </div>
+        <% if @job_post.location.present? %>
+          <div class="crayons-card p-4"><strong><%= t("views.job_posts.show.location") %>:</strong> <%= @job_post.location %></div>
+        <% end %>
+        <% if @job_post.employment_type.present? %>
+          <div class="crayons-card p-4"><strong><%= t("views.job_posts.show.employment_type") %>:</strong> <%= @job_post.employment_type.humanize %></div>
+        <% end %>
+        <% if @job_post.vacancies.present? %>
+          <div class="crayons-card p-4"><strong><%= t("views.job_posts.show.vacancies") %>:</strong> <%= @job_post.vacancies %></div>
+        <% end %>
+        <% if @job_post.salary_range.present? %>
+          <div class="crayons-card p-4"><strong><%= t("views.job_posts.show.salary_range") %>:</strong> <%= @job_post.salary_range %></div>
+        <% end %>
+        <% if @job_post.category.present? %>
+          <div class="crayons-card p-4"><strong><%= t("views.job_posts.show.category") %>:</strong> <%= @job_post.category %></div>
+        <% end %>
+      </section>
+
+      <% if @job_post.qualification.present? %>
+        <section style="margin-bottom: 20px;">
+          <h2 style="font-size: 22px; margin-bottom: 8px;"><%= t("views.job_posts.show.eligibility") %></h2>
+          <p style="line-height: 1.7;"><%= @job_post.qualification %></p>
+        </section>
+      <% end %>
+
+      <% if @job_post.important_dates.present? %>
+        <section style="margin-bottom: 20px;">
+          <h2 style="font-size: 22px; margin-bottom: 8px;"><%= t("views.job_posts.show.important_dates") %></h2>
+          <p style="line-height: 1.7;"><%= @job_post.important_dates %></p>
+        </section>
+      <% end %>
+
+      <% if @job_post.link.present? %>
+        <% link_url = @job_post.link.start_with?('/') ? @job_post.link : (@job_post.link.start_with?('http') ? @job_post.link : "/#{@job_post.link}") %>
+        <div class="job-post-link" style="margin-top: 30px; padding: 20px; background-color: #f9fafb; border-radius: 8px; border-left: 4px solid #3b82f6;">
+          <p style="margin: 0 0 12px 0; font-weight: 600; color: #1f2937;"><%= t("views.job_posts.show.application_link") %></p>
+          <a href="<%= link_url %>" style="color: #3b82f6; text-decoration: none; font-size: 16px; word-break: break-all;" rel="nofollow sponsored noopener" target="_blank">
+            <%= @job_post.link %>
+          </a>
+        </div>
+      <% end %>
+
+      <% if @job_post.source_url.present? %>
+        <div style="margin-top: 16px; font-size: 14px; color: #4b5563;">
+          <strong><%= t("views.job_posts.show.source") %>:</strong>
+          <a href="<%= @job_post.source_url %>" target="_blank" rel="noopener nofollow"><%= @job_post.source_name.presence || @job_post.source_url %></a>
+        </div>
+      <% end %>
 
       <% related_jobs = @job_post.related_jobs %>
       <% if related_jobs.any? %>
         <div class="related-jobs" style="margin-top: 50px; padding-top: 30px; border-top: 2px solid #e5e7eb;">
-          <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #1f2937;">Related Jobs</h2>
+          <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #1f2937;"><%= t("views.job_posts.show.related_jobs") %></h2>
           <div class="related-jobs-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
             <% related_jobs.each do |related_job| %>
               <% related_link = related_job.link.presence || job_post_path(related_job.slug) %>
@@ -65,8 +167,8 @@
 
       <% if user_signed_in? && (current_user == @job_post.user || current_user.any_admin?) %>
         <div class="job-post-actions" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-          <%= link_to "Edit", edit_job_post_path(@job_post.slug), class: "crayons-btn crayons-btn--secondary", style: "margin-right: 12px;" %>
-          <%= link_to "Back to Job Posts", job_posts_path, class: "crayons-btn crayons-btn--outlined" %>
+          <%= link_to t("views.job_posts.show.edit"), edit_job_post_path(@job_post.slug), class: "crayons-btn crayons-btn--secondary", style: "margin-right: 12px;" %>
+          <%= link_to t("views.job_posts.show.back"), job_posts_path, class: "crayons-btn crayons-btn--outlined" %>
         </div>
       <% end %>
     </article>

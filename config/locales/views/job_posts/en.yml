@@ -1,0 +1,31 @@
+en:
+  views:
+    job_posts:
+      show:
+        breadcrumb_home: Home
+        breadcrumb_jobs: Jobs
+        posted_by: "Posted by %{name}"
+        deadline: "Deadline: %{date}"
+        organization: Organization
+        location: Location
+        employment_type: Employment type
+        vacancies: Vacancies
+        salary_range: Salary range
+        category: Category
+        eligibility: Eligibility
+        important_dates: Important dates
+        application_link: Application Link
+        source: Source
+        related_jobs: Related Jobs
+        edit: Edit
+        back: Back to Job Posts
+      hub:
+        title: "%{post_type} Government Job Updates"
+        description: "Browse %{post_type} government job updates, eligibility details, and deadlines."
+        heading: "%{post_type} Job Updates"
+        subheading: "Find latest %{post_type} posts with eligibility, location, and deadline details."
+        deadline: "Deadline: %{date}"
+        types:
+          new_update: New Update Jobs
+          admit_card: Admit Card Jobs
+          online_form: Online Form Jobs
