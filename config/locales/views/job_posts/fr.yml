@@ -6,6 +6,7 @@ fr:
         vacancies: Nombre de postes
         salary: Salaire
         qualification: Qualification
+        exam_date: Date d'examen
         last_date: Date limite
       show:
         breadcrumb_home: Accueil

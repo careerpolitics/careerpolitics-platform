@@ -97,16 +97,10 @@
                   <span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>
                 <% end %>
               </a>
-              <% if job_post.organization_name.present? || job_post.vacancies.present? || job_post.salary_range.present? || job_post.qualification.present? || job_post.deadline_at.present? %>
+              <% if job_post.vacancies.present? || job_post.qualification.present? || job_post.deadline_at.present? %>
                 <div class="meta" style="margin-top: 6px; font-size: 12px; color: #6b7280; display: flex; flex-wrap: wrap; gap: 8px;">
-                  <% if job_post.organization_name.present? %>
-                    <span><strong><%= t("views.job_posts.index.organization") %>:</strong> <%= job_post.organization_name %></span>
-                  <% end %>
                   <% if job_post.vacancies.present? %>
                     <span><strong><%= t("views.job_posts.index.vacancies") %>:</strong> <%= job_post.vacancies %></span>
-                  <% end %>
-                  <% if job_post.salary_range.present? %>
-                    <span><strong><%= t("views.job_posts.index.salary") %>:</strong> <%= job_post.salary_range %></span>
                   <% end %>
                   <% if job_post.qualification.present? %>
                     <span><strong><%= t("views.job_posts.index.qualification") %>:</strong> <%= truncate(job_post.qualification, length: 80) %></span>
@@ -144,22 +138,10 @@
                   <span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>
                 <% end %>
               </a>
-              <% if job_post.organization_name.present? || job_post.vacancies.present? || job_post.salary_range.present? || job_post.qualification.present? || job_post.deadline_at.present? %>
+              <% if job_post.deadline_at.present? %>
                 <div class="meta" style="margin-top: 6px; font-size: 12px; color: #6b7280; display: flex; flex-wrap: wrap; gap: 8px;">
-                  <% if job_post.organization_name.present? %>
-                    <span><strong><%= t("views.job_posts.index.organization") %>:</strong> <%= job_post.organization_name %></span>
-                  <% end %>
-                  <% if job_post.vacancies.present? %>
-                    <span><strong><%= t("views.job_posts.index.vacancies") %>:</strong> <%= job_post.vacancies %></span>
-                  <% end %>
-                  <% if job_post.salary_range.present? %>
-                    <span><strong><%= t("views.job_posts.index.salary") %>:</strong> <%= job_post.salary_range %></span>
-                  <% end %>
-                  <% if job_post.qualification.present? %>
-                    <span><strong><%= t("views.job_posts.index.qualification") %>:</strong> <%= truncate(job_post.qualification, length: 80) %></span>
-                  <% end %>
                   <% if job_post.deadline_at.present? %>
-                    <span><strong><%= t("views.job_posts.index.last_date") %>:</strong> <%= l(job_post.deadline_at.to_date) %></span>
+                    <span><strong><%= t("views.job_posts.index.exam_date") %>:</strong> <%= l(job_post.deadline_at.to_date) %></span>
                   <% end %>
                 </div>
               <% end %>
@@ -191,16 +173,10 @@
                   <span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>
                 <% end %>
               </a>
-              <% if job_post.organization_name.present? || job_post.vacancies.present? || job_post.salary_range.present? || job_post.qualification.present? || job_post.deadline_at.present? %>
+              <% if job_post.vacancies.present? || job_post.qualification.present? || job_post.deadline_at.present? %>
                 <div class="meta" style="margin-top: 6px; font-size: 12px; color: #6b7280; display: flex; flex-wrap: wrap; gap: 8px;">
-                  <% if job_post.organization_name.present? %>
-                    <span><strong><%= t("views.job_posts.index.organization") %>:</strong> <%= job_post.organization_name %></span>
-                  <% end %>
                   <% if job_post.vacancies.present? %>
                     <span><strong><%= t("views.job_posts.index.vacancies") %>:</strong> <%= job_post.vacancies %></span>
-                  <% end %>
-                  <% if job_post.salary_range.present? %>
-                    <span><strong><%= t("views.job_posts.index.salary") %>:</strong> <%= job_post.salary_range %></span>
                   <% end %>
                   <% if job_post.qualification.present? %>
                     <span><strong><%= t("views.job_posts.index.qualification") %>:</strong> <%= truncate(job_post.qualification, length: 80) %></span>
@@ -302,10 +278,13 @@
               badgeHtml = '<span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>';
             }
             let metaHtml = '';
-            if (jobPost.qualification || jobPost.deadline_at) {
-              const qualificationText = jobPost.qualification ? `<span><strong>${"''"}</strong>${jobPost.qualification}</span>` : '';
+            if (jobPost.post_type === 'admit_card' && jobPost.deadline_at) {
+              metaHtml = `<div class="meta" style="margin-top: 6px; font-size: 12px; color: #6b7280;"><span><strong>Exam Date:</strong> ${jobPost.deadline_at}</span></div>`;
+            } else if (jobPost.vacancies || jobPost.qualification || jobPost.deadline_at) {
+              const vacancyText = jobPost.vacancies ? `<span><strong>Total Posts:</strong> ${jobPost.vacancies}</span>` : '';
+              const qualificationText = jobPost.qualification ? `<span style="margin-left: 8px;"><strong>Qualification:</strong> ${jobPost.qualification}</span>` : '';
               const deadlineText = jobPost.deadline_at ? `<span style="margin-left: 8px;"><strong>Last Date:</strong> ${jobPost.deadline_at}</span>` : '';
-              metaHtml = `<div class="meta" style="margin-top: 6px; font-size: 12px; color: #6b7280;">${qualificationText}${deadlineText}</div>`;
+              metaHtml = `<div class="meta" style="margin-top: 6px; font-size: 12px; color: #6b7280;">${vacancyText}${qualificationText}${deadlineText}</div>`;
             }
             li.innerHTML = `<a href="${jobPost.link}" style="display: flex; align-items: center; gap: 8px;">${jobPost.title} ${badgeHtml}</a>${metaHtml}`;
             list.appendChild(li);

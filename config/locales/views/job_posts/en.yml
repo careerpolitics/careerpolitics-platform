@@ -6,6 +6,7 @@ en:
         vacancies: Total Posts
         salary: Salary
         qualification: Qualification
+        exam_date: Exam Date
         last_date: Last Date
       show:
         breadcrumb_home: Home
