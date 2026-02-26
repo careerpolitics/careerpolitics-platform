@@ -2,7 +2,7 @@ class JobPostsController < ApplicationController
   before_action :authenticate_user!, except: %i[index show post_type]
   before_action :set_job_post, only: %i[show edit update]
   before_action :set_post_type, only: [:post_type]
-  after_action :verify_authorized, except: %i[index show]
+  after_action :verify_authorized, except: %i[index show post_type]
 
   def index
     @featured_job_posts = JobPost.featured.includes(:user)
