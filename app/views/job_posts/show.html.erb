@@ -11,7 +11,6 @@
 <% breadcrumb_items = [
   { name: t("views.job_posts.show.breadcrumb_home"), item: root_url },
   { name: t("views.job_posts.show.breadcrumb_jobs"), item: job_posts_url },
-  (@job_post.post_type.present? ? { name: @job_post.post_type.humanize, item: type_job_posts_url(@job_post.post_type) } : nil),
   { name: @job_post.title, item: request.original_url }
 ].compact %>
 

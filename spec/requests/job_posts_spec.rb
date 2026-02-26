@@ -10,9 +10,6 @@ RSpec.describe "JobPosts", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Latest Government Job Updates - CareerPolitics")
       expect(response.body).to include("Discover the latest government job updates")
-      expect(response.body).to include("#new-update")
-      expect(response.body).to include("#admit-card")
-      expect(response.body).to include("#top-online-form")
       expect(response.body).to include(job_post_path(job_post.slug))
     end
   end
@@ -42,17 +39,6 @@ RSpec.describe "JobPosts", type: :request do
     end
   end
 
-  describe "GET /jobs/type/:post_type" do
-    it "renders post type hub page without authentication" do
-      create(:job_post, post_type: "admit_card", title: "SSC Admit Card 2026")
-
-      get type_job_posts_path("admit_card")
-
-      expect(response).to have_http_status(:ok)
-      expect(response.body).to include("SSC Admit Card 2026")
-      expect(response.body).to include("Admit card Job Updates")
-    end
-  end
 
   describe "legacy scaffold routes" do
     it "are no longer routable" do
@@ -62,6 +48,7 @@ RSpec.describe "JobPosts", type: :request do
       expect(get: "/job_posts/create").not_to be_routable
       expect(get: "/job_posts/edit").not_to be_routable
       expect(get: "/job_posts/update").not_to be_routable
+      expect(get: "/jobs/type/new_update").not_to be_routable
     end
   end
 end

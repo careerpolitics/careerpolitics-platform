@@ -1,8 +1,7 @@
 class JobPostsController < ApplicationController
-  before_action :authenticate_user!, except: %i[index show post_type]
+  before_action :authenticate_user!, except: %i[index show]
   before_action :set_job_post, only: %i[show edit update]
-  before_action :set_post_type, only: [:post_type]
-  after_action :verify_authorized, except: %i[index show post_type]
+  after_action :verify_authorized, except: %i[index show]
 
   def index
     @featured_job_posts = JobPost.featured.includes(:user)
@@ -40,14 +39,6 @@ class JobPostsController < ApplicationController
     end
   end
 
-
-  def post_type
-    return redirect_to(job_posts_path) if @post_type.blank?
-
-    @featured_job_posts = JobPost.featured.includes(:user)
-    @job_posts = JobPost.available.by_post_type(@post_type).includes(:user).recent.page(params[:page] || 1).per(20)
-    @post_type_label = @post_type.humanize
-  end
 
   def show
     @job_post = JobPost.find_by!(slug: params[:slug] || params[:id])
@@ -102,9 +93,6 @@ class JobPostsController < ApplicationController
                                      :source_name, :source_url, :important_dates)
   end
 
-  def set_post_type
-    @post_type = JobPost::POST_TYPES[params[:post_type]&.to_sym]
-  end
 
   def job_post_json(job_post)
     {
@@ -112,7 +100,9 @@ class JobPostsController < ApplicationController
       title: job_post.title,
       link: job_post_path(job_post.slug),
       badge_type: job_post.badge_type,
-      post_type: job_post.post_type
+      post_type: job_post.post_type,
+      qualification: job_post.qualification&.truncate(80),
+      deadline_at: job_post.deadline_at&.to_date&.to_s
     }
   end
 end
