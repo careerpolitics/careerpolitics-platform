@@ -1,7 +1,7 @@
 class JobPostsController < ApplicationController
-  before_action :authenticate_user!, except: %i[index show]
-  before_action :set_job_post, only: %i[show edit update]
-  after_action :verify_authorized, except: %i[index show]
+  before_action :authenticate_user!, except: [:index]
+  before_action :set_job_post, only: %i[edit update]
+  after_action :verify_authorized, except: [:index]
 
   def index
     @featured_job_posts = JobPost.featured.includes(:user)
@@ -39,12 +39,6 @@ class JobPostsController < ApplicationController
     end
   end
 
-
-  def show
-    @job_post = JobPost.find_by!(slug: params[:slug] || params[:id])
-
-    @related_jobs = @job_post.related_jobs
-  end
 
   def new
     @job_post = JobPost.new
@@ -95,7 +89,7 @@ class JobPostsController < ApplicationController
 
 
   def job_post_json(job_post)
-    link_url = job_post.link.presence || job_post_path(job_post.slug)
+    link_url = job_post.link.presence || job_posts_path
     link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}")
 
     {

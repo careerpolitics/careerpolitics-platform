@@ -18,32 +18,6 @@ RSpec.describe "JobPosts", type: :request do
     end
   end
 
-  describe "GET /jobs/:slug" do
-    it "renders canonical detail page with metadata and server-side JSON-LD" do
-      job_post = create(
-        :job_post,
-        title: "UPSC Assistant Recruitment 2026",
-        link: "https://example.com/apply",
-        organization_name: "UPSC",
-        location: "Delhi",
-        employment_type: "full_time",
-        deadline_at: 2.months.from_now,
-        qualification: "Graduate degree",
-      )
-
-      get job_post_path(job_post.slug)
-
-      expect(response).to have_http_status(:ok)
-      expect(response).not_to be_redirect
-      expect(response.body).to include("UPSC Assistant Recruitment 2026")
-      expect(response.body).to include("<meta property=\"og:type\" content=\"article\">")
-      expect(response.body).to include("application/ld+json")
-      expect(response.body).to include("\"@type\":\"JobPosting\"")
-      expect(response.body).to include("\"@type\":\"BreadcrumbList\"")
-    end
-  end
-
-
   describe "legacy scaffold routes" do
     it "are no longer routable" do
       expect(get: "/job_posts/index").not_to be_routable
@@ -53,6 +27,7 @@ RSpec.describe "JobPosts", type: :request do
       expect(get: "/job_posts/edit").not_to be_routable
       expect(get: "/job_posts/update").not_to be_routable
       expect(get: "/jobs/type/new_update").not_to be_routable
+      expect(get: "/jobs/upsc-assistant-recruitment-2026").not_to be_routable
     end
   end
 end
