@@ -342,7 +342,7 @@ Rails.application.routes.draw do
     get "/community", to: "community#index", as: :community
 
     # Jobs
-    resources :job_posts, only: %i[index new create edit update], param: :slug, path: "jobs"
+    resources :job_posts, only: %i[index show new create edit update], param: :slug, path: "jobs"
     get "/:slug/members", to: "organizations#members", as: :organization_members
     post "articles/preview", to: "articles#preview"
     post "comments/preview", to: "comments#preview"

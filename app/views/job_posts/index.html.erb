@@ -8,6 +8,33 @@
   <meta property="og:url" content="<%= request.original_url %>">
 <% end %>
 
+<script type="application/ld+json">
+<%= raw({
+  "@context" => "https://schema.org",
+  "@type" => "CollectionPage",
+  "name" => "Latest Government Job Updates",
+  "url" => request.original_url,
+  "mainEntity" => {
+    "@type" => "ItemList",
+    "itemListElement" => (@new_updates + @admit_cards + @online_forms).each_with_index.map do |job_post, index|
+      {
+        "@type" => "ListItem",
+        "position" => index + 1,
+        "item" => {
+          "@type" => "JobPosting",
+          "title" => job_post.title,
+          "url" => job_post_url(job_post.slug),
+          "hiringOrganization" => { "@type" => "Organization", "name" => job_post.organization_name.presence || SiteConfig.community_name },
+          "totalJobOpenings" => job_post.vacancies,
+          "validThrough" => job_post.deadline_at&.iso8601,
+          "baseSalary" => (job_post.salary_range.present? ? { "@type" => "MonetaryAmount", "value" => job_post.salary_range } : nil)
+        }.compact
+      }
+    end
+  }
+}.to_json) %>
+</script>
+
 <style>
   .jobs-page { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(135deg, #f5f7fa, #e3e8f5); color: #1a1a1a; line-height: 1.5; min-height: 100vh; }
   .jobs-container { max-width: 1200px; width: 90%; margin: 10px auto; padding: 10px; }
@@ -24,9 +51,6 @@
   .jobs-card li:hover { background: #f8f9fa; }
   .jobs-card a { color: #0056b3; text-decoration: none; font-size: 1em; transition: color .3s ease, padding-left .3s ease; display: block; }
   .jobs-card a:hover { color: #003d82; padding-left: 8px; }
-  .jobs-dynamic { background: linear-gradient(135deg, #fff, #f0f4ff); padding: 20px; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,.05); margin-top: 20px; border-left: 5px solid #218838; }
-  .jobs-dynamic h3 { color: #218838; margin-bottom: 12px; font-size: 1.3em; font-weight: 700; text-transform: uppercase; }
-  .jobs-dynamic .meta { font-size: .9em; color: #666; font-style: italic; }
   .jobs-loading { text-align: center; color: #666; margin: 20px 0; font-size: 1.1em; display: none; }
   .load-more-btn { display: block; width: 100%; padding: 12px; margin-top: 15px; background: #0056b3; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background .3s ease; }
   .load-more-btn:hover { background: #003d82; }
@@ -41,7 +65,6 @@
     .jobs-grid { grid-template-columns: 1fr; }
     .jobs-btn { font-size: .9em; padding: 12px; }
     .jobs-card h2 { font-size: 1.2em; }
-    .jobs-dynamic h3 { font-size: 1.1em; }
   }
 </style>
 
@@ -50,9 +73,7 @@
     <div class="jobs-buttons">
       <% @featured_job_posts.each do |job_post| %>
         <% color = job_post.color.presence || "#0056b3" %>
-        <% featured_link = job_post.link.presence || job_posts_path %>
-        <% featured_link = featured_link.start_with?('/') ? featured_link : (featured_link.start_with?('http') ? featured_link : "/#{featured_link}") %>
-        <a href="<%= featured_link %>" class="jobs-btn" style="background: <%= color %>">
+        <a href="<%= job_post_path(job_post.slug) %>" class="jobs-btn" style="background: <%= color %>">
           <%= job_post.title %>
         </a>
       <% end %>
@@ -63,10 +84,8 @@
         <h2><i class="fas fa-bell"></i>New Update</h2>
         <ul id="new-updates-list">
           <% @new_updates.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_posts_path %>
-            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
-              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
+              <a href="<%= job_post_path(job_post.slug) %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
                 <% if job_post.badge_type == 'new' %>
                   <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
@@ -101,10 +120,8 @@
         <h2><i class="fas fa-ticket-alt"></i>Admit Card</h2>
         <ul id="admit-cards-list">
           <% @admit_cards.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_posts_path %>
-            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
-              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
+              <a href="<%= job_post_path(job_post.slug) %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
                 <% if job_post.badge_type == 'new' %>
                   <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
@@ -139,10 +156,8 @@
         <h2><i class="fas fa-file-alt"></i>Top Online Form</h2>
         <ul id="online-forms-list">
           <% @online_forms.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_posts_path %>
-            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
-              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
+              <a href="<%= job_post_path(job_post.slug) %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
                 <% if job_post.badge_type == 'new' %>
                   <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
