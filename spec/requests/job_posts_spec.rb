@@ -2,17 +2,18 @@ require 'rails_helper'
 
 RSpec.describe "JobPosts", type: :request do
   describe "GET /jobs" do
-    it "returns success with index metadata and hub links" do
-      create(:job_post, featured: true)
+    it "returns success with section links and internal job detail links" do
+      job_post = create(:job_post, featured: true, link: "https://external.example/apply")
 
       get job_posts_path
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Latest Government Job Updates - CareerPolitics")
       expect(response.body).to include("Discover the latest government job updates")
-      expect(response.body).to include(type_job_posts_path("new_update"))
-      expect(response.body).to include(type_job_posts_path("admit_card"))
-      expect(response.body).to include(type_job_posts_path("online_form"))
+      expect(response.body).to include("#new-update")
+      expect(response.body).to include("#admit-card")
+      expect(response.body).to include("#top-online-form")
+      expect(response.body).to include(job_post_path(job_post.slug))
     end
   end
 

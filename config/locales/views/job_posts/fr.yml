@@ -19,6 +19,11 @@ fr:
         related_jobs: Emplois similaires
         edit: Modifier
         back: Retour aux offres
+      index:
+        section_nav:
+          new_update: Nouvelle mise à jour
+          admit_card: Carte d'admission
+          top_online_form: Top formulaire en ligne
       hub:
         title: "Mises à jour d'emplois publics %{post_type}"
         description: "Parcourez les mises à jour %{post_type}, les critères et les échéances."

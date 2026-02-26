@@ -107,13 +107,10 @@ class JobPostsController < ApplicationController
   end
 
   def job_post_json(job_post)
-    link_url = job_post.link.presence || job_post_path(job_post.slug)
-    link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}")
-    
     {
       id: job_post.id,
       title: job_post.title,
-      link: link_url,
+      link: job_post_path(job_post.slug),
       badge_type: job_post.badge_type,
       post_type: job_post.post_type
     }

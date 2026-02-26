@@ -50,29 +50,25 @@
     <div class="jobs-buttons">
       <% @featured_job_posts.each do |job_post| %>
         <% color = job_post.color.presence || "#0056b3" %>
-        <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
-        <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
-        <a href="<%= link_url %>" class="jobs-btn" style="background: <%= color %>">
+        <a href="<%= job_post_path(job_post.slug) %>" class="jobs-btn" style="background: <%= color %>">
           <%= job_post.title %>
         </a>
       <% end %>
     </div>
 
-    <nav class="jobs-type-hubs" style="margin: 16px 0; display: flex; flex-wrap: wrap; gap: 8px;" aria-label="Job post type hubs">
-      <%= link_to t("views.job_posts.hub.types.new_update"), type_job_posts_path("new_update"), class: "crayons-btn crayons-btn--secondary" %>
-      <%= link_to t("views.job_posts.hub.types.admit_card"), type_job_posts_path("admit_card"), class: "crayons-btn crayons-btn--secondary" %>
-      <%= link_to t("views.job_posts.hub.types.online_form"), type_job_posts_path("online_form"), class: "crayons-btn crayons-btn--secondary" %>
+    <nav class="jobs-type-hubs" style="margin: 16px 0; display: flex; flex-wrap: wrap; gap: 8px;" aria-label="Job sections">
+      <a href="#new-update" class="crayons-btn crayons-btn--secondary"><%= t("views.job_posts.index.section_nav.new_update") %></a>
+      <a href="#admit-card" class="crayons-btn crayons-btn--secondary"><%= t("views.job_posts.index.section_nav.admit_card") %></a>
+      <a href="#top-online-form" class="crayons-btn crayons-btn--secondary"><%= t("views.job_posts.index.section_nav.top_online_form") %></a>
     </nav>
 
     <div class="jobs-grid">
-      <section class="jobs-card" data-post-type="new_update">
+      <section id="new-update" class="jobs-card" data-post-type="new_update">
         <h2><i class="fas fa-bell"></i>New Update</h2>
         <ul id="new-updates-list">
           <% @new_updates.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
-            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
-              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
+              <a href="<%= job_post_path(job_post.slug) %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
                 <% if job_post.badge_type == 'new' %>
                   <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
@@ -93,14 +89,12 @@
         </div>
       </section>
 
-      <section class="jobs-card" data-post-type="admit_card">
+      <section id="admit-card" class="jobs-card" data-post-type="admit_card">
         <h2><i class="fas fa-ticket-alt"></i>Admit Card</h2>
         <ul id="admit-cards-list">
           <% @admit_cards.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
-            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
-              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
+              <a href="<%= job_post_path(job_post.slug) %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
                 <% if job_post.badge_type == 'new' %>
                   <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
@@ -121,14 +115,12 @@
         </div>
       </section>
 
-      <section class="jobs-card" data-post-type="online_form">
+      <section id="top-online-form" class="jobs-card" data-post-type="online_form">
         <h2><i class="fas fa-file-alt"></i>Top Online Form</h2>
         <ul id="online-forms-list">
           <% @online_forms.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
-            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
-              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
+              <a href="<%= job_post_path(job_post.slug) %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
                 <% if job_post.badge_type == 'new' %>
                   <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
@@ -169,7 +161,7 @@
 <script>
   // Schema.org structured data for SEO
   (function() {
-    const jobPosts = <%= @featured_job_posts.map { |jp| { title: jp.title, link: jp.link.presence || job_post_path(jp.slug) } }.to_json.html_safe %>;
+    const jobPosts = <%= @featured_job_posts.map { |jp| { title: jp.title, link: job_post_path(jp.slug) } }.to_json.html_safe %>;
     const schema = {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
