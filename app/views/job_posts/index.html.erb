@@ -23,7 +23,7 @@
         "item" => {
           "@type" => "JobPosting",
           "title" => job_post.title,
-          "url" => job_post_url(job_post.slug),
+          "url" => (job_post.link.presence || job_posts_url),
           "hiringOrganization" => { "@type" => "Organization", "name" => job_post.organization_name.presence || SiteConfig.community_name },
           "totalJobOpenings" => job_post.vacancies,
           "validThrough" => job_post.deadline_at&.iso8601,
@@ -73,7 +73,9 @@
     <div class="jobs-buttons">
       <% @featured_job_posts.each do |job_post| %>
         <% color = job_post.color.presence || "#0056b3" %>
-        <a href="<%= job_post_path(job_post.slug) %>" class="jobs-btn" style="background: <%= color %>">
+        <% featured_link = job_post.link.presence || job_posts_path %>
+        <% featured_link = featured_link.start_with?('/') ? featured_link : (featured_link.start_with?('http') ? featured_link : "/#{featured_link}") %>
+        <a href="<%= featured_link %>" class="jobs-btn" style="background: <%= color %>">
           <%= job_post.title %>
         </a>
       <% end %>
@@ -84,8 +86,10 @@
         <h2><i class="fas fa-bell"></i>New Update</h2>
         <ul id="new-updates-list">
           <% @new_updates.each do |job_post| %>
+            <% link_url = job_post.link.presence || job_posts_path %>
+            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
-              <a href="<%= job_post_path(job_post.slug) %>" style="display: flex; align-items: center; gap: 8px;">
+              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
                 <% if job_post.badge_type == 'new' %>
                   <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
@@ -93,13 +97,22 @@
                   <span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>
                 <% end %>
               </a>
-              <% if job_post.qualification.present? || job_post.deadline_at.present? %>
-                <div class="meta" style="margin-top: 6px; font-size: 12px; color: #6b7280;">
+              <% if job_post.organization_name.present? || job_post.vacancies.present? || job_post.salary_range.present? || job_post.qualification.present? || job_post.deadline_at.present? %>
+                <div class="meta" style="margin-top: 6px; font-size: 12px; color: #6b7280; display: flex; flex-wrap: wrap; gap: 8px;">
+                  <% if job_post.organization_name.present? %>
+                    <span><strong><%= t("views.job_posts.index.organization") %>:</strong> <%= job_post.organization_name %></span>
+                  <% end %>
+                  <% if job_post.vacancies.present? %>
+                    <span><strong><%= t("views.job_posts.index.vacancies") %>:</strong> <%= job_post.vacancies %></span>
+                  <% end %>
+                  <% if job_post.salary_range.present? %>
+                    <span><strong><%= t("views.job_posts.index.salary") %>:</strong> <%= job_post.salary_range %></span>
+                  <% end %>
                   <% if job_post.qualification.present? %>
                     <span><strong><%= t("views.job_posts.index.qualification") %>:</strong> <%= truncate(job_post.qualification, length: 80) %></span>
                   <% end %>
                   <% if job_post.deadline_at.present? %>
-                    <span style="margin-left: 8px;"><strong><%= t("views.job_posts.index.last_date") %>:</strong> <%= l(job_post.deadline_at.to_date) %></span>
+                    <span><strong><%= t("views.job_posts.index.last_date") %>:</strong> <%= l(job_post.deadline_at.to_date) %></span>
                   <% end %>
                 </div>
               <% end %>
@@ -120,8 +133,10 @@
         <h2><i class="fas fa-ticket-alt"></i>Admit Card</h2>
         <ul id="admit-cards-list">
           <% @admit_cards.each do |job_post| %>
+            <% link_url = job_post.link.presence || job_posts_path %>
+            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
-              <a href="<%= job_post_path(job_post.slug) %>" style="display: flex; align-items: center; gap: 8px;">
+              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
                 <% if job_post.badge_type == 'new' %>
                   <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
@@ -129,13 +144,22 @@
                   <span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>
                 <% end %>
               </a>
-              <% if job_post.qualification.present? || job_post.deadline_at.present? %>
-                <div class="meta" style="margin-top: 6px; font-size: 12px; color: #6b7280;">
+              <% if job_post.organization_name.present? || job_post.vacancies.present? || job_post.salary_range.present? || job_post.qualification.present? || job_post.deadline_at.present? %>
+                <div class="meta" style="margin-top: 6px; font-size: 12px; color: #6b7280; display: flex; flex-wrap: wrap; gap: 8px;">
+                  <% if job_post.organization_name.present? %>
+                    <span><strong><%= t("views.job_posts.index.organization") %>:</strong> <%= job_post.organization_name %></span>
+                  <% end %>
+                  <% if job_post.vacancies.present? %>
+                    <span><strong><%= t("views.job_posts.index.vacancies") %>:</strong> <%= job_post.vacancies %></span>
+                  <% end %>
+                  <% if job_post.salary_range.present? %>
+                    <span><strong><%= t("views.job_posts.index.salary") %>:</strong> <%= job_post.salary_range %></span>
+                  <% end %>
                   <% if job_post.qualification.present? %>
                     <span><strong><%= t("views.job_posts.index.qualification") %>:</strong> <%= truncate(job_post.qualification, length: 80) %></span>
                   <% end %>
                   <% if job_post.deadline_at.present? %>
-                    <span style="margin-left: 8px;"><strong><%= t("views.job_posts.index.last_date") %>:</strong> <%= l(job_post.deadline_at.to_date) %></span>
+                    <span><strong><%= t("views.job_posts.index.last_date") %>:</strong> <%= l(job_post.deadline_at.to_date) %></span>
                   <% end %>
                 </div>
               <% end %>
@@ -156,8 +180,10 @@
         <h2><i class="fas fa-file-alt"></i>Top Online Form</h2>
         <ul id="online-forms-list">
           <% @online_forms.each do |job_post| %>
+            <% link_url = job_post.link.presence || job_posts_path %>
+            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
-              <a href="<%= job_post_path(job_post.slug) %>" style="display: flex; align-items: center; gap: 8px;">
+              <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
                 <% if job_post.badge_type == 'new' %>
                   <span class="job-badge" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">NEW</span>
@@ -165,13 +191,22 @@
                   <span class="job-badge" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">LAST DAY</span>
                 <% end %>
               </a>
-              <% if job_post.qualification.present? || job_post.deadline_at.present? %>
-                <div class="meta" style="margin-top: 6px; font-size: 12px; color: #6b7280;">
+              <% if job_post.organization_name.present? || job_post.vacancies.present? || job_post.salary_range.present? || job_post.qualification.present? || job_post.deadline_at.present? %>
+                <div class="meta" style="margin-top: 6px; font-size: 12px; color: #6b7280; display: flex; flex-wrap: wrap; gap: 8px;">
+                  <% if job_post.organization_name.present? %>
+                    <span><strong><%= t("views.job_posts.index.organization") %>:</strong> <%= job_post.organization_name %></span>
+                  <% end %>
+                  <% if job_post.vacancies.present? %>
+                    <span><strong><%= t("views.job_posts.index.vacancies") %>:</strong> <%= job_post.vacancies %></span>
+                  <% end %>
+                  <% if job_post.salary_range.present? %>
+                    <span><strong><%= t("views.job_posts.index.salary") %>:</strong> <%= job_post.salary_range %></span>
+                  <% end %>
                   <% if job_post.qualification.present? %>
                     <span><strong><%= t("views.job_posts.index.qualification") %>:</strong> <%= truncate(job_post.qualification, length: 80) %></span>
                   <% end %>
                   <% if job_post.deadline_at.present? %>
-                    <span style="margin-left: 8px;"><strong><%= t("views.job_posts.index.last_date") %>:</strong> <%= l(job_post.deadline_at.to_date) %></span>
+                    <span><strong><%= t("views.job_posts.index.last_date") %>:</strong> <%= l(job_post.deadline_at.to_date) %></span>
                   <% end %>
                 </div>
               <% end %>

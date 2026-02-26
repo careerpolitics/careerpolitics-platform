@@ -2,6 +2,9 @@ en:
   views:
     job_posts:
       index:
+        organization: Organization
+        vacancies: Total Posts
+        salary: Salary
         qualification: Qualification
         last_date: Last Date
       show:
