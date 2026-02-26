@@ -8,6 +8,17 @@ module Admin
       post_type
       link
       color
+      category
+      organization_name
+      location
+      deadline_at
+      employment_type
+      salary_range
+      qualification
+      vacancies
+      source_name
+      source_url
+      important_dates
       published
       approved
       position

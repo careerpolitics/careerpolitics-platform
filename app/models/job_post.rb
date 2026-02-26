@@ -4,6 +4,8 @@ class JobPost < ApplicationRecord
   validates :title, presence: true
   validates :slug, presence: true, uniqueness: true
   validates :post_type, inclusion: { in: %w[new_update admit_card online_form] }, allow_nil: true
+  validates :employment_type, inclusion: { in: %w[full_time part_time contract internship temporary] }, allow_nil: true
+  validates :vacancies, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :link, presence: true, if: :published?
   validate :link_format, if: :published?
 
@@ -21,6 +23,7 @@ class JobPost < ApplicationRecord
   scope :approved, -> { where(approved: true) }
   scope :available, -> { published.approved }
   scope :by_post_type, ->(type) { where(post_type: type) }
+  scope :by_category, ->(category) { where(category: category) }
   scope :recent, -> { order(position: :asc, published_at: :desc, created_at: :desc) }
   scope :featured, -> { available.where(featured: true).recent.limit(8) }
   scope :pending_approval, -> { where(approved: false) }
@@ -46,6 +49,19 @@ class JobPost < ApplicationRecord
     # Last day badge: if there's a deadline and it's within 24 hours
     # Note: This assumes link might contain deadline info, or you can add a deadline_date field
     nil
+  end
+
+
+  def employment_type_schema_value
+    return nil if employment_type.blank?
+
+    {
+      "full_time" => "FULL_TIME",
+      "part_time" => "PART_TIME",
+      "contract" => "CONTRACTOR",
+      "internship" => "INTERN",
+      "temporary" => "TEMPORARY"
+    }[employment_type]
   end
 
   def related_jobs(limit: 4)
