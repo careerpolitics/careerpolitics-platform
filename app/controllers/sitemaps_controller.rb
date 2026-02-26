@@ -42,6 +42,9 @@ class SitemapsController < ApplicationController
       @tags = Tag.order("hotness_score DESC")
         .where(supported: true)
         .limit(RESULTS_LIMIT).offset(offset).pluck(:name, :updated_at)
+    when "jobs"
+      @jobs = JobPost.available.recent
+        .limit(RESULTS_LIMIT).offset(offset).pluck(:slug, :published_at)
     end
     set_surrogate_controls(Time.current)
     @view_template = resource
@@ -77,7 +80,7 @@ class SitemapsController < ApplicationController
   end
 
   def valid_resource_sitemap?
-    %w[posts users tags].include?(resource_string)
+    %w[posts users tags jobs].include?(resource_string)
   end
 
   def resource_string
