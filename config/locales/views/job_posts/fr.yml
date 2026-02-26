@@ -2,6 +2,9 @@ fr:
   views:
     job_posts:
       index:
+        organization: Organisation
+        vacancies: Nombre de postes
+        salary: Salaire
         qualification: Qualification
         last_date: Date limite
       show:
