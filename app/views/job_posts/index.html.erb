@@ -50,7 +50,9 @@
     <div class="jobs-buttons">
       <% @featured_job_posts.each do |job_post| %>
         <% color = job_post.color.presence || "#0056b3" %>
-        <a href="<%= job_post_path(job_post.slug) %>" class="jobs-btn" style="background: <%= color %>">
+        <% featured_link = job_post.link.presence || job_posts_path %>
+        <% featured_link = featured_link.start_with?('/') ? featured_link : (featured_link.start_with?('http') ? featured_link : "/#{featured_link}") %>
+        <a href="<%= featured_link %>" class="jobs-btn" style="background: <%= color %>">
           <%= job_post.title %>
         </a>
       <% end %>
@@ -61,7 +63,7 @@
         <h2><i class="fas fa-bell"></i>New Update</h2>
         <ul id="new-updates-list">
           <% @new_updates.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
+            <% link_url = job_post.link.presence || job_posts_path %>
             <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
               <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
@@ -99,7 +101,7 @@
         <h2><i class="fas fa-ticket-alt"></i>Admit Card</h2>
         <ul id="admit-cards-list">
           <% @admit_cards.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
+            <% link_url = job_post.link.presence || job_posts_path %>
             <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
               <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
@@ -137,7 +139,7 @@
         <h2><i class="fas fa-file-alt"></i>Top Online Form</h2>
         <ul id="online-forms-list">
           <% @online_forms.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_post_path(job_post.slug) %>
+            <% link_url = job_post.link.presence || job_posts_path %>
             <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
             <li>
               <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
@@ -172,13 +174,6 @@
       </section>
     </div>
 
-    <% if @featured_job_posts.present? %>
-      <div id="dynamic-posts" class="jobs-dynamic">
-        <h3>New Job Alert</h3>
-        <p>Stay tuned for the latest government job alerts across India.</p>
-        <div class="meta">Updated regularly</div>
-      </div>
-    <% end %>
 
     <% if user_signed_in? %>
       <div style="margin-top: 30px; text-align: right;">
@@ -191,7 +186,7 @@
 <script>
   // Schema.org structured data for SEO
   (function() {
-    const jobPosts = <%= @featured_job_posts.map { |jp| { title: jp.title, link: job_post_path(jp.slug) } }.to_json.html_safe %>;
+    const jobPosts = <%= @featured_job_posts.map { |jp| { title: jp.title, link: (jp.link.presence || job_posts_path) } }.to_json.html_safe %>;
     const schema = {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
