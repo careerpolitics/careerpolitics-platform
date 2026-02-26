@@ -19,6 +19,11 @@ pt:
         related_jobs: Vagas relacionadas
         edit: Editar
         back: Voltar para vagas
+      index:
+        section_nav:
+          new_update: Nova atualização
+          admit_card: Cartão de admissão
+          top_online_form: Principal formulário online
       hub:
         title: "Atualizações de vagas governamentais %{post_type}"
         description: "Navegue por vagas %{post_type}, critérios e prazos."
