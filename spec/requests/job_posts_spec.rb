@@ -42,7 +42,7 @@ RSpec.describe "JobPosts", type: :request do
   end
 
   describe "GET /jobs/type/:post_type" do
-    it "renders post type hub page" do
+    it "renders post type hub page without authentication" do
       create(:job_post, post_type: "admit_card", title: "SSC Admit Card 2026")
 
       get type_job_posts_path("admit_card")
