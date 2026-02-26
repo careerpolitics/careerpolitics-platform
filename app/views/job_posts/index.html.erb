@@ -17,16 +17,26 @@
   "mainEntity" => {
     "@type" => "ItemList",
     "itemListElement" => (@new_updates + @admit_cards + @online_forms).each_with_index.map do |job_post, index|
+      job_url = job_post.link.presence || job_posts_url
+      job_url = job_url.start_with?("/") ? "#{request.base_url}#{job_url}" : job_url
+
       {
         "@type" => "ListItem",
         "position" => index + 1,
         "item" => {
           "@type" => "JobPosting",
           "title" => job_post.title,
-          "url" => (job_post.link.presence || job_posts_url),
+          "url" => job_url,
+          "datePosted" => (job_post.published_at || job_post.created_at)&.iso8601,
           "hiringOrganization" => { "@type" => "Organization", "name" => job_post.organization_name.presence || Settings::Community.community_name },
           "totalJobOpenings" => job_post.vacancies,
           "validThrough" => job_post.deadline_at&.iso8601,
+          "employmentType" => job_post.employment_type_schema_value,
+          "jobLocationType" => (job_post.location.present? ? nil : "TELECOMMUTE"),
+          "applicantLocationRequirements" => (job_post.location.present? ? {
+            "@type" => "Country",
+            "name" => job_post.location
+          } : nil),
           "baseSalary" => (job_post.salary_range.present? ? { "@type" => "MonetaryAmount", "value" => job_post.salary_range } : nil)
         }.compact
       }
@@ -83,7 +93,7 @@
 
     <div class="jobs-grid">
       <section id="new-update" class="jobs-card" data-post-type="new_update">
-        <h2><i class="fas fa-bell"></i>New Update</h2>
+        <h2><i class="fas fa-bell"></i>Result</h2>
         <ul id="new-updates-list">
           <% @new_updates.each do |job_post| %>
             <% link_url = job_post.link.presence || job_posts_path %>
@@ -210,34 +220,6 @@
 </main>
 
 <script>
-  // Schema.org structured data for SEO
-  (function() {
-    const jobPosts = <%= @featured_job_posts.map { |jp| { title: jp.title, link: (jp.link.presence || job_posts_path) } }.to_json.html_safe %>;
-    const schema = {
-      "@context": "https://schema.org",
-      "@type": "CollectionPage",
-      "name": "Latest Government Job Updates",
-      "description": "Discover the latest government job updates, admit cards, and online forms for 2025 across India",
-      "url": "<%= request.original_url %>",
-      "mainEntity": {
-        "@type": "ItemList",
-        "itemListElement": jobPosts.map((job, index) => ({
-          "@type": "ListItem",
-          "position": index + 1,
-          "item": {
-            "@type": "JobPosting",
-            "title": job.title,
-            "url": job.link
-          }
-        }))
-      }
-    };
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify(schema);
-    document.head.appendChild(script);
-  })();
-
   // Load More functionality
   (function() {
     const loadMoreButtons = document.querySelectorAll('.load-more-btn');
