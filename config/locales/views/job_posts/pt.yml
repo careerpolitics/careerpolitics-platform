@@ -6,6 +6,7 @@ pt:
         vacancies: Total de vagas
         salary: Salário
         qualification: Qualificação
+        exam_date: Data do exame
         last_date: Data limite
       show:
         breadcrumb_home: Início

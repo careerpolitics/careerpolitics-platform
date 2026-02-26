@@ -15,6 +15,11 @@ RSpec.describe "JobPosts", type: :request do
       expect(response.body).to include("https://external.example/new-update")
       expect(response.body).to include("https://external.example/admit-card")
       expect(response.body).to include("https://external.example/online-form")
+      expect(response.body).to include("Organization")
+      expect(response.body).to include("Total Posts")
+      expect(response.body).to include("Qualification")
+      expect(response.body).to include("Last Date")
+      expect(response.body).to include("Exam Date")
     end
   end
 
