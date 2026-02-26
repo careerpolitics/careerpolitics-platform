@@ -24,7 +24,7 @@
           "@type" => "JobPosting",
           "title" => job_post.title,
           "url" => (job_post.link.presence || job_posts_url),
-          "hiringOrganization" => { "@type" => "Organization", "name" => job_post.organization_name.presence || SiteConfig.community_name },
+          "hiringOrganization" => { "@type" => "Organization", "name" => job_post.organization_name.presence || Settings::Community.community_name },
           "totalJobOpenings" => job_post.vacancies,
           "validThrough" => job_post.deadline_at&.iso8601,
           "baseSalary" => (job_post.salary_range.present? ? { "@type" => "MonetaryAmount", "value" => job_post.salary_range } : nil)
