@@ -1,6 +1,9 @@
 pt:
   views:
     job_posts:
+      index:
+        qualification: Qualificação
+        last_date: Data limite
       show:
         breadcrumb_home: Início
         breadcrumb_jobs: Vagas
@@ -19,18 +22,3 @@ pt:
         related_jobs: Vagas relacionadas
         edit: Editar
         back: Voltar para vagas
-      index:
-        section_nav:
-          new_update: Nova atualização
-          admit_card: Cartão de admissão
-          top_online_form: Principal formulário online
-      hub:
-        title: "Atualizações de vagas governamentais %{post_type}"
-        description: "Navegue por vagas %{post_type}, critérios e prazos."
-        heading: "Atualizações de vagas %{post_type}"
-        subheading: "Encontre publicações %{post_type} com critérios, local e prazo."
-        deadline: "Prazo: %{date}"
-        types:
-          new_update: Novas atualizações
-          admit_card: Cartões de admissão
-          online_form: Formulários online

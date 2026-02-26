@@ -1,6 +1,9 @@
 fr:
   views:
     job_posts:
+      index:
+        qualification: Qualification
+        last_date: Date limite
       show:
         breadcrumb_home: Accueil
         breadcrumb_jobs: Emplois
@@ -19,18 +22,3 @@ fr:
         related_jobs: Emplois similaires
         edit: Modifier
         back: Retour aux offres
-      index:
-        section_nav:
-          new_update: Nouvelle mise à jour
-          admit_card: Carte d'admission
-          top_online_form: Top formulaire en ligne
-      hub:
-        title: "Mises à jour d'emplois publics %{post_type}"
-        description: "Parcourez les mises à jour %{post_type}, les critères et les échéances."
-        heading: "Mises à jour %{post_type}"
-        subheading: "Trouvez les dernières annonces %{post_type} avec critères, lieu et échéance."
-        deadline: "Date limite : %{date}"
-        types:
-          new_update: Nouvelles annonces
-          admit_card: Cartes d'admission
-          online_form: Formulaires en ligne

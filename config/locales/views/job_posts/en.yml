@@ -1,6 +1,9 @@
 en:
   views:
     job_posts:
+      index:
+        qualification: Qualification
+        last_date: Last Date
       show:
         breadcrumb_home: Home
         breadcrumb_jobs: Jobs
@@ -19,18 +22,3 @@ en:
         related_jobs: Related Jobs
         edit: Edit
         back: Back to Job Posts
-      index:
-        section_nav:
-          new_update: New Update
-          admit_card: Admit Card
-          top_online_form: Top Online Form
-      hub:
-        title: "%{post_type} Government Job Updates"
-        description: "Browse %{post_type} government job updates, eligibility details, and deadlines."
-        heading: "%{post_type} Job Updates"
-        subheading: "Find latest %{post_type} posts with eligibility, location, and deadline details."
-        deadline: "Deadline: %{date}"
-        types:
-          new_update: New Update Jobs
-          admit_card: Admit Card Jobs
-          online_form: Online Form Jobs
