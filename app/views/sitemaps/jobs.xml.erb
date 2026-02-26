@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <% @jobs.each do |slug, published_at| %>
-    <url>
-      <loc><%= app_url("/jobs/#{slug}") %></loc>
-      <lastmod><%= published_at.strftime("%F") %></lastmod>
-    </url>
-  <% end %>
-</urlset>

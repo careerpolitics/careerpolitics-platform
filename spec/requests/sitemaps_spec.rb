@@ -48,7 +48,6 @@ RSpec.describe "Sitemaps" do
         expect(response.body).to include("sitemap-posts.xml")
         expect(response.body).to include("sitemap-users.xml")
         expect(response.body).to include("sitemap-tags.xml")
-        expect(response.body).to include("sitemap-jobs.xml")
       end
 
       it "renders multiple posts pages if enough posts", :aggregate_failures do
@@ -162,36 +161,6 @@ RSpec.describe "Sitemaps" do
         get "/sitemap-users-2.xml"
         expect(response.body).not_to include(User.order("comments_count DESC").first.username)
         expect(response.body).not_to include(User.order("comments_count DESC").last.username)
-      end
-    end
-
-    context "with jobs in param" do
-      before do
-        create_list(:job_post, 8)
-      end
-
-      it "renders recent jobs if /sitemap-jobs", :aggregate_failures do
-        get "/sitemap-jobs.xml"
-        expect(response.body).to include(JobPost.recent.first.path)
-        expect(response.body).not_to include(JobPost.recent.last.path)
-      end
-
-      it "renders second page if /sitemap-jobs-1", :aggregate_failures do
-        get "/sitemap-jobs-1.xml"
-        expect(response.body).not_to include(JobPost.recent.first.path)
-        expect(response.body).to include(JobPost.recent.last.path)
-      end
-
-      it "renders first page if /sitemap-jobs-randomn0tnumber", :aggregate_failures do
-        get "/sitemap-jobs-randomn0tnumber.xml"
-        expect(response.body).to include(JobPost.recent.first.path)
-        expect(response.body).not_to include(JobPost.recent.last.path)
-      end
-
-      it "renders empty if /sitemap-jobs-2", :aggregate_failures do
-        get "/sitemap-jobs-2.xml"
-        expect(response.body).not_to include(JobPost.recent.first.path)
-        expect(response.body).not_to include(JobPost.recent.last.path)
       end
     end
   end
