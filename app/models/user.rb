@@ -86,6 +86,7 @@ class User < ApplicationRecord
   has_many :html_variants, dependent: :destroy
   has_many :identities, dependent: :delete_all
   has_many :identities_enabled, -> { enabled }, class_name: "Identity", inverse_of: false
+  has_many :job_posts, dependent: :destroy
   has_many :listings, dependent: :destroy
   has_many :mentions, dependent: :delete_all
   has_many :notes, as: :noteable, inverse_of: :noteable, dependent: :delete_all
