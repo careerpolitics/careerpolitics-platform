@@ -1,4 +1,5 @@
 <% content_for :title, "Create New Job Post" %>
+<%= javascript_include_tag "enhanceColorPickers", defer: true %>
 
 <div class="crayons-layout crayons-layout--limited-l">
   <div class="crayons-layout__content">
@@ -40,8 +41,10 @@
         </div>
 
         <div class="form-group" style="margin-bottom: 24px;">
-          <%= form.label :color, "Card Background Color (Hex code, e.g., #3b82f6)", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
-          <%= form.text_field :color, placeholder: "#3b82f6", style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px;" %>
+          <%= form.label :color, "Card Background Color", style: "display: block; margin-bottom: 8px; font-weight: 600; color: #374151;" %>
+          <div class="flex items-center w-100">
+            <%= form.text_field :color, placeholder: "#3b82f6", class: "crayons-textfield", data: { color_picker: "true", label_text: "Card Background Color"} %>
+          </div>
         </div>
 
 

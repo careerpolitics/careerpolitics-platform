@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_02_19_204658) do
+ActiveRecord::Schema[7.0].define(version: 2026_02_26_192014) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "ltree"
@@ -18,6 +18,25 @@ ActiveRecord::Schema[7.0].define(version: 2026_02_19_204658) do
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
   enable_extension "unaccent"
+
+  create_table "agent_sessions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.jsonb "curated_selections", default: [], null: false
+    t.jsonb "normalized_data", default: {}, null: false
+    t.boolean "published", default: false, null: false
+    t.text "raw_data"
+    t.jsonb "session_metadata", default: {}, null: false
+    t.jsonb "slices", default: [], null: false
+    t.string "slug"
+    t.string "title", null: false
+    t.string "tool_name", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["tool_name"], name: "index_agent_sessions_on_tool_name"
+    t.index ["user_id", "published"], name: "index_agent_sessions_on_user_id_and_published"
+    t.index ["slug"], name: "index_agent_sessions_on_slug", unique: true
+    t.index ["user_id"], name: "index_agent_sessions_on_user_id"
+  end
 
   create_table "ahoy_events", force: :cascade do |t|
     t.string "name"
@@ -66,6 +85,28 @@ ActiveRecord::Schema[7.0].define(version: 2026_02_19_204658) do
     t.index ["user_visit_context_id"], name: "index_ahoy_visits_on_user_visit_context_id"
     t.index ["visit_token"], name: "index_ahoy_visits_on_visit_token", unique: true
     t.index ["visitor_token", "started_at"], name: "index_ahoy_visits_on_visitor_token_and_started_at"
+  end
+
+  create_table "ai_audits", force: :cascade do |t|
+    t.bigint "affected_content_id"
+    t.string "affected_content_type"
+    t.bigint "affected_user_id"
+    t.string "ai_model"
+    t.integer "candidates_token_count"
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.integer "latency_ms"
+    t.integer "prompt_token_count"
+    t.jsonb "request_body"
+    t.jsonb "response_body"
+    t.integer "retry_count"
+    t.integer "status_code"
+    t.integer "total_token_count"
+    t.datetime "updated_at", null: false
+    t.string "wrapper_object_class"
+    t.string "wrapper_object_version"
+    t.index ["affected_content_type", "affected_content_id"], name: "index_ai_audits_on_affected_content"
+    t.index ["affected_user_id"], name: "index_ai_audits_on_affected_user_id"
   end
 
   create_table "announcements", force: :cascade do |t|
@@ -1809,11 +1850,13 @@ ActiveRecord::Schema[7.0].define(version: 2026_02_19_204658) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "agent_sessions", "users", on_delete: :cascade
   add_foreign_key "ahoy_events", "ahoy_visits", column: "visit_id", on_delete: :cascade
   add_foreign_key "ahoy_events", "users", on_delete: :cascade
   add_foreign_key "ahoy_messages", "feedback_messages", on_delete: :nullify
   add_foreign_key "ahoy_messages", "users", on_delete: :cascade
   add_foreign_key "ahoy_visits", "users", on_delete: :cascade
+  add_foreign_key "ai_audits", "users", column: "affected_user_id"
   add_foreign_key "api_secrets", "users", on_delete: :cascade
   add_foreign_key "articles", "collections", on_delete: :nullify
   add_foreign_key "articles", "organizations", on_delete: :nullify

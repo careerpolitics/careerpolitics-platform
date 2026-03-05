@@ -1,12 +1,6 @@
 # rubocop:disable Metrics/BlockLength
 
 Rails.application.routes.draw do
-  get 'job_posts/index'
-  get 'job_posts/show'
-  get 'job_posts/new'
-  get 'job_posts/create'
-  get 'job_posts/edit'
-  get 'job_posts/update'
   # Devise does not support scoping omniauth callbacks under a dynamic segment
   # so this lives outside our i18n scope.
   devise_for :users, controllers: {
@@ -84,6 +78,8 @@ Rails.application.routes.draw do
         end
 
         resources :pages, only: %i[index show create update destroy]
+
+        resources :agent_sessions, only: %i[index show create]
 
         resources :feedback_messages, only: :update
 
@@ -165,6 +161,7 @@ Rails.application.routes.draw do
       end
     end
     resources :image_uploads, only: [:create]
+    resources :agent_sessions, only: %i[index new create show edit update destroy]
     resources :ai_image_generations, only: [:create]
     resources :ai_chats, only: %i[index create]
     resources :notifications, only: [:index]
