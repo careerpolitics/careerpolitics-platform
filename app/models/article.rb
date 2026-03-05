@@ -168,6 +168,7 @@ class Article < ApplicationRecord
   has_many :mentions, as: :mentionable, inverse_of: :mentionable, dependent: :delete_all
   has_many :comments, as: :commentable, inverse_of: :commentable, dependent: :nullify
   has_many :context_notifications, as: :context, inverse_of: :context, dependent: :delete_all
+  has_many :ai_audits, as: :affected_content, dependent: :nullify
   has_many :context_notifications_published, -> { where(context_notifications_published: { action: "Published" }) },
            as: :context, inverse_of: :context, class_name: "ContextNotification"
   has_many :feed_events, dependent: :delete_all
@@ -311,7 +312,7 @@ class Article < ApplicationRecord
     article.saved_change_to_user_id?
   }
 
-  after_commit :async_score_calc, :touch_collection, :enrich_image_attributes, :record_field_test_event,
+  after_commit :async_score_calc, :touch_collection, :enrich_image_attributes,
                on: %i[create update]
 
   # The trigger `update_reading_list_document` is used to keep the `articles.reading_list_document` column updated.
@@ -417,11 +418,11 @@ class Article < ApplicationRecord
                           .select(:id)).order(published_at: :desc).cached_tagged_with(tag_name)
   }
 
-  def self.cached_admin_published_with(tag_name, subforem_id: nil, expires_in: 6.hours)
+  def self.cached_admin_published_with(tag_name, subforem_id: nil, expires_in: 1.hour)
     cache_key = [
       "admin-published-with",
       tag_name,
-      (subforem_id || "all"),
+      subforem_id || "all",
     ].join(":")
 
     Rails.cache.fetch(cache_key, expires_in: expires_in) do
@@ -434,7 +435,7 @@ class Article < ApplicationRecord
     cache_key = [
       "admin-published-with",
       tag_name,
-      (subforem_id || "all"),
+      subforem_id || "all",
     ].join(":")
     Rails.cache.delete(cache_key)
   end
@@ -1590,20 +1591,20 @@ class Article < ApplicationRecord
     self.published_at = nil if published_at > 5.years.from_now
   end
 
-  def record_field_test_event
-    return unless published?
-    return if FieldTest.config["experiments"].nil?
-
-    Users::RecordFieldTestEventWorker
-      .perform_async(user_id, AbExperiment::GoalConversionHandler::USER_PUBLISHES_POST_GOAL)
-  end
-
   private
+
+  def admin_published_user?
+    return false unless user
+
+    user.any_admin? ||
+      user.id == Settings::General.mascot_user_id ||
+      user.id == Settings::Community.staff_user_id
+  end
 
   def bust_cached_admin_welcome_thread
     return unless published?
     return unless cached_tag_list.to_s.match?(/(?:^|,)\s*welcome(?:\s*,|$)/)
-    return unless user&.admin?
+    return unless admin_published_user?
 
     self.class.bust_cached_admin_published_with("welcome", subforem_id: subforem_id)
     self.class.bust_cached_admin_published_with("welcome")
