@@ -11,37 +11,9 @@
 <script type="application/ld+json">
 <%= raw({
   "@context" => "https://schema.org",
-  "@type" => "CollectionPage",
-  "name" => "Latest Government Job Updates",
-  "url" => request.original_url,
-  "mainEntity" => {
-    "@type" => "ItemList",
-    "itemListElement" => (@new_updates + @admit_cards + @online_forms).each_with_index.map do |job_post, index|
-      job_url = job_post.link.presence || job_posts_url
-      job_url = job_url.start_with?("/") ? "#{request.base_url}#{job_url}" : job_url
-
-      {
-        "@type" => "ListItem",
-        "position" => index + 1,
-        "item" => {
-          "@type" => "JobPosting",
-          "title" => job_post.title,
-          "url" => job_url,
-          "datePosted" => (job_post.published_at || job_post.created_at)&.iso8601,
-          "hiringOrganization" => { "@type" => "Organization", "name" => job_post.organization_name.presence || Settings::Community.community_name },
-          "totalJobOpenings" => job_post.vacancies,
-          "validThrough" => job_post.deadline_at&.iso8601,
-          "employmentType" => job_post.employment_type_schema_value,
-          "jobLocationType" => (job_post.location.present? ? nil : "TELECOMMUTE"),
-          "applicantLocationRequirements" => (job_post.location.present? ? {
-            "@type" => "Country",
-            "name" => job_post.location
-          } : nil),
-          "baseSalary" => (job_post.salary_range.present? ? { "@type" => "MonetaryAmount", "value" => job_post.salary_range } : nil)
-        }.compact
-      }
-    end
-  }
+  "@graph" => (@new_updates + @admit_cards + @online_forms).map do |job_post|
+    job_posting_schema(job_post)
+  end
 }.to_json) %>
 </script>
 
@@ -83,8 +55,7 @@
     <div class="jobs-buttons">
       <% @featured_job_posts.each do |job_post| %>
         <% color = job_post.color.presence || "#0056b3" %>
-        <% featured_link = job_post.link.presence || job_posts_path %>
-        <% featured_link = featured_link.start_with?('/') ? featured_link : (featured_link.start_with?('http') ? featured_link : "/#{featured_link}") %>
+        <% featured_link = job_post_internal_link(job_post) %>
         <a href="<%= featured_link %>" class="jobs-btn" style="background: <%= color %>">
           <%= job_post.title %>
         </a>
@@ -96,8 +67,7 @@
         <h2><i class="fas fa-bell"></i>Result</h2>
         <ul id="new-updates-list">
           <% @new_updates.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_posts_path %>
-            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
+            <% link_url = job_post_internal_link(job_post) %>
             <li>
               <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
@@ -137,8 +107,7 @@
         <h2><i class="fas fa-ticket-alt"></i>Admit Card</h2>
         <ul id="admit-cards-list">
           <% @admit_cards.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_posts_path %>
-            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
+            <% link_url = job_post_internal_link(job_post) %>
             <li>
               <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>
@@ -172,8 +141,7 @@
         <h2><i class="fas fa-file-alt"></i>Top Online Form</h2>
         <ul id="online-forms-list">
           <% @online_forms.each do |job_post| %>
-            <% link_url = job_post.link.presence || job_posts_path %>
-            <% link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}") %>
+            <% link_url = job_post_internal_link(job_post) %>
             <li>
               <a href="<%= link_url %>" style="display: flex; align-items: center; gap: 8px;">
                 <%= job_post.title %>

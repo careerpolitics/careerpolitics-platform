@@ -33,24 +33,48 @@ RSpec.describe "JobPosts", type: :request do
   end
 
   describe "GET /jobs" do
-    it "returns success and section entries link directly to application urls" do
-      job_one = create(:job_post, post_type: "new_update", link: "https://external.example/new-update", featured: false)
-      job_two = create(:job_post, post_type: "admit_card", link: "https://external.example/admit-card", featured: false)
-      job_three = create(:job_post, post_type: "online_form", link: "https://external.example/online-form", featured: false)
+    it "returns success and section entries are crawlable internal urls" do
+      create(:job_post, post_type: "new_update", link: "/the_cp_team/new-update", featured: false)
+      create(:job_post, post_type: "admit_card", link: "/the_cp_team/admit-card", featured: false)
+      create(:job_post, post_type: "online_form", link: "/the_cp_team/online-form", featured: false)
 
       get job_posts_path
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Latest Government Job Updates - CareerPolitics")
       expect(response.body).to include("Discover the latest government job updates")
-      expect(response.body).to include("https://external.example/new-update")
-      expect(response.body).to include("https://external.example/admit-card")
-      expect(response.body).to include("https://external.example/online-form")
+      expect(response.body).to include("/the_cp_team/new-update")
+      expect(response.body).to include("/the_cp_team/admit-card")
+      expect(response.body).to include("/the_cp_team/online-form")
       expect(response.body).to include("Organization")
       expect(response.body).to include("Total Posts")
       expect(response.body).to include("Qualification")
       expect(response.body).to include("Last Date")
       expect(response.body).to include("Exam Date")
+    end
+
+    it "renders JobPosting json-ld with required fields" do
+      create(:job_post,
+             post_type: "new_update",
+             title: "Staff Selection Notice",
+             organization_name: "SSC",
+             location: "New Delhi",
+             description: "Government recruitment notice",
+             link: "/jobs/ssc-notice",
+             salary_range: "50000",
+             employment_type: "full_time",
+             deadline_at: 1.month.from_now)
+
+      get job_posts_path
+
+      expect(response.body).to include('"@type":"JobPosting"')
+      expect(response.body).to include('"hiringOrganization":{"@type":"Organization","name":"SSC"}')
+      expect(response.body).to include('"jobLocation":{"@type":"Place"')
+      expect(response.body).to include('"description":"Government recruitment notice"')
+      expect(response.body).to include('"datePosted":')
+      expect(response.body).to include('"employmentType":"FULL_TIME"')
+      expect(response.body).to include('"validThrough":')
+      expect(response.body).to include('"baseSalary":{"@type":"MonetaryAmount"')
     end
   end
 

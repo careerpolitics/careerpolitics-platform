@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc><%= app_url("/jobs") %></loc>
+    <lastmod><%= Time.current.strftime("%F") %></lastmod>
+    <changefreq>weekly</changefreq>
+  </url>
+
+  <% @jobs.each do |link, updated_at| %>
+    <% next unless link.present? && link.start_with?("/") %>
+    <url>
+      <loc><%= app_url(link) %></loc>
+      <lastmod><%= updated_at.strftime("%F") %></lastmod>
+      <changefreq>weekly</changefreq>
+    </url>
+  <% end %>
+</urlset>
