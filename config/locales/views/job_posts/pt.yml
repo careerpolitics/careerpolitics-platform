@@ -1,0 +1,28 @@
+pt:
+  views:
+    job_posts:
+      index:
+        organization: Organização
+        vacancies: Total de vagas
+        salary: Salário
+        qualification: Qualificação
+        exam_date: Data do exame
+        last_date: Data limite
+      show:
+        breadcrumb_home: Início
+        breadcrumb_jobs: Vagas
+        posted_by: "Publicado por %{name}"
+        deadline: "Prazo: %{date}"
+        organization: Organização
+        location: Localização
+        employment_type: Tipo de emprego
+        vacancies: Vagas
+        salary_range: Faixa salarial
+        category: Categoria
+        eligibility: Elegibilidade
+        important_dates: Datas importantes
+        application_link: Link de candidatura
+        source: Fonte
+        related_jobs: Vagas relacionadas
+        edit: Editar
+        back: Voltar para vagas

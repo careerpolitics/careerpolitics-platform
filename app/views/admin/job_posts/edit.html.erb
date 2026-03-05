@@ -42,6 +42,63 @@
     </div>
 
     <div class="form-group mb-4">
+      <%= form.label :organization_name, "Organization", class: "crayons-field__label" %>
+      <%= form.text_field :organization_name, class: "crayons-textfield" %>
+    </div>
+
+    <div class="form-group mb-4">
+      <%= form.label :location, "Location", class: "crayons-field__label" %>
+      <%= form.text_field :location, class: "crayons-textfield" %>
+    </div>
+
+    <div class="form-group mb-4">
+      <%= form.label :deadline_at, "Deadline", class: "crayons-field__label" %>
+      <%= form.datetime_local_field :deadline_at, class: "crayons-textfield" %>
+    </div>
+
+    <div class="form-group mb-4">
+      <%= form.label :employment_type, "Employment Type", class: "crayons-field__label" %>
+      <%= form.select :employment_type, options_for_select([
+        ["Select type...", ""],
+        ["Full time", "full_time"],
+        ["Part time", "part_time"],
+        ["Contract", "contract"],
+        ["Internship", "internship"],
+        ["Temporary", "temporary"]
+      ], @job_post.employment_type), {}, { class: "crayons-select" } %>
+    </div>
+
+    <div class="form-group mb-4">
+      <%= form.label :salary_range, "Salary Range", class: "crayons-field__label" %>
+      <%= form.text_field :salary_range, class: "crayons-textfield" %>
+    </div>
+
+    <div class="form-group mb-4">
+      <%= form.label :vacancies, "Vacancies", class: "crayons-field__label" %>
+      <%= form.number_field :vacancies, min: 1, class: "crayons-textfield" %>
+    </div>
+
+    <div class="form-group mb-4">
+      <%= form.label :qualification, "Eligibility / Qualification", class: "crayons-field__label" %>
+      <%= form.text_area :qualification, class: "crayons-textfield", rows: 3 %>
+    </div>
+
+    <div class="form-group mb-4">
+      <%= form.label :important_dates, "Important Dates", class: "crayons-field__label" %>
+      <%= form.text_area :important_dates, class: "crayons-textfield", rows: 3 %>
+    </div>
+
+    <div class="form-group mb-4">
+      <%= form.label :source_name, "Source Name", class: "crayons-field__label" %>
+      <%= form.text_field :source_name, class: "crayons-textfield" %>
+    </div>
+
+    <div class="form-group mb-4">
+      <%= form.label :source_url, "Source URL", class: "crayons-field__label" %>
+      <%= form.url_field :source_url, class: "crayons-textfield" %>
+    </div>
+
+    <div class="form-group mb-4">
       <%= form.label :position, "Priority Position (lower numbers appear first)", class: "crayons-field__label" %>
       <%= form.number_field :position, min: 0, class: "crayons-textfield" %>
       <small class="color-secondary">Lower numbers appear first in listings.</small>

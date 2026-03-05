@@ -1,0 +1,28 @@
+en:
+  views:
+    job_posts:
+      index:
+        organization: Organization
+        vacancies: Total Posts
+        salary: Salary
+        qualification: Qualification
+        exam_date: Exam Date
+        last_date: Last Date
+      show:
+        breadcrumb_home: Home
+        breadcrumb_jobs: Jobs
+        posted_by: "Posted by %{name}"
+        deadline: "Deadline: %{date}"
+        organization: Organization
+        location: Location
+        employment_type: Employment type
+        vacancies: Vacancies
+        salary_range: Salary range
+        category: Category
+        eligibility: Eligibility
+        important_dates: Important dates
+        application_link: Application Link
+        source: Source
+        related_jobs: Related Jobs
+        edit: Edit
+        back: Back to Job Posts
