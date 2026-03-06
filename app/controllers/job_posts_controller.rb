@@ -84,7 +84,7 @@ class JobPostsController < ApplicationController
   end
 
   def job_post_params
-    params.require(:job_post).permit(:title, :post_type, :category, :link, :color, :organization_name, :location,
+    params.require(:job_post).permit(:title, :description, :post_type, :category, :link, :color, :organization_name, :location,
                                      :deadline_at, :employment_type, :salary_range, :qualification, :vacancies,
                                      :source_name, :source_url, :important_dates)
   end

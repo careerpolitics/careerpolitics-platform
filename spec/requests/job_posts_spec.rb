@@ -6,6 +6,7 @@ RSpec.describe "JobPosts", type: :request do
     let(:job_post_params) do
       {
         title: "UP Polytechnic JEECUP Online Form 2026",
+        description: "Official notification for JEECUP online form.",
         post_type: "online_form",
         organization_name: "Polytechnic",
         location: "UP",
@@ -27,8 +28,24 @@ RSpec.describe "JobPosts", type: :request do
       created_job_post = JobPost.last
       expect(response).to redirect_to(job_posts_path)
       expect(created_job_post.user).to eq(user)
+      expect(created_job_post.description).to eq("Official notification for JEECUP online form.")
       expect(created_job_post.published).to be(false)
       expect(created_job_post.approved).to be(false)
+    end
+  end
+
+
+  describe "GET /jobs/new" do
+    let(:user) { create(:user) }
+
+    it "renders form fields for description and Result post type label" do
+      sign_in(user)
+
+      get new_job_post_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Description")
+      expect(response.body).to include("Result")
     end
   end
 
