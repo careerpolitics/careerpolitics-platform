@@ -1,4 +1,6 @@
 class JobPostsController < ApplicationController
+  include JobPostsHelper
+
   before_action :authenticate_user!, except: [:index]
   before_action :set_job_post, only: %i[edit update]
   after_action :verify_authorized, except: [:index]
@@ -82,20 +84,17 @@ class JobPostsController < ApplicationController
   end
 
   def job_post_params
-    params.require(:job_post).permit(:title, :post_type, :category, :link, :color, :organization_name, :location,
+    params.require(:job_post).permit(:title, :description, :post_type, :category, :link, :color, :organization_name, :location,
                                      :deadline_at, :employment_type, :salary_range, :qualification, :vacancies,
                                      :source_name, :source_url, :important_dates)
   end
 
 
   def job_post_json(job_post)
-    link_url = job_post.link.presence || job_posts_path
-    link_url = link_url.start_with?('/') ? link_url : (link_url.start_with?('http') ? link_url : "/#{link_url}")
-
     {
       id: job_post.id,
       title: job_post.title,
-      link: link_url,
+      link: job_post_internal_link(job_post),
       badge_type: job_post.badge_type,
       post_type: job_post.post_type,
       organization_name: job_post.organization_name,

@@ -24,7 +24,7 @@
       <%= form.label :post_type, "Post Type", class: "crayons-field__label" %>
       <%= form.select :post_type, options_for_select([
         ['Select a type...', ''],
-        ['New Update', 'new_update'],
+        ['Result', 'new_update'],
         ['Admit Card', 'admit_card'],
         ['Online Form', 'online_form']
       ], @job_post.post_type), {}, { class: "crayons-select" } %>

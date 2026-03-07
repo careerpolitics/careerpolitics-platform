@@ -80,6 +80,8 @@ class User < ApplicationRecord
   has_many :email_authorizations, dependent: :delete_all
   has_many :email_messages, class_name: "Ahoy::Message", dependent: :destroy
   has_many :feed_events, dependent: :nullify
+  has_many :feed_import_logs, class_name: "Feeds::ImportLog", dependent: :delete_all
+  has_many :feed_sources, class_name: "Feeds::Source", dependent: :delete_all
   has_many :field_test_memberships, class_name: "FieldTest::Membership", as: :participant, dependent: :destroy
   # Consider that we might be able to use dependent: :delete_all as the GithubRepo busts the user cache
   has_many :github_repos, dependent: :destroy
@@ -141,7 +143,7 @@ class User < ApplicationRecord
   validates :blocking_others_count, presence: true
   validates :comments_count, presence: true
   validates :credits_count, presence: true
-  validates :email, length: { maximum: 50 }, email: true, allow_nil: true
+  validates :email, length: { maximum: 254 }, email: true, allow_nil: true
   validates :email, uniqueness: { allow_nil: true, case_sensitive: false }, if: :email_changed?
   validates :following_orgs_count, presence: true
   validates :following_tags_count, presence: true
@@ -304,7 +306,10 @@ class User < ApplicationRecord
   end
 
   def good_standing_followers_count
-    Follow.non_suspended("User", id).count
+    cache_key = "#{cache_key_with_version}/good_standing_followers_count"
+    Rails.cache.fetch(cache_key, expires_in: 24.hours) do
+      Follow.non_suspended("User", id).count
+    end
   end
 
   def tag_line
