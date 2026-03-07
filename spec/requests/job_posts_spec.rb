@@ -34,17 +34,15 @@ RSpec.describe "JobPosts", type: :request do
     end
   end
 
-
   describe "GET /jobs/new" do
     let(:user) { create(:user) }
 
-    it "renders form fields for description and Result post type label" do
+    it "shows Result as post type option" do
       sign_in(user)
 
       get new_job_post_path
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Description")
       expect(response.body).to include("Result")
     end
   end
@@ -70,14 +68,14 @@ RSpec.describe "JobPosts", type: :request do
       expect(response.body).to include("Exam Date")
     end
 
-    it "renders JobPosting json-ld with required fields" do
+    it "renders JobPosting json-ld with description from linked internal article" do
+      article = create(:article, path: "/the_cp_team/ssc-notice", description: "Government recruitment notice", score: 10)
       create(:job_post,
              post_type: "new_update",
              title: "Staff Selection Notice",
              organization_name: "SSC",
              location: "New Delhi",
-             description: "Government recruitment notice",
-             link: "/jobs/ssc-notice",
+             link: article.path,
              salary_range: "50000",
              employment_type: "full_time",
              deadline_at: 1.month.from_now)
