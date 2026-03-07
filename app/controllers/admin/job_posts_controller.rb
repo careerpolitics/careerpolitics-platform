@@ -5,6 +5,7 @@ module Admin
     before_action :find_job_post, only: %i[show edit update destroy approve]
     JOB_POST_ALLOWED_PARAMS = %i[
       title
+      description
       post_type
       link
       color

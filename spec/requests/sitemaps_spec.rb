@@ -48,6 +48,7 @@ RSpec.describe "Sitemaps" do
         expect(response.body).to include("sitemap-posts.xml")
         expect(response.body).to include("sitemap-users.xml")
         expect(response.body).to include("sitemap-tags.xml")
+        expect(response.body).to include("sitemap-jobs.xml")
       end
 
       it "renders multiple posts pages if enough posts", :aggregate_failures do
@@ -161,6 +162,25 @@ RSpec.describe "Sitemaps" do
         get "/sitemap-users-2.xml"
         expect(response.body).not_to include(User.order("comments_count DESC").first.username)
         expect(response.body).not_to include(User.order("comments_count DESC").last.username)
+      end
+    end
+
+    context "with jobs in param" do
+      let!(:job_post) do
+        create(:job_post,
+               link: "/the_cp_team/sample-job",
+               published: true,
+               approved: true,
+               updated_at: Time.zone.parse("2026-03-01"))
+      end
+
+      it "renders jobs index and approved job links with changefreq", :aggregate_failures do
+        get "/sitemap-jobs.xml"
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("<loc>#{ApplicationConfig['APP_PROTOCOL']}#{ApplicationConfig['APP_DOMAIN']}/jobs</loc>")
+        expect(response.body).to include("<loc>#{ApplicationConfig['APP_PROTOCOL']}#{ApplicationConfig['APP_DOMAIN']}#{job_post.link}</loc>")
+        expect(response.body).to include("<changefreq>weekly</changefreq>")
       end
     end
   end
