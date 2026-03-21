@@ -262,6 +262,9 @@ kubectl apply -f kube/ingress.yaml
 Monitor:
 
 ```bash
+kubectl rollout restart deployment/careerpolitics-web -n production
+kubectl rollout restart deployment/careerpolitics-worker -n production
+
 kubectl rollout status deployment/careerpolitics-web -n production
 kubectl rollout status deployment/careerpolitics-worker -n production
 ```
