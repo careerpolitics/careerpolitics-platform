@@ -185,6 +185,7 @@ function updateFrequencyFields() {
 
 function updateServiceFields() {
   const serviceName = document.getElementById('service_name').value;
+  const normalizedServiceName = serviceName.replace(/_/g, "-");
   
   // Hide all service-specific fields
   document.querySelectorAll('[id$="-fields"]').forEach(el => {
@@ -195,7 +196,8 @@ function updateServiceFields() {
   
   // Show the selected service's fields
   if (serviceName) {
-    const serviceFields = document.getElementById(`${serviceName}-fields`);
+    const serviceFields = document.getElementById(`${serviceName}-fields`) ||
+      document.getElementById(`${normalizedServiceName}-fields`);
     if (serviceFields) {
       serviceFields.style.display = 'block';
     }
