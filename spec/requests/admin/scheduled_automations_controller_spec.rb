@@ -172,6 +172,11 @@ RSpec.describe Admin::ScheduledAutomationsController do
       get edit_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
       expect(response).to have_http_status(:success)
     end
+
+    it "returns success for top-level community bot route" do
+      get edit_admin_community_bot_scheduled_automation_path(bot, automation)
+      expect(response).to have_http_status(:success)
+    end
   end
 
   describe "PATCH #update" do

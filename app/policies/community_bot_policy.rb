@@ -19,6 +19,10 @@ class CommunityBotPolicy < ApplicationPolicy
     has_mod_permission?
   end
 
+  def update?
+    has_mod_permission?
+  end
+
   private
 
   def has_mod_permission?
