@@ -212,6 +212,37 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
       end
     end
 
+
+    context "when service_name is community_bot_post_creator" do
+      let(:mock_post_result) { double("PostResult", title: "Community Update", body: "Generated post body") }
+      let(:mock_post_service) { double("CommunityBotPostCreator", generate: mock_post_result) }
+
+      before do
+        automation.update!(
+          service_name: "community_bot_post_creator",
+          action_config: { "ai_context" => "Write a post for our community about testing best practices" },
+        )
+        allow(Ai::CommunityBotPostCreator).to receive(:new).and_return(mock_post_service)
+      end
+
+      it "calls the community bot post creator service" do
+        expect(Ai::CommunityBotPostCreator).to receive(:new).with(
+          ai_context: "Write a post for our community about testing best practices",
+          additional_instructions: automation.additional_instructions,
+        ).and_return(mock_post_service)
+
+        executor.call
+      end
+
+      it "creates an article from the generated result" do
+        result = executor.call
+
+        expect(result.success?).to be(true)
+        expect(result.article.title).to eq("Community Update")
+        expect(result.article.body_markdown).to eq("Generated post body")
+      end
+    end
+
     context "when service_name is unknown" do
       before { automation.update!(service_name: "unknown_service") }
 
@@ -219,6 +250,20 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
         result = executor.call
         expect(result.success?).to be(false)
         expect(result.error_message).to include("Unknown service: unknown_service")
+      end
+    end
+
+
+    context "when ai_context is missing for community_bot_post_creator" do
+      before do
+        automation.update!(service_name: "community_bot_post_creator", action_config: {})
+      end
+
+      it "returns failure result" do
+        result = executor.call
+
+        expect(result.success?).to be(false)
+        expect(result.error_message).to include("ai_context is required")
       end
     end
 

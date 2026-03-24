@@ -95,6 +95,8 @@ module ScheduledAutomations
       case @automation.service_name
       when "github_repo_recap"
         call_github_repo_recap_service
+      when "community_bot_post_creator"
+        call_community_bot_post_creator_service
       else
         raise ArgumentError, "Unknown service: #{@automation.service_name}"
       end
@@ -129,6 +131,22 @@ module ScheduledAutomations
       end
 
       recap_result
+    end
+
+
+    def call_community_bot_post_creator_service
+      ai_context = @automation.action_config["ai_context"]
+
+      unless ai_context.present?
+        raise ArgumentError, "ai_context is required in action_config for community_bot_post_creator service"
+      end
+
+      service = Ai::CommunityBotPostCreator.new(
+        ai_context: ai_context,
+        additional_instructions: @automation.additional_instructions,
+      )
+
+      service.generate
     end
 
     def augment_with_instructions(body)

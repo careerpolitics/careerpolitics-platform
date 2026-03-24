@@ -19,7 +19,7 @@
     <div class="mb-4">
       <label class="crayons-field__label" for="service_name">AI Service</label>
       <%= f.select :service_name, 
-          [["GitHub Repo Recap", "github_repo_recap"]], 
+          [["GitHub Repo Recap", "github_repo_recap"], ["Community Bot Post Creator", "community_bot_post_creator"]], 
           {},
           class: "crayons-select", 
           id: "service_name",
@@ -75,6 +75,17 @@
           <label class="crayons-field__label" for="tags">Tags (comma-separated)</label>
           <input type="text" name="scheduled_automation[action_config][tags]" id="tags" class="crayons-textfield" placeholder="opensource, github, recap" value="<%= @automation.action_config["tags"] %>">
           <p class="crayons-field__description">Optional tags to add to the generated article</p>
+        </div>
+      </div>
+
+      <!-- Community Bot Post Creator specific fields -->
+      <div id="community-bot-post-creator-fields" style="display: none;">
+        <h3 class="crayons-subtitle-2 mb-3">Community Bot Post Creator Configuration</h3>
+
+        <div class="mb-4">
+          <label class="crayons-field__label" for="ai_context">AI Context</label>
+          <textarea name="scheduled_automation[action_config][ai_context]" id="ai_context" class="crayons-textfield" rows="6" placeholder="Describe the context, topic, audience, and any required details for this post"><%= @automation.action_config["ai_context"] %></textarea>
+          <p class="crayons-field__description">Required context used by AI to generate the post content</p>
         </div>
       </div>
     </div>
