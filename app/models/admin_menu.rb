@@ -9,7 +9,6 @@ class AdminMenu
       item(name: "invited members", controller: "invitations"),
       item(name: "gdpr actions", controller: "gdpr_delete_requests"),
       item(name: "bulk assign role", controller: "bulk_assign_role"),
-      item(name: "community bots", controller: "community_bots"),
     ]
 
     scope :content_manager, "dashboard-line", [
@@ -31,6 +30,7 @@ class AdminMenu
     scope :customization, "tools-line", [
       item(name: "config"),
       item(name: "billboards"),
+      item(name: "community bots", controller: "community_bots"),
       item(name: "navigation links"),
       item(name: "pages"),
       item(name: "profile fields"),

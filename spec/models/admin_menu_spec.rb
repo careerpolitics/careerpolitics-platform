@@ -77,10 +77,10 @@ RSpec.describe AdminMenu do
     it { is_expected.to be_visible }
   end
 
-  describe "scope :member_manager's community bots item" do
-    subject(:community_bots) { member_manager.children.detect { |child| child.name == "community bots" } }
+  describe "scope :customization's community bots item" do
+    subject(:community_bots) { customization.children.detect { |child| child.name == "community bots" } }
 
-    let(:member_manager) { described_class.navigation_items.fetch(:member_manager) }
+    let(:customization) { described_class.navigation_items.fetch(:customization) }
 
     it { is_expected.to be_a(Menu::Item) }
     it { is_expected.to be_visible }
