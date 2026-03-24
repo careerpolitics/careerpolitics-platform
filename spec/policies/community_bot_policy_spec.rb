@@ -20,25 +20,25 @@ RSpec.describe CommunityBotPolicy, type: :policy do
     context "when user is a super admin" do
       let(:user) { admin_user }
 
-      it { is_expected.to permit_actions %i[index new create show destroy] }
+      it { is_expected.to permit_actions %i[index new create show destroy edit update] }
     end
 
     context "when user is a super moderator" do
       let(:user) { super_moderator }
 
-      it { is_expected.to permit_actions %i[index new create show destroy] }
+      it { is_expected.to permit_actions %i[index new create show destroy edit update] }
     end
 
     context "when user is a subforem moderator" do
       let(:user) { moderator_user }
 
-      it { is_expected.to permit_actions %i[index new create show destroy] }
+      it { is_expected.to permit_actions %i[index new create show destroy edit update] }
     end
 
     context "when user is a regular user" do
       let(:user) { regular_user }
 
-      it { is_expected.to forbid_actions %i[index new create show destroy] }
+      it { is_expected.to forbid_actions %i[index new create show destroy edit update] }
     end
 
     context "when user is not signed in" do
@@ -54,25 +54,25 @@ RSpec.describe CommunityBotPolicy, type: :policy do
     context "when user is a super admin" do
       let(:user) { admin_user }
 
-      it { is_expected.to permit_actions %i[index new create show destroy] }
+      it { is_expected.to permit_actions %i[index new create show destroy edit update] }
     end
 
     context "when user is a super moderator" do
       let(:user) { super_moderator }
 
-      it { is_expected.to permit_actions %i[index new create show destroy] }
+      it { is_expected.to permit_actions %i[index new create show destroy edit update] }
     end
 
     context "when user is a subforem moderator" do
       let(:user) { moderator_user }
 
-      it { is_expected.to permit_actions %i[index new create show destroy] }
+      it { is_expected.to permit_actions %i[index new create show destroy edit update] }
     end
 
     context "when user is a regular user" do
       let(:user) { regular_user }
 
-      it { is_expected.to forbid_actions %i[index new create show destroy] }
+      it { is_expected.to forbid_actions %i[index new create show destroy edit update] }
     end
   end
 
@@ -82,15 +82,14 @@ RSpec.describe CommunityBotPolicy, type: :policy do
     context "when user is a super admin" do
       let(:user) { admin_user }
 
-      it { is_expected.to permit_actions %i[index new create show destroy] }
+      it { is_expected.to permit_actions %i[index new create show destroy edit update] }
     end
 
     context "when user is a regular user" do
       let(:user) { regular_user }
 
-      it { is_expected.to forbid_actions %i[index new create show destroy] }
+      it { is_expected.to forbid_actions %i[index new create show destroy edit update] }
     end
   end
 end
-
 

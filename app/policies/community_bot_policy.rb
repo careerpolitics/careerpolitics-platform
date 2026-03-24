@@ -19,6 +19,10 @@ class CommunityBotPolicy < ApplicationPolicy
     has_mod_permission?
   end
 
+  def update?
+    has_mod_permission?
+  end
+
   private
 
   def has_mod_permission?
@@ -27,6 +31,7 @@ class CommunityBotPolicy < ApplicationPolicy
     
     # If record is a User (bot), check if user is moderator for that bot's subforem
     if record.is_a?(User) && record.community_bot?
+      return false if record.onboarding_subforem_id.blank?
       return true if user.subforem_moderator?(subforem: Subforem.find(record.onboarding_subforem_id))
     end
     

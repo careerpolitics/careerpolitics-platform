@@ -257,6 +257,9 @@ class User < ApplicationRecord
   scope :community_bots_for_subforem, lambda { |subforem_id|
     where(type_of: :community_bot, onboarding_subforem_id: subforem_id)
   }
+  scope :community_bots_for_main_community, lambda {
+    where(type_of: :community_bot, onboarding_subforem_id: nil)
+  }
   scope :above_average, lambda {
     where(
       articles_count: average_articles_count..,

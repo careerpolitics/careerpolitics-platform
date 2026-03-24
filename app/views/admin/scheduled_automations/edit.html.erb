@@ -4,7 +4,7 @@
 </header>
 
 <div class="crayons-card p-6">
-  <%= form_with model: @automation, url: admin_subforem_community_bot_scheduled_automation_path(@subforem, @bot, @automation), method: :patch, local: true do |f| %>
+  <%= form_with model: @automation, url: (@subforem.present? ? admin_subforem_community_bot_scheduled_automation_path(@subforem, @bot, @automation) : admin_community_bot_scheduled_automation_path(@bot, @automation)), method: :patch, local: true do |f| %>
     <% if @automation.errors.any? %>
       <div class="crayons-notice crayons-notice--danger mb-4">
         <h4><%= pluralize(@automation.errors.count, "error") %> prohibited this automation from being saved:</h4>
@@ -91,7 +91,7 @@
 
     <div class="flex gap-2">
       <%= f.submit "Update Automation", class: "crayons-btn" %>
-      <%= link_to "Cancel", admin_subforem_community_bot_scheduled_automations_path(@subforem, @bot), class: "crayons-btn crayons-btn--outlined" %>
+      <%= link_to "Cancel", (@subforem.present? ? admin_subforem_community_bot_scheduled_automations_path(@subforem, @bot) : admin_community_bot_scheduled_automations_path(@bot)), class: "crayons-btn crayons-btn--outlined" %>
     </div>
   <% end %>
 </div>
@@ -185,6 +185,7 @@ function updateFrequencyFields() {
 
 function updateServiceFields() {
   const serviceName = document.getElementById('service_name').value;
+  const normalizedServiceName = serviceName.replace(/_/g, "-");
   
   // Hide all service-specific fields
   document.querySelectorAll('[id$="-fields"]').forEach(el => {
@@ -195,7 +196,8 @@ function updateServiceFields() {
   
   // Show the selected service's fields
   if (serviceName) {
-    const serviceFields = document.getElementById(`${serviceName}-fields`);
+    const serviceFields = document.getElementById(`${serviceName}-fields`) ||
+      document.getElementById(`${normalizedServiceName}-fields`);
     if (serviceFields) {
       serviceFields.style.display = 'block';
     }
@@ -216,4 +218,3 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
-
