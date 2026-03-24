@@ -15,6 +15,13 @@ RSpec.describe "Admin::CommunityBots", type: :request do
     end
   end
 
+  describe "GET /admin/customization/community_bots" do
+    it "returns a successful response" do
+      get admin_community_bots_path
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "GET /admin/customization/subforems/:subforem_id/community_bots/new" do
     it "returns a successful response" do
       get new_admin_subforem_community_bot_path(subforem)
@@ -29,6 +36,20 @@ RSpec.describe "Admin::CommunityBots", type: :request do
       end.to change(User, :count).by(1)
 
       expect(response).to redirect_to(admin_subforem_community_bots_path(subforem))
+      expect(flash[:success]).to include("created successfully")
+    end
+  end
+
+  describe "POST /admin/customization/community_bots" do
+    it "creates a new main-community bot without a subforem" do
+      expect do
+        post admin_community_bots_path, params: { user: { name: "Main Bot" } }
+      end.to change(User, :count).by(1)
+
+      created_bot = User.last
+      expect(created_bot.type_of).to eq("community_bot")
+      expect(created_bot.onboarding_subforem_id).to be_nil
+      expect(response).to redirect_to(admin_community_bots_path)
       expect(flash[:success]).to include("created successfully")
     end
   end
@@ -54,6 +75,18 @@ RSpec.describe "Admin::CommunityBots", type: :request do
       expect(flash[:success]).to include("deleted successfully")
     end
   end
-end
 
+  describe "DELETE /admin/customization/community_bots/:id" do
+    let!(:bot_user) { create(:user, type_of: :community_bot, onboarding_subforem_id: nil) }
+
+    it "deletes a main-community bot" do
+      expect do
+        delete admin_community_bot_path(bot_user)
+      end.to change(User, :count).by(-1)
+
+      expect(response).to redirect_to(admin_community_bots_path)
+      expect(flash[:success]).to include("deleted successfully")
+    end
+  end
+end
 

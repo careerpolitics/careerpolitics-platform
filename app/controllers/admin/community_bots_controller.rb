@@ -8,7 +8,7 @@ module Admin
     before_action :authorize_bot, only: %i[show destroy]
 
     def index
-      @community_bots = User.community_bots_for_subforem(@subforem.id)
+      @community_bots = community_bots_scope
         .includes(:api_secrets)
         .order(created_at: :desc)
     end
@@ -23,7 +23,7 @@ module Admin
 
     def create
       result = CommunityBots::CreateBot.call(
-        subforem_id: @subforem.id,
+        subforem_id: @subforem&.id,
         name: bot_params[:name],
         created_by: current_user,
         username: bot_params[:username],
@@ -32,7 +32,7 @@ module Admin
 
       if result.success?
         flash[:success] = "Community bot '#{bot_params[:name]}' created successfully!"
-        redirect_to admin_subforem_community_bots_path(@subforem)
+        redirect_to community_bots_path
       else
         flash.now[:error] = result.error_message
         @bot = User.new(bot_params)
@@ -52,18 +52,18 @@ module Admin
         flash[:error] = result.error_message
       end
 
-      redirect_to admin_subforem_community_bots_path(@bot.onboarding_subforem_id)
+      redirect_to community_bots_path
     end
 
     private
 
     def set_subforem
-      @subforem = Subforem.find(params[:subforem_id])
+      @subforem = Subforem.find_by(id: params[:subforem_id]) if params[:subforem_id].present?
     end
 
     def set_bot
       @bot = User.find(params[:id])
-      @subforem = Subforem.find(@bot.onboarding_subforem_id)
+      @subforem = Subforem.find_by(id: @bot.onboarding_subforem_id) if @bot.onboarding_subforem_id.present?
     end
 
     def authorize_subforem
@@ -76,6 +76,22 @@ module Admin
 
     def bot_params
       params.require(:user).permit(:name, :username, :profile_image)
+    end
+
+    def community_bots_scope
+      if @subforem.present?
+        User.community_bots_for_subforem(@subforem.id)
+      else
+        User.community_bots_for_main_community
+      end
+    end
+
+    def community_bots_path
+      if @subforem.present?
+        admin_subforem_community_bots_path(@subforem)
+      else
+        admin_community_bots_path
+      end
     end
 
     protected

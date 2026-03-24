@@ -4,7 +4,7 @@
 </header>
 
 <div class="crayons-card p-6">
-  <%= form_with model: @automation, url: admin_subforem_community_bot_scheduled_automations_path(@subforem, @bot), local: true do |f| %>
+  <%= form_with model: @automation, url: (@subforem.present? ? admin_subforem_community_bot_scheduled_automations_path(@subforem, @bot) : admin_community_bot_scheduled_automations_path(@bot)), local: true do |f| %>
     <% if @automation.errors.any? %>
       <div class="crayons-notice crayons-notice--danger mb-4">
         <h4><%= pluralize(@automation.errors.count, "error") %> prohibited this automation from being saved:</h4>
@@ -91,7 +91,7 @@
 
     <div class="flex gap-2">
       <%= f.submit "Create Automation", class: "crayons-btn" %>
-      <%= link_to "Cancel", admin_subforem_community_bot_scheduled_automations_path(@subforem, @bot), class: "crayons-btn crayons-btn--outlined" %>
+      <%= link_to "Cancel", (@subforem.present? ? admin_subforem_community_bot_scheduled_automations_path(@subforem, @bot) : admin_community_bot_scheduled_automations_path(@bot)), class: "crayons-btn crayons-btn--outlined" %>
     </div>
   <% end %>
 </div>
@@ -215,4 +215,3 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
-

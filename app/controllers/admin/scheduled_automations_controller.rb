@@ -3,7 +3,6 @@ module Admin
     layout "admin"
 
     before_action :set_bot
-    before_action :set_subforem
     before_action :set_automation, only: %i[show edit update destroy toggle_enabled]
     before_action :authorize_bot
 
@@ -19,20 +18,20 @@ module Admin
       @automation = @bot.scheduled_automations.build
     end
 
-  def create
-    @automation = @bot.scheduled_automations.build(automation_params)
+    def create
+      @automation = @bot.scheduled_automations.build(automation_params)
 
-    if @automation.valid?
-      # Calculate and set the next run time only if valid
-      @automation.set_next_run_time!
-      @automation.save!
-      flash[:success] = "Scheduled automation created successfully!"
-      redirect_to admin_subforem_community_bot_scheduled_automations_path(@subforem, @bot)
-    else
-      flash.now[:error] = @automation.errors.full_messages.join(", ")
-      render :new
+      if @automation.valid?
+        # Calculate and set the next run time only if valid
+        @automation.set_next_run_time!
+        @automation.save!
+        flash[:success] = "Scheduled automation created successfully!"
+        redirect_to scheduled_automations_path
+      else
+        flash.now[:error] = @automation.errors.full_messages.join(", ")
+        render :new
+      end
     end
-  end
 
     def edit
       # Edit form for automation
@@ -50,7 +49,7 @@ module Admin
         end
 
         flash[:success] = "Scheduled automation updated successfully!"
-        redirect_to admin_subforem_community_bot_scheduled_automations_path(@subforem, @bot)
+        redirect_to scheduled_automations_path
       else
         flash.now[:error] = @automation.errors.full_messages.join(", ")
         render :edit
@@ -64,26 +63,27 @@ module Admin
         flash[:error] = "Failed to delete automation"
       end
 
-      redirect_to admin_subforem_community_bot_scheduled_automations_path(@subforem, @bot)
+      redirect_to scheduled_automations_path
     end
 
     def toggle_enabled
       @automation.update!(enabled: !@automation.enabled)
-      
+
       status = @automation.enabled? ? "enabled" : "disabled"
       flash[:success] = "Automation #{status} successfully!"
-      
-      redirect_to admin_subforem_community_bot_scheduled_automations_path(@subforem, @bot)
+
+      redirect_to scheduled_automations_path
     end
 
     private
 
     def set_bot
       @bot = User.find(params[:community_bot_id])
-    end
-
-    def set_subforem
-      @subforem = Subforem.find(params[:subforem_id])
+      @subforem = if params[:subforem_id].present?
+                    Subforem.find(params[:subforem_id])
+                  elsif @bot.onboarding_subforem_id.present?
+                    Subforem.find_by(id: @bot.onboarding_subforem_id)
+                  end
     end
 
     def set_automation
@@ -106,6 +106,14 @@ module Admin
       )
     end
 
+    def scheduled_automations_path
+      if @subforem.present?
+        admin_subforem_community_bot_scheduled_automations_path(@subforem, @bot)
+      else
+        admin_community_bot_scheduled_automations_path(@bot)
+      end
+    end
+
     protected
 
     def authorization_resource
@@ -113,4 +121,3 @@ module Admin
     end
   end
 end
-

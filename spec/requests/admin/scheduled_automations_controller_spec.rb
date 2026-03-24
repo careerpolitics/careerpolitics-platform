@@ -27,6 +27,11 @@ RSpec.describe Admin::ScheduledAutomationsController do
       get admin_subforem_community_bot_scheduled_automations_path(subforem, bot)
       expect(assigns(:automations)).to include(automation)
     end
+
+    it "returns success without a subforem route" do
+      get admin_community_bot_scheduled_automations_path(bot)
+      expect(response).to have_http_status(:success)
+    end
   end
 
   describe "GET #show" do
@@ -83,6 +88,12 @@ RSpec.describe Admin::ScheduledAutomationsController do
         expect(response).to redirect_to(
           admin_subforem_community_bot_scheduled_automations_path(subforem, bot)
         )
+      end
+
+      it "redirects to top-level index when using non-subforem route" do
+        post admin_community_bot_scheduled_automations_path(bot),
+             params: valid_params
+        expect(response).to redirect_to(admin_community_bot_scheduled_automations_path(bot))
       end
 
       it "sets a success flash message" do
@@ -284,4 +295,3 @@ RSpec.describe Admin::ScheduledAutomationsController do
     end
   end
 end
-
