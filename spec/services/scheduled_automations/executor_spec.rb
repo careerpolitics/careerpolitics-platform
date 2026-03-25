@@ -193,6 +193,14 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
         executor.call
         expect(automation.reload.state).to eq("failed")
       end
+      it "creates an audit log entry" do
+        expect { executor.call }.to change(AuditLog, :count).by(1)
+
+        log = AuditLog.last
+        expect(log.slug).to eq("scheduled_automation_failed")
+        expect(log.data["automation_id"]).to eq(automation.id)
+      end
+
 
       it "returns failure result" do
         result = executor.call
@@ -232,6 +240,7 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
           ai_context: "Write a post for our community about testing best practices",
           additional_instructions: automation.additional_instructions,
           tags: automation.action_config["tags"],
+          affected_user: bot,
         ).and_return(mock_post_service)
 
         executor.call

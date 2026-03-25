@@ -78,8 +78,7 @@ module ScheduledAutomations
       rescue StandardError => e
         # Mark as failed and log error
         @automation.mark_as_failed!
-        Rails.logger.error("ScheduledAutomation ##{@automation.id} failed: #{e.class} - #{e.message}")
-        Rails.logger.error(e.backtrace.join("\n"))
+        log_automation_failure(e)
 
         Result.new(
           success?: false,
@@ -90,6 +89,27 @@ module ScheduledAutomations
     end
 
     private
+
+
+    def log_automation_failure(error)
+      Rails.logger.error("ScheduledAutomation ##{@automation.id} failed: #{error.class} - #{error.message}")
+      Rails.logger.error(error.backtrace.join("\n"))
+
+      AuditLog.create!(
+        user: @user,
+        category: "scheduled_automation.error",
+        slug: "scheduled_automation_failed",
+        data: {
+          automation_id: @automation.id,
+          service_name: @automation.service_name,
+          action: @automation.action,
+          error_class: error.class.to_s,
+          error_message: error.message,
+        },
+      )
+    rescue StandardError => log_error
+      Rails.logger.error("ScheduledAutomation ##{@automation.id} failed to persist audit log: #{log_error.class} - #{log_error.message}")
+    end
 
     def call_ai_service
       case @automation.service_name
@@ -145,6 +165,7 @@ module ScheduledAutomations
         ai_context: ai_context,
         additional_instructions: @automation.additional_instructions,
         tags: @automation.action_config["tags"],
+        affected_user: @user,
       )
 
       service.generate

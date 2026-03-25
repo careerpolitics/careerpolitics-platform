@@ -45,9 +45,31 @@ RSpec.describe Ai::CommunityBotPostCreator, type: :service do
     it "requests generated tags when tags are not provided" do
       service = described_class.new(ai_context: ai_context, ai_client: ai_client)
 
-      allow(ai_client).to receive(:call).with(include("Generate 3-5 relevant tags")).and_return("TITLE: T\nTAGS: t\nBODY: B")
+      allow(ai_client).to receive(:call).with(include("Generate 1-4 relevant tags")).and_return("TITLE: T\nTAGS: t\nBODY: B")
 
       service.generate
     end
+
+    it "limits tags to 4 and normalizes formatting" do
+      response = "TITLE: T
+TAGS: #News, WORLD, analysis, policy, extra
+BODY: B"
+      allow(ai_client).to receive(:call).and_return(response)
+
+      result = described_class.new(ai_context: ai_context, ai_client: ai_client).generate
+
+      expect(result.tags).to eq(%w[news world analysis policy])
+    end
+
+    it "uses context-derived fallback tags when no tags are present" do
+      response = "TITLE: T
+BODY: B"
+      allow(ai_client).to receive(:call).and_return(response)
+
+      result = described_class.new(ai_context: "Global economy update for developers", ai_client: ai_client).generate
+
+      expect(result.tags).to be_present
+    end
+
   end
 end

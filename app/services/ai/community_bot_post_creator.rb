@@ -1,13 +1,13 @@
 module Ai
   class CommunityBotPostCreator
-    VERSION = "1.1"
+    VERSION = "1.2"
     PostResult = Struct.new(:title, :body, :tags, keyword_init: true)
 
-    def initialize(ai_context:, additional_instructions: nil, tags: nil, ai_client: nil)
+    def initialize(ai_context:, additional_instructions: nil, tags: nil, ai_client: nil, affected_user: nil)
       @ai_context = ai_context
       @additional_instructions = additional_instructions
       @tags = normalize_tags(tags)
-      @ai_client = ai_client || Ai::Base.new(wrapper: self)
+      @ai_client = ai_client || Ai::Base.new(wrapper: self, affected_user: affected_user)
     end
 
     def generate
@@ -28,9 +28,9 @@ module Ai
     def build_prompt
       additional_section = additional_instructions.present? ? "\nAdditional instructions:\n#{additional_instructions.strip}\n" : ""
       tags_section = if tags.present?
-                       "Use these tags exactly (comma-separated): #{tags.join(', ')}"
+                       "Use these tags exactly (comma-separated, maximum 4 tags): #{tags.join(', ')}"
                      else
-                       "Generate 3-5 relevant tags (comma-separated) for the post"
+                       "Generate 1-4 relevant tags (comma-separated) for the post"
                      end
 
       <<~PROMPT
@@ -66,14 +66,27 @@ module Ai
 
       parsed_tags = normalize_tags(tags_match&.captures&.first)
       parsed_tags = tags if parsed_tags.blank? && tags.present?
+      parsed_tags = fallback_tags_from_context if parsed_tags.blank?
 
       PostResult.new(title: title, body: body, tags: parsed_tags)
+    end
+
+    def fallback_tags_from_context
+      context_tags = ai_context.to_s.downcase.scan(/\b[a-z0-9][a-z0-9-]{1,19}\b/)
+      stopwords = %w[about after among and are for from has have into not that the their them then they this was with your]
+      (context_tags - stopwords).uniq.first(4).presence || ["news"]
     end
 
     def normalize_tags(raw_tags)
       return [] if raw_tags.blank?
 
-      raw_tags.to_s.split(",").map(&:strip).reject(&:blank?).uniq
+      raw_tags
+        .to_s
+        .split(",")
+        .map { |tag| tag.strip.delete_prefix("#").downcase }
+        .reject(&:blank?)
+        .uniq
+        .first(4)
     end
   end
 end
