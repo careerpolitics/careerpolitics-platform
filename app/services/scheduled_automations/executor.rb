@@ -144,6 +144,7 @@ module ScheduledAutomations
       service = Ai::CommunityBotPostCreator.new(
         ai_context: ai_context,
         additional_instructions: @automation.additional_instructions,
+        tags: @automation.action_config["tags"],
       )
 
       service.generate
@@ -255,7 +256,7 @@ module ScheduledAutomations
       article.published_at = Time.current if published
 
       # Apply any additional article configuration
-      apply_article_config(article)
+      apply_article_config(article, service_result)
 
       # Save the article
       article.save!
@@ -263,12 +264,14 @@ module ScheduledAutomations
       article
     end
 
-    def apply_article_config(article)
+    def apply_article_config(article, service_result)
       config = @automation.action_config
 
-      # Set tags if specified
+      # Set tags from action config, otherwise fall back to service-generated tags
       if config["tags"].present?
         article.tag_list = config["tags"]
+      elsif service_result.respond_to?(:tags) && service_result.tags.present?
+        article.tag_list = service_result.tags
       end
 
       # Set organization if specified

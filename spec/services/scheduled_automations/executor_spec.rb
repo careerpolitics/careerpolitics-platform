@@ -214,7 +214,9 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
 
 
     context "when service_name is community_bot_post_creator" do
-      let(:mock_post_result) { double("PostResult", title: "Community Update", body: "Generated post body") }
+      let(:mock_post_result) do
+        double("PostResult", title: "Community Update", body: "Generated post body", tags: ["news", "current-affairs"])
+      end
       let(:mock_post_service) { double("CommunityBotPostCreator", generate: mock_post_result) }
 
       before do
@@ -229,6 +231,7 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
         expect(Ai::CommunityBotPostCreator).to receive(:new).with(
           ai_context: "Write a post for our community about testing best practices",
           additional_instructions: automation.additional_instructions,
+          tags: automation.action_config["tags"],
         ).and_return(mock_post_service)
 
         executor.call
@@ -240,6 +243,25 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
         expect(result.success?).to be(true)
         expect(result.article.title).to eq("Community Update")
         expect(result.article.body_markdown).to eq("Generated post body")
+      end
+
+      it "applies generated tags when action_config tags are missing" do
+        result = executor.call
+
+        expect(result.article.tag_list).to eq(["news", "current-affairs"])
+      end
+
+      it "prefers configured tags over generated tags" do
+        automation.update!(
+          action_config: {
+            "ai_context" => "Write a post for our community about testing best practices",
+            "tags" => "configured, editorial"
+          },
+        )
+
+        result = executor.call
+
+        expect(result.article.tag_list).to eq(["configured", "editorial"])
       end
     end
 
