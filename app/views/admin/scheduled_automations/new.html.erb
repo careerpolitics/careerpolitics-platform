@@ -99,6 +99,12 @@
           <input type="text" name="scheduled_automation[action_config][series]" id="community_bot_series" class="crayons-textfield" placeholder="daily-current-affairs-quiz" value="<%= @automation.action_config["series"] %>">
           <p class="crayons-field__description">Optional. Add a series slug to publish each generated quiz into the same series.</p>
         </div>
+
+        <div class="mb-4">
+          <label class="crayons-field__label" for="community_bot_organization_id">Organization ID</label>
+          <input type="number" name="scheduled_automation[action_config][organization_id]" id="community_bot_organization_id" class="crayons-textfield" min="1" placeholder="123" value="<%= @automation.action_config["organization_id"] %>">
+          <p class="crayons-field__description">Optional. If provided, generated quizzes will be published under this organization.</p>
+        </div>
       </div>
     </div>
 

@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Ai::CommunityBotPostCreator, type: :service do
+RSpec.describe Ai::CommunityBotDailyQuizPostCreator, type: :service do
   let(:ai_client) { instance_double(Ai::Base) }
   let(:ai_context) { "Create a weekly update for the Ruby on Rails community" }
 
