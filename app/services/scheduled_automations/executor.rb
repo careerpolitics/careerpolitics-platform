@@ -78,8 +78,7 @@ module ScheduledAutomations
       rescue StandardError => e
         # Mark as failed and log error
         @automation.mark_as_failed!
-        Rails.logger.error("ScheduledAutomation ##{@automation.id} failed: #{e.class} - #{e.message}")
-        Rails.logger.error(e.backtrace.join("\n"))
+        log_automation_failure(e)
 
         Result.new(
           success?: false,
@@ -91,10 +90,33 @@ module ScheduledAutomations
 
     private
 
+
+    def log_automation_failure(error)
+      Rails.logger.error("ScheduledAutomation ##{@automation.id} failed: #{error.class} - #{error.message}")
+      Rails.logger.error(error.backtrace.join("\n"))
+
+      AuditLog.create!(
+        user: @user,
+        category: "scheduled_automation.error",
+        slug: "scheduled_automation_failed",
+        data: {
+          automation_id: @automation.id,
+          service_name: @automation.service_name,
+          action: @automation.action,
+          error_class: error.class.to_s,
+          error_message: error.message,
+        },
+      )
+    rescue StandardError => log_error
+      Rails.logger.error("ScheduledAutomation ##{@automation.id} failed to persist audit log: #{log_error.class} - #{log_error.message}")
+    end
+
     def call_ai_service
       case @automation.service_name
       when "github_repo_recap"
         call_github_repo_recap_service
+      when "community_bot_post_creator"
+        call_community_bot_post_creator_service
       else
         raise ArgumentError, "Unknown service: #{@automation.service_name}"
       end
@@ -129,6 +151,24 @@ module ScheduledAutomations
       end
 
       recap_result
+    end
+
+
+    def call_community_bot_post_creator_service
+      ai_context = @automation.action_config["ai_context"]
+
+      unless ai_context.present?
+        raise ArgumentError, "ai_context is required in action_config for community_bot_post_creator service"
+      end
+
+      service = Ai::CommunityBotPostCreator.new(
+        ai_context: ai_context,
+        additional_instructions: @automation.additional_instructions,
+        tags: @automation.action_config["tags"],
+        affected_user: @user,
+      )
+
+      service.generate
     end
 
     def augment_with_instructions(body)
@@ -237,7 +277,7 @@ module ScheduledAutomations
       article.published_at = Time.current if published
 
       # Apply any additional article configuration
-      apply_article_config(article)
+      apply_article_config(article, service_result)
 
       # Save the article
       article.save!
@@ -245,12 +285,14 @@ module ScheduledAutomations
       article
     end
 
-    def apply_article_config(article)
+    def apply_article_config(article, service_result)
       config = @automation.action_config
 
-      # Set tags if specified
+      # Set tags from action config, otherwise fall back to service-generated tags
       if config["tags"].present?
         article.tag_list = config["tags"]
+      elsif service_result.respond_to?(:tags) && service_result.tags.present?
+        article.tag_list = service_result.tags
       end
 
       # Set organization if specified

@@ -193,6 +193,14 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
         executor.call
         expect(automation.reload.state).to eq("failed")
       end
+      it "creates an audit log entry" do
+        expect { executor.call }.to change(AuditLog, :count).by(1)
+
+        log = AuditLog.last
+        expect(log.slug).to eq("scheduled_automation_failed")
+        expect(log.data["automation_id"]).to eq(automation.id)
+      end
+
 
       it "returns failure result" do
         result = executor.call
@@ -212,6 +220,60 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
       end
     end
 
+
+    context "when service_name is community_bot_post_creator" do
+      let(:mock_post_result) do
+        double("PostResult", title: "Community Update", body: "Generated post body", tags: ["news", "current-affairs"])
+      end
+      let(:mock_post_service) { double("CommunityBotPostCreator", generate: mock_post_result) }
+
+      before do
+        automation.update!(
+          service_name: "community_bot_post_creator",
+          action_config: { "ai_context" => "Write a post for our community about testing best practices" },
+        )
+        allow(Ai::CommunityBotPostCreator).to receive(:new).and_return(mock_post_service)
+      end
+
+      it "calls the community bot post creator service" do
+        expect(Ai::CommunityBotPostCreator).to receive(:new).with(
+          ai_context: "Write a post for our community about testing best practices",
+          additional_instructions: automation.additional_instructions,
+          tags: automation.action_config["tags"],
+          affected_user: bot,
+        ).and_return(mock_post_service)
+
+        executor.call
+      end
+
+      it "creates an article from the generated result" do
+        result = executor.call
+
+        expect(result.success?).to be(true)
+        expect(result.article.title).to eq("Community Update")
+        expect(result.article.body_markdown).to eq("Generated post body")
+      end
+
+      it "applies generated tags when action_config tags are missing" do
+        result = executor.call
+
+        expect(result.article.tag_list).to eq(["news", "current-affairs"])
+      end
+
+      it "prefers configured tags over generated tags" do
+        automation.update!(
+          action_config: {
+            "ai_context" => "Write a post for our community about testing best practices",
+            "tags" => "configured, editorial"
+          },
+        )
+
+        result = executor.call
+
+        expect(result.article.tag_list).to eq(["configured", "editorial"])
+      end
+    end
+
     context "when service_name is unknown" do
       before { automation.update!(service_name: "unknown_service") }
 
@@ -219,6 +281,20 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
         result = executor.call
         expect(result.success?).to be(false)
         expect(result.error_message).to include("Unknown service: unknown_service")
+      end
+    end
+
+
+    context "when ai_context is missing for community_bot_post_creator" do
+      before do
+        automation.update!(service_name: "community_bot_post_creator", action_config: {})
+      end
+
+      it "returns failure result" do
+        result = executor.call
+
+        expect(result.success?).to be(false)
+        expect(result.error_message).to include("ai_context is required")
       end
     end
 
