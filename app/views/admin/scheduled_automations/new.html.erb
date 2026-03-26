@@ -93,6 +93,12 @@
           <input type="text" name="scheduled_automation[action_config][tags]" id="community_bot_tags" class="crayons-textfield" placeholder="news, world, analysis" value="<%= @automation.action_config["tags"] %>">
           <p class="crayons-field__description">Optional. If blank, AI will generate tags as part of the response.</p>
         </div>
+
+        <div class="mb-4">
+          <label class="crayons-field__label" for="community_bot_series">Series</label>
+          <input type="text" name="scheduled_automation[action_config][series]" id="community_bot_series" class="crayons-textfield" placeholder="daily-current-affairs-quiz" value="<%= @automation.action_config["series"] %>">
+          <p class="crayons-field__description">Optional. Add a series slug to publish each generated quiz into the same series.</p>
+        </div>
       </div>
     </div>
 
