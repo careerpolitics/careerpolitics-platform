@@ -1,6 +1,6 @@
 module Ai
-  class CommunityBotDailyQuizPostCreator
-    VERSION = "1.3"
+  class CommunityBotCurrentAffairsNewsPostCreator
+    VERSION = "1.0"
     PostResult = Struct.new(:title, :body, :tags, keyword_init: true)
 
     def initialize(ai_context:, additional_instructions: nil, tags: nil, ai_client: nil, affected_user: nil)
@@ -13,15 +13,15 @@ module Ai
     def generate
       return if ai_context.blank?
 
-      Rails.logger.info("Ai::CommunityBotDailyQuizPostCreator: generation started (context_length=#{ai_context.length}, fixed_tags=#{tags.presence || 'none'})")
+      Rails.logger.info("Ai::CommunityBotCurrentAffairsNewsPostCreator: generation started (context_length=#{ai_context.length}, fixed_tags=#{tags.presence || 'none'})")
 
       response = ai_client.call(build_prompt)
       result = parse_response(response)
 
-      Rails.logger.info("Ai::CommunityBotDailyQuizPostCreator: generation completed (title=#{result&.title.inspect}, tags=#{result&.tags || []})")
+      Rails.logger.info("Ai::CommunityBotCurrentAffairsNewsPostCreator: generation completed (title=#{result&.title.inspect}, tags=#{result&.tags || []})")
       result
     rescue StandardError => e
-      Rails.logger.error("Community bot daily quiz generation failed: #{e.class} - #{e.message}")
+      Rails.logger.error("Community bot current-affairs news generation failed: #{e.class} - #{e.message}")
       Rails.logger.error(e.backtrace.join("\n"))
       nil
     end
@@ -38,8 +38,14 @@ module Ai
                        "Generate 1-4 relevant tags (comma-separated) for the post"
                      end
 
+      today = Time.current.utc.to_date
+      yesterday = today - 1.day
+
       <<~PROMPT
-        You are writing a DAILY current-affairs quiz post for a community bot.
+        You are writing a current-affairs news summary post for a community bot.
+        Today's date (UTC): #{today}.
+        Yesterday's date (UTC): #{yesterday}.
+        Summarize only important and verifiable events from yesterday.
 
         Use this AI context as the primary instruction set. If it specifies structure or formatting, follow it strictly:
         #{ai_context}
@@ -51,8 +57,8 @@ module Ai
         BODY: <markdown body>
 
         Requirements:
-        - Keep the content exam-oriented, concise, informative, and useful for the community.
         - BODY must be valid markdown.
+        - Keep the summary factual, concise, and easy to scan.
         - #{tags_section}.
         - Do not include any extra wrapper text outside TITLE/TAGS/BODY.
       PROMPT
@@ -65,7 +71,7 @@ module Ai
       tags_match = response.match(/TAGS:\s*(.+?)(?:\n|$)/i)
       body_match = response.match(/BODY:\s*(.+)/im)
 
-      title = title_match ? title_match[1].strip : "Community Update"
+      title = title_match ? title_match[1].strip : "Current Affairs Update"
       body = body_match ? body_match[1].strip : response.strip
       return if body.blank?
 
