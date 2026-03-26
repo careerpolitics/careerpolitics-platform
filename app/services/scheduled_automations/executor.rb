@@ -163,7 +163,7 @@ module ScheduledAutomations
 
       Rails.logger.info("ScheduledAutomations::Executor: running community_bot_post_creator for automation_id=#{@automation.id} with tags=#{@automation.action_config["tags"].inspect} and series=#{@automation.action_config["series"].inspect}")
 
-      service = Ai::CommunityBotDailyQuizPostCreator.new(
+      service = Ai::CommunityBotQuizPostCreator.new(
         ai_context: ai_context,
         additional_instructions: @automation.additional_instructions,
         tags: @automation.action_config["tags"],

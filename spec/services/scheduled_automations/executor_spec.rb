@@ -239,18 +239,18 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
       let(:mock_post_result) do
         double("PostResult", title: "Community Update", body: "Generated post body", tags: ["news", "current-affairs"])
       end
-      let(:mock_post_service) { double("CommunityBotDailyQuizPostCreator", generate: mock_post_result) }
+      let(:mock_post_service) { double("CommunityBotQuizPostCreator", generate: mock_post_result) }
 
       before do
         automation.update!(
           service_name: "community_bot_post_creator",
           action_config: { "ai_context" => "Write a post for our community about testing best practices" },
         )
-        allow(Ai::CommunityBotDailyQuizPostCreator).to receive(:new).and_return(mock_post_service)
+        allow(Ai::CommunityBotQuizPostCreator).to receive(:new).and_return(mock_post_service)
       end
 
       it "calls the community bot post creator service" do
-        expect(Ai::CommunityBotDailyQuizPostCreator).to receive(:new).with(
+        expect(Ai::CommunityBotQuizPostCreator).to receive(:new).with(
           ai_context: "Write a post for our community about testing best practices",
           additional_instructions: automation.additional_instructions,
           tags: automation.action_config["tags"],

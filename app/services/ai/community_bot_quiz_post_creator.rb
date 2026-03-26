@@ -1,5 +1,5 @@
 module Ai
-  class CommunityBotDailyQuizPostCreator
+  class CommunityBotQuizPostCreator
     VERSION = "1.3"
     PostResult = Struct.new(:title, :body, :tags, keyword_init: true)
 
@@ -13,15 +13,15 @@ module Ai
     def generate
       return if ai_context.blank?
 
-      Rails.logger.info("Ai::CommunityBotDailyQuizPostCreator: generation started (context_length=#{ai_context.length}, fixed_tags=#{tags.presence || 'none'})")
+      Rails.logger.info("Ai::CommunityBotQuizPostCreator: generation started (context_length=#{ai_context.length}, fixed_tags=#{tags.presence || 'none'})")
 
       response = ai_client.call(build_prompt)
       result = parse_response(response)
 
-      Rails.logger.info("Ai::CommunityBotDailyQuizPostCreator: generation completed (title=#{result&.title.inspect}, tags=#{result&.tags || []})")
+      Rails.logger.info("Ai::CommunityBotQuizPostCreator: generation completed (title=#{result&.title.inspect}, tags=#{result&.tags || []})")
       result
     rescue StandardError => e
-      Rails.logger.error("Community bot daily quiz generation failed: #{e.class} - #{e.message}")
+      Rails.logger.error("Community bot quiz generation failed: #{e.class} - #{e.message}")
       Rails.logger.error(e.backtrace.join("\n"))
       nil
     end
@@ -38,8 +38,14 @@ module Ai
                        "Generate 1-4 relevant tags (comma-separated) for the post"
                      end
 
+      today = Time.current.utc.to_date
+      yesterday = today - 1.day
+
       <<~PROMPT
         You are writing a DAILY current-affairs quiz post for a community bot.
+        Today's date (UTC): #{today}.
+        Yesterday's date (UTC): #{yesterday}.
+        Only use real events from yesterday and do not fabricate facts.
 
         Use this AI context as the primary instruction set. If it specifies structure or formatting, follow it strictly:
         #{ai_context}
