@@ -13,8 +13,13 @@ module Ai
     def generate
       return if ai_context.blank?
 
+      Rails.logger.info("Ai::CommunityBotPostCreator: generation started (context_length=#{ai_context.length}, fixed_tags=#{tags.presence || 'none'})")
+
       response = ai_client.call(build_prompt)
-      parse_response(response)
+      result = parse_response(response)
+
+      Rails.logger.info("Ai::CommunityBotPostCreator: generation completed (title=#{result&.title.inspect}, tags=#{result&.tags || []})")
+      result
     rescue StandardError => e
       Rails.logger.error("Community bot post generation failed: #{e.class} - #{e.message}")
       Rails.logger.error(e.backtrace.join("\n"))
@@ -34,9 +39,9 @@ module Ai
                      end
 
       <<~PROMPT
-        You are writing a current-affairs post for a community bot.
+        You are writing a DAILY current-affairs quiz post for a community bot.
 
-        Use this AI context and focus on current affairs, recent developments, and timely relevance:
+        Use this AI context as the primary instruction set. If it specifies structure or formatting, follow it strictly:
         #{ai_context}
         #{additional_section}
 
@@ -46,7 +51,7 @@ module Ai
         BODY: <markdown body>
 
         Requirements:
-        - Keep the post concise, informative, and useful for the community.
+        - Keep the content exam-oriented, concise, informative, and useful for the community.
         - BODY must be valid markdown.
         - #{tags_section}.
         - Do not include any extra wrapper text outside TITLE/TAGS/BODY.
