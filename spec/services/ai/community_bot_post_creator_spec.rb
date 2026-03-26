@@ -50,6 +50,14 @@ RSpec.describe Ai::CommunityBotPostCreator, type: :service do
       service.generate
     end
 
+    it "uses fixed tags from input when provided" do
+      service = described_class.new(ai_context: ai_context, tags: "daily-quiz, current-affairs", ai_client: ai_client)
+
+      allow(ai_client).to receive(:call).with(include("Use these tags exactly")).and_return("TITLE: T\nTAGS: t\nBODY: B")
+
+      service.generate
+    end
+
     it "limits tags to 4 and normalizes formatting" do
       response = "TITLE: T
 TAGS: #News, WORLD, analysis, policy, extra

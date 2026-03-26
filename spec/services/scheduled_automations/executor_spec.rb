@@ -182,6 +182,20 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
           expect(result.article.organization_id).to eq(organization.id)
         end
       end
+
+      context "with series in action_config" do
+        before do
+          automation.action_config["series"] = "daily-current-affairs-quiz"
+          automation.save!
+        end
+
+        it "sets the article series collection" do
+          result = executor.call
+
+          expect(result.article.collection).to be_present
+          expect(result.article.series).to eq("daily-current-affairs-quiz")
+        end
+      end
     end
 
     context "when an error occurs" do
@@ -396,4 +410,3 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
     end
   end
 end
-
