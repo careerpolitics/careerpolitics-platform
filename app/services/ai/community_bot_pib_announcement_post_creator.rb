@@ -1,3 +1,6 @@
+require "cgi"
+require "uri"
+
 module Ai
   class CommunityBotPibAnnouncementPostCreator
     VERSION = "2.0"
@@ -123,13 +126,19 @@ module Ai
     def fetch_article_contexts(selected_items)
       selected_items.filter_map do |item|
         article_response = feed_fetcher.get(item[:url], timeout: 10)
-        article_body = extract_article_body(article_response.body.to_s)
-        next if article_body.blank?
+        article_details = extract_article_details(article_response.body.to_s)
+        next if article_details[:body].blank?
 
         {
-          title: item[:title],
+          title: article_details[:title].presence || item[:title],
           url: item[:url],
-          content: article_body.truncate(MAX_ARTICLE_CHARS)
+          ministry: article_details[:ministry],
+          subtitle: article_details[:subtitle],
+          posted_on: article_details[:posted_on],
+          release_id: article_details[:release_id],
+          content: article_details[:body].truncate(MAX_ARTICLE_CHARS),
+          images: article_details[:images],
+          social_links: article_details[:social_links]
         }
       rescue StandardError => e
         Rails.logger.error("Failed to fetch PIB article #{item[:url]}: #{e.class} - #{e.message}")
@@ -137,18 +146,56 @@ module Ai
       end
     end
 
-    def extract_article_body(html)
+    def extract_article_details(html)
       doc = Nokogiri::HTML(html)
+      root = doc.at_css(".innner-page-main-about-us-content-right-part") || doc
 
+      paragraphs = root.css("p").map { |node| node.text.to_s.squish }.reject(&:blank?)
+      body = paragraphs.reject { |text| text == "***" || text.match?(/\A[A-Z]{2,6}\/[A-Z]{2,6}\z/) }.join("\n\n")
+      body = fallback_article_text(root) if body.blank?
+
+      {
+        ministry: root.at_css("#MinistryName")&.text.to_s.squish,
+        title: root.at_css("#Titleh2")&.text.to_s.squish,
+        subtitle: root.at_css("#Subtitleh3")&.text.to_s.squish,
+        posted_on: root.at_css("#PrDateTime")&.text.to_s.squish,
+        release_id: root.at_css("#ReleaseId")&.text.to_s.squish,
+        body: body,
+        images: extract_image_links(root),
+        social_links: extract_twitter_links(root)
+      }
+    end
+
+    def fallback_article_text(root)
       ARTICLE_CONTENT_SELECTORS.each do |selector|
-        text = doc.css(selector).text.to_s.squish
+        text = root.css(selector).text.to_s.squish
         return text if text.length >= 200
       end
 
-      body_text = doc.at_css("body")&.text.to_s.squish
+      body_text = root.at_css("body")&.text.to_s.squish
       return body_text if body_text.length >= 200
 
       ""
+    end
+
+    def extract_image_links(root)
+      root.css("#lg_g img, img").map { |img| img["src"].to_s.strip }.select(&:present?).uniq.first(6)
+    end
+
+    def extract_twitter_links(root)
+      root.css("iframe[src*='platform.twitter.com/embed/Tweet']").filter_map do |iframe|
+        tweet_id = iframe["data-tweet-id"].presence || extract_tweet_id_from_embed(iframe["src"].to_s)
+        next if tweet_id.blank?
+
+        "https://x.com/i/web/status/#{tweet_id}"
+      end.uniq.first(6)
+    end
+
+    def extract_tweet_id_from_embed(src)
+      uri = URI.parse(src)
+      CGI.parse(uri.query.to_s)["id"]&.first
+    rescue URI::InvalidURIError
+      nil
     end
 
     def build_summary_prompt(articles_context)
@@ -166,6 +213,12 @@ module Ai
         <<~ARTICLE
           [#{index + 1}] #{article[:title]}
           URL: #{article[:url]}
+          MINISTRY: #{article[:ministry].presence || 'N/A'}
+          SUBTITLE: #{article[:subtitle].presence || 'N/A'}
+          POSTED_ON: #{article[:posted_on].presence || 'N/A'}
+          RELEASE_ID: #{article[:release_id].presence || 'N/A'}
+          IMAGE_URLS: #{article[:images].presence&.join(', ') || 'N/A'}
+          SOCIAL_LINKS: #{article[:social_links].presence&.join(', ') || 'N/A'}
           CONTENT:
           #{article[:content]}
         ARTICLE
@@ -190,6 +243,7 @@ module Ai
         - BODY must be valid markdown.
         - Keep the summary factual and easy to scan.
         - Include source links to the original PIB URLs for each summarized announcement.
+        - Use available media details (images and social links) when relevant.
         - #{tags_section}.
         - Do not include any extra wrapper text outside TITLE/TAGS/BODY.
       PROMPT
