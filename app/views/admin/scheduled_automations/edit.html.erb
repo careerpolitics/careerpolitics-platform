@@ -19,7 +19,7 @@
     <div class="mb-4">
       <label class="crayons-field__label" for="service_name">AI Service</label>
       <%= f.select :service_name, 
-          [["GitHub Repo Recap", "github_repo_recap"], ["Community Bot Post Creator", "community_bot_post_creator"]], 
+          [["GitHub Repo Recap", "github_repo_recap"], ["Community Bot Quiz Post Creator", "community_bot_post_creator"], ["Community Bot Current Affairs News Post Creator", "community_bot_current_affairs_news_post_creator"]], 
           {},
           class: "crayons-select", 
           id: "service_name",
@@ -92,6 +92,18 @@
           <label class="crayons-field__label" for="community_bot_tags">Tags (comma-separated)</label>
           <input type="text" name="scheduled_automation[action_config][tags]" id="community_bot_tags" class="crayons-textfield" placeholder="news, world, analysis" value="<%= @automation.action_config["tags"] %>">
           <p class="crayons-field__description">Optional. If blank, AI will generate tags as part of the response.</p>
+        </div>
+
+        <div class="mb-4">
+          <label class="crayons-field__label" for="community_bot_series">Series</label>
+          <input type="text" name="scheduled_automation[action_config][series]" id="community_bot_series" class="crayons-textfield" placeholder="daily-current-affairs-quiz" value="<%= @automation.action_config["series"] %>">
+          <p class="crayons-field__description">Optional. Add a series slug to publish each generated quiz into the same series.</p>
+        </div>
+
+        <div class="mb-4">
+          <label class="crayons-field__label" for="community_bot_organization_id">Organization ID</label>
+          <input type="number" name="scheduled_automation[action_config][organization_id]" id="community_bot_organization_id" class="crayons-textfield" min="1" placeholder="123" value="<%= @automation.action_config["organization_id"] %>">
+          <p class="crayons-field__description">Optional. If provided, generated quizzes will be published under this organization.</p>
         </div>
       </div>
     </div>
@@ -202,7 +214,8 @@ function updateFrequencyFields() {
 
 function updateServiceFields() {
   const serviceName = document.getElementById('service_name').value;
-  const normalizedServiceName = serviceName.replace(/_/g, "-");
+  const mappedServiceName = serviceName === "community_bot_current_affairs_news_post_creator" ? "community_bot_post_creator" : serviceName;
+  const normalizedServiceName = mappedServiceName.replace(/_/g, "-");
   
   // Hide all service-specific fields
   document.querySelectorAll('[id$="-fields"]').forEach(el => {
@@ -213,7 +226,7 @@ function updateServiceFields() {
   
   // Show the selected service's fields
   if (serviceName) {
-    const serviceFields = document.getElementById(`${serviceName}-fields`) ||
+    const serviceFields = document.getElementById(`${mappedServiceName}-fields`) ||
       document.getElementById(`${normalizedServiceName}-fields`);
     if (serviceFields) {
       serviceFields.style.display = 'block';

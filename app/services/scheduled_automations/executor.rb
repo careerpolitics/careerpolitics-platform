@@ -117,6 +117,8 @@ module ScheduledAutomations
         call_github_repo_recap_service
       when "community_bot_post_creator"
         call_community_bot_post_creator_service
+      when "community_bot_current_affairs_news_post_creator"
+        call_community_bot_current_affairs_news_post_creator_service
       else
         raise ArgumentError, "Unknown service: #{@automation.service_name}"
       end
@@ -161,7 +163,28 @@ module ScheduledAutomations
         raise ArgumentError, "ai_context is required in action_config for community_bot_post_creator service"
       end
 
-      service = Ai::CommunityBotPostCreator.new(
+      Rails.logger.info("ScheduledAutomations::Executor: running community_bot_post_creator for automation_id=#{@automation.id} with tags=#{@automation.action_config["tags"].inspect} and series=#{@automation.action_config["series"].inspect}")
+
+      service = Ai::CommunityBotQuizPostCreator.new(
+        ai_context: ai_context,
+        additional_instructions: @automation.additional_instructions,
+        tags: @automation.action_config["tags"],
+        affected_user: @user,
+      )
+
+      service.generate
+    end
+
+    def call_community_bot_current_affairs_news_post_creator_service
+      ai_context = @automation.action_config["ai_context"]
+
+      unless ai_context.present?
+        raise ArgumentError, "ai_context is required in action_config for community_bot_current_affairs_news_post_creator service"
+      end
+
+      Rails.logger.info("ScheduledAutomations::Executor: running community_bot_current_affairs_news_post_creator for automation_id=#{@automation.id} with tags=#{@automation.action_config["tags"].inspect} and series=#{@automation.action_config["series"].inspect}")
+
+      service = Ai::CommunityBotCurrentAffairsNewsPostCreator.new(
         ai_context: ai_context,
         additional_instructions: @automation.additional_instructions,
         tags: @automation.action_config["tags"],
@@ -298,6 +321,11 @@ module ScheduledAutomations
       # Set organization if specified
       if config["organization_id"].present?
         article.organization_id = config["organization_id"].to_i
+      end
+
+      # Set series if specified
+      if config["series"].present?
+        article.collection = Collection.find_series(config["series"], @user, organization: article.organization)
       end
 
       # Set subforem if specified

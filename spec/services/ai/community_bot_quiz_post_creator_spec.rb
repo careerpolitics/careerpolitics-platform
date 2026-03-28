@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Ai::CommunityBotPostCreator, type: :service do
+RSpec.describe Ai::CommunityBotQuizPostCreator, type: :service do
   let(:ai_client) { instance_double(Ai::Base) }
   let(:ai_context) { "Create a weekly update for the Ruby on Rails community" }
 
@@ -46,6 +46,22 @@ RSpec.describe Ai::CommunityBotPostCreator, type: :service do
       service = described_class.new(ai_context: ai_context, ai_client: ai_client)
 
       allow(ai_client).to receive(:call).with(include("Generate 1-4 relevant tags")).and_return("TITLE: T\nTAGS: t\nBODY: B")
+
+      service.generate
+    end
+
+    it "injects current date context into the prompt" do
+      service = described_class.new(ai_context: ai_context, ai_client: ai_client)
+
+      allow(ai_client).to receive(:call).with(include("Today's date (UTC):")).and_return("TITLE: T\nTAGS: t\nBODY: B")
+
+      service.generate
+    end
+
+    it "uses fixed tags from input when provided" do
+      service = described_class.new(ai_context: ai_context, tags: "daily-quiz, current-affairs", ai_client: ai_client)
+
+      allow(ai_client).to receive(:call).with(include("Use these tags exactly")).and_return("TITLE: T\nTAGS: t\nBODY: B")
 
       service.generate
     end
