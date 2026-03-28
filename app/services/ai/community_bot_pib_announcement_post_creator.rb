@@ -1,8 +1,17 @@
 module Ai
   class CommunityBotPibAnnouncementPostCreator
-    VERSION = "1.0"
+    VERSION = "2.0"
     FEED_URL = "https://www.pib.gov.in/RssMain.aspx?ModId=6&reg=3&lang=1".freeze
     MAX_FEED_ITEMS = 30
+    MAX_SELECTED_ITEMS = 8
+    MAX_ARTICLE_CHARS = 3500
+    ARTICLE_CONTENT_SELECTORS = [
+      "#printPreview",
+      "#articlebody",
+      ".innner-page-main-about-us-content-right-part",
+      ".content-area",
+      "article"
+    ].freeze
     PostResult = Struct.new(:title, :body, :tags, keyword_init: true)
 
     def initialize(ai_context:, additional_instructions: nil, tags: nil, ai_client: nil, feed_url: FEED_URL,
@@ -21,12 +30,25 @@ module Ai
       feed_items = fetch_feed_items
       return if feed_items.blank?
 
-      Rails.logger.info("Ai::CommunityBotPibAnnouncementPostCreator: generation started (feed_items=#{feed_items.length}, fixed_tags=#{tags.presence || 'none'})")
+      selected_items = filter_relevant_feed_items(feed_items)
+      return if selected_items.blank?
 
-      response = ai_client.call(build_prompt(feed_items))
+      articles_context = fetch_article_contexts(selected_items)
+      return if articles_context.blank?
+
+      Rails.logger.info(
+        "Ai::CommunityBotPibAnnouncementPostCreator: generation started " \
+        "(feed_items=#{feed_items.length}, selected_items=#{selected_items.length}, " \
+        "fixed_tags=#{tags.presence || 'none'})",
+      )
+
+      response = ai_client.call(build_summary_prompt(articles_context))
       result = parse_response(response)
 
-      Rails.logger.info("Ai::CommunityBotPibAnnouncementPostCreator: generation completed (title=#{result&.title.inspect}, tags=#{result&.tags || []})")
+      Rails.logger.info(
+        "Ai::CommunityBotPibAnnouncementPostCreator: generation completed " \
+        "(title=#{result&.title.inspect}, tags=#{result&.tags || []})",
+      )
       result
     rescue StandardError => e
       Rails.logger.error("Community bot PIB announcement generation failed: #{e.class} - #{e.message}")
@@ -40,44 +62,124 @@ module Ai
 
     def fetch_feed_items
       response = feed_fetcher.get(feed_url, timeout: 10)
-      parsed_feed = Feedjira.parse(response.body.to_s)
-      return [] if parsed_feed.blank? || parsed_feed.entries.blank?
+      rss_doc = Nokogiri::XML(response.body.to_s)
 
-      parsed_feed.entries.first(MAX_FEED_ITEMS).filter_map do |item|
-        title = item.title.to_s.strip
-        url = item.url.to_s.strip
+      rss_doc.css("channel > item").first(MAX_FEED_ITEMS).filter_map do |item_node|
+        title = item_node.at_css("title")&.text.to_s.strip
+        url = item_node.at_css("link")&.text.to_s.strip
         next if title.blank? || url.blank?
 
         { title: title, url: url }
       end
     end
 
-    def build_prompt(feed_items)
-      additional_section = additional_instructions.present? ? "\nAdditional instructions:\n#{additional_instructions.strip}\n" : ""
-      tags_section = if tags.present?
-                       "Use these tags exactly (comma-separated, maximum 4 tags): #{tags.join(', ')}"
-                     else
-                       "Generate 1-4 relevant tags (comma-separated) for the post"
-                     end
+    def filter_relevant_feed_items(feed_items)
+      response = ai_client.call(build_filter_prompt(feed_items))
+      selected_indexes = parse_selected_indexes(response)
+      return [] if selected_indexes.blank?
+
+      selected_indexes.filter_map do |index|
+        feed_items[index - 1] if index.between?(1, feed_items.length)
+      end.first(MAX_SELECTED_ITEMS)
+    end
+
+    def build_filter_prompt(feed_items)
       feed_section = feed_items.each_with_index.map do |item, index|
         "#{index + 1}. #{item[:title]} - #{item[:url]}"
       end.join("\n")
 
       <<~PROMPT
-        You are writing a community bot article from the Press Information Bureau (PIB) RSS feed.
+        You are deciding whether PIB RSS items should be included on this platform.
+
+        Platform context:
+        #{ai_context}
+
+        RSS items:
+        #{feed_section}
+
+        Select only the item numbers that are relevant for this platform's audience.
+        Ignore irrelevant, low-value, or duplicate announcements.
+
+        Return ONLY one line in this exact format:
+        INCLUDE: <comma-separated item numbers>
+
+        If none are relevant, return:
+        INCLUDE: NONE
+      PROMPT
+    end
+
+    def parse_selected_indexes(response)
+      return [] if response.blank?
+
+      include_match = response.match(/INCLUDE:\s*(.+?)\s*$/im)
+      return [] unless include_match
+
+      included_value = include_match[1].strip
+      return [] if included_value.casecmp("none").zero?
+
+      included_value.split(",").map { |value| value.to_i }.select(&:positive?).uniq
+    end
+
+    def fetch_article_contexts(selected_items)
+      selected_items.filter_map do |item|
+        article_response = feed_fetcher.get(item[:url], timeout: 10)
+        article_body = extract_article_body(article_response.body.to_s)
+        next if article_body.blank?
+
+        {
+          title: item[:title],
+          url: item[:url],
+          content: article_body.truncate(MAX_ARTICLE_CHARS)
+        }
+      rescue StandardError => e
+        Rails.logger.error("Failed to fetch PIB article #{item[:url]}: #{e.class} - #{e.message}")
+        nil
+      end
+    end
+
+    def extract_article_body(html)
+      doc = Nokogiri::HTML(html)
+
+      ARTICLE_CONTENT_SELECTORS.each do |selector|
+        text = doc.css(selector).text.to_s.squish
+        return text if text.length >= 200
+      end
+
+      body_text = doc.at_css("body")&.text.to_s.squish
+      return body_text if body_text.length >= 200
+
+      ""
+    end
+
+    def build_summary_prompt(articles_context)
+      additional_section = if additional_instructions.present?
+                             "\nAdditional instructions:\n#{additional_instructions.strip}\n"
+                           else
+                             ""
+                           end
+      tags_section = if tags.present?
+                       "Use these tags exactly (comma-separated, maximum 4 tags): #{tags.join(', ')}"
+                     else
+                       "Generate 1-4 relevant tags (comma-separated) for the post"
+                     end
+      articles_section = articles_context.map.with_index do |article, index|
+        <<~ARTICLE
+          [#{index + 1}] #{article[:title]}
+          URL: #{article[:url]}
+          CONTENT:
+          #{article[:content]}
+        ARTICLE
+      end.join("\n")
+
+      <<~PROMPT
+        You are writing a community bot article from filtered PIB announcements.
 
         Use this AI context as the primary instruction set. If it specifies structure or formatting, follow it strictly:
         #{ai_context}
         #{additional_section}
 
-        Here are the latest PIB RSS items (title + URL):
-        #{feed_section}
-
-        Task:
-        - Select only announcements that are truly relevant and important for a broad public audience.
-        - Ignore duplicate, low-signal, or highly niche updates.
-        - Write a concise markdown article that summarizes the selected announcements.
-        - Include source links from the provided URLs in the article body.
+        Use the following parsed PIB article content as source material:
+        #{articles_section}
 
         Return your response in this exact format:
         TITLE: <post title>
@@ -87,6 +189,7 @@ module Ai
         Requirements:
         - BODY must be valid markdown.
         - Keep the summary factual and easy to scan.
+        - Include source links to the original PIB URLs for each summarized announcement.
         - #{tags_section}.
         - Do not include any extra wrapper text outside TITLE/TAGS/BODY.
       PROMPT
