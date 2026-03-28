@@ -19,7 +19,7 @@
     <div class="mb-4">
       <label class="crayons-field__label" for="service_name">AI Service</label>
       <%= f.select :service_name, 
-          [["GitHub Repo Recap", "github_repo_recap"], ["Community Bot Quiz Post Creator", "community_bot_post_creator"], ["Community Bot Current Affairs News Post Creator", "community_bot_current_affairs_news_post_creator"]], 
+          [["GitHub Repo Recap", "github_repo_recap"], ["Community Bot Quiz Post Creator", "community_bot_post_creator"], ["Community Bot Current Affairs News Post Creator", "community_bot_current_affairs_news_post_creator"], ["Community Bot PIB Announcement Post Creator", "community_bot_pib_announcement_post_creator"]], 
           {},
           class: "crayons-select", 
           id: "service_name",
@@ -214,7 +214,8 @@ function updateFrequencyFields() {
 
 function updateServiceFields() {
   const serviceName = document.getElementById('service_name').value;
-  const mappedServiceName = serviceName === "community_bot_current_affairs_news_post_creator" ? "community_bot_post_creator" : serviceName;
+  const creatorServices = ["community_bot_current_affairs_news_post_creator", "community_bot_pib_announcement_post_creator"];
+  const mappedServiceName = creatorServices.includes(serviceName) ? "community_bot_post_creator" : serviceName;
   const normalizedServiceName = mappedServiceName.replace(/_/g, "-");
   
   // Hide all service-specific fields
