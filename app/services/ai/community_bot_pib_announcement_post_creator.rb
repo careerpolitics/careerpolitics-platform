@@ -46,7 +46,7 @@ module Ai
       )
 
       response = ai_client.call(build_summary_prompt(articles_context))
-      result = parse_response(response)
+      result = parse_response(response, articles_context: articles_context)
 
       Rails.logger.info(
         "Ai::CommunityBotPibAnnouncementPostCreator: generation completed " \
@@ -241,15 +241,21 @@ module Ai
 
         Requirements:
         - BODY must be valid markdown.
+        - Format each topic in a card block using this syntax:
+          {% card %}
+          ### <topic heading>
+          <topic summary>
+          {% endcard %}
+        - Include source links to original PIB URLs inside the relevant card(s).
+        - If IMAGE_URLS are available, include markdown images in the relevant card(s).
+        - If SOCIAL_LINKS are available, include the links in the relevant card(s).
         - Keep the summary factual and easy to scan.
-        - Include source links to the original PIB URLs for each summarized announcement.
-        - Use available media details (images and social links) when relevant.
         - #{tags_section}.
         - Do not include any extra wrapper text outside TITLE/TAGS/BODY.
       PROMPT
     end
 
-    def parse_response(response)
+    def parse_response(response, articles_context:)
       return if response.blank?
 
       title_match = response.match(/TITLE:\s*(.+?)(?:\n|$)/i)
@@ -260,11 +266,44 @@ module Ai
       body = body_match ? body_match[1].strip : response.strip
       return if body.blank?
 
+      body = ensure_card_markup(body, articles_context)
+
       parsed_tags = normalize_tags(tags_match&.captures&.first)
       parsed_tags = tags if parsed_tags.blank? && tags.present?
       parsed_tags = fallback_tags_from_context if parsed_tags.blank?
 
       PostResult.new(title: title, body: body, tags: parsed_tags)
+    end
+
+    def ensure_card_markup(body, articles_context)
+      body_with_cards = if body.include?("{% card %}")
+                          body
+                        else
+                          <<~MARKDOWN.strip
+                            {% card %}
+                            ### PIB Announcement Highlights
+                            #{body}
+                            {% endcard %}
+                          MARKDOWN
+                        end
+
+      media_sections = articles_context.filter_map do |article|
+        media_lines = []
+        media_lines << "![#{article[:title]}](#{article[:images].first})" if article[:images].present?
+        media_lines.concat(article[:social_links].map { |link| "- X/Twitter: #{link}" }) if article[:social_links].present?
+        next if media_lines.blank?
+
+        <<~CARD.strip
+          {% card %}
+          ### Media: #{article[:title]}
+          #{media_lines.join("\n")}
+          {% endcard %}
+        CARD
+      end
+
+      return body_with_cards if media_sections.blank?
+
+      ([body_with_cards] + media_sections).join("\n\n")
     end
 
     def fallback_tags_from_context

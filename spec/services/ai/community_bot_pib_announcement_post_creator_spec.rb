@@ -58,7 +58,11 @@ RSpec.describe Ai::CommunityBotPibAnnouncementPostCreator, type: :service do
       result = described_class.new(ai_context: ai_context, ai_client: ai_client, feed_fetcher: feed_fetcher).generate
 
       expect(result.title).to eq("PIB Daily Brief")
-      expect(result.body).to eq("- Key infrastructure update")
+      expect(result.body).to include("{% card %}")
+      expect(result.body).to include("### PIB Announcement Highlights")
+      expect(result.body).to include("- Key infrastructure update")
+      expect(result.body).to include("![Airport Inauguration](https://static.pib.gov.in/photo.png)")
+      expect(result.body).to include("- X/Twitter: https://x.com/i/web/status/2037787855079305454")
       expect(result.tags).to eq(%w[pib announcements])
       expect(feed_fetcher).to have_received(:get).with("https://pib.gov.in/PressReleaseIframePage.aspx?PRID=1", timeout: 10)
     end
@@ -75,12 +79,32 @@ RSpec.describe Ai::CommunityBotPibAnnouncementPostCreator, type: :service do
           "[1] Airport Inauguration",
           "URL: https://pib.gov.in/PressReleaseIframePage.aspx?PRID=2",
           "IMAGE_URLS: https://static.pib.gov.in/photo.png",
-          "SOCIAL_LINKS: https://x.com/i/web/status/2037787855079305454"
+          "SOCIAL_LINKS: https://x.com/i/web/status/2037787855079305454",
+          "Format each topic in a card block",
+          "If IMAGE_URLS are available, include markdown images"
         ),
       )
         .and_return("TITLE: T\nTAGS: t\nBODY: B")
 
       described_class.new(ai_context: ai_context, ai_client: ai_client, feed_fetcher: feed_fetcher).generate
+    end
+
+
+    it "preserves AI card body and appends media cards when media is missing in AI output" do
+      allow(feed_fetcher).to receive(:get).with(described_class::FEED_URL, timeout: 10)
+        .and_return(instance_double(HTTParty::Response, body: rss_xml))
+      allow(feed_fetcher).to receive(:get).with("https://pib.gov.in/PressReleaseIframePage.aspx?PRID=1", timeout: 10)
+        .and_return(instance_double(HTTParty::Response, body: article_html))
+      allow(ai_client).to receive(:call).and_return(
+        "INCLUDE: 1",
+        "TITLE: PIB Card\nTAGS: pib\nBODY: {% card %}\n### Topic\nSummary\n{% endcard %}"
+      )
+
+      result = described_class.new(ai_context: ai_context, ai_client: ai_client, feed_fetcher: feed_fetcher).generate
+
+      expect(result.body.scan("{% card %}").size).to eq(2)
+      expect(result.body).to include("### Topic")
+      expect(result.body).to include("### Media: Airport Inauguration")
     end
 
     it "returns nil when AI excludes all feed items" do
