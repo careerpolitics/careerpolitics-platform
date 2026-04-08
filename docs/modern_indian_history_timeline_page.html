@@ -2,129 +2,102 @@
   <style>
     .mih-page {
       --bg: #0f172a;
-      --card: #111827;
-      --muted: #94a3b8;
+      --surface: #111827;
+      --surface-2: #0b1220;
       --text: #e5e7eb;
+      --muted: #94a3b8;
+      --line: #334155;
       --accent: #38bdf8;
       --accent-2: #22c55e;
       --accent-3: #f59e0b;
-      --line: #334155;
-      max-width: 1100px;
+      max-width: 1150px;
       margin: 0 auto;
-      padding: 1.25rem;
+      padding: 1.2rem;
       color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 45%);
       border-radius: 14px;
-      box-shadow: 0 10px 35px rgba(2, 6, 23, 0.45);
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.45);
     }
 
     .mih-hero h1 {
       margin: 0;
       line-height: 1.2;
-      font-size: clamp(1.6rem, 3vw, 2.3rem);
-      letter-spacing: 0.01em;
+      font-size: clamp(1.6rem, 2.8vw, 2.2rem);
     }
 
     .mih-hero p {
-      margin: 0.6rem 0 0;
+      margin: 0.55rem 0 0;
       color: var(--muted);
       font-size: 1rem;
     }
 
-    .mih-badges {
-      margin-top: 0.9rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .mih-badge {
-      font-size: 0.8rem;
-      color: #cbd5e1;
-      padding: 0.28rem 0.6rem;
-      border: 1px solid #334155;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.65);
-    }
-
-    .mih-flow {
-      margin-top: 1.35rem;
-      background: rgba(2, 6, 23, 0.45);
-      border: 1px solid #1f2937;
-      border-radius: 12px;
-      padding: 0.9rem;
-    }
-
-    .mih-flow-track {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      overflow-x: auto;
-      padding-bottom: 0.3rem;
-      scrollbar-width: thin;
-    }
-
-    .mih-node {
-      min-width: 190px;
-      border: 1px solid #334155;
-      border-radius: 10px;
-      padding: 0.65rem 0.7rem;
-      background: #0b1220;
-    }
-
-    .mih-node h3 {
-      margin: 0;
-      font-size: 0.95rem;
+    .mih-note {
+      margin-top: 0.8rem;
+      border: 1px solid #1e3a8a;
+      background: rgba(30, 64, 175, 0.15);
       color: #dbeafe;
-    }
-
-    .mih-node p {
-      margin: 0.35rem 0 0;
-      font-size: 0.82rem;
-      color: var(--muted);
-      line-height: 1.35;
-    }
-
-    .mih-arrow {
-      color: #64748b;
-      font-weight: 700;
-      font-size: 1rem;
-      user-select: none;
-    }
-
-    .mih-grid {
-      margin-top: 1.2rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 0.8rem;
-    }
-
-    .mih-era {
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.92));
-      border: 1px solid #1f2937;
-      border-left: 3px solid var(--accent);
       border-radius: 10px;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.85rem;
+    }
+
+    .mih-sections {
+      margin-top: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.85rem;
+    }
+
+    .mih-section {
+      background: linear-gradient(180deg, var(--surface), var(--surface-2));
+      border: 1px solid #1f2937;
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
       padding: 0.85rem;
     }
 
-    .mih-era:nth-child(2n) { border-left-color: var(--accent-2); }
-    .mih-era:nth-child(3n) { border-left-color: var(--accent-3); }
+    .mih-section:nth-child(2n) { border-left-color: var(--accent-2); }
+    .mih-section:nth-child(3n) { border-left-color: var(--accent-3); }
 
-    .mih-era h4 {
+    .mih-section h2 {
       margin: 0;
-      font-size: 0.95rem;
+      font-size: 1rem;
+      line-height: 1.3;
       color: #f8fafc;
     }
 
-    .mih-era ul {
-      margin: 0.5rem 0 0;
+    .mih-flow {
+      margin-top: 0.65rem;
+      border: 1px dashed var(--line);
+      border-radius: 9px;
+      padding: 0.5rem;
+      background: rgba(2, 6, 23, 0.25);
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 0.84rem;
+      color: #dbeafe;
+    }
+
+    .mih-event {
+      display: inline-block;
+      background: #0f172a;
+      border: 1px solid #334155;
+      padding: 0.28rem 0.5rem;
+      border-radius: 999px;
+      margin: 0.1rem 0.2rem;
+    }
+
+    .mih-arrow { color: #64748b; margin: 0 0.05rem; }
+
+    .mih-section ul {
+      margin: 0.65rem 0 0;
       padding-left: 1.05rem;
       color: #cbd5e1;
     }
 
-    .mih-era li {
-      margin: 0.2rem 0;
+    .mih-section li {
+      margin: 0.25rem 0;
       font-size: 0.86rem;
       line-height: 1.35;
     }
@@ -132,7 +105,7 @@
     .mih-footer {
       margin-top: 1rem;
       font-size: 0.8rem;
-      color: #94a3b8;
+      color: var(--muted);
       border-top: 1px dashed var(--line);
       padding-top: 0.7rem;
     }
@@ -140,155 +113,153 @@
     @media (prefers-color-scheme: light) {
       .mih-page {
         --bg: #f8fafc;
-        --card: #ffffff;
-        --muted: #475569;
+        --surface: #ffffff;
+        --surface-2: #f8fafc;
         --text: #0f172a;
+        --muted: #475569;
         --line: #cbd5e1;
         background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 55%);
-        box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
       }
+
+      .mih-section,
       .mih-flow,
-      .mih-node,
-      .mih-era {
+      .mih-event {
         background: #ffffff;
         border-color: #cbd5e1;
       }
-      .mih-node h3 { color: #1e293b; }
-      .mih-node p,
-      .mih-era li,
+
+      .mih-note {
+        color: #1e3a8a;
+        background: #eff6ff;
+        border-color: #bfdbfe;
+      }
+
+      .mih-section h2 { color: #0f172a; }
+      .mih-section li,
+      .mih-hero p,
       .mih-footer,
-      .mih-hero p { color: #475569; }
-      .mih-era h4 { color: #0f172a; }
+      .mih-flow { color: #475569; }
     }
   </style>
 
   <section class="mih-hero">
-    <h1>Modern Indian History Timeline (1600–1950)</h1>
-    <p>A flowchart view from colonial entry to constitutional nation-building.</p>
-    <div class="mih-badges">
-      <span class="mih-badge">East India Company Era</span>
-      <span class="mih-badge">National Awakening</span>
-      <span class="mih-badge">Mass Movements</span>
-      <span class="mih-badge">Independence & Republic</span>
-    </div>
+    <h1>Modern Indian History (1600–1950)</h1>
+    <p>Section-based flowchart timeline for easy reading on a custom Forem page.</p>
+    <div class="mih-note"><strong>Best template choice:</strong> use a normal <strong>HTML custom page (no page template)</strong> so this layout renders exactly as designed.</div>
   </section>
 
-  <section class="mih-flow" aria-label="Historical flowchart">
-    <div class="mih-flow-track">
-      <article class="mih-node">
-        <h3>1600</h3>
-        <p>East India Company chartered by Queen Elizabeth I.</p>
-      </article>
-      <span class="mih-arrow">➜</span>
-      <article class="mih-node">
-        <h3>1757–1765</h3>
-        <p>Plassey and Buxar establish Company political control in Bengal.</p>
-      </article>
-      <span class="mih-arrow">➜</span>
-      <article class="mih-node">
-        <h3>1857–1858</h3>
-        <p>Revolt of 1857; Crown rule begins under Government of India Act.</p>
-      </article>
-      <span class="mih-arrow">➜</span>
-      <article class="mih-node">
-        <h3>1885</h3>
-        <p>Indian National Congress founded; organized political dialogue begins.</p>
-      </article>
-      <span class="mih-arrow">➜</span>
-      <article class="mih-node">
-        <h3>1905–1911</h3>
-        <p>Partition of Bengal sparks Swadeshi and boycott movements.</p>
-      </article>
-      <span class="mih-arrow">➜</span>
-      <article class="mih-node">
-        <h3>1919</h3>
-        <p>Jallianwala Bagh massacre and Rowlatt Satyagraha radicalize nationalism.</p>
-      </article>
-      <span class="mih-arrow">➜</span>
-      <article class="mih-node">
-        <h3>1920–1934</h3>
-        <p>Non-Cooperation and Civil Disobedience movements mobilize masses.</p>
-      </article>
-      <span class="mih-arrow">➜</span>
-      <article class="mih-node">
-        <h3>1942</h3>
-        <p>Quit India movement demands immediate British withdrawal.</p>
-      </article>
-      <span class="mih-arrow">➜</span>
-      <article class="mih-node">
-        <h3>1947–1950</h3>
-        <p>Independence, Partition, and Constitution in force (Republic of India).</p>
-      </article>
-    </div>
-  </section>
-
-  <section class="mih-grid" aria-label="Detailed timeline blocks">
-    <article class="mih-era">
-      <h4>1600–1707: Entry and Expansion</h4>
+  <section class="mih-sections" aria-label="Modern Indian History sections">
+    <article class="mih-section">
+      <h2>1) 1600–1707 · Entry & Early Trade</h2>
+      <div class="mih-flow">
+        <span class="mih-event">1600: EIC charter</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1612: Surat foothold</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Madras, Bombay, Calcutta bases</span>
+      </div>
       <ul>
-        <li>Company trading factories grow in Surat, Madras, Bombay, and Calcutta.</li>
-        <li>Mughal decline opens opportunities for regional and European competition.</li>
+        <li>English East India Company enters as a trading corporation.</li>
+        <li>Factories and ports become strategic coastal anchors.</li>
       </ul>
     </article>
 
-    <article class="mih-era">
-      <h4>1757–1818: Company State Formation</h4>
+    <article class="mih-section">
+      <h2>2) 1707–1765 · From Trade to Political Power</h2>
+      <div class="mih-flow">
+        <span class="mih-event">1707: Mughal decline</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1757: Plassey</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1764: Buxar</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1765: Diwani rights</span>
+      </div>
       <ul>
-        <li>Plassey (1757), Buxar (1764), and Diwani rights (1765) secure revenue base.</li>
-        <li>Maratha and Mysore wars reshape political control across India.</li>
+        <li>Company shifts from commerce to territorial control.</li>
+        <li>Bengal revenue strengthens military and administrative expansion.</li>
       </ul>
     </article>
 
-    <article class="mih-era">
-      <h4>1818–1856: Reform and Resistance</h4>
+    <article class="mih-section">
+      <h2>3) 1765–1818 · Company State Formation</h2>
+      <div class="mih-flow">
+        <span class="mih-event">Revenue control in Bengal</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Mysore wars</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Maratha defeat (1818)</span>
+      </div>
       <ul>
-        <li>Administrative codification, Western education, and social reform debates.</li>
-        <li>Doctrine of Lapse and annexations increase discontent.</li>
+        <li>British supremacy expands beyond Bengal into major regions.</li>
+        <li>Indian polities are restructured through alliance and warfare.</li>
       </ul>
     </article>
 
-    <article class="mih-era">
-      <h4>1857–1885: Crown Raj Begins</h4>
+    <article class="mih-section">
+      <h2>4) 1818–1857 · Reform, Annexation, Discontent</h2>
+      <div class="mih-flow">
+        <span class="mih-event">Legal/education reforms</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Doctrine of Lapse</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Annexations increase</span>
+      </div>
       <ul>
-        <li>Revolt of 1857 transforms governance and army recruitment policy.</li>
-        <li>Railways, telegraph, and bureaucracy expand centralized rule.</li>
+        <li>Social and educational reforms reshape elite politics.</li>
+        <li>Policies and annexations deepen military and civil resentment.</li>
       </ul>
     </article>
 
-    <article class="mih-era">
-      <h4>1885–1919: Early Nationalism</h4>
+    <article class="mih-section">
+      <h2>5) 1857–1885 · Revolt and Crown Raj</h2>
+      <div class="mih-flow">
+        <span class="mih-event">1857: Revolt</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1858: Crown rule</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Administrative centralization</span>
+      </div>
       <ul>
-        <li>Congress moderates seek constitutional reform; extremists demand swaraj.</li>
-        <li>Swadeshi movement links economic self-reliance and political protest.</li>
+        <li>Company rule ends; governance moves to the British Crown.</li>
+        <li>Army reorganization and bureaucratic control intensify.</li>
       </ul>
     </article>
 
-    <article class="mih-era">
-      <h4>1919–1935: Gandhian Mass Politics</h4>
+    <article class="mih-section">
+      <h2>6) 1885–1919 · Organized Nationalism</h2>
+      <div class="mih-flow">
+        <span class="mih-event">1885: INC founded</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1905: Bengal partition</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Swadeshi movement</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1919: Jallianwala Bagh</span>
+      </div>
       <ul>
-        <li>Non-Cooperation, Salt March, and Civil Disobedience involve rural/urban masses.</li>
-        <li>Government of India Act 1935 introduces provincial autonomy framework.</li>
+        <li>Congress evolves from petitions to broader political mobilization.</li>
+        <li>Swadeshi links economics, culture, and anti-colonial protest.</li>
       </ul>
     </article>
 
-    <article class="mih-era">
-      <h4>1935–1947: War and Decolonization</h4>
+    <article class="mih-section">
+      <h2>7) 1919–1935 · Gandhian Mass Movements</h2>
+      <div class="mih-flow">
+        <span class="mih-event">1920: Non-Cooperation</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1930: Salt March</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Civil Disobedience</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1935: Govt of India Act</span>
+      </div>
       <ul>
-        <li>World War II pressures empire; Quit India (1942) intensifies resistance.</li>
-        <li>Cabinet Mission, negotiations, and Partition lead to Independence (1947).</li>
+        <li>National movement gains deep rural and urban participation.</li>
+        <li>Constitutional reforms open limited provincial autonomy.</li>
       </ul>
     </article>
 
-    <article class="mih-era">
-      <h4>1947–1950: Nation Building</h4>
+    <article class="mih-section">
+      <h2>8) 1935–1950 · Decolonization to Republic</h2>
+      <div class="mih-flow">
+        <span class="mih-event">1942: Quit India</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1947: Independence & Partition</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1949: Constitution adopted</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1950: Republic begins</span>
+      </div>
       <ul>
-        <li>Integration of princely states and refugee rehabilitation.</li>
-        <li>Constitution adopted (1949), effective 26 January 1950.</li>
+        <li>War-era pressures and negotiations accelerate imperial withdrawal.</li>
+        <li>State integration and constitutional democracy shape modern India.</li>
       </ul>
     </article>
   </section>
 
   <footer class="mih-footer">
-    Tip: In your Forem custom page settings, use a clean slug like <code>/modern-indian-history</code> and enable a wide layout for the best timeline experience.
+    Forem setup tip: create the page under <strong>Admin → Customization → Pages → Create New Page</strong>, paste this HTML into body content, and choose a clean slug like <code>/modern-indian-history</code>.
   </footer>
 </div>
