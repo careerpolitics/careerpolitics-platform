@@ -13,8 +13,7 @@
       <link rel="preload" href="/sidebars/home" as="fetch" crossorigin="same-origin">
     <% end %>
     <meta charset="utf-8">
-    <script async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=pub-9085558798840123"
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7098932368298502"
             crossorigin="anonymous"></script>
     <% title = yield(:title) %>
     <title><%= title || community_name.to_s %></title>
@@ -58,6 +57,15 @@
       <meta property="forem:domain" content="<%= Settings::General.app_domain %>" />
     <% end %>
     <%= Settings::UserExperience.head_content.html_safe %>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18049632094"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'AW-18049632094');
+    </script>
   </head>
   <% unless internal_navigation? %>
     <body
