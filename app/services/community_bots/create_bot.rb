@@ -1,11 +1,11 @@
 module CommunityBots
   class CreateBot
-    def self.call(subforem_id:, name:, created_by:, username: nil, profile_image: nil)
+    def self.call(subforem_id: nil, name:, created_by:, username: nil, profile_image: nil)
       new(subforem_id: subforem_id, name: name, created_by: created_by, username: username,
           profile_image: profile_image).call
     end
 
-    def initialize(subforem_id:, name:, created_by:, username: nil, profile_image: nil)
+    def initialize(subforem_id: nil, name:, created_by:, username: nil, profile_image: nil)
       @subforem_id = subforem_id
       @name = name
       @created_by = created_by
@@ -64,6 +64,7 @@ module CommunityBots
     private
 
     def subforem_exists?
+      return true if @subforem_id.blank?
       return true if Subforem.exists?(@subforem_id)
 
       @error_message = "Subforem not found"
@@ -73,6 +74,7 @@ module CommunityBots
     def authorized?
       return true if @created_by.any_admin?
       return true if @created_by.super_moderator?
+      return false if @subforem_id.blank?
       return true if @created_by.subforem_moderator?(subforem: Subforem.find(@subforem_id))
 
       @error_message = "Unauthorized to create bots for this subforem"
@@ -80,9 +82,14 @@ module CommunityBots
     end
 
     def generate_bot_email
-      subforem = Subforem.find(@subforem_id)
       timestamp = Time.current.to_i
-      "bot-#{@name.parameterize}-#{timestamp}@#{subforem.domain}"
+      "bot-#{@name.parameterize}-#{timestamp}@#{email_domain}"
+    end
+
+    def email_domain
+      return Subforem.find(@subforem_id).domain if @subforem_id.present?
+
+      Settings::General.app_domain.to_s.split(":").first
     end
 
     def generate_bot_username

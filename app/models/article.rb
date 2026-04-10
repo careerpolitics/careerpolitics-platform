@@ -1,4 +1,5 @@
 class Article < ApplicationRecord
+  include LiquidEmbeddable
   include CloudinaryHelper
   include ActionView::Helpers
   include Reactable
@@ -314,6 +315,8 @@ class Article < ApplicationRecord
 
   after_commit :async_score_calc, :touch_collection, :enrich_image_attributes, :detect_code_block_languages,
                on: %i[create update]
+
+  after_update_commit :update_dependent_embeds_if_key_info_changed
 
   # The trigger `update_reading_list_document` is used to keep the `articles.reading_list_document` column updated.
   #
@@ -774,6 +777,7 @@ class Article < ApplicationRecord
 
   def body_preview
     return unless type_of == "status"
+    return unless has_attribute?(:processed_html)
     return if processed_html.blank?
 
     processed_html_final
@@ -962,6 +966,17 @@ class Article < ApplicationRecord
                    privileged_users_reaction_points_sum: reactions.privileged_category.sum(:points),
                    comment_score: comment_score,
                    hotness_score: BlackBox.article_hotness_score(self))
+
+    trigger_freeform_context_note_generation
+  end
+
+  def trigger_freeform_context_note_generation
+    return unless Ai::Base::DEFAULT_KEY.present?
+    return if score < 50 || comment_score < 25
+    return if published_at.blank? || published_at < 1.week.ago
+    return if context_notes.exists?
+    
+    Articles::GenerateFreeformContextNoteWorker.perform_async(id)
   end
 
   def co_author_ids_list
@@ -1180,7 +1195,7 @@ class Article < ApplicationRecord
                  end
     if title.blank?
       errors.add(:title, "can't be blank")
-    elsif title.to_s.length > max_length
+    elsif title.gsub(/\p{Space}+/u, '').length > max_length
       errors.add(:title, "is too long (maximum is #{max_length} characters for #{type_of})")
     end
   end
@@ -1557,7 +1572,10 @@ class Article < ApplicationRecord
 
   def create_conditional_autovomits
     return unless published
-    return unless saved_change_to_body_markdown? || published_at > 1.minute.ago
+    return unless saved_change_to_body_markdown? ||
+                  saved_change_to_title? ||
+                  saved_change_to_published? ||
+                  published_at > 1.minute.ago
 
     Articles::HandleSpamWorker.perform_async(id)
   end
@@ -1674,5 +1692,20 @@ class Article < ApplicationRecord
     normalized_expected = expected_content.gsub(/\s+/, " ").strip
 
     normalized_body == normalized_expected
+  end
+
+  def update_dependent_embeds_if_key_info_changed
+    return if destroyed?
+    
+    # We only care about fields that affect the visual liquid embed card
+    if saved_change_to_title? ||
+       saved_change_to_user_id? ||
+       saved_change_to_organization_id? ||
+       saved_change_to_published? ||
+       saved_change_to_cached_tag_list? ||
+       saved_change_to_published_at? ||
+       saved_change_to_main_image?
+      Articles::UpdateDependentEmbedsWorker.perform_async(id)
+    end
   end
 end

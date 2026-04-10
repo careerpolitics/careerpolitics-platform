@@ -141,11 +141,19 @@ namespace :admin do
       resource :moderator, only: %i[create destroy], module: "tags"
     end
     resources :surveys
+    resources :events
   end
 
   scope :customization do
     # We renamed the controller but don't want to change the route (yet)
     resource :config, controller: "settings"
+    resources :community_bots, only: %i[index new create show destroy] do
+      resources :scheduled_automations, only: %i[index show new create edit update destroy] do
+        member do
+          patch :toggle_enabled
+        end
+      end
+    end
     resources :org_features, only: [:index], controller: "org_features" do
       collection do
         patch :toggle_global

@@ -47,6 +47,7 @@ class User < ApplicationRecord
   acts_as_follower
 
   has_one :notification_setting, class_name: "Users::NotificationSetting", dependent: :delete
+  has_one :onboarding_checklist, dependent: :delete
   has_one :setting, class_name: "Users::Setting", dependent: :delete
 
   has_many :affected_feedback_messages, class_name: "FeedbackMessage",
@@ -132,6 +133,12 @@ class User < ApplicationRecord
   has_many :languages, class_name: "UserLanguage", inverse_of: :user, dependent: :delete_all
   has_many :user_visit_contexts, dependent: :delete_all
   has_one :user_activity, dependent: :delete
+
+  def cached_recent_user_ids
+    Rails.cache.fetch("user-#{id}/recent_users", expires_in: 5.minutes) do
+      user_activity&.recent_users || []
+    end
+  end
 
   mount_uploader :profile_image, ProfileImageUploader
 
@@ -257,6 +264,9 @@ class User < ApplicationRecord
   scope :community_bots_for_subforem, lambda { |subforem_id|
     where(type_of: :community_bot, onboarding_subforem_id: subforem_id)
   }
+  scope :community_bots_for_main_community, lambda {
+    where(type_of: :community_bot, onboarding_subforem_id: nil)
+  }
   scope :above_average, lambda {
     where(
       articles_count: average_articles_count..,
@@ -276,6 +286,7 @@ class User < ApplicationRecord
   before_destroy :destroy_follows, prepend: true
 
   after_create_commit :send_welcome_notification
+  after_create_commit :create_onboarding_checklist
 
   after_save :sync_base_email_eligible!, if: lambda {
                                                saved_changes.key?(:email) || saved_changes.key?(:registered) || saved_changes.key?(:score)
@@ -479,7 +490,9 @@ class User < ApplicationRecord
   end
 
   def refresh_auto_audience_segments
-    SegmentedUserRefreshWorker.perform_async(id)
+    if ENV["ENABLE_REFRESH_SEGMENT_WORKERS"]  == "true"
+      SegmentedUserRefreshWorker.perform_async(id)
+    end
   end
 
   ##############################################################################
@@ -820,6 +833,12 @@ class User < ApplicationRecord
     return unless (set_up_profile_broadcast = Broadcast.active.find_by(title: "Welcome Notification: set_up_profile"))
 
     Notification.send_welcome_notification(id, set_up_profile_broadcast.id)
+  end
+
+  def create_onboarding_checklist
+    return unless Settings::General.display_sidebar_onboarding_checklist
+
+    OnboardingChecklist.find_or_create_by(user: self)
   end
 
   def set_username

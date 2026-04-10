@@ -40,6 +40,7 @@ module CommunityBots
     def authorized?
       return true if @deleted_by.any_admin?
       return true if @deleted_by.super_moderator?
+      return false if @bot_user.onboarding_subforem_id.blank?
       return true if @deleted_by.subforem_moderator?(subforem: Subforem.find(@bot_user.onboarding_subforem_id))
 
       @error_message = "Unauthorized to delete this bot"

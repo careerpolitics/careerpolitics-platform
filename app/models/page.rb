@@ -1,6 +1,7 @@
 class Page < ApplicationRecord
+  include LiquidEmbeddable
   extend UniqueAcrossModels
-  TEMPLATE_OPTIONS = %w[contained full_within_layout nav_bar_included json css txt].freeze
+  TEMPLATE_OPTIONS = %w[contained full_within_layout nav_bar_included json css js txt].freeze
 
   TERMS_SLUG = "terms".freeze
   CODE_OF_CONDUCT_SLUG = "code-of-conduct".freeze

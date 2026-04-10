@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_03_20_192633) do
+ActiveRecord::Schema[7.0].define(version: 2026_04_09_173612) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "ltree"
@@ -263,6 +263,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_20_192633) do
     t.string "slug"
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "user_id"
+    t.index ["created_at"], name: "index_audit_logs_on_created_at_brin", using: :brin
     t.index ["data"], name: "index_audit_logs_on_data", using: :gin
     t.index ["user_id"], name: "index_audit_logs_on_user_id"
   end
@@ -573,6 +574,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_20_192633) do
     t.string "geolocation"
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "user_id"
+    t.index ["created_at"], name: "index_display_ad_events_on_created_at_brin", using: :brin
     t.index ["display_ad_id"], name: "index_display_ad_events_on_display_ad_id"
     t.index ["user_id"], name: "index_display_ad_events_on_user_id"
   end
@@ -592,6 +594,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_20_192633) do
     t.string "custom_display_label"
     t.string "dismissal_sku"
     t.integer "display_to", default: 0, null: false
+    t.bigint "event_id"
     t.integer "exclude_article_ids", default: [], array: true
     t.string "exclude_role_names", default: [], array: true
     t.boolean "exclude_survey_completions", default: false, null: false
@@ -620,6 +623,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_20_192633) do
     t.datetime "updated_at", precision: nil, null: false
     t.float "weight", default: 1.0, null: false
     t.index ["cached_tag_list"], name: "index_display_ads_on_cached_tag_list", opclass: :gin_trgm_ops, using: :gin
+    t.index ["event_id"], name: "index_display_ads_on_event_id"
     t.index ["exclude_article_ids"], name: "index_display_ads_on_exclude_article_ids", using: :gin
     t.index ["exclude_role_names"], name: "index_display_ads_on_exclude_role_names", using: :gin
     t.index ["exclude_survey_completions"], name: "idx_display_ads_survey_completions"
@@ -662,6 +666,31 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_20_192633) do
     t.index ["audience_segment_id"], name: "index_emails_on_audience_segment_id"
     t.index ["onboarding_subforem_id"], name: "index_emails_on_onboarding_subforem_id"
     t.index ["user_query_id"], name: "index_emails_on_user_query_id"
+  end
+
+  create_table "events", force: :cascade do |t|
+    t.integer "broadcast_config", default: 0
+    t.string "cached_tag_list"
+    t.datetime "created_at", null: false
+    t.jsonb "data", default: {}
+    t.text "description"
+    t.datetime "end_time", null: false
+    t.string "event_name_slug", null: false
+    t.string "event_variation_slug", null: false
+    t.bigint "organization_id"
+    t.string "primary_stream_url"
+    t.boolean "published", default: false
+    t.datetime "start_time", null: false
+    t.text "tags_array", default: [], array: true
+    t.string "title", null: false
+    t.integer "type_of", default: 0
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["event_name_slug", "event_variation_slug"], name: "index_events_on_event_name_slug_and_event_variation_slug", unique: true
+    t.index ["organization_id"], name: "index_events_on_organization_id"
+    t.index ["tags_array"], name: "index_events_on_tags_array", using: :gin
+    t.index ["user_id"], name: "index_events_on_user_id"
+    t.check_constraint "broadcast_config IS NOT NULL", name: "events_broadcast_config_null"
   end
 
   create_table "feed_configs", force: :cascade do |t|
@@ -795,6 +824,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_20_192633) do
     t.datetime "created_at", precision: nil
     t.bigint "field_test_membership_id"
     t.string "name"
+    t.index ["created_at"], name: "index_field_test_events_on_created_at_brin", using: :brin
     t.index ["field_test_membership_id"], name: "index_field_test_events_on_field_test_membership_id"
   end
 
@@ -925,6 +955,24 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_20_192633) do
     t.index ["user_id"], name: "index_lead_submissions_on_user_id"
   end
 
+  create_table "liquid_embed_references", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "options"
+    t.boolean "published", default: true, null: false
+    t.datetime "published_at"
+    t.bigint "record_id", null: false
+    t.string "record_type", null: false
+    t.bigint "referenced_id"
+    t.string "referenced_type"
+    t.integer "score", default: 0, null: false
+    t.string "tag_name", null: false
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.index ["record_type", "record_id"], name: "index_liquid_embed_references_on_record"
+    t.index ["referenced_type", "referenced_id"], name: "index_liquid_embed_references_on_referenced"
+    t.index ["tag_name", "url"], name: "index_liquid_embed_references_on_tag_name_and_url"
+  end
+
   create_table "media_sources", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "display_url", null: false
@@ -997,6 +1045,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_20_192633) do
     t.datetime "notified_at", precision: nil
     t.bigint "organization_id"
     t.boolean "read", default: false
+    t.datetime "read_at"
     t.bigint "subforem_id"
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "user_id"
@@ -1010,6 +1059,15 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_20_192633) do
     t.index ["user_id", "notifiable_id", "notifiable_type", "action"], name: "index_notifications_on_user_notifiable_and_action_not_null", unique: true, where: "(action IS NOT NULL)"
     t.index ["user_id", "notifiable_id", "notifiable_type"], name: "index_notifications_on_user_notifiable_action_is_null", unique: true, where: "(action IS NULL)"
     t.index ["user_id", "organization_id", "notifiable_id", "notifiable_type", "action"], name: "index_notifications_user_id_organization_id_notifiable_action", unique: true
+  end
+
+  create_table "onboarding_checklists", force: :cascade do |t|
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.jsonb "items", default: {}, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_onboarding_checklists_on_user_id", unique: true
   end
 
   create_table "organization_lead_forms", force: :cascade do |t|
@@ -1870,6 +1928,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_20_192633) do
     t.index ["old_username"], name: "index_users_on_old_username"
     t.index ["onboarding_subforem_id"], name: "index_users_on_onboarding_subforem_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["score"], name: "index_users_on_score"
     t.index ["twitter_username"], name: "index_users_on_twitter_username", unique: true
     t.index ["type_of"], name: "index_users_on_type_of"
     t.index ["username"], name: "index_users_on_username", unique: true
@@ -1989,10 +2048,13 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_20_192633) do
   add_foreign_key "discussion_locks", "users", column: "locking_user_id"
   add_foreign_key "display_ad_events", "display_ads", on_delete: :cascade
   add_foreign_key "display_ad_events", "users", on_delete: :cascade
+  add_foreign_key "display_ads", "events"
   add_foreign_key "display_ads", "organizations", on_delete: :cascade
   add_foreign_key "email_authorizations", "users", on_delete: :cascade
   add_foreign_key "emails", "audience_segments"
   add_foreign_key "emails", "user_queries"
+  add_foreign_key "events", "organizations"
+  add_foreign_key "events", "users"
   add_foreign_key "feed_events", "articles", on_delete: :cascade
   add_foreign_key "feed_events", "users", on_delete: :nullify
   add_foreign_key "feed_import_items", "articles", on_delete: :nullify
@@ -2015,6 +2077,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_20_192633) do
   add_foreign_key "notification_subscriptions", "users", on_delete: :cascade
   add_foreign_key "notifications", "organizations", on_delete: :cascade
   add_foreign_key "notifications", "users", on_delete: :cascade
+  add_foreign_key "onboarding_checklists", "users", on_delete: :cascade
   add_foreign_key "organization_lead_forms", "organizations", on_delete: :cascade
   add_foreign_key "organization_memberships", "organizations", on_delete: :cascade
   add_foreign_key "organization_memberships", "users", on_delete: :cascade

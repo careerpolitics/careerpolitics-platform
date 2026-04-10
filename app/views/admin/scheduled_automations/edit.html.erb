@@ -4,7 +4,7 @@
 </header>
 
 <div class="crayons-card p-6">
-  <%= form_with model: @automation, url: admin_subforem_community_bot_scheduled_automation_path(@subforem, @bot, @automation), method: :patch, local: true do |f| %>
+  <%= form_with model: @automation, url: (@subforem.present? ? admin_subforem_community_bot_scheduled_automation_path(@subforem, @bot, @automation) : admin_community_bot_scheduled_automation_path(@bot, @automation)), method: :patch, local: true do |f| %>
     <% if @automation.errors.any? %>
       <div class="crayons-notice crayons-notice--danger mb-4">
         <h4><%= pluralize(@automation.errors.count, "error") %> prohibited this automation from being saved:</h4>
@@ -19,7 +19,7 @@
     <div class="mb-4">
       <label class="crayons-field__label" for="service_name">AI Service</label>
       <%= f.select :service_name, 
-          [["GitHub Repo Recap", "github_repo_recap"]], 
+          [["GitHub Repo Recap", "github_repo_recap"], ["Community Bot Quiz Post Creator", "community_bot_post_creator"], ["Community Bot Current Affairs News Post Creator", "community_bot_current_affairs_news_post_creator"]], 
           {},
           class: "crayons-select", 
           id: "service_name",
@@ -77,6 +77,35 @@
           <p class="crayons-field__description">Optional tags to add to the generated article</p>
         </div>
       </div>
+
+      <!-- Community Bot Post Creator specific fields -->
+      <div id="community-bot-post-creator-fields" style="display: none;">
+        <h3 class="crayons-subtitle-2 mb-3">Community Bot Post Creator Configuration</h3>
+
+        <div class="mb-4">
+          <label class="crayons-field__label" for="ai_context">AI Context</label>
+          <textarea name="scheduled_automation[action_config][ai_context]" id="ai_context" class="crayons-textfield" rows="6" placeholder="Describe the context, topic, audience, and any required details for this post"><%= @automation.action_config["ai_context"] %></textarea>
+          <p class="crayons-field__description">Required context used by AI to generate the post content</p>
+        </div>
+
+        <div class="mb-4">
+          <label class="crayons-field__label" for="community_bot_tags">Tags (comma-separated)</label>
+          <input type="text" name="scheduled_automation[action_config][tags]" id="community_bot_tags" class="crayons-textfield" placeholder="news, world, analysis" value="<%= @automation.action_config["tags"] %>">
+          <p class="crayons-field__description">Optional. If blank, AI will generate tags as part of the response.</p>
+        </div>
+
+        <div class="mb-4">
+          <label class="crayons-field__label" for="community_bot_series">Series</label>
+          <input type="text" name="scheduled_automation[action_config][series]" id="community_bot_series" class="crayons-textfield" placeholder="daily-current-affairs-quiz" value="<%= @automation.action_config["series"] %>">
+          <p class="crayons-field__description">Optional. Add a series slug to publish each generated quiz into the same series.</p>
+        </div>
+
+        <div class="mb-4">
+          <label class="crayons-field__label" for="community_bot_organization_id">Organization ID</label>
+          <input type="number" name="scheduled_automation[action_config][organization_id]" id="community_bot_organization_id" class="crayons-textfield" min="1" placeholder="123" value="<%= @automation.action_config["organization_id"] %>">
+          <p class="crayons-field__description">Optional. If provided, generated quizzes will be published under this organization.</p>
+        </div>
+      </div>
     </div>
 
     <div class="mb-4">
@@ -91,7 +120,7 @@
 
     <div class="flex gap-2">
       <%= f.submit "Update Automation", class: "crayons-btn" %>
-      <%= link_to "Cancel", admin_subforem_community_bot_scheduled_automations_path(@subforem, @bot), class: "crayons-btn crayons-btn--outlined" %>
+      <%= link_to "Cancel", (@subforem.present? ? admin_subforem_community_bot_scheduled_automations_path(@subforem, @bot) : admin_community_bot_scheduled_automations_path(@bot)), class: "crayons-btn crayons-btn--outlined" %>
     </div>
   <% end %>
 </div>
@@ -185,6 +214,8 @@ function updateFrequencyFields() {
 
 function updateServiceFields() {
   const serviceName = document.getElementById('service_name').value;
+  const mappedServiceName = serviceName === "community_bot_current_affairs_news_post_creator" ? "community_bot_post_creator" : serviceName;
+  const normalizedServiceName = mappedServiceName.replace(/_/g, "-");
   
   // Hide all service-specific fields
   document.querySelectorAll('[id$="-fields"]').forEach(el => {
@@ -195,7 +226,8 @@ function updateServiceFields() {
   
   // Show the selected service's fields
   if (serviceName) {
-    const serviceFields = document.getElementById(`${serviceName}-fields`);
+    const serviceFields = document.getElementById(`${mappedServiceName}-fields`) ||
+      document.getElementById(`${normalizedServiceName}-fields`);
     if (serviceFields) {
       serviceFields.style.display = 'block';
     }
@@ -216,4 +248,3 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
-

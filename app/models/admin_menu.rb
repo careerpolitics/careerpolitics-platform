@@ -25,11 +25,13 @@ class AdminMenu
       item(name: "tags"),
       item(name: "emails"),
       item(name: "surveys"),
+      item(name: "events"),
     ]
 
     scope :customization, "tools-line", [
       item(name: "config"),
       item(name: "billboards"),
+      item(name: "community bots", controller: "community_bots"),
       item(name: "navigation links"),
       item(name: "pages"),
       item(name: "profile fields"),
