@@ -13,7 +13,7 @@
     <div class="flex flex-col gap-4">
       <% if @page_template.present? %>
         <%= form.hidden_field :page_template_id, value: @page_template.id %>
-        
+
         <div class="crayons-notice crayons-notice--info mb-2" aria-live="polite">
           <strong>Using template:</strong> <%= @page_template.name %>
           <% if @page_template.description.present? %>
@@ -23,7 +23,7 @@
           <span class="fs-s">Fill in the template fields below. The page content will be generated automatically.</span>
         </div>
       <% end %>
-      
+
       <div class="crayons-field">
         <%= form.label :title, class: "crayons-field__label" %>
         <%= form.text_field :title, class: "crayons-textfield", required: true %>
@@ -43,51 +43,51 @@
         <% end %>
         <%= form.text_field :redirect_to_url, class: "crayons-textfield", placeholder: "https://example.com or /about" %>
       </div>
-      
+
       <% if @page_template.present? && @page_template.schema_fields.any? %>
         <hr class="my-2">
         <h3 class="crayons-subtitle-2">Template Fields</h3>
         <p class="color-base-70 fs-s mb-2">Fill in the following fields to generate the page content:</p>
-        
+
         <% template_data = @page.template_data || {} %>
         <% @page_template.schema_fields.each do |field| %>
           <div class="crayons-field">
             <label for="page_template_data_<%= field['name'] %>" class="crayons-field__label<%= ' required' if field['required'] %>">
               <%= field['label'] || field['name'].titleize %>
             </label>
-            
+
             <% case field['type'] %>
             <% when 'textarea' %>
-              <textarea name="page[template_data][<%= field['name'] %>]" 
+              <textarea name="page[template_data][<%= field['name'] %>]"
                         id="page_template_data_<%= field['name'] %>"
                         class="crayons-textfield"
                         rows="4"
                         <%= 'required' if field['required'] %>><%= template_data[field['name']] %></textarea>
             <% when 'number' %>
-              <input type="number" 
-                     name="page[template_data][<%= field['name'] %>]" 
+              <input type="number"
+                     name="page[template_data][<%= field['name'] %>]"
                      id="page_template_data_<%= field['name'] %>"
                      value="<%= template_data[field['name']] %>"
                      class="crayons-textfield"
                      <%= 'required' if field['required'] %>>
             <% when 'url' %>
-              <input type="url" 
-                     name="page[template_data][<%= field['name'] %>]" 
+              <input type="url"
+                     name="page[template_data][<%= field['name'] %>]"
                      id="page_template_data_<%= field['name'] %>"
                      value="<%= template_data[field['name']] %>"
                      class="crayons-textfield"
                      placeholder="https://..."
                      <%= 'required' if field['required'] %>>
             <% when 'email' %>
-              <input type="email" 
-                     name="page[template_data][<%= field['name'] %>]" 
+              <input type="email"
+                     name="page[template_data][<%= field['name'] %>]"
                      id="page_template_data_<%= field['name'] %>"
                      value="<%= template_data[field['name']] %>"
                      class="crayons-textfield"
                      <%= 'required' if field['required'] %>>
             <% else %>
-              <input type="text" 
-                     name="page[template_data][<%= field['name'] %>]" 
+              <input type="text"
+                     name="page[template_data][<%= field['name'] %>]"
                      id="page_template_data_<%= field['name'] %>"
                      value="<%= template_data[field['name']] %>"
                      class="crayons-textfield"
@@ -97,7 +97,7 @@
         <% end %>
         <hr class="my-2">
       <% end %>
-      
+
       <% unless @page_template.present? %>
         <div class="crayons-field">
           <%= form.label :template, class: "crayons-field__label" do %>
@@ -132,7 +132,7 @@
           <%= form.text_area :body_css, rows: 10, class: "crayons-textfield" %>
         </div>
       <% end %>
-      
+
       <div class="crayons-field">
         <% if @page.social_image_url %>
           <img src="<%= @page.social_image_url %>" style="max-width:500px;display:block" />
@@ -216,6 +216,8 @@ function showBodyFields() {
         document.querySelectorAll('.json').forEach(el => el.style.display = 'block');
       } else if (el.options[el.selectedIndex].value == "css") {
         document.querySelectorAll('.css').forEach(el => el.style.display = 'block');
+      } else if (el.options[el.selectedIndex].value == "js") {
+        document.querySelectorAll('.html').forEach(el => el.style.display = 'block');
       } else {
         document.querySelectorAll('.html').forEach(el => el.style.display = 'block');
       }

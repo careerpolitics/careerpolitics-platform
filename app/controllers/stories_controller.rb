@@ -139,8 +139,15 @@ class StoriesController < ApplicationController
     @story_show = true
     set_surrogate_key_header "show-page-#{params[:username]}"
 
-    if @page.template == "json"
+    case @page.template
+    when "json"
       render json: @page.body_json
+    when "css"
+      render plain: @page.body_css, content_type: "text/css"
+    when "js"
+      render plain: @page.body_html, content_type: "text/javascript"
+    when "txt"
+      render plain: @page.processed_html, content_type: "text/plain"
     else
       render template: "pages/show"
     end
