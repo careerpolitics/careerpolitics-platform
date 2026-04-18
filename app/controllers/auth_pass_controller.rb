@@ -41,7 +41,7 @@ class AuthPassController < ApplicationController
         render html: "<html><body></body></html>".html_safe, status: :ok, layout: false
         return
       end
-    end  
+    end
 
     # Set headers to allow the iframe to be embedded
     response.headers["X-Frame-Options"] = "ALLOWALL"
@@ -58,7 +58,7 @@ class AuthPassController < ApplicationController
       if user && user_not_signed_out?(user)
         # Sign the user in
         session[:user_id] = user.id
-    
+
         # Set remember_created_at and remember_token
         user.remember_me!
         # Get Devise’s default cookie values
@@ -103,14 +103,6 @@ class AuthPassController < ApplicationController
     request.session_options[:httponly] = Rails.application.config.iframe_session_options[:httponly]
   end
 
-  def generate_auth_token(user)
-    payload = {
-      user_id: user.id,
-      exp: 5.minutes.from_now.to_i # Token expires in 5 minutes
-    }
-    JWT.encode(payload, Rails.application.secret_key_base)
-  end
-
   def allow_cross_origin_requests
     allowed_domains = (Subforem.cached_domains + [Settings::General.app_domain]).compact
     requesting_origin = request.headers["Origin"]
@@ -126,8 +118,7 @@ class AuthPassController < ApplicationController
   def user_not_signed_out?(user)
     # This is just checking that they have not explicitely signed out lately.
     return true if user.current_sign_in_at.present?
-    return true if user.last_sign_in_at.blank? && user.current_sign_in_at.blank? # User never signed out.
-
-    false
+    return true if user.last_sign_in_at.present?
+    true
   end
 end

@@ -61,6 +61,19 @@ class NotificationsController < ApplicationController
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
 
+  def mark_read
+    authenticate_user!
+    ids = params[:ids]
+
+    if ids == "all"
+      current_user.notifications.unread.update_all(read: true)
+    elsif ids.is_a?(Array)
+      current_user.notifications.where(id: ids).update_all(read: true)
+    end
+
+    head :ok
+  end
+
   private
 
   def user_to_view

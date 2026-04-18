@@ -22,9 +22,8 @@ module PushNotifications
       rich_payload = payload_builder.build
 
       PushNotifications::Send.call(
-        payload: rich_payload,
         user_ids: filtered_user_ids,
-        body:rich_payload[:body],
+        body: rich_payload[:body],
         payload: rich_payload,
       )
     end

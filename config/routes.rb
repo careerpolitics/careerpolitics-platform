@@ -29,6 +29,7 @@ Rails.application.routes.draw do
   end
 
   get "/r/mobile", to: "deep_links#mobile"
+  get "/.well-known/assetlinks.json", to: "deep_links#assetlinks"
   get "/.well-known/apple-app-site-association", to: "deep_links#aasa"
 
   # [@forem/delightful] - all routes are nested under this optional scope to
@@ -185,7 +186,11 @@ Rails.application.routes.draw do
     end
     resources :ai_image_generations, only: [:create]
     resources :ai_chats, only: %i[index create]
-    resources :notifications, only: [:index]
+    resources :notifications, only: [:index] do
+      collection do
+        patch :mark_read
+      end
+    end
     resources :tags, only: [:index] do
       collection do
         get "/suggest", to: "tags#suggest", defaults: { format: :json }

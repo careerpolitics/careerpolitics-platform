@@ -19,8 +19,7 @@ class DevicesController < ApplicationController
   def create
     # Validate required parameters
     unless params[:token].present? && params[:platform].present? && params[:app_bundle].present?
-      Rails.logger.warn "DevicesController#create - Missing required parameters"
-      Rails.logger.warn "Params received: #{params.inspect}"
+      Rails.logger.debug "DevicesController#create - Missing required parameters"
       return render json: { error: "Missing required parameters", missing: %i[token platform app_bundle],
                             status: :bad_request },
                     status: :bad_request
@@ -48,10 +47,10 @@ class DevicesController < ApplicationController
     device.token = params[:token]
 
     if device.save
-      Rails.logger.info "DevicesController#create - Device created/updated ##{device.id}"
+      Rails.logger.debug "DevicesController#create - Device created/updated ##{device.id}"
       render json: { id: device.id, status: :created }, status: :created
     else
-      Rails.logger.error "DevicesController#create - Failed to persist device ##{device.errors.full_messages.join(', ')}"
+      Rails.logger.warn "DevicesController#create - Failed: #{device.errors.full_messages.join(', ')}"
       render json: { error: device.errors_as_sentence, status: :bad_request }, status: :bad_request
     end
   end
@@ -75,10 +74,7 @@ class DevicesController < ApplicationController
   end
 
   def fcm_token
-    Rails.logger.info "=" * 80
-    Rails.logger.info "FCM Token Registration Request Started"
-    Rails.logger.info "Params: #{params.inspect}"
-    Rails.logger.info "Current User: #{current_user.id} (#{current_user.email})"
+    Rails.logger.debug "DevicesController#fcm_token - User: #{current_user.id})"
 
 
     if params[:fcm_token].blank?
@@ -99,7 +95,7 @@ class DevicesController < ApplicationController
                end
 
 
-    Rails.logger.info "Looking for/creating ConsumerApp: #{app_bundle}, #{platform}"
+    Rails.logger.debug "DevicesController#fcm_token - ConsumerApp: #{app_bundle}/#{platform}"
 
 
     consumer_app = ConsumerApp.find_or_create_by(
@@ -107,30 +103,20 @@ class DevicesController < ApplicationController
       platform: platform
     )
 
-
-    Rails.logger.info "ConsumerApp: #{consumer_app.id} (#{consumer_app.app_bundle})"
-
-
     device = Device.find_or_initialize_by(
       user: current_user,
       consumer_app: consumer_app,
       platform: platform
     )
 
-
-    Rails.logger.info "Device found/initialized: #{device.id || 'NEW'}"
-    Rails.logger.info "Setting token: #{params[:fcm_token][0..20]}..."
-
-
     device.token = params[:fcm_token]
 
 
     if device.save
-      Rails.logger.info "Device saved successfully. ID=#{device.id}"
+      Rails.logger.debug "DevicesController#fcm_token - Device saved ##{device.id}"
       render json: { success: true, device_id: device.id }, status: :ok
     else
-      Rails.logger.error "Device save failed: #{device.errors.full_messages.join(', ')}"
-      Rails.logger.error "Device attributes: #{device.attributes.inspect}"
+      Rails.logger.warn "DevicesController#fcm_token -failed: #{device.errors.full_messages.join(', ')}"
       render json: {
         error: "Failed to register device",
         details: device.errors.full_messages

@@ -1,4 +1,5 @@
 class StoriesController < ApplicationController
+  skip_before_action :verify_authenticity_token, only: [:show]
   helper ProfileHelper
 
   DEFAULT_HOME_FEED_ATTRIBUTES_FOR_SERIALIZATION = {

@@ -12,6 +12,7 @@ class Notification < ApplicationRecord
 
   before_create :mark_notified_at_time
   after_commit :cleanup_old_notifications, on: :create
+  after_commit :dispatch_push_notification, on: :create
 
   scope :for_published_articles, -> { where(notifiable_type: "Article", action: "Published") }
   scope :for_comments, -> { where(notifiable_type: "Comment", action: nil) } # nil action means "not a reaction"
@@ -236,5 +237,12 @@ class Notification < ApplicationRecord
     return unless Rails.cache.write("cleanup_user_notifications_#{user_id}", 1, expires_in: 10.minutes, unless_exist: true)
 
     Notifications::CleanupUserWorker.perform_async(user_id)
+  end
+
+  def dispatch_push_notification
+    return unless user_id
+    return if Device.where(user_id: user_id).none?
+
+    PushNotifications::DispatchWorker.perform_async(id)
   end
 end

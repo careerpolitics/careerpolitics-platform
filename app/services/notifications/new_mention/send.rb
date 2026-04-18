@@ -26,9 +26,6 @@ module Notifications
           action: nil,
           json_data: json_data,
         )
-
-      #   Send enhanced push notification
-        send_push_notification
       end
 
       private
@@ -46,16 +43,6 @@ module Notifications
         end
 
         data
-      end
-
-      def send_push_notification
-        payload_builder = PushNotifications::Payload::MentionPayload.new(mention)
-
-        PushNotifications::UnifiedNotifier.call(
-          user_ids: [mention.user_id],
-          payload_builder: payload_builder,
-          preference_key: :mobile_mention_notifications,
-        )
       end
     end
   end

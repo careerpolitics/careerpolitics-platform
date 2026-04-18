@@ -54,11 +54,18 @@ Rpush.reflect do |on|
 
   # Called when a notification is successfully delivered.
   on.notification_delivered do |notification|
+    type = begin
+             if notification.respond_to?(:data) && notification.data.is_a?(Hash)
+               notification.data["notification_type"] || "unknown"
+             else
+               JSON.parse(notification.payload.to_s).dig("data", "type") rescue "unknown"
+             end
+           end
     ForemStatsClient.increment(
       "push_notifications.delivered",
       tags: [
         "app_bundle:#{notification.app&.bundle_id}",
-        "type:#{JSON.parse(notification.payload).dig('data', 'type') || 'unknown'}",
+        "type:#{type}",
         "host:#{ENV.fetch('APP_DOMAIN', nil)}",
       ],
     )
@@ -67,10 +74,11 @@ Rpush.reflect do |on|
   # Called when notification delivery failed.
   # Call 'error_code' and 'error_description' on the notification for the cause.
   on.notification_failed do |notification|
-    if notification.error_description == "BadDeviceToken"
-      # When adding new platforms we'll need to check to only clear out devices
-      # scoped to that specific platform. i.e. notification.class.to_s =~ /Apns.+::Notification/
+    case notification.error_description
+    when "BadDeviceToken"
       Device.ios.where(token: notification.device_token).destroy_all
+    when "NotRegistered","InvalidRegistration"
+      Device.android.where(token: notification.device_token).destroy_all
     end
 
     Honeybadger.notify(error_message:

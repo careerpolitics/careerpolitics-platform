@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_04_09_173612) do
+ActiveRecord::Schema[7.0].define(version: 2026_04_17_040000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "ltree"
@@ -550,7 +550,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_04_09_173612) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["consumer_app_id"], name: "index_devices_on_consumer_app_id"
-    t.index ["user_id", "token", "platform", "consumer_app_id"], name: "index_devices_on_user_id_and_token_and_platform_and_app", unique: true
+    t.index ["user_id",  "platform", "consumer_app_id"], name: "index_devices_on_user_platform_and_app", unique: true
   end
 
   create_table "discussion_locks", force: :cascade do |t|
@@ -929,6 +929,47 @@ ActiveRecord::Schema[7.0].define(version: 2026_04_09_173612) do
     t.bigint "user_id"
     t.index ["provider", "uid"], name: "index_identities_on_provider_and_uid", unique: true
     t.index ["provider", "user_id"], name: "index_identities_on_provider_and_user_id", unique: true
+  end
+
+  create_table "job_posts", force: :cascade do |t|
+    t.boolean "approved", default: false, null: false
+    t.string "category"
+    t.string "color"
+    t.datetime "created_at", null: false
+    t.datetime "deadline_at"
+    t.text "description"
+    t.string "employment_type"
+    t.boolean "featured", default: false, null: false
+    t.text "important_dates"
+    t.string "link"
+    t.string "location"
+    t.string "organization_name"
+    t.integer "position", default: 0, null: false
+    t.string "post_type"
+    t.boolean "published", default: false
+    t.datetime "published_at"
+    t.text "qualification"
+    t.string "salary_range"
+    t.string "slug"
+    t.string "source_name"
+    t.string "source_url"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.integer "vacancies"
+    t.index ["approved"], name: "index_job_posts_on_approved"
+    t.index ["category"], name: "index_job_posts_on_category"
+    t.index ["deadline_at"], name: "index_job_posts_on_deadline_at"
+    t.index ["employment_type"], name: "index_job_posts_on_employment_type"
+    t.index ["featured"], name: "index_job_posts_on_featured"
+    t.index ["featured", "published", "approved", "position", "published_at", "created_at"], name: "index_job_posts_on_featured_query", where: "((published = true) AND (approved = true) AND (featured = true))"
+    t.index ["position"], name: "index_job_posts_on_position"
+    t.index ["post_type"], name: "index_job_posts_on_post_type"
+    t.index ["published"], name: "index_job_posts_on_published"
+    t.index ["published", "approved", "post_type", "position", "published_at", "created_at"], name: "index_job_posts_on_available_query", where: "((published = true) AND (approved = true))"
+    t.index ["published_at"], name: "index_job_posts_on_published_at"
+    t.index ["slug"], name: "index_job_posts_on_slug", unique: true
+    t.index ["user_id"], name: "index_job_posts_on_user_id"
   end
 
   create_table "labels", force: :cascade do |t|
@@ -1956,8 +1997,12 @@ ActiveRecord::Schema[7.0].define(version: 2026_04_09_173612) do
     t.boolean "email_newsletter", default: false, null: false
     t.boolean "email_tag_mod_newsletter", default: false, null: false
     t.boolean "email_unread_notifications", default: true, null: false
+    t.boolean "mobile_badge_notifications", default: true, null: false
     t.boolean "mobile_comment_notifications", default: true, null: false
+    t.boolean "mobile_follower_notifications", default: true, null: false
     t.boolean "mobile_mention_notifications", default: true, null: false
+    t.boolean "mobile_milestone_notifications", default: true, null: false
+    t.boolean "mobile_reaction_notifications", default: true, null: false
     t.boolean "mod_roundrobin_notifications", default: true, null: false
     t.boolean "reaction_notifications", default: true, null: false
     t.datetime "updated_at", null: false
@@ -2070,6 +2115,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_04_09_173612) do
   add_foreign_key "github_repos", "users", on_delete: :cascade
   add_foreign_key "html_variants", "users", on_delete: :cascade
   add_foreign_key "identities", "users", on_delete: :cascade
+  add_foreign_key "job_posts", "users"
   add_foreign_key "lead_submissions", "organization_lead_forms", on_delete: :cascade
   add_foreign_key "lead_submissions", "users", on_delete: :cascade
   add_foreign_key "mentions", "users", on_delete: :cascade

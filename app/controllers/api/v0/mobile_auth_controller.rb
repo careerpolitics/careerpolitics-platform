@@ -2,14 +2,14 @@ module Api
   module V0
     class MobileAuthController < Api::V0::ApiController
       include Devise::Controllers::Helpers
-      
+
       skip_before_action :verify_authenticity_token, only: :create
-      
+
       def create
         provider = params[:provider]
-        access_token = params[:access_token]
+        access_token = params[:access_token] || param[:id_token]
         code_verifier = params[:code_verifier]
-        
+
         unless %w[google_oauth2 github facebook mlh twitter2].include?(provider)
           return render json: { error: 'Unsupported auth provider' }, status: :bad_request
         end
@@ -21,7 +21,7 @@ module Api
           Rails.logger.error "Mobile Auth Token Verification Failed: #{e.message}"
           return render json: { error: e.message }, status: :unauthorized
         end
-        
+
         # Step 2: Form an OmniAuth Mock Hash
         auth_payload = OmniAuth::AuthHash.new({
           provider: provider,
@@ -30,29 +30,29 @@ module Api
           credentials: { token: access_token, secret: '' },
           extra: { raw_info: raw_info }
         })
-        
+
         # Step 3: Match Identity to a User
         begin
           @user = ::Authentication::Authenticator.call(auth_payload)
-          
+
           if @user&.persisted?
             # Ensure the user passes the AuthPassController `user_not_signed_out?` validation
             @user.update_tracked_fields!(request)
             @user.save(validate: false)
 
             bypass_sign_in(@user)
-            
+
             payload = { user_id: @user.id, exp: 30.days.from_now.to_i }
             jwt_token = JWT.encode(payload, Rails.application.secret_key_base)
-            
+
             session_cookie_options = Rails.application.config.session_options.slice(:domain, :secure, :same_site)
-            
+
             cookies[:jwt] = session_cookie_options.merge(
               value: jwt_token,
               expires: 30.days.from_now,
               httponly: true
             )
-            
+
             render json: { jwt: jwt_token }, status: :ok
           else
             render json: { error: 'Authentication failed' }, status: :unauthorized
@@ -88,24 +88,25 @@ module Api
         response = Faraday.get("https://oauth2.googleapis.com/tokeninfo") do |req|
           req.options.timeout = 10
           req.options.open_timeout = 5
-          req.params['access_token'] = access_token
+          # Support both access tokens and ID tokens (Android Credential Manager sends ID tokens)
+          req.params['id_token'] = access_token
         end
         parsed_response = JSON.parse(response.body)
-        
+
         if response.status != 200 || parsed_response["error"].present?
           raise StandardError, 'Invalid access token'
         end
-        
+
         valid_clients = [
           Settings::Authentication.google_oauth2_key,
           Settings::Authentication.google_ios_key,
           Settings::Authentication.google_android_key
         ].reject(&:blank?)
-        
+
         if !valid_clients.include?(parsed_response["aud"])
           raise StandardError, 'Token audience mismatch'
         end
-        
+
         [parsed_response["email"], parsed_response["sub"], parsed_response]
       end
 
@@ -120,7 +121,7 @@ module Api
           req.headers['Authorization'] = "Basic #{Base64.strict_encode64("#{Settings::Authentication.github_key}:#{Settings::Authentication.github_secret}")}"
           req.body = { access_token: access_token }.to_json
         end
-        
+
         if debug_response.status != 200
           raise StandardError, 'Token invalid or audience mismatch'
         end
@@ -132,14 +133,14 @@ module Api
           req.headers['Accept'] = "application/vnd.github.v3+json"
         end
         parsed_response = JSON.parse(response.body)
-        
+
         if response.status != 200
           raise StandardError, 'Invalid access token'
         end
-        
+
         extracted_email = parsed_response["email"]
         extracted_uid = parsed_response["id"].to_s
-        
+
         if extracted_email.blank?
           emails_response = Faraday.get("https://api.github.com/user/emails") do |req|
             req.options.timeout = 10
@@ -152,7 +153,7 @@ module Api
             extracted_email = primary_email["email"] if primary_email
           end
         end
-        
+
         [extracted_email, extracted_uid, parsed_response]
       end
 
@@ -165,11 +166,11 @@ module Api
           req.params['access_token'] = "#{Settings::Authentication.facebook_key}|#{Settings::Authentication.facebook_secret}"
         end
         debug_parsed = JSON.parse(debug_response.body)
-        
+
         if debug_response.status != 200 || debug_parsed.dig("data", "error").present? || debug_parsed.dig("data", "is_valid") != true
           raise StandardError, 'Invalid access token'
         end
-        
+
         if debug_parsed.dig("data", "app_id") != Settings::Authentication.facebook_key
           raise StandardError, 'Token audience mismatch'
         end
@@ -181,7 +182,7 @@ module Api
           req.params['fields'] = "id,email"
         end
         parsed_response = JSON.parse(response.body)
-        
+
         if response.status != 200 || parsed_response["error"].present?
           raise StandardError, 'Invalid access token'
         end
@@ -201,18 +202,18 @@ module Api
             grant_type: "authorization_code"
           }.to_json
         end
-        
+
         if exchange_response.status != 200
           raise StandardError, 'Token exchange failed'
         end
         access_token_exchanged = JSON.parse(exchange_response.body)["access_token"]
-        
+
         response = Faraday.get("https://my.mlh.io/api/v3/user.json?access_token=#{access_token_exchanged}") do |req|
           req.options.timeout = 10
           req.options.open_timeout = 5
         end
         parsed_response = JSON.parse(response.body)
-        
+
         if response.status != 200 || parsed_response["status"] == "Error"
           raise StandardError, 'Invalid user data'
         end
@@ -233,24 +234,34 @@ module Api
             code_verifier: code_verifier
           })
         end
-        
+
         if exchange_response.status != 200
           raise StandardError, 'Token exchange failed'
         end
         access_token_exchanged = JSON.parse(exchange_response.body)["access_token"]
-        
-        response = Faraday.get("https://api.twitter.com/2/users/me?user.fields=profile_image_url") do |req|
+
+        response = Faraday.get("https://api.twitter.com/2/users/me?user.fields=profile_image_url,email") do |req|
           req.options.timeout = 10
           req.options.open_timeout = 5
           req.headers['Authorization'] = "Bearer #{access_token_exchanged}"
         end
         parsed_response = JSON.parse(response.body)
-        
+
         if response.status != 200 || parsed_response["errors"].present?
           raise StandardError, 'Invalid user data'
         end
-        
-        [parsed_response.dig("data", "email"), parsed_response.dig("data", "id").to_s, parsed_response]
+
+        extracted_uid = parsed_response.dig("data", "id").to_s
+        extracted_email = parsed_response.dig("data", "email")
+
+        # Twitter v2 API does not return email without Elevated access.
+        # Fall back to looking up existing identity by UID to find the user's email.
+        if extracted_email.blank?
+          identity = Identity.find_by(provider: "twitter", uid: extracted_uid)
+          extracted_email = identity&.user&.email
+        end
+
+        [extracted_email, extracted_uid, parsed_response]
       end
     end
   end

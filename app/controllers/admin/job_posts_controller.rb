@@ -51,8 +51,17 @@ module Admin
     end
 
     def approve
-      @job_post.update(approved: true, published: true) unless @job_post.approved?
-      redirect_to admin_job_posts_path, notice: "Job post approved and published."
+      if @job_post.approved?
+        redirect_to admin_job_posts_path, notice: "Already approved."
+        return
+      end
+
+      if @job_post.update(approved: true, published: true)
+        redirect_to admin_job_posts_path, notice: "Job post approved and published."
+      else
+        redirect_to admin_job_post_path(@job_post),
+                    alert: "Cannot approve: #{@job_post.errors.full_messages.join(', ')}"
+      end
     end
 
     def destroy

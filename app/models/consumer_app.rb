@@ -35,10 +35,10 @@ class ConsumerApp < ApplicationRecord
   # custom PN targets will get their credentials from the auth_key stored in
   # the DB (configured by the Forem creator).
   def auth_credentials
-    if forem_app? && ios?
-      ApplicationConfig["RPUSH_IOS_PEM"]
-    elsif forem_app? && android?
-      ApplicationConfig["RPUSH_FCM_JSON"] || ApplicationConfig["RPUSH_FCM_KEY"]
+    if android?
+      ApplicationConfig["RPUSH_FCM_JSON"] || ApplicationConfig["RPUSH_FCM_KEY"] || auth_key
+    elsif ios?
+      ApplicationConfig["RPUSH_IOS_PEM"] || auth_key
     else
       auth_key
     end

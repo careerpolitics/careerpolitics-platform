@@ -3,6 +3,23 @@ class DeepLinksController < ApplicationController
 
   def mobile; end
 
+  # Android App Links - Digital Asset Links
+  # https://developer.android.com/training/app-links/verify-android-applinks
+  def assetlinks
+    statements = ConsumerApp.where(platform: Device::ANDROID).pluck(:app_bundle).map do |bundle|
+      {
+        relation: ["delegate_permission/common.handle_all_urls"],
+        target: {
+          namespace: "android_app",
+          package_name: bundle,
+          sha256_cert_fingerprints: [ApplicationConfig["ANDROID_SHA256_CERT"].to_s]
+        }
+      }
+    end
+
+    render json: statements
+  end
+
   # Apple Application Site Association - based on Apple docs guidelines
   # https://developer.apple.com/library/archive/documentation/General/Conceptual/AppSearch/UniversalLinks.html
   def aasa

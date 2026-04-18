@@ -19,6 +19,7 @@ class ApplicationController < ActionController::Base
   include ImageUploads
   include DevelopmentDependencyChecks if Rails.env.development?
   include Devise::Controllers::Rememberable
+  include JwtAuthenticatable
 
   # We are not currently using this, as we're going to prefer manual review in prod.
   # This was removed due to flakiness.
@@ -379,14 +380,6 @@ class ApplicationController < ActionController::Base
 
   def token_authenticated?
     @token_authenticated
-  end
-
-  def decode_auth_token(token)
-    JWT.decode(token, Rails.application.secret_key_base, true, algorithm: "HS256")[0]
-  rescue JWT::ExpiredSignature
-    nil
-  rescue StandardError
-    nil
   end
 
   def client_geolocation

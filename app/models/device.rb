@@ -88,10 +88,7 @@ class Device < ApplicationRecord
     # ---------------------------------------
     # 🔍 DEBUG LOGS
     # ---------------------------------------
-    Rails.logger.info("[FCM][ANDROID] device_token=#{token.truncate(20)}")
-    Rails.logger.info("[FCM][ANDROID] notification=#{notification_hash}")
-    Rails.logger.info("[FCM][ANDROID] data_payload=#{data_payload}")
-    Rails.logger.info("[FCM][ANDROID] deeplink_url=#{data_payload[:url]}")
+    Rails.logger.debug("[FCM][ANDROID] device=#{id} url=#{data_payload[:url]}")
 
     n.save!
   end

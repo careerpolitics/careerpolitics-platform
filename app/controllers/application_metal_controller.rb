@@ -11,6 +11,7 @@ class ApplicationMetalController < ActionController::Metal
 
   include SessionCurrentUser
   include ValidRequest
+  include JwtAuthenticatable
 
   def logger
     ActionController::Base.logger
@@ -47,13 +48,5 @@ class ApplicationMetalController < ActionController::Metal
 
   def token_authenticated?
     @token_authenticated
-  end
-
-  def decode_auth_token(token)
-    JWT.decode(token, Rails.application.secret_key_base, true, algorithm: "HS256")[0]
-  rescue JWT::ExpiredSignature
-    nil
-  rescue
-    nil
   end
 end

@@ -7,6 +7,7 @@ class JobPost < ApplicationRecord
   validates :employment_type, inclusion: { in: %w[full_time part_time contract internship temporary] }, allow_nil: true
   validates :vacancies, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :link, presence: true, if: :published?
+  validates :color, format: { with: /\A#[0-9a-fA-F]{3,8}\z/, message: "must be a valid hex color (e.g. #ff5733)" }, allow_blank: true
   validate :link_format, if: :published?
 
   def link_format
@@ -17,6 +18,7 @@ class JobPost < ApplicationRecord
   end
 
   before_validation :generate_slug, on: :create
+  before_validation :assign_auto_color, on: :create
   before_save :set_published_at, if: :published_changed?
 
   scope :published, -> { where(published: true) }
@@ -34,6 +36,11 @@ class JobPost < ApplicationRecord
     online_form: 'online_form'
   }.freeze
 
+  FEATURED_COLORS = %w[
+    #0056b3 #e63946 #2a9d8f #e76f51 #6a4c93
+    #1d3557 #457b9d #f4a261 #264653 #d62828
+  ].freeze
+
   def to_param
     slug
   end
@@ -44,10 +51,8 @@ class JobPost < ApplicationRecord
 
   def badge_type
     return nil unless published_at
-    # New badge: published within last 3 days
+    return 'last_day' if deadline_at.present? && deadline_at > Time.current && deadline_at <= 24.hours.from_now
     return 'new' if published_at > 3.days.ago
-    # Last day badge: if there's a deadline and it's within 24 hours
-    # Note: This assumes link might contain deadline info, or you can add a deadline_date field
     nil
   end
 
@@ -92,5 +97,11 @@ class JobPost < ApplicationRecord
 
   def set_published_at
     self.published_at = Time.current if published? && published_at.nil?
+  end
+
+  def assign_auto_color
+    return if color.present?
+
+    self.color = FEATURED_COLORS[JobPost.count % FEATURED_COLORS.size]
   end
 end

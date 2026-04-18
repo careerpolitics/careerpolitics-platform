@@ -1,6 +1,6 @@
 class OmniauthCallbacksController < Devise::OmniauthCallbacksController
   include Devise::Controllers::Rememberable
-
+  include JwtAuthenticatable
   # Rails actionpack only allows POST requests that come with an ORIGIN header
   # that matches `request.base_url`, it raises CSRF exception otherwise.
   # There is no way to allow specific ORIGIN values in order to securely bypass
@@ -39,7 +39,7 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
 
     if error.present?
       is_expected_oauth_error = false
-      
+
       if error.class.name == "OmniAuth::Strategies::OAuth2::CallbackError"
         is_expected_oauth_error = error.message.include?("nonce_mismatch") || error.message.include?("csrf_detected")
       elsif error.class.name == "OAuth2::Error"
@@ -63,20 +63,20 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
   def callback_for(provider)
     auth_payload = request.env["omniauth.auth"]
     cta_variant = request.env["omniauth.params"]["state"].to_s
-  
+
     @user = Authentication::Authenticator.call(
       auth_payload,
       current_user: current_user,
       cta_variant: cta_variant,
     )
-  
+
     if user_persisted_and_valid? && @user.confirmed?
       set_flash_message(:notice, :success, kind: provider.to_s.titleize) if is_navigational_format?
-  
+
       # Update tracking and remember the user as usual.
       @user.update_tracked_fields!(request)
       remember_me(@user)
-  
+
       extra_params = request.env["omniauth.params"]
       auth_origin = extra_params["auth_origin"]
       # Check if this is a mobile authentication request.
@@ -94,8 +94,8 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
         token = generate_auth_token(@user)
 
 
-  
-  
+
+
         # Render a minimal HTML page that redirects via a custom scheme.
         test_path = ApplicationConfig["AUTH_TEST_USER_REDIRECT_PATH"] || "/menu"
         redirect_to "#{test_path}?jwt=#{token}"
@@ -111,7 +111,7 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
       # Handle error conditions.
       session["devise.#{provider}_data"] = request.env["omniauth.auth"]
       user_errors = @user.errors.full_messages
-  
+
       Honeybadger.context({
         username: @user.username,
         user_id: @user.id,
@@ -120,7 +120,7 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
         user_errors: user_errors
       })
       Honeybadger.notify("Omniauth log in error")
-  
+
       flash[:alert] = user_errors
       redirect_to new_user_registration_url
     end
@@ -135,7 +135,7 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
     flash[:alert] = I18n.t("omniauth_callbacks_controller.log_in_error", e: e)
     redirect_to new_user_registration_url
   end
-  
+
 
   def user_persisted_and_valid?
     @user.persisted? && @user.valid?
@@ -152,7 +152,7 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
     trusted_origin = "https://m.facebook.com"
     facebook_callback_path = "/users/auth/facebook/callback"
     return false unless request&.fullpath&.start_with?(facebook_callback_path)
-    
+
     # Try request.origin first, then fallback to referer.
     origin = request.origin.presence || request.referer
     origin && origin.start_with?(trusted_origin)
@@ -162,7 +162,7 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
     trusted_origin = "https://accounts.google.com"
     google_callback_path = "/users/auth/google_oauth2/callback"
     return false unless request&.fullpath&.start_with?(google_callback_path)
-    
+
     # Try request.origin first, then fallback to referer.
     origin = request.origin.presence || request.referer
     origin && origin.start_with?(trusted_origin)
@@ -176,13 +176,5 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
     # Try request.origin first, then fallback to referer.
     origin = request.origin.presence || request.referer
     origin && origin.start_with?(trusted_origin)
-  end
-
-  def generate_auth_token(user)
-    payload = {
-      user_id: user.id,
-      exp: 5.minutes.from_now.to_i # Token expires in 5 minutes
-    }
-    JWT.encode(payload, Rails.application.secret_key_base)
   end
 end
