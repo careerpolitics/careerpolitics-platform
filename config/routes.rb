@@ -438,10 +438,12 @@ Rails.application.routes.draw do
                                      }
     get "/dashboard/:username", to: "dashboards#show", as: :dashboard_show_user
 
-    # for testing rails mailers
     unless Rails.env.production?
       get "/rails/mailers", to: "rails/mailers#index"
       get "/rails/mailers/*path", to: "rails/mailers#preview"
+
+      get "dev_tools", to: "dev_tools#index"
+      post "dev_tools/sign_in_as", to: "dev_tools#sign_in_as"
     end
 
     get "/embed/:embeddable", to: "liquid_embeds#show", as: "liquid_embed"
@@ -482,9 +484,9 @@ Rails.application.routes.draw do
 
     get "/top/:timeframe", to: "stories#index"
 
-    get "/:feed_type/:timeframe", to: "stories#index", constraints: { feed_type: /following/, timeframe: /latest/ }
+    get "/:feed_type/:timeframe", to: "stories#index", constraints: { feed_type: /following/, timeframe: /latest|latest_less_filtered/ }
 
-    get "/:timeframe", to: "stories#index", constraints: { timeframe: /latest/ }
+    get "/:timeframe", to: "stories#index", constraints: { timeframe: /latest|latest_less_filtered/ }
     get "/:feed_type", to: "stories#index", constraints: { feed_type: /discover|following/ }
 
     get "/:username/series", to: "collections#index", as: "user_series"
