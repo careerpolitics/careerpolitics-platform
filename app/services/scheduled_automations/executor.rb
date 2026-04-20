@@ -194,6 +194,30 @@ module ScheduledAutomations
       service.generate
     end
 
+    def call_community_bot_trending_article_creator_service
+      config = @automation.action_config
+
+      Rails.logger.info(
+        "ScheduledAutomations::Executor: running community_bot_trending_article_creator for automation_id=#{@automation.id} " \
+          "geo=#{config['geo']} language=#{config['language']} max_trends=#{config['max_trends']}",
+        )
+
+      service = Ai::CommunityBotTrendingArticleCreator.new(
+        ai_context: config["ai_context"] || "",
+        additional_instructions: @automation.additional_instructions,
+        tags: config["tags"],
+        affected_user: @user,
+        geo: config["geo"] || "IN",
+        language: config["language"] || "en-IN",
+        max_trends: (config["max_trends"] || 3).to_i,
+        max_news_per_trend: (config["max_news_per_trend"] || 5).to_i,
+        trend_cooldown_hours: (config["trend_cooldown_hours"] || 48).to_i,
+        requested_trends: config["requested_trends"]&.split(",")&.map(&:strip)&.reject(&:blank?),
+        )
+
+      service.generate
+    end
+
     def augment_with_instructions(body)
       instructions = @automation.additional_instructions.strip
 

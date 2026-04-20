@@ -54,3 +54,14 @@ data:
   WEB_CONCURRENCY: "2"
   REDIRECT_WWW_TO_ROOT: "true"
   LOG_LEVEL: "info"
+
+  # Trending Article Automation (Selenium)
+
+  SELENIUM_CHROME_IMAGE: "selenium/standalone-chrome:latest"
+  SELENIUM_CONTAINER_TIMEOUT: "120"
+  SELENIUM_PAGE_TIMEOUT: "20"
+  SELENIUM_MAX_ATTEMPTS: "2"
+  SELENIUM_NETWORK: ""
+
+  GOOGLE_TRENDS_URL: "https://trends.google.com/trending"
+  GOOGLE_SEARCH_URL: "https://www.google.com/search"
