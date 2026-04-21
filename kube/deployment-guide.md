@@ -257,6 +257,7 @@ kubectl apply -f kube/deployment-web.yaml
 kubectl apply -f kube/service-web.yaml
 kubectl apply -f kube/deployment-worker.yaml
 kubectl apply -f kube/ingress.yaml
+kubectl apply -f kube/deployment-selenium.yaml
 ```
 
 Monitor:

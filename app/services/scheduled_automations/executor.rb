@@ -119,6 +119,8 @@ module ScheduledAutomations
         call_community_bot_post_creator_service
       when "community_bot_current_affairs_news_post_creator"
         call_community_bot_current_affairs_news_post_creator_service
+      when "community_bot_trending_article_creator"
+        call_community_bot_trending_article_creator_service
       else
         raise ArgumentError, "Unknown service: #{@automation.service_name}"
       end

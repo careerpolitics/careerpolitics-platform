@@ -1,7 +1,9 @@
-require "docker-api"
-
 module TrendDiscovery
   class ChromeManager
+    # When SELENIUM_REMOTE_URL is set (e.g. K8s service), skip Docker entirely.
+    # When unset, fall back to ephemeral Docker container management (local dev).
+    REMOTE_URL = ENV.fetch("SELENIUM_REMOTE_URL", nil)
+
     CHROME_IMAGE = ENV.fetch("SELENIUM_CHROME_IMAGE", "selenium/standalone-chrome:latest")
     SHM_SIZE = ENV.fetch("SELENIUM_SHM_SIZE", "2g").to_i * 1024 * 1024 * 1024
     NETWORK = ENV.fetch("SELENIUM_NETWORK", nil)
@@ -14,9 +16,59 @@ module TrendDiscovery
     def initialize
       @container = nil
       @remote_url = nil
+      @static_mode = REMOTE_URL.present?
     end
 
     def start!
+      if @static_mode
+        @remote_url = REMOTE_URL
+        Rails.logger.info("TrendDiscovery::ChromeManager: Using static Selenium URL #{@remote_url}")
+        wait_until_ready!
+        return @remote_url
+      end
+
+      start_docker_container!
+    end
+
+    def stop!
+      if @static_mode
+        Rails.logger.debug("TrendDiscovery::ChromeManager: Static mode — nothing to stop")
+        @remote_url = nil
+        return
+      end
+
+      stop_docker_container!
+    end
+
+    private
+
+    # --- Shared ---
+
+    def wait_until_ready!
+      status_url = @remote_url.sub(%r{/wd/hub\z}, "/wd/hub/status")
+      deadline = Time.current + READY_MAX_WAIT
+
+      while Time.current < deadline
+        begin
+          response = HTTParty.get(status_url, timeout: 3)
+          if response.success? && response.parsed_response.dig("value", "ready")
+            return true
+          end
+        rescue StandardError
+          # Not yet accepting connections
+        end
+
+        sleep(READY_POLL_INTERVAL)
+      end
+
+      raise "Selenium at #{@remote_url} did not become ready within #{READY_MAX_WAIT}s"
+    end
+
+    # --- Docker container mode (local dev) ---
+
+    def start_docker_container!
+      require "docker-api"
+
       reap_orphans
 
       Rails.logger.info("TrendDiscovery::ChromeManager: Creating Chrome container from #{CHROME_IMAGE}")
@@ -56,7 +108,7 @@ module TrendDiscovery
       @remote_url
     end
 
-    def stop!
+    def stop_docker_container!
       return unless @container
 
       container_id = @container.id[0..11]
@@ -82,8 +134,6 @@ module TrendDiscovery
       @remote_url = nil
     end
 
-    private
-
     def resolve_remote_url
       if NETWORK.present?
         container_info = @container.json
@@ -98,26 +148,6 @@ module TrendDiscovery
 
         "http://localhost:#{host_port}/wd/hub"
       end
-    end
-
-    def wait_until_ready!
-      status_url = @remote_url.sub(%r{/wd/hub\z}, "/wd/hub/status")
-      deadline = Time.current + READY_MAX_WAIT
-
-      while Time.current < deadline
-        begin
-          response = HTTParty.get(status_url, timeout: 3)
-          if response.success? && response.parsed_response.dig("value", "ready")
-            return true
-          end
-        rescue StandardError
-          # Container not yet accepting connections
-        end
-
-        sleep(READY_POLL_INTERVAL)
-      end
-
-      raise "Chrome container did not become ready within #{READY_MAX_WAIT}s"
     end
 
     def reap_orphans
