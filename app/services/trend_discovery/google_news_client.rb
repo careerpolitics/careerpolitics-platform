@@ -20,7 +20,7 @@ module TrendDiscovery
 
     def build_url(trend, geo, language)
       query = CGI.escape(trend)
-      params = ["q=#{query}", "tbm=nws", "udm=14"]
+      params = ["q=#{query}", "tbm=nws"]
       params << "gl=#{geo}" if geo.present?
       params << "hl=#{language}" if language.present?
 
@@ -31,7 +31,7 @@ module TrendDiscovery
       doc = Nokogiri::HTML(html)
       headlines = []
 
-      selectors = ["div.SoaBEf", "div.dbsr", "div.MjjYud g-card", "div.MjjYud"]
+      selectors = ["div.SoaBEf", "div.dbsr","a.Wlyd0e","article","g-card", "div.MjjYud g-card", "div.MjjYud"]
       cards = []
 
       selectors.each do |selector|
@@ -52,6 +52,7 @@ module TrendDiscovery
 
       if headlines.empty?
         Rails.logger.warn("TrendDiscovery::GoogleNewsClient: No headlines found via card selectors, trying link fallback")
+        Rails.logger.debug {"TrendDiscovery::GoogleNewsClient: HTML sample (first 2000 chars): #{html[0..1999]}"}
         headlines = extract_headlines_from_links(doc, trend, max_news)
       end
 

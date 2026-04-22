@@ -5,6 +5,12 @@ module TrendDiscovery
     REMOTE_URL = ENV.fetch("SELENIUM_REMOTE_URL", nil)
 
     CHROME_IMAGE = ENV.fetch("SELENIUM_CHROME_IMAGE", "selenium/standalone-chrome:latest")
+    SHM_SIZE = begin
+                 raw = ENV.fetch("SELENIUM_SHM_SIZE", "2g").to_s.strip.downcase
+                 value, unit = raw.match(/\A(\d+)\s*(g|m)?\z/)&.captures || [2, "g"]
+                 bytes = value.to_i * (unit == "m" ? 1024 * 1024 : 1024 * 1024 * 1024)
+                 bytes.clamp(256 * 1024 * 1024, 8 * 1024 * 1024 * 1024) # 256MB..8GB
+               end
     SHM_SIZE = ENV.fetch("SELENIUM_SHM_SIZE", "2g").to_i * 1024 * 1024 * 1024
     NETWORK = ENV.fetch("SELENIUM_NETWORK", nil)
     CONTAINER_TIMEOUT = ENV.fetch("SELENIUM_CONTAINER_TIMEOUT", "120").to_i

@@ -1,7 +1,8 @@
 module Ai
   class CommunityBotTrendingArticleCreator
-    VERSION = "1.0".freeze
+    VERSION = "2.0".freeze
     MAX_TAGS = 4
+    MIN_WORD_COUNT = 1200
     PostResult = Struct.new(:title, :body, :tags, keyword_init: true)
 
     def initialize(
@@ -80,13 +81,16 @@ module Ai
       headlines = all_headlines[best_trend[:name]] || []
       Rails.logger.info("Ai::CommunityBotTrendingArticleCreator: Generating article for '#{best_trend[:name]}' with #{headlines.length} headlines")
 
-      # Step 6: Build prompt and call AI
-      prompt = build_prompt(best_trend[:name], @language, headlines)
+      # Step 6: Fetch platform tags for intelligent tagging
+      platform_tags = fetch_platform_tags
+
+      # Step 7: Build prompt and call AI
+      prompt = build_prompt(best_trend[:name], @language, headlines, platform_tags)
       response = @ai_client.call(prompt, response_mime_type: "application/json")
-      result = parse_response(response)
+      result = parse_response(response, platform_tags)
       return nil unless result
 
-      # Step 7: Record cooldown
+      # Step 8: Record cooldown
       TrendRunHistory.create!(
         trend: best_trend[:name],
         trend_slug: best_trend[:slug],
@@ -132,203 +136,155 @@ module Ai
       tags.is_a?(Array) ? tags : tags.to_s.split(",").map(&:strip).reject(&:blank?)
     end
 
-    def build_prompt(trend, language, headlines)
+    def fetch_platform_tags
+      supported = Tag.where(supported: true).order(hotness_score: :desc).limit(100).pluck(:name)
+      popular = Tag.order(hotness_score: :desc).limit(50).pluck(:name)
+      (supported + popular).uniq.first(80)
+    rescue StandardError => e
+      Rails.logger.warn("Ai::CommunityBotTrendingArticleCreator: Failed to fetch platform tags: #{e.message}")
+      []
+    end
+
+    def build_prompt(trend, language, headlines, platform_tags = [])
       sources_text = build_sources_text(headlines)
       media_text = build_media_text(headlines)
       additional = @additional_instructions.present? ? "\nAdditional Instructions: #{@additional_instructions}" : ""
-      context = @ai_context.present? ? "\nContext: #{@ai_context}" : ""
+      context = @ai_context.present? ? "\nPlatform Context: #{@ai_context}" : ""
+      tags_hint = platform_tags.any? ? "\nExisting platform tags (PREFER these): #{platform_tags.first(40).join(', ')}" : ""
 
       <<~PROMPT
-        You are a senior investigative journalist and SEO strategist writing for CareerPolitics.com — a platform focused on government jobs, exams, and policy updates.
+        You are a senior investigative journalist, subject-matter expert, and SEO strategist writing an authoritative, in-depth article for CareerPolitics.com.
 
-        OBJECTIVE:
+        CareerPolitics.com is a content platform for Indian government job aspirants, competitive exam candidates, and career-focused readers. Content must be **high-value, original, and substantive** — the kind that earns reader trust and passes ad network quality reviews.
+
         TREND: #{trend}
         Language: #{language}
-        #{context}#{additional}
+        #{context}#{additional}#{tags_hint}
 
-        Write a high-quality, human-like article that:
-        • Solves real search intent (jobs, exams, results, dates)
-        • Provides actionable insights for aspirants
-        • Is clear, factual, and non-repetitive
-        • Feels natural and not AI-generated
+        ═══════════════════════════════════════
+        CONTENT QUALITY REQUIREMENTS (CRITICAL)
+        ═══════════════════════════════════════
 
-        Additional hard requirements:
-        • Use only the provided source data
-        • Do not invent facts
-        • Do not mention AI, prompts, generation steps, or code
-        • Do not include promotional lines, Telegram mentions, subscription prompts, or marketing copy
-        • Do not include any extra fields beyond title, markdown, description, and tags
-        • If something is unclear, write exactly: "As of now, no official confirmation is available."
+        This article MUST be:
+        • **1500–2500 words** minimum — comprehensive, not thin content
+        • **Expert-level depth** — write as a domain specialist, not a news aggregator
+        • **Original analysis** — synthesize information, provide insights the reader can't get elsewhere
+        • **Actionable** — every section must give the reader something they can DO
+        • **Well-researched feel** — reference specific numbers, dates, rules, and official sources
+        • **Natural, human voice** — conversational yet authoritative, like a trusted mentor
 
-        ---
+        ABSOLUTELY DO NOT:
+        • Write thin, generic, or surface-level content
+        • Repeat the same information across sections
+        • Use filler phrases like "In this article we will discuss...", "As we all know...", "It is important to note that..."
+        • Mention AI, prompts, generation, or automation
+        • Include promotional content, Telegram links, or subscription prompts
+        • Invent facts — if data is unavailable, write: "Official details are awaited."
 
-        STEP 1 — CHOOSE A CLEAR ANGLE
-        Pick ONE and stay consistent:
-        • Recruitment / exam notification
-        • Policy impact
-        • Timeline change
-        • Controversy
-        • Opportunity for aspirants
+        ═══════════════════════════════════════
+        ARTICLE STRUCTURE
+        ═══════════════════════════════════════
 
-        ---
+        Choose the best angle and use ONLY sections that add real value. Every section must be information-dense.
 
-        STEP 2 — WRITING RULES (STRICT)
-        • No fluff or generic phrases
-        • No repetition
-        • No source-by-source narration
-        • Use smooth, natural transitions
-        • Write like a professional journalist
+        **Opening paragraph** (NO heading — this is the hook):
+        • Lead with the most newsworthy fact or number
+        • Answer the core question in the first 2 sentences
+        • Include the primary keyword naturally
+        • Set up why this matters to the reader RIGHT NOW
 
-        ---
+        Then use relevant sections from this menu (pick 5–8 that fit):
 
-        STEP 3 — STRUCTURE (USE ONLY WHAT FITS)
+        ## Key Highlights at a Glance
+        Quick bullet summary of the most important facts (dates, vacancies, eligibility snapshot). This section helps readers who scan.
 
-        Use relevant sections logically. Each section must add new information (no repetition).
+        ## Detailed Overview
+        In-depth context: what happened, why it matters, historical context if relevant. Go DEEP — explain the background a newcomer wouldn't know.
 
-        ## Overview
-        ## Important Dates
-        ## Vacancy Details
+        ## Important Dates & Timeline
+        Chronological table or list. Include application window, exam dates, result dates, counselling dates if applicable.
+
+        ## Vacancy / Recruitment Breakdown
+        Category-wise breakdowns, post-wise vacancies, reservation details. Use a TABLE for structured data.
+
         ## Eligibility Criteria
-        ## Salary / Pay Scale
-        ## Selection Process
-        ## Exam Pattern / Syllabus
-        ## Timeline of Events
-        ## Impact on Aspirants
-        ## What Should Aspirants Do Now
-        ## FAQ
+        Age limits (with relaxation), educational qualifications, experience requirements. Be SPECIFIC — mention exact degrees, percentages, age cutoffs.
 
-        Additional rules:
-        • Prioritize sections that match search intent (jobs, dates, eligibility, salary)
-        • Do NOT include empty or weak sections
-        • Ensure each section is actionable and information-dense
+        ## Salary, Pay Scale & Perks
+        7th CPC pay matrix level, gross salary, allowances (DA, HRA, TA), promotion prospects. Include in-hand salary estimates where possible.
 
-        ---
+        ## Selection Process & Exam Pattern
+        Stages (Prelims → Mains → Interview), marking scheme, negative marking, sectional cutoffs, total marks. Include a pattern TABLE.
 
-        STEP 4 — FORMATTING (STRICT)
+        ## Syllabus & Preparation Strategy
+        Subject-wise syllabus highlights, recommended books/resources, time allocation strategy, previous year trends.
 
-        • Use short paragraphs (2–3 lines max)
-        • Use bullet points for clarity
-        • Keep content highly scannable
+        ## How to Apply: Step-by-Step
+        Numbered steps from registration to final submission. Include fee details, payment modes, documents needed.
 
-        Structured formatting rules (VERY IMPORTANT):
+        ## Expert Analysis & What This Means
+        Your editorial analysis: how does this compare to previous years? What trends do you see? What should aspirants prioritize?
 
-        1. TABLE USAGE (MANDATORY LOGIC)
-        • If the content includes structured data (dates, vacancies, salary, categories), use EXACTLY ONE table
-        • Table must be simple (2–4 columns max)
-        • Do NOT create multiple tables
+        ## Common Mistakes to Avoid
+        Practical pitfalls candidates commonly face — wrong form filling, missed deadlines, preparation gaps.
 
-        2. DETAILS BLOCK (CONTROLLED USAGE)
-        • Use at most TWO details blocks
-        • Use ONLY for:
-          - Long syllabus
-          - Detailed eligibility breakdown
-          - Extended FAQs (if needed)
-        • Do NOT hide critical information inside details
-        • Syntax: `{% details Summary %} ... {% enddetails %}`
+        ## Frequently Asked Questions
+        5–7 FAQs based on real search queries. Each answer must be direct, 2–4 lines, and fact-based.
+        Format: **Q: [question]** followed by answer paragraph.
 
-        3. HIGHLIGHT BLOCK (IMPORTANT)
-        • Use at most ONE highlight/card block
-        • Use ONLY for critical updates such as:
-          - Last date
-          - Major change
-          - Important warning
-        • Syntax: `{% card %} ... {% endcard %}`
+        ## What Should You Do Next?
+        Clear, actionable closing: bookmark dates, start preparation, gather documents, etc.
 
-        4. CALL TO ACTION (OPTIONAL)
-        • If the source data includes an official URL (apply link, notification PDF), you may add ONE CTA at the end.
-        • Use this format: `{% cta URL %} Click here to ... {% endcta %}`
-        • Do NOT use CTAs for social media or promotional content.
+        ═══════════════════════════════════════
+        FORMATTING RULES
+        ═══════════════════════════════════════
 
-        5. CONTENT DENSITY
-        • Every paragraph must add new information
-        • Avoid filler, repetition, or generic statements
+        • **Short paragraphs**: 2–4 lines max per paragraph
+        • **Bullet points**: for lists of 3+ items
+        • **Bold key terms**: dates, salary figures, eligibility criteria
+        • **Tables**: use for structured data (dates, vacancies, salary, exam pattern) — keep to 2–4 columns
+        • **Details block**: `{% details Summary %} ... {% enddetails %}` — use for long syllabi or detailed breakdowns (max 2)
+        • **Card block**: `{% card %} ... {% endcard %}` — use ONCE for the most critical update (deadline, breaking change)
+        • **CTA block**: `{% cta URL %} text {% endcta %}` — use ONCE only if an official apply/notification URL exists in source data
 
-        6. READABILITY
-        • Maintain clear section separation
-        • Avoid large text blocks
-        • Ensure mobile-friendly formatting
+        ═══════════════════════════════════════
+        SEO OPTIMIZATION
+        ═══════════════════════════════════════
 
-        ---
+        Title:
+        • Include the primary keyword (exam/job name) + a value signal (year, salary, vacancy count, "complete guide")
+        • Format examples: "BPSC 69th Prelims 2025: Exam Date, Syllabus & 812 Vacancy Details"
+        • 50–70 characters ideal
 
-        STEP 5 — ACCURACY (VERY IMPORTANT)
-        • Use ONLY the provided source data
-        • Do NOT invent facts
-        • If something is unclear, write:
-          "As of now, no official confirmation is available."
+        Description (meta):
+        • 140–160 characters, information-dense
+        • Include: what, when, who it's for
+        • Must NOT repeat the title verbatim
 
-        ---
+        Content SEO:
+        • Primary keyword in first paragraph, first H2, and naturally throughout
+        • Long-tail keywords: "how to apply for [exam]", "[exam] eligibility 2025", "[exam] salary after 7th CPC"
+        • FAQ questions should mirror real Google searches
+        • First line of each section should be a direct answer (featured snippet optimization)
 
-        STEP 6 — SEO OPTIMIZATION (HIGH PRIORITY)
+        ═══════════════════════════════════════
+        TAG SELECTION (VERY IMPORTANT)
+        ═══════════════════════════════════════
 
-        • Identify primary search intent (e.g., "apply online", "last date", "eligibility", "salary")
-        • Ensure the article directly answers these queries
+        Choose exactly 4 tags. Tags MUST be:
+        • **Lowercase, alphanumeric, hyphens only** (e.g., "government-jobs", "ssc-cgl", "upsc")
+        • **Specific to the content** — at least 1 tag should be the exam/job name
+        • **From existing platform tags when possible** — reusing existing tags improves discoverability
 
-        Featured snippet optimization:
-        • Provide clear, direct answers in the first 1–2 lines of relevant sections
-        • Use bullet points for list-type queries
-        • Use table for structured queries
+        Tag strategy:
+        1. One tag for the specific exam/recruitment name (e.g., "bpsc", "ssc-cgl", "rrb-ntpc")
+        2. One tag for the content category (e.g., "government-jobs", "exam-notification", "results", "admit-card", "syllabus")
+        3. One tag for the broader domain (e.g., "currentaffairs", "career", "india")
+        4. One tag for the content type or audience (e.g., "preparation", "analysis", "beginners-guide")
 
-        Keyword usage:
-        • Naturally include high-intent keywords:
-          apply online, last date, eligibility, syllabus, salary, notification
-        • Avoid keyword stuffing
-
-        Search behavior optimization:
-        • Assume reader wants quick, actionable answers
-        • Reduce scrolling effort by structuring content logically
-
-        ---
-
-        STEP 7 — FAQ GENERATION (MANDATORY)
-
-        • Include 3 to 5 FAQs within the FAQ section
-        • Questions must reflect real search queries:
-          - What is the last date?
-          - Who is eligible?
-          - What is the salary?
-          - How to apply?
-        • Answers must be:
-          - Direct
-          - Fact-based
-          - 1–3 lines max
-        • Do NOT repeat content unnecessarily
-        • If data is missing, write:
-          "As of now, no official confirmation is available."
-        • Formatting options (choose one that fits the article):
-          - Simple Q&A list: **Q:** ... **A:** ...
-          - Collapsible sections: `{% details Question %} Answer {% enddetails %}`
-
-        ---
-
-        STEP 8 — TITLE
-
-        • Make it clear, specific, and SEO-friendly
-        • Use numbers, salary, or dates when useful
-        • Avoid vague or clickbait titles
-
-        ---
-
-        STEP 9 — DESCRIPTION
-
-        • Write one concise, high-information summary
-        • Include key elements such as role, dates, or opportunity
-        • Keep it optimized for search preview (meta description)
-        • Do NOT repeat the title
-
-        ---
-
-        STEP 10 — TAGS
-
-        • Choose 4 tags
-        • Tags must reflect:
-          - Exam or job name
-          - Category (government-jobs, results, admit-card, etc.)
-        • Keep them concise and SEO-relevant
-        • Avoid generic or duplicate tags
-
-        ---
-
-        PROVIDED DATA:
+        ═══════════════════════════════════════
+        SOURCE DATA
+        ═══════════════════════════════════════
 
         News Sources:
         #{sources_text}
@@ -336,23 +292,24 @@ module Ai
         Media:
         #{media_text}
 
-        ---
+        ═══════════════════════════════════════
+        OUTPUT FORMAT (STRICT JSON)
+        ═══════════════════════════════════════
 
-        OUTPUT FORMAT (STRICT)
-
-        Return ONLY valid JSON in this exact structure:
+        Return ONLY valid JSON:
 
         {
-          "title": "Clear and SEO-optimized headline",
-          "markdown": "Full article in valid Forem markdown",
-          "description": "Short plain-text summary",
-          "tags": ["tag-one", "tag-two"]
+          "title": "SEO-optimized headline (50-70 chars)",
+          "markdown": "Full article in Forem-compatible markdown (1500-2500 words)",
+          "description": "Meta description (140-160 chars)",
+          "tags": ["specific-exam", "category", "domain", "content-type"]
         }
 
-        IMPORTANT:
-        • Do not include any text outside JSON
-        • Do not include code blocks
-        • Ensure the JSON is valid and parseable
+        CRITICAL:
+        • Return ONLY the JSON object — no text before or after
+        • No code fences or backticks wrapping the JSON
+        • Ensure valid, parseable JSON (escape quotes in markdown properly)
+        • The markdown field must contain the FULL article, not a summary
       PROMPT
     end
 
@@ -388,7 +345,7 @@ module Ai
       value.to_s.gsub(/\s+/, " ").strip
     end
 
-    def parse_response(response)
+    def parse_response(response, platform_tags = [])
       return nil if response.blank?
 
       json = JSON.parse(extract_json_payload(response))
@@ -396,17 +353,27 @@ module Ai
       title = json["title"].to_s.strip
       markdown = json["markdown"].to_s.strip
       description = json["description"].to_s.strip
-      tags = sanitize_tags(json["tags"])
+      raw_tags = sanitize_tags(json["tags"])
 
       if title.blank? || markdown.blank?
         Rails.logger.error("Ai::CommunityBotTrendingArticleCreator: AI response missing title or markdown")
         return nil
       end
 
+      word_count = markdown.split(/\s+/).size
+      Rails.logger.info("Ai::CommunityBotTrendingArticleCreator: Generated #{word_count} words for '#{title}'")
+      if word_count < MIN_WORD_COUNT
+        Rails.logger.warn("Ai::CommunityBotTrendingArticleCreator: Article below minimum word count (#{word_count}/#{MIN_WORD_COUNT})")
+      end
+
       body = markdown
       body = "---\ndescription: #{description}\n---\n\n#{body}" if description.present?
 
-      final_tags = @tags.present? ? @tags : tags
+      final_tags = if @tags.present?
+                     @tags
+                   else
+                     match_platform_tags(raw_tags, platform_tags)
+                   end
 
       PostResult.new(
         title: title,
@@ -420,18 +387,44 @@ module Ai
 
     def extract_json_payload(content)
       trimmed = content.to_s.strip
-      if trimmed.start_with?("```
 
-")
-        first_newline = trimmed.index("\n")
-        last_fence = trimmed.rindex("
+      # Strip markdown code fences: ```json ... ``` or ``` ... ```
+      if trimmed.match?(/\A```(?:json|JSON)?\s*\n/)
+        # Remove opening fence line and closing fence line
+        without_open = trimmed.sub(/\A```(?:json|JSON)?\s*\n/, "")
+        without_close = without_open.sub(/\n\s*```\s*\z/, "")
+        return without_close.strip
+      end
 
-```")
-        if first_newline && last_fence && last_fence > first_newline
-          return trimmed[(first_newline + 1)...last_fence].strip
+      trimmed
+    end
+
+    def match_platform_tags(ai_tags, platform_tags)
+      return ai_tags if platform_tags.blank? || ai_tags.blank?
+
+      platform_set = platform_tags.map(&:downcase).to_set
+      matched = []
+
+      ai_tags.each do |tag|
+        if platform_set.include?(tag)
+          matched << tag
+        else
+          resolved = begin
+                       Tag.find_preferred_alias_for(tag)
+                     rescue ActiveRecord::StatementInvalid, ActiveRecord::ConnectionNotEstablished => e
+                       Rails.logger.warn("Ai::CommunityBotTrendingArticleCreator: Tag alias lookup failed for '#{tag}': #{e.message}")
+                       tag
+                     end
+          if platform_set.include?(resolved)
+            matched << resolved
+          else
+            matched << tag
+          end
         end
       end
-      trimmed
+
+      Rails.logger.info("Ai::CommunityBotTrendingArticleCreator: Tags: AI=#{ai_tags.inspect} → Final=#{matched.inspect}")
+      matched.uniq.first(MAX_TAGS)
     end
 
     def sanitize_tags(tags_array)

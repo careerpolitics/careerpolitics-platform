@@ -2,12 +2,27 @@ module TrendDiscovery
   class SeleniumBrowserClient
     STEALTH_SCRIPT = <<~JS.freeze
       Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
-      window.chrome = window.chrome || {runtime: {}};
+      delete navigator.__proto__.webdriver;
+      window.chrome = window.chrome || {runtime: {}, loadTimes: () => ({}), csi: () => ({})};
       Object.defineProperty(navigator, 'platform', {get: () => 'Win32'});
       Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
-      Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
+      Object.defineProperty(navigator, 'plugins', {get: () => [
+        {name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer'},
+        {name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai'},
+        {name: 'Native Client', filename: 'internal-nacl-plugin'},
+      ]});
+      Object.defineProperty(navigator, 'mimeTypes', {get: () => [
+        {type: 'application/pdf', suffixes: 'pdf'},
+        {type: 'application/x-nacl', suffixes: ''},
+      ]});
       Object.defineProperty(navigator, 'hardwareConcurrency', {get: () => 8});
       Object.defineProperty(navigator, 'deviceMemory', {get: () => 8});
+      Object.defineProperty(navigator, 'maxTouchPoints', {get: () => 0});
+      if (navigator.connection) {
+        Object.defineProperty(navigator.connection, 'rtt', {get: () => 50});
+        Object.defineProperty(navigator.connection, 'downlink', {get: () => 10});
+        Object.defineProperty(navigator.connection, 'effectiveType', {get: () => '4g'});
+      }
       const getParameter = WebGLRenderingContext.prototype.getParameter;
       WebGLRenderingContext.prototype.getParameter = function(parameter) {
         if (parameter === 37445) return 'Intel Inc.';
@@ -22,18 +37,53 @@ module TrendDiscovery
             : originalQuery(parameters)
         );
       }
+      const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
+      HTMLCanvasElement.prototype.toDataURL = function(type) {
+        if (type === 'image/png' || type === undefined) {
+          const ctx = this.getContext('2d');
+          if (ctx) { ctx.fillStyle = 'rgba(0,0,1,0.003)'; ctx.fillRect(0, 0, 1, 1); }
+        }
+        return originalToDataURL.apply(this, arguments);
+      };
+      if (navigator.getBattery) {
+        navigator.getBattery = () => Promise.resolve({charging: true, chargingTime: 0, dischargingTime: Infinity, level: 1});
+      }
     JS
 
     BOT_CHALLENGE_SELECTORS = [
       { css: "iframe[src*='recaptcha']" },
       { css: "iframe[title*='challenge']" },
       { css: "iframe[src*='sorry']" },
+      { css: "form[action*='sorry']" },
+      { css: "div#recaptcha" },
+    ].freeze
+
+    BOT_PAGE_SIGNALS = [
+      "unusual traffic",
+      "automated requests",
+      "sorry/index",
+      "our systems have detected",
+      "please show you're not a robot",
+    ].freeze
+
+    USER_AGENTS = [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    ].freeze
+
+    VIEWPORTS = [
+      [1920, 1080], [1600, 900], [1536, 864], [1440, 900],
+      [1366, 768], [1280, 720], [1680, 1050], [1600, 1200],
     ].freeze
 
     NEWS_CARD_SELECTORS = "div.SoaBEf, div.dbsr, div.MjjYud, g-card, article, a.WlydOe".freeze
 
     DEFAULT_TIMEOUT = ENV.fetch("SELENIUM_PAGE_TIMEOUT", "20").to_i
-    DEFAULT_MAX_ATTEMPTS = ENV.fetch("SELENIUM_MAX_ATTEMPTS", "2").to_i
+    DEFAULT_MAX_ATTEMPTS = ENV.fetch("SELENIUM_MAX_ATTEMPTS", "3").to_i
     DEFAULT_INTERACTION_DELAY = ENV.fetch("SELENIUM_INTERACTION_DELAY_MS", "750").to_i
 
     def initialize(remote_url:, timeout: DEFAULT_TIMEOUT, max_attempts: DEFAULT_MAX_ATTEMPTS, interaction_delay_ms: DEFAULT_INTERACTION_DELAY)
@@ -60,48 +110,73 @@ module TrendDiscovery
         driver = nil
         begin
           driver = create_driver
+
+          warm_up_session(driver, url)
+
+          random_pre_delay
           driver.navigate.to(url)
 
           wait = Selenium::WebDriver::Wait.new(timeout: @timeout)
           wait.until { driver.page_source&.include?("<body") }
 
+          if bot_detected?(driver)
+            Rails.logger.warn("TrendDiscovery::SeleniumBrowserClient: Bot detected on attempt #{attempt + 1} for #{url}")
+            raise BotDetectedError, "Bot challenge or captcha detected"
+          end
+
           dismiss_consent(driver)
           ensure_news_mode(driver, url) if news_mode
-          perform_light_interaction(driver)
+          perform_human_interaction(driver)
+
+          if bot_detected?(driver)
+            Rails.logger.warn("TrendDiscovery::SeleniumBrowserClient: Bot detected after interaction on attempt #{attempt + 1}")
+            raise BotDetectedError, "Bot challenge appeared after interaction"
+          end
 
           result = yield(driver)
           return result
         rescue Selenium::WebDriver::Error::SessionNotCreatedError => e
           Rails.logger.error("TrendDiscovery::SeleniumBrowserClient: Session creation failed on attempt #{attempt + 1}: #{e.message}")
           break
+        rescue BotDetectedError => e
+          Rails.logger.warn("TrendDiscovery::SeleniumBrowserClient: #{e.message} (attempt #{attempt + 1}/#{@max_attempts})")
         rescue StandardError => e
           Rails.logger.warn("TrendDiscovery::SeleniumBrowserClient: Page load failed on attempt #{attempt + 1} for #{url}: #{e.message}")
         ensure
           safe_quit(driver)
         end
 
-        sleep(2 + rand(0.5))
+        backoff = (2**attempt) + rand(1.0..3.0)
+        Rails.logger.info("TrendDiscovery::SeleniumBrowserClient: Backing off #{backoff.round(1)}s before retry")
+        sleep(backoff)
       end
 
       nil
     end
 
     def create_driver
+      viewport = VIEWPORTS.sample
+      user_agent = ENV["SELENIUM_USER_AGENT"].presence || USER_AGENTS.sample
+
       options = Selenium::WebDriver::Chrome::Options.new
       options.add_argument("--headless=new")
-      options.add_argument("--window-size=1600,1200")
+      options.add_argument("--window-size=#{viewport[0]},#{viewport[1]}")
       options.add_argument("--no-sandbox")
       options.add_argument("--disable-dev-shm-usage")
       options.add_argument("--disable-gpu")
       options.add_argument("--disable-background-networking")
       options.add_argument("--disable-background-timer-throttling")
       options.add_argument("--disable-renderer-backgrounding")
-      options.add_argument("--disable-features=Translate,OptimizationHints,MediaRouter")
+      options.add_argument("--disable-features=Translate,OptimizationHints,MediaRouter,AutofillServerCommunication")
       options.add_argument("--lang=en-US")
       options.add_argument("--disable-blink-features=AutomationControlled")
+      options.add_argument("--user-agent=#{user_agent}")
+      options.add_argument("--disable-extensions")
+      options.add_argument("--disable-infobars")
+      options.add_argument("--disable-popup-blocking")
 
-      user_agent = ENV["SELENIUM_USER_AGENT"]
-      options.add_argument("--user-agent=#{user_agent}") if user_agent.present?
+      options.add_preference("credentials_enable_service", false)
+      options.add_preference("profile.password_manager_enabled", false)
 
       driver = Selenium::WebDriver.for(
         :remote,
@@ -114,10 +189,49 @@ module TrendDiscovery
     end
 
     def apply_stealth(driver)
-      driver.navigate.to("data:,")
+      driver.navigate.to("about:blank")
+      driver.execute_cdp("Page.addScriptToEvaluateOnNewDocument", source: STEALTH_SCRIPT)
       driver.execute_script(STEALTH_SCRIPT)
     rescue StandardError => e
       Rails.logger.debug("TrendDiscovery::SeleniumBrowserClient: Unable to apply stealth: #{e.message}")
+    end
+
+    def warm_up_session(driver, target_url)
+      host = URI.parse(target_url).host rescue nil
+      return unless host&.include?("google")
+
+      driver.navigate.to("https://www.google.com")
+      interaction_sleep
+      dismiss_consent(driver)
+      interaction_sleep
+    rescue StandardError => e
+      Rails.logger.debug("TrendDiscovery::SeleniumBrowserClient: Warm-up failed: #{e.message}")
+    end
+
+    def bot_detected?(driver)
+      BOT_CHALLENGE_SELECTORS.each do |selector|
+        elements = selector[:css] ? driver.find_elements(css: selector[:css]) : driver.find_elements(xpath: selector[:xpath])
+        if elements.any?
+          Rails.logger.warn("TrendDiscovery::SeleniumBrowserClient: Bot signal — matched selector #{selector.inspect}")
+          return true
+        end
+      end
+
+      page_text = driver.page_source.to_s.downcase
+      BOT_PAGE_SIGNALS.each do |signal|
+        if page_text.include?(signal)
+          Rails.logger.warn("TrendDiscovery::SeleniumBrowserClient: Bot signal — page contains '#{signal}'")
+          return true
+        end
+      end
+
+      false
+    rescue StandardError
+      false
+    end
+
+    def random_pre_delay
+      sleep(rand(0.5..2.0))
     end
 
     def dismiss_consent(driver)
@@ -154,7 +268,7 @@ module TrendDiscovery
 
       unless search_url.include?("tbm=nws")
         separator = search_url.include?("?") ? "&" : "?"
-        driver.navigate.to("#{search_url}#{separator}tbm=nws&udm=14")
+        driver.navigate.to("#{search_url}#{separator}tbm=nws")
         interaction_sleep
       end
     rescue StandardError => e
@@ -168,6 +282,36 @@ module TrendDiscovery
       interaction_sleep
     rescue StandardError => e
       Rails.logger.debug("TrendDiscovery::SeleniumBrowserClient: Light interaction failed: #{e.message}")
+    end
+
+    def perform_human_interaction(driver)
+      simulate_mouse_movement(driver)
+      perform_light_interaction(driver)
+      random_pause
+    end
+
+    def simulate_mouse_movement(driver)
+      driver.execute_script(<<~JS)
+        (function() {
+          const events = ['mousemove', 'mouseover'];
+          const body = document.body;
+          for (let i = 0; i < 3 + Math.floor(Math.random() * 4); i++) {
+            const x = Math.floor(Math.random() * window.innerWidth);
+            const y = Math.floor(Math.random() * window.innerHeight);
+            events.forEach(type => {
+              body.dispatchEvent(new MouseEvent(type, {
+                clientX: x, clientY: y, bubbles: true
+              }));
+            });
+          }
+        })();
+      JS
+    rescue StandardError
+      # non-critical
+    end
+
+    def random_pause
+      sleep(rand(0.3..1.2))
     end
 
     def extract_trend_titles(driver, max_trends)
@@ -254,8 +398,10 @@ module TrendDiscovery
       result.select { |v| v.is_a?(String) && v.strip.present? }.map(&:strip)
     end
 
+    class BotDetectedError < StandardError; end
+
     def interaction_sleep
-      sleep((@interaction_delay_ms + rand(150)) / 1000.0)
+      sleep((@interaction_delay_ms + rand(300)) / 1000.0)
     end
 
     def safe_quit(driver)

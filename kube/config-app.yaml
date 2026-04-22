@@ -61,5 +61,5 @@ data:
   SELENIUM_MAX_ATTEMPTS: "2"
   SELENIUM_REMOTE_URL: "http://careerpolitics-selenium.production.svc.cluster.local:4444/wd/hub"
 
-  GOOGLE_TRENDS_URL: "https://trends.google.com/trending"
+  GOOGLE_TRENDS_URL: "https://trends.google.com/trending?geo=IN&category=9&status=active&hours=4"
   GOOGLE_SEARCH_URL: "https://www.google.com/search"
