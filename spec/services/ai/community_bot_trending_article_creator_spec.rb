@@ -54,5 +54,35 @@ RSpec.describe Ai::CommunityBotTrendingArticleCreator do
       expect(ai_client).to have_received(:call).with("BASE PROMPT", response_mime_type: "application/json").once
       expect(ai_client).to have_received(:call).with(include("RETRY INSTRUCTION (CRITICAL):"), response_mime_type: "application/json").once
     end
+
+    it "records a fallback trend_slug when selected trend slug is blank" do
+      trend = { name: "शिखा वर्मा", slug: "" }
+      parsed_result = described_class::PostResult.new(title: "Title", body: "Body", tags: "career", cover_image: nil)
+
+      allow(TrendDiscovery::ChromeManager).to receive(:new).and_return(chrome_manager)
+      allow(TrendDiscovery::SeleniumBrowserClient).to receive(:new).and_return(browser)
+      allow(TrendDiscovery::GoogleNewsClient).to receive(:new).and_return(news_client)
+      allow(TrendDiscovery::HeadlineEnricher).to receive(:new).and_return(enricher)
+
+      allow(service).to receive(:discover_trends).and_return([trend])
+      allow(service).to receive(:pick_fresh_trends).and_return([trend])
+      allow(news_client).to receive(:discover).and_return([])
+      allow(enricher).to receive(:enrich).and_return([])
+      allow(service).to receive(:pick_best_trend).and_return(trend)
+      allow(service).to receive(:fetch_platform_tags).and_return([])
+      allow(service).to receive(:build_prompt).and_return("BASE PROMPT")
+      allow(service).to receive(:parse_response).and_return(parsed_result)
+      allow(ai_client).to receive(:call).and_return("good payload")
+
+      allow(TrendRunHistory).to receive(:create!)
+
+      service.generate
+
+      expect(TrendRunHistory).to have_received(:create!).with(
+        trend: "शिखा वर्मा",
+        trend_slug: start_with("trend-"),
+        published: true,
+      )
+    end
   end
 end

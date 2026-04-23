@@ -100,9 +100,11 @@ module Ai
       return nil unless result
 
       # Step 8: Record cooldown
+      trend_slug = TrendRunHistory.slugify(best_trend[:slug].presence || best_trend[:name])
+
       TrendRunHistory.create!(
         trend: best_trend[:name],
-        trend_slug: best_trend[:slug],
+        trend_slug: trend_slug,
         published: true,
         )
 
