@@ -1,6 +1,17 @@
 require "rails_helper"
 
 RSpec.describe Ai::CommunityBotTrendingArticleCreator do
+  describe "#sanitize_tags" do
+    it "strips disallowed characters so generated tags pass article validations" do
+      service = described_class.new(ai_context: "Career platform")
+
+      sanitized_tags = service.send(:sanitize_tags, ["up-board-result", "career-guidance", "government-jobs", "result"])
+
+      expect(sanitized_tags).to eq(%w[upboardresult careerguidance governmentjobs result])
+      expect(Article.new(tag_list: sanitized_tags)).to be_valid
+    end
+  end
+
   describe "#generate" do
     let(:ai_client) { instance_double(Ai::Base) }
     let(:chrome_manager) { instance_double(TrendDiscovery::ChromeManager, start!: "http://selenium:4444/wd/hub", stop!: true) }

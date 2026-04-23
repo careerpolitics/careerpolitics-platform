@@ -549,7 +549,7 @@ module Ai
 
       seen = Set.new
       tags_array.filter_map do |tag|
-        normalized = tag.to_s.strip.downcase.gsub(/[^a-z0-9-]/, "")
+        normalized = tag.to_s.strip.downcase.gsub(/[^[:alnum:]]/, "")
         next if normalized.blank? || seen.include?(normalized)
 
         seen.add(normalized)
