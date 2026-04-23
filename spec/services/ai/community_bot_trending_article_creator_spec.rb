@@ -1,6 +1,17 @@
 require "rails_helper"
 
 RSpec.describe Ai::CommunityBotTrendingArticleCreator do
+  describe "#sanitize_tags" do
+    it "strips disallowed characters so generated tags pass article validations" do
+      service = described_class.new(ai_context: "Career platform")
+
+      sanitized_tags = service.send(:sanitize_tags, ["up-board-result", "career-guidance", "government-jobs", "result"])
+
+      expect(sanitized_tags).to eq(%w[upboardresult careerguidance governmentjobs result])
+      expect(Article.new(tag_list: sanitized_tags)).to be_valid
+    end
+  end
+
   describe "#generate" do
     let(:ai_client) { instance_double(Ai::Base) }
     let(:chrome_manager) { instance_double(TrendDiscovery::ChromeManager, start!: "http://selenium:4444/wd/hub", stop!: true) }
@@ -42,6 +53,36 @@ RSpec.describe Ai::CommunityBotTrendingArticleCreator do
       expect(result).to eq(parsed_result)
       expect(ai_client).to have_received(:call).with("BASE PROMPT", response_mime_type: "application/json").once
       expect(ai_client).to have_received(:call).with(include("RETRY INSTRUCTION (CRITICAL):"), response_mime_type: "application/json").once
+    end
+
+    it "records a fallback trend_slug when selected trend slug is blank" do
+      trend = { name: "शिखा वर्मा", slug: "" }
+      parsed_result = described_class::PostResult.new(title: "Title", body: "Body", tags: "career", cover_image: nil)
+
+      allow(TrendDiscovery::ChromeManager).to receive(:new).and_return(chrome_manager)
+      allow(TrendDiscovery::SeleniumBrowserClient).to receive(:new).and_return(browser)
+      allow(TrendDiscovery::GoogleNewsClient).to receive(:new).and_return(news_client)
+      allow(TrendDiscovery::HeadlineEnricher).to receive(:new).and_return(enricher)
+
+      allow(service).to receive(:discover_trends).and_return([trend])
+      allow(service).to receive(:pick_fresh_trends).and_return([trend])
+      allow(news_client).to receive(:discover).and_return([])
+      allow(enricher).to receive(:enrich).and_return([])
+      allow(service).to receive(:pick_best_trend).and_return(trend)
+      allow(service).to receive(:fetch_platform_tags).and_return([])
+      allow(service).to receive(:build_prompt).and_return("BASE PROMPT")
+      allow(service).to receive(:parse_response).and_return(parsed_result)
+      allow(ai_client).to receive(:call).and_return("good payload")
+
+      allow(TrendRunHistory).to receive(:create!)
+
+      service.generate
+
+      expect(TrendRunHistory).to have_received(:create!).with(
+        trend: "शिखा वर्मा",
+        trend_slug: start_with("trend-"),
+        published: true,
+      )
     end
   end
 end

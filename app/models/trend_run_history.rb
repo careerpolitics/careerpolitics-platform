@@ -9,7 +9,12 @@ class TrendRunHistory < ApplicationRecord
   end
 
   def self.slugify(text)
-    text.to_s.strip.downcase.gsub(/[^a-z0-9]+/, "-").gsub(/\A-|-\z/, "")
+    cleaned = clean(text)
+    slug = cleaned.downcase.gsub(/[^a-z0-9]+/, "-").gsub(/\A-|-\z/, "")
+    return slug if slug.present?
+
+    fallback_seed = Digest::SHA1.hexdigest(cleaned)[0, 12]
+    "trend-#{fallback_seed}"
   end
 
   def self.clean(text)

@@ -98,9 +98,11 @@ module Ai
       return nil unless result
 
       # Step 8: Record cooldown
+      trend_slug = TrendRunHistory.slugify(best_trend[:slug].presence || best_trend[:name])
+
       TrendRunHistory.create!(
         trend: best_trend[:name],
-        trend_slug: best_trend[:slug],
+        trend_slug: trend_slug,
         published: true,
         )
 
@@ -549,7 +551,7 @@ module Ai
 
       seen = Set.new
       tags_array.filter_map do |tag|
-        normalized = tag.to_s.strip.downcase.gsub(/[^a-z0-9-]/, "")
+        normalized = tag.to_s.strip.downcase.gsub(/[^[:alnum:]]/, "")
         next if normalized.blank? || seen.include?(normalized)
 
         seen.add(normalized)
