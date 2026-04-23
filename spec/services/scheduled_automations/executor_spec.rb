@@ -322,6 +322,40 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
       end
     end
 
+    context "when service_name is community_bot_pib_announcement_post_creator" do
+      let(:mock_pib_post_result) do
+        double("PostResult", title: "PIB Important Announcements", body: "Summarized PIB updates", tags: ["pib", "india"])
+      end
+      let(:mock_pib_post_service) { double("CommunityBotPibAnnouncementPostCreator", generate: mock_pib_post_result) }
+
+      before do
+        automation.update!(
+          service_name: "community_bot_pib_announcement_post_creator",
+          action_config: { "ai_context" => "Create a concise daily PIB announcement summary for readers" },
+        )
+        allow(Ai::CommunityBotPibAnnouncementPostCreator).to receive(:new).and_return(mock_pib_post_service)
+      end
+
+      it "calls the PIB announcement post creator service" do
+        expect(Ai::CommunityBotPibAnnouncementPostCreator).to receive(:new).with(
+          ai_context: "Create a concise daily PIB announcement summary for readers",
+          additional_instructions: automation.additional_instructions,
+          tags: automation.action_config["tags"],
+          affected_user: bot,
+        ).and_return(mock_pib_post_service)
+
+        executor.call
+      end
+
+      it "creates an article from the generated result" do
+        result = executor.call
+
+        expect(result.success?).to be(true)
+        expect(result.article.title).to eq("PIB Important Announcements")
+        expect(result.article.body_markdown).to eq("Summarized PIB updates")
+      end
+    end
+
     context "when service_name is unknown" do
       before { automation.update!(service_name: "unknown_service") }
 
@@ -349,6 +383,19 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
     context "when ai_context is missing for community_bot_current_affairs_news_post_creator" do
       before do
         automation.update!(service_name: "community_bot_current_affairs_news_post_creator", action_config: {})
+      end
+
+      it "returns failure result" do
+        result = executor.call
+
+        expect(result.success?).to be(false)
+        expect(result.error_message).to include("ai_context is required")
+      end
+    end
+
+    context "when ai_context is missing for community_bot_pib_announcement_post_creator" do
+      before do
+        automation.update!(service_name: "community_bot_pib_announcement_post_creator", action_config: {})
       end
 
       it "returns failure result" do
