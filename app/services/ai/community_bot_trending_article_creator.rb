@@ -77,38 +77,17 @@ module Ai
         all_headlines[trend_name] = enricher.enrich(headlines)
       end
 
-      # Step 5: Pick the best trend (most headlines with content)
-      best_trend = pick_best_trend(fresh_trends, all_headlines)
-      return nil unless best_trend
-
-      headlines = all_headlines[best_trend[:name]] || []
-      Rails.logger.info("Ai::CommunityBotTrendingArticleCreator: Generating article for '#{best_trend[:name]}' with #{headlines.length} headlines")
-
-      # Step 6: Fetch platform tags for intelligent tagging
+      # Step 5: Fetch platform tags for intelligent tagging
       platform_tags = fetch_platform_tags
 
-      # Step 7: Build prompt and call AI
-      prompt = build_prompt(best_trend[:name], @language, headlines, platform_tags)
-      result = nil
-      AI_GENERATION_MAX_ATTEMPTS.times do |attempt|
-        response = @ai_client.call(generation_prompt(prompt, attempt), response_mime_type: "application/json")
-        result = parse_response(response, platform_tags, headlines)
-        break if result
-
-        Rails.logger.warn("Ai::CommunityBotTrendingArticleCreator: Invalid AI JSON payload on attempt #{attempt + 1}/#{AI_GENERATION_MAX_ATTEMPTS}")
+      # Step 6: Generate one article per fresh trend
+      results = fresh_trends.filter_map do |trend|
+        generate_for_trend(trend, all_headlines[trend[:name]] || [], platform_tags)
       end
-      return nil unless result
 
-      # Step 8: Record cooldown
-      trend_slug = TrendRunHistory.slugify(best_trend[:slug].presence || best_trend[:name])
+      return nil if results.empty?
 
-      TrendRunHistory.create!(
-        trend: best_trend[:name],
-        trend_slug: trend_slug,
-        published: true,
-        )
-
-      result
+      results.one? ? results.first : results
     end
 
     private
@@ -131,14 +110,6 @@ module Ai
       used_slugs = TrendRunHistory.used_since(@trend_cooldown_hours.hours.ago)
 
       trends.reject { |t| used_slugs.include?(t[:slug]) }
-    end
-
-    def pick_best_trend(trends, all_headlines)
-      trends.max_by do |trend|
-        headlines = all_headlines[trend[:name]] || []
-        enriched_count = headlines.count { |h| h.dig(:article_details, :content).present? }
-        headlines.length + enriched_count
-      end
     end
 
     def normalize_tags(tags)
@@ -246,6 +217,32 @@ module Ai
         - Ensure all JSON string values are escaped correctly.
         - Ensure the JSON object closes properly.
       PROMPT
+    end
+
+    def generate_for_trend(trend, headlines, platform_tags)
+      Rails.logger.info("Ai::CommunityBotTrendingArticleCreator: Generating article for '#{trend[:name]}' with #{headlines.length} headlines")
+
+      prompt = build_prompt(trend[:name], @language, headlines, platform_tags)
+      result = nil
+
+      AI_GENERATION_MAX_ATTEMPTS.times do |attempt|
+        response = @ai_client.call(generation_prompt(prompt, attempt), response_mime_type: "application/json")
+        result = parse_response(response, platform_tags, headlines)
+        break if result
+
+        Rails.logger.warn("Ai::CommunityBotTrendingArticleCreator: Invalid AI JSON payload on attempt #{attempt + 1}/#{AI_GENERATION_MAX_ATTEMPTS} for '#{trend[:name]}'")
+      end
+
+      return nil unless result
+
+      trend_slug = TrendRunHistory.slugify(trend[:slug].presence || trend[:name])
+      TrendRunHistory.create!(
+        trend: trend[:name],
+        trend_slug: trend_slug,
+        published: true,
+      )
+
+      result
     end
 
     def build_media_text(headlines)
