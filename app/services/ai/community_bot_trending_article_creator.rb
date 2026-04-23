@@ -3,6 +3,7 @@ module Ai
     VERSION = "2.0".freeze
     MAX_TAGS = 4
     MIN_WORD_COUNT = 1200
+    AI_GENERATION_MAX_ATTEMPTS = ENV.fetch("COMMUNITY_BOT_AI_GENERATION_MAX_ATTEMPTS", "3").to_i
     PostResult = Struct.new(:title, :body, :tags,:cover_image, keyword_init: true)
 
     def initialize(
@@ -86,8 +87,14 @@ module Ai
 
       # Step 7: Build prompt and call AI
       prompt = build_prompt(best_trend[:name], @language, headlines, platform_tags)
-      response = @ai_client.call(prompt, response_mime_type: "application/json")
-      result = parse_response(response, platform_tags, headlines)
+      result = nil
+      AI_GENERATION_MAX_ATTEMPTS.times do |attempt|
+        response = @ai_client.call(generation_prompt(prompt, attempt), response_mime_type: "application/json")
+        result = parse_response(response, platform_tags, headlines)
+        break if result
+
+        Rails.logger.warn("Ai::CommunityBotTrendingArticleCreator: Invalid AI JSON payload on attempt #{attempt + 1}/#{AI_GENERATION_MAX_ATTEMPTS}")
+      end
       return nil unless result
 
       # Step 8: Record cooldown
@@ -166,7 +173,7 @@ module Ai
         ═══════════════════════════════════════
 
         This article MUST be:
-        • **1500–2500 words** minimum — comprehensive, not thin content
+        • **1200–1800 words** minimum — comprehensive, not thin content
         • **Expert-level depth** — write as a domain specialist, not a news aggregator
         • **Original analysis** — synthesize information, provide insights the reader can't get elsewhere
         • **Actionable** — every section must give the reader something they can DO
@@ -346,7 +353,7 @@ module Ai
 
         {
           "title": "SEO-optimized headline (50-70 chars)",
-          "markdown": "Full article in Forem-compatible markdown (1500-2500 words)",
+          "markdown": "Full article in Forem-compatible markdown (1200-1800 words)",
           "description": "Meta description (140-160 chars)",
           "tags": ["specific-exam", "category", "domain", "content-type"]
           "cover_image": "URL of the best image from source media for the article cover (or null if none suitable)"
@@ -377,6 +384,20 @@ module Ai
 
       text = lines.join("\n")
       text.present? ? text : "- No source details were available."
+    end
+
+    def generation_prompt(prompt, attempt)
+      return prompt if attempt.zero?
+
+      <<~PROMPT
+        #{prompt}
+
+        RETRY INSTRUCTION (CRITICAL):
+        - Your previous answer was invalid or truncated JSON.
+        - Return ONE complete JSON object only (no prose, no code fences).
+        - Ensure all JSON string values are escaped correctly.
+        - Ensure the JSON object closes properly.
+      PROMPT
     end
 
     def build_media_text(headlines)
