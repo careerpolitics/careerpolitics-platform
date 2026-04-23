@@ -12,21 +12,19 @@ module TrendDiscovery
       url = build_url(geo, language)
       Rails.logger.info("TrendDiscovery::GoogleTrendsClient: Fetching trends from #{url}")
 
-      titles = @browser.fetch_trend_titles(url, max_trends: max_trends)
+      html = @browser.fetch_page(url)
 
-      if titles.blank?
-        Rails.logger.warn("TrendDiscovery::GoogleTrendsClient: Selenium returned no trends, trying HTML parse fallback")
-        html = @browser.fetch_page(url)
-        if html.present?
-          titles = parse_trends_from_html(html, max_trends)
+      if html.present?
+        titles = parse_trends_from_html(html, max_trends)
 
-          if titles.blank? && @ai_client
-            Rails.logger.info("TrendDiscovery::GoogleTrendsClient: HTML parse returned no trends, trying AI table extraction")
-            ai_topics = extract_trends_via_ai(html, max_trends)
-            return ai_topics if ai_topics.any?
-          end
+        if titles.blank? && @ai_client
+          Rails.logger.info("TrendDiscovery::GoogleTrendsClient: HTML parse returned no trends, trying AI table extraction")
+          ai_topics = extract_trends_via_ai(html, max_trends)
+          return ai_topics if ai_topics.any?
         end
       end
+
+      titles = [] if titles.nil?
 
       if titles.blank? && FALLBACK_TRENDS.any?
         Rails.logger.warn("TrendDiscovery::GoogleTrendsClient: Using fallback trends")

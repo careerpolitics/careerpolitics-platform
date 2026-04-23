@@ -50,29 +50,28 @@ module TrendDiscovery
       }
     JS
 
-    BOT_CHALLENGE_SELECTORS = [
-      { css: "iframe[src*='recaptcha']" },
-      { css: "iframe[title*='challenge']" },
-      { css: "iframe[src*='sorry']" },
-      { css: "form[action*='sorry']" },
-      { css: "div#recaptcha" },
+    BOT_CHALLENGE_SELECTOR = "iframe[src*='recaptcha'], iframe[title*='challenge'], iframe[src*='sorry']".freeze
+
+    BOT_TEXT_SIGNALS = [
+      "unusual traffic",
+      "verify you are human",
+      "i'm not a robot",
+      "complete the captcha",
+      "g-recaptcha",
     ].freeze
 
-    BOT_PAGE_SIGNALS = [
+    BOT_TITLE_SIGNALS = [
       "unusual traffic",
-      "automated requests",
-      "sorry/index",
-      "our systems have detected",
-      "please show you're not a robot",
+      "sorry",
     ].freeze
 
     USER_AGENTS = [
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
     ].freeze
 
     VIEWPORTS = [
@@ -85,6 +84,8 @@ module TrendDiscovery
     DEFAULT_TIMEOUT = ENV.fetch("SELENIUM_PAGE_TIMEOUT", "20").to_i
     DEFAULT_MAX_ATTEMPTS = ENV.fetch("SELENIUM_MAX_ATTEMPTS", "3").to_i
     DEFAULT_INTERACTION_DELAY = ENV.fetch("SELENIUM_INTERACTION_DELAY_MS", "750").to_i
+    PROXY_POOL = ENV.fetch("SELENIUM_PROXY_POOL", "").split(",").map(&:strip).reject(&:blank?).freeze
+    SESSION_RETRY_BACKOFF_MS = ENV.fetch("SELENIUM_SESSION_RETRY_BACKOFF_MS", "2000").to_i
 
     def initialize(remote_url:, timeout: DEFAULT_TIMEOUT, max_attempts: DEFAULT_MAX_ATTEMPTS, interaction_delay_ms: DEFAULT_INTERACTION_DELAY)
       @remote_url = remote_url
@@ -106,31 +107,24 @@ module TrendDiscovery
     private
 
     def load_page(url, news_mode: false)
+      proxies = PROXY_POOL
       @max_attempts.times do |attempt|
+        proxy = proxies.any? ? proxies[attempt % proxies.length] : nil
         driver = nil
         begin
-          driver = create_driver
-
-          warm_up_session(driver, url)
-
-          random_pre_delay
+          driver = create_driver(proxy: proxy)
           driver.navigate.to(url)
 
           wait = Selenium::WebDriver::Wait.new(timeout: @timeout)
           wait.until { driver.page_source&.include?("<body") }
 
-          if bot_detected?(driver)
-            Rails.logger.warn("TrendDiscovery::SeleniumBrowserClient: Bot detected on attempt #{attempt + 1} for #{url}")
-            raise BotDetectedError, "Bot challenge or captcha detected"
-          end
-
           dismiss_consent(driver)
           ensure_news_mode(driver, url) if news_mode
-          perform_human_interaction(driver)
+          perform_light_interaction(driver)
 
-          if bot_detected?(driver)
-            Rails.logger.warn("TrendDiscovery::SeleniumBrowserClient: Bot detected after interaction on attempt #{attempt + 1}")
-            raise BotDetectedError, "Bot challenge appeared after interaction"
+          if news_mode && bot_detected?(driver)
+            Rails.logger.warn("TrendDiscovery::SeleniumBrowserClient: Bot detected on attempt #{attempt + 1} for #{url}")
+            raise BotDetectedError, "Bot challenge or captcha detected"
           end
 
           result = yield(driver)
@@ -146,19 +140,20 @@ module TrendDiscovery
           safe_quit(driver)
         end
 
-        backoff = (2**attempt) + rand(1.0..3.0)
-        Rails.logger.info("TrendDiscovery::SeleniumBrowserClient: Backing off #{backoff.round(1)}s before retry")
-        sleep(backoff)
+        backoff_ms = SESSION_RETRY_BACKOFF_MS + rand(150)
+        Rails.logger.info("TrendDiscovery::SeleniumBrowserClient: Backing off #{backoff_ms}ms before retry")
+        sleep(backoff_ms / 1000.0)
       end
 
       nil
     end
 
-    def create_driver
+    def create_driver(proxy: nil)
       viewport = VIEWPORTS.sample
       user_agent = ENV["SELENIUM_USER_AGENT"].presence || USER_AGENTS.sample
 
       options = Selenium::WebDriver::Chrome::Options.new
+      options.page_load_strategy = :eager
       options.add_argument("--headless=new")
       options.add_argument("--window-size=#{viewport[0]},#{viewport[1]}")
       options.add_argument("--no-sandbox")
@@ -167,14 +162,15 @@ module TrendDiscovery
       options.add_argument("--disable-background-networking")
       options.add_argument("--disable-background-timer-throttling")
       options.add_argument("--disable-renderer-backgrounding")
-      options.add_argument("--disable-features=Translate,OptimizationHints,MediaRouter,AutofillServerCommunication")
+      options.add_argument("--disable-features=Translate,OptimizationHints,MediaRouter")
       options.add_argument("--lang=en-US")
       options.add_argument("--disable-blink-features=AutomationControlled")
       options.add_argument("--user-agent=#{user_agent}")
-      options.add_argument("--disable-extensions")
-      options.add_argument("--disable-infobars")
-      options.add_argument("--disable-popup-blocking")
+      options.add_argument("--proxy-server=http://#{proxy}") if proxy.present?
 
+      options.add_option(:excludeSwitches, ["enable-automation", "enable-logging"])
+      options.add_option(:useAutomationExtension, false)
+      options.add_preference("intl.accept_languages", "en-US,en")
       options.add_preference("credentials_enable_service", false)
       options.add_preference("profile.password_manager_enabled", false)
 
@@ -189,49 +185,32 @@ module TrendDiscovery
     end
 
     def apply_stealth(driver)
-      driver.navigate.to("about:blank")
+      driver.navigate.to("data:,")
       driver.execute_cdp("Page.addScriptToEvaluateOnNewDocument", source: STEALTH_SCRIPT)
       driver.execute_script(STEALTH_SCRIPT)
     rescue StandardError => e
       Rails.logger.debug("TrendDiscovery::SeleniumBrowserClient: Unable to apply stealth: #{e.message}")
     end
 
-    def warm_up_session(driver, target_url)
-      host = URI.parse(target_url).host rescue nil
-      return unless host&.include?("google")
-
-      driver.navigate.to("https://www.google.com")
-      interaction_sleep
-      dismiss_consent(driver)
-      interaction_sleep
-    rescue StandardError => e
-      Rails.logger.debug("TrendDiscovery::SeleniumBrowserClient: Warm-up failed: #{e.message}")
-    end
-
     def bot_detected?(driver)
-      BOT_CHALLENGE_SELECTORS.each do |selector|
-        elements = selector[:css] ? driver.find_elements(css: selector[:css]) : driver.find_elements(xpath: selector[:xpath])
-        if elements.any?
-          Rails.logger.warn("TrendDiscovery::SeleniumBrowserClient: Bot signal — matched selector #{selector.inspect}")
-          return true
-        end
+      has_challenge_frame = driver.find_elements(css: BOT_CHALLENGE_SELECTOR).any?
+      has_news_cards = driver.find_elements(css: NEWS_CARD_SELECTORS).any?
+
+      title = driver.title.to_s.downcase
+      body = driver.page_source.to_s.downcase
+
+      challenge_text = BOT_TITLE_SIGNALS.any? { |s| title.include?(s) } ||
+                       BOT_TEXT_SIGNALS.any? { |s| body.include?(s) }
+
+      is_bot = (has_challenge_frame || challenge_text) && !has_news_cards
+
+      if is_bot
+        Rails.logger.warn("TrendDiscovery::SeleniumBrowserClient: Bot signal — challenge_frame=#{has_challenge_frame} challenge_text=#{challenge_text}")
       end
 
-      page_text = driver.page_source.to_s.downcase
-      BOT_PAGE_SIGNALS.each do |signal|
-        if page_text.include?(signal)
-          Rails.logger.warn("TrendDiscovery::SeleniumBrowserClient: Bot signal — page contains '#{signal}'")
-          return true
-        end
-      end
-
-      false
+      is_bot
     rescue StandardError
       false
-    end
-
-    def random_pre_delay
-      sleep(rand(0.5..2.0))
     end
 
     def dismiss_consent(driver)
@@ -282,36 +261,6 @@ module TrendDiscovery
       interaction_sleep
     rescue StandardError => e
       Rails.logger.debug("TrendDiscovery::SeleniumBrowserClient: Light interaction failed: #{e.message}")
-    end
-
-    def perform_human_interaction(driver)
-      simulate_mouse_movement(driver)
-      perform_light_interaction(driver)
-      random_pause
-    end
-
-    def simulate_mouse_movement(driver)
-      driver.execute_script(<<~JS)
-        (function() {
-          const events = ['mousemove', 'mouseover'];
-          const body = document.body;
-          for (let i = 0; i < 3 + Math.floor(Math.random() * 4); i++) {
-            const x = Math.floor(Math.random() * window.innerWidth);
-            const y = Math.floor(Math.random() * window.innerHeight);
-            events.forEach(type => {
-              body.dispatchEvent(new MouseEvent(type, {
-                clientX: x, clientY: y, bubbles: true
-              }));
-            });
-          }
-        })();
-      JS
-    rescue StandardError
-      # non-critical
-    end
-
-    def random_pause
-      sleep(rand(0.3..1.2))
     end
 
     def extract_trend_titles(driver, max_trends)
