@@ -67,8 +67,10 @@ module ScheduledAutomations
           )
         end
 
-        # Create or publish the article based on action
-        article = perform_action(service_result)
+        # Create or publish article(s) based on action
+        service_results = Array.wrap(service_result)
+        articles = service_results.map { |result| perform_action(result) }
+        article = articles.first
 
         # Mark automation as completed and schedule next run
         next_run_time = @automation.calculate_next_run_time

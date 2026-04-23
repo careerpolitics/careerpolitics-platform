@@ -71,6 +71,14 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
         expect { executor.call }.to change(Article, :count).by(1)
       end
 
+      it "creates multiple articles when the service returns multiple results" do
+        second_result = double("RecapResult2", title: "Test Recap 2", body: "More content", "body=": true)
+        allow(second_result).to receive(:body=)
+        allow(mock_service).to receive(:generate).and_return([mock_recap_result, second_result])
+
+        expect { executor.call }.to change(Article, :count).by(2)
+      end
+
       it "creates a draft article when action is create_draft" do
         result = executor.call
         expect(result.success?).to be(true)
