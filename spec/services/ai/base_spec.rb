@@ -45,6 +45,36 @@ RSpec.describe Ai::Base do
       expect(audit.error_message).to be_nil
     end
 
+    it "concatenates text from multi-part candidate responses" do
+      multi_part_response = instance_double(
+        HTTParty::Response,
+        success?: true,
+        parsed_response: {
+          "candidates" => [
+            {
+              "content" => {
+                "parts" => [
+                  { "text" => "{\"title\":\"A\"," },
+                  { "text" => "\"markdown\":\"B\"}" },
+                ]
+              }
+            },
+          ],
+          "usageMetadata" => {
+            "promptTokenCount" => 3,
+            "candidatesTokenCount" => 2,
+            "totalTokenCount" => 5,
+          },
+        },
+        code: 200,
+        body: '{"candidates":[{"content":{"parts":[{"text":"{\\"title\\":\\"A\\","},{"text":"\\"markdown\\":\\"B\\"}"}]}}]}',
+      )
+
+      allow(described_class).to receive(:post).and_return(multi_part_response)
+
+      expect(client.call(prompt)).to eq("{\"title\":\"A\",\"markdown\":\"B\"}")
+    end
+
     context "with wrapper and affected user/content" do
       let(:user) { create(:user) }
       let(:wrapper) { DummyAiWrapper.new }
