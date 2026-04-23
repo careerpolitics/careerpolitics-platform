@@ -2,7 +2,7 @@ module Ai
   class CommunityBotTrendingArticleCreator
     VERSION = "2.0".freeze
     MAX_TAGS = 4
-    MIN_WORD_COUNT = 1200
+    DEFAULT_TARGET_WORD_COUNT= 800
     AI_GENERATION_MAX_ATTEMPTS = ENV.fetch("COMMUNITY_BOT_AI_GENERATION_MAX_ATTEMPTS", "3").to_i
     PostResult = Struct.new(:title, :body, :tags,:cover_image, keyword_init: true)
 
@@ -12,6 +12,7 @@ module Ai
       tags: nil,
       ai_client: nil,
       affected_user: nil,
+      target_word_count: DEFAULT_TARGET_WORD_COUNT,
       geo: "IN",
       language: "en-IN",
       max_trends: 3,
@@ -23,6 +24,7 @@ module Ai
       @additional_instructions = additional_instructions
       @tags = normalize_tags(tags)
       @ai_client = ai_client || Ai::Base.new(wrapper: self, affected_user: affected_user)
+      @target_word_count = [[target_word_count.to_i, 400].max, 2000].min
       @geo = geo
       @language = language
       @max_trends = max_trends
@@ -157,216 +159,60 @@ module Ai
       media_text = build_media_text(headlines)
       additional = @additional_instructions.present? ? "\nAdditional Instructions: #{@additional_instructions}" : ""
       context = @ai_context.present? ? "\nPlatform Context: #{@ai_context}" : ""
-      tags_hint = platform_tags.any? ? "\nExisting platform tags (PREFER these): #{platform_tags.first(40).join(', ')}" : ""
+      tags_hint = platform_tags.any? ? "\nPreferred platform tags: #{platform_tags.first(30).join(', ')}" : ""
+      word_range = "#{@target_word_count}–#{(@target_word_count * 1.3).to_i}"
+      section_count = @target_word_count <= 600 ? "3–4" : "5–8"
 
       <<~PROMPT
-        You are a senior investigative journalist, subject-matter expert, and SEO strategist writing an authoritative, in-depth article for CareerPolitics.com.
-
-        CareerPolitics.com is a content platform for Indian government job aspirants, competitive exam candidates, and career-focused readers. Content must be **high-value, original, and substantive** — the kind that earns reader trust and passes ad network quality reviews.
+        You are a senior journalist and SEO strategist writing for CareerPolitics.com — a platform for Indian government job aspirants and competitive exam candidates.
 
         TREND: #{trend}
         Language: #{language}
+        Target length: #{word_range} words
         #{context}#{additional}#{tags_hint}
 
-        ═══════════════════════════════════════
-        CONTENT QUALITY REQUIREMENTS (CRITICAL)
-        ═══════════════════════════════════════
+        QUALITY RULES:
+        • #{word_range} words — dense, no filler or repetition
+        • Expert depth — specific numbers, dates, official sources; never invent facts
+        • Actionable — every section gives the reader something to DO
+        • Natural voice — conversational yet authoritative, like a trusted mentor
+        • DO NOT mention AI/automation or use filler phrases ("In this article...", "As we all know...")
 
-        This article MUST be:
-        • **1200–1800 words** minimum — comprehensive, not thin content
-        • **Expert-level depth** — write as a domain specialist, not a news aggregator
-        • **Original analysis** — synthesize information, provide insights the reader can't get elsewhere
-        • **Actionable** — every section must give the reader something they can DO
-        • **Well-researched feel** — reference specific numbers, dates, rules, and official sources
-        • **Natural, human voice** — conversational yet authoritative, like a trusted mentor
+        ENGAGEMENT (weave throughout):
+        • Include 1–2 discussion questions that invite comments
+        • Bold critical deadlines/numbers; include a surprising statistic
+        • At least 2 tables for structured data (dates, vacancies, salary, exam pattern)
+        • At least 1–2 images from source media: `![descriptive alt text](url)`
+        • If data is unavailable, write "Official details are awaited" — never invent facts
+        • No promotional content, Telegram links, or subscription prompts
 
-        ABSOLUTELY DO NOT:
-        • Write thin, generic, or surface-level content
-        • Repeat the same information across sections
-        • Use filler phrases like "In this article we will discuss...", "As we all know...", "It is important to note that..."
-        • Mention AI, prompts, generation, or automation
-        • Include promotional content, Telegram links, or subscription prompts
-        • Invent facts — if data is unavailable, write: "Official details are awaited."
-        ═══════════════════════════════════════
-        ENGAGEMENT & READER INTERACTION (HIGH PRIORITY)
-        ═══════════════════════════════════════
+        STRUCTURE:
+        Open with a hook paragraph (no heading) — lead with the most newsworthy fact.
+        Then pick #{section_count} sections that fit from: Key Highlights | Detailed Overview | Important Dates | Vacancy Breakdown | Eligibility | Salary & Perks | Exam Pattern | Preparation Strategy | How to Apply | Expert Analysis | FAQs | Next Steps.
+        Close with an actionable prompt that encourages comments.
 
-        Articles that earn reactions, comments, and extended reading time rank highest on the platform.
-        You MUST weave in engagement triggers throughout the article:
+        FORMATTING:
+        • H2 for sections, H3 for subsections; short paragraphs (2–4 lines)
+        • Use 2–4 liquid tags: `{% details Summary %} ... {% enddetails %}` for dense reference data, `{% card %} ... {% endcard %}` for the most critical update (once)
+        • `{% cta URL %} text {% endcta %}` only if an official URL exists in sources
 
-        **Discussion Hooks (MANDATORY — include at least 2):**
-        • End the article or a major section with a direct question to the reader
-          Examples: "Are you planning to appear for this exam? Share your preparation strategy below."
-          "Which post do you think offers the best career growth? Tell us in the comments."
-        • Present a debatable opinion or comparison that invites reader responses
-        • Ask readers to share their experience, tips, or doubts
+        SEO:
+        • Title: primary keyword + value signal, 50–70 chars
+        • Description: 140–160 chars, information-dense, not repeating title
+        • Primary keyword in first paragraph and first H2
 
-        **Reaction-Worthy Moments:**
-        • Include a surprising statistic, salary figure, or competition ratio that makes readers react
-        • Bold critical deadlines or breaking changes that readers will want to bookmark
-        • Provide genuinely useful insider tips that feel exclusive
+        TAGS: exactly 4, lowercase hyphenated (e.g. "ssc-cgl"). Strategy: exam-name + category + domain + content-type. Prefer existing platform tags.
 
-        **Visual Engagement Anchors:**
-        • Use images from source data within the article body (markdown image syntax)
-        • Use tables for ANY structured data — readers scan tables far more than paragraphs
-        • Use collapsible sections for dense reference material (syllabus, detailed breakdowns)
-        • Use card blocks to highlight the single most critical update
-
-        **Time-on-Page Boosters:**
-        • Structure content so readers scroll through the entire article
-        • Place high-value information (salary, eligibility, dates) in the middle, not just the top
-        • End with a strong call-to-action section that encourages comments
-        ═══════════════════════════════════════
-        ARTICLE STRUCTURE
-        ═══════════════════════════════════════
-
-        Choose the best angle and use ONLY sections that add real value. Every section must be information-dense.
-
-        **Opening paragraph** (NO heading — this is the hook):
-        • Lead with the most newsworthy fact or number
-        • Answer the core question in the first 2 sentences
-        • Include the primary keyword naturally
-        • Set up why this matters to the reader RIGHT NOW
-
-        Then use relevant sections from this menu (pick 5–8 that fit):
-
-        ## Key Highlights at a Glance
-        Quick bullet summary of the most important facts (dates, vacancies, eligibility snapshot). This section helps readers who scan.
-
-        ## Detailed Overview
-        In-depth context: what happened, why it matters, historical context if relevant. Go DEEP — explain the background a newcomer wouldn't know.
-
-        ## Important Dates & Timeline
-        Chronological table or list. Include application window, exam dates, result dates, counselling dates if applicable.
-
-        ## Vacancy / Recruitment Breakdown
-        Category-wise breakdowns, post-wise vacancies, reservation details. Use a TABLE for structured data.
-
-        ## Eligibility Criteria
-        Age limits (with relaxation), educational qualifications, experience requirements. Be SPECIFIC — mention exact degrees, percentages, age cutoffs.
-
-        ## Salary, Pay Scale & Perks
-        7th CPC pay matrix level, gross salary, allowances (DA, HRA, TA), promotion prospects. Include in-hand salary estimates where possible.
-
-        ## Selection Process & Exam Pattern
-        Stages (Prelims → Mains → Interview), marking scheme, negative marking, sectional cutoffs, total marks. Include a pattern TABLE.
-
-        ## Syllabus & Preparation Strategy
-        Subject-wise syllabus highlights, recommended books/resources, time allocation strategy, previous year trends.
-
-        ## How to Apply: Step-by-Step
-        Numbered steps from registration to final submission. Include fee details, payment modes, documents needed.
-
-        ## Expert Analysis & What This Means
-        Your editorial analysis: how does this compare to previous years? What trends do you see? What should aspirants prioritize?
-
-        ## Common Mistakes to Avoid
-        Practical pitfalls candidates commonly face — wrong form filling, missed deadlines, preparation gaps.
-
-        ## Frequently Asked Questions
-        5–7 FAQs based on real search queries. Each answer must be direct, 2–4 lines, and fact-based.
-        Format: **Q: [question]** followed by answer paragraph.
-
-        ## What Should You Do Next?
-        Clear, actionable closing: bookmark dates, start preparation, gather documents, etc.
-
-        ═══════════════════════════════════════
-        FORMATTING & RICH MEDIA RULES
-        ═══════════════════════════════════════
-
-        **Text Formatting:**
-        • **Short paragraphs**: 2–4 lines max per paragraph
-        • **Bullet points**: for lists of 3+ items
-        • **Bold key terms**: dates, salary figures, eligibility criteria, deadlines
-        • **Tables**: use for ANY structured data (dates, vacancies, salary, exam pattern) — aim for 2–3 tables per article
-
-        **Images (MANDATORY — include at least 1–2):**
-        • Use markdown image syntax: `![descriptive alt text](image_url)`
-        • Use relevant images from the source media URLs provided below
-        • Place images near relevant sections, not bunched together
-        • Every image MUST have descriptive alt text for SEO and accessibility
-
-        **Interactive Liquid Tags (use 3–5 per article):**
-        • `{% details Summary text %} ... {% enddetails %}` — collapsible sections for syllabus, detailed breakdowns, long tables (use 2–3 times)
-        • `{% card %} ... {% endcard %}` — highlight card for the most critical update, deadline, or breaking news (use ONCE)
-        • `{% cta URL %} button text {% endcta %}` — call-to-action button ONLY if an official apply/notification URL exists in source data (use max ONCE)
-
-        **Content Structure for Engagement:**
-        • Start with a hook paragraph (no heading)
-        • Use H2 (##) for major sections, H3 (###) for subsections
-        • Include at least 2 tables with structured data
-        • Place a `{% card %}` block around the most time-sensitive information
-        • Use `{% details %}` for reference sections readers may want to expand (syllabus, fee structure, etc.)
-        • End with a question or discussion prompt that encourages comments
-
-
-        ═══════════════════════════════════════
-        SEO OPTIMIZATION
-        ═══════════════════════════════════════
-
-        Title:
-        • Include the primary keyword (exam/job name) + a value signal (year, salary, vacancy count, "complete guide")
-        • Format examples: "BPSC 69th Prelims 2025: Exam Date, Syllabus & 812 Vacancy Details"
-        • 50–70 characters ideal
-
-        Description (meta):
-        • 140–160 characters, information-dense
-        • Include: what, when, who it's for
-        • Must NOT repeat the title verbatim
-
-        Content SEO:
-        • Primary keyword in first paragraph, first H2, and naturally throughout
-        • Long-tail keywords: "how to apply for [exam]", "[exam] eligibility 2025", "[exam] salary after 7th CPC"
-        • FAQ questions should mirror real Google searches
-        • First line of each section should be a direct answer (featured snippet optimization)
-
-        ═══════════════════════════════════════
-        TAG SELECTION (VERY IMPORTANT)
-        ═══════════════════════════════════════
-
-        Choose exactly 4 tags. Tags MUST be:
-        • **Lowercase, alphanumeric, hyphens only** (e.g., "government-jobs", "ssc-cgl", "upsc")
-        • **Specific to the content** — at least 1 tag should be the exam/job name
-        • **From existing platform tags when possible** — reusing existing tags improves discoverability
-
-        Tag strategy:
-        1. One tag for the specific exam/recruitment name (e.g., "bpsc", "ssc-cgl", "rrb-ntpc")
-        2. One tag for the content category (e.g., "government-jobs", "exam-notification", "results", "admit-card", "syllabus")
-        3. One tag for the broader domain (e.g., "currentaffairs", "career", "india")
-        4. One tag for the content type or audience (e.g., "preparation", "analysis", "beginners-guide")
-
-        ═══════════════════════════════════════
-        SOURCE DATA
-        ═══════════════════════════════════════
-
-        News Sources:
+        SOURCE DATA:
         #{sources_text}
 
         Media:
         #{media_text}
 
-        ═══════════════════════════════════════
-        OUTPUT FORMAT (STRICT JSON)
-        ═══════════════════════════════════════
+        OUTPUT (strict JSON, no code fences, no surrounding text):
+        {"title":"...","markdown":"...","description":"...","tags":["..."],"cover_image":"URL or null"}
 
-        Return ONLY valid JSON:
-
-        {
-          "title": "SEO-optimized headline (50-70 chars)",
-          "markdown": "Full article in Forem-compatible markdown (1200-1800 words)",
-          "description": "Meta description (140-160 chars)",
-          "tags": ["specific-exam", "category", "domain", "content-type"]
-          "cover_image": "URL of the best image from source media for the article cover (or null if none suitable)"
-        }
-
-        CRITICAL:
-        • Return ONLY the JSON object — no text before or after
-        • No code fences or backticks wrapping the JSON
-        • Ensure valid, parseable JSON (escape quotes in markdown properly)
-        • The markdown field must contain the FULL article, not a summary
-        • The markdown must include inline images, table, liquid tags (details/card), and end with a discussion question
-        • cover_image should be a high quality, relevant image URL from the social media- this becomes the articles hero image
-
+        The markdown must be the FULL article (#{word_range} words), not a summary. Escape quotes properly. cover_image should be the best source media image URL.
       PROMPT
     end
 
@@ -434,7 +280,8 @@ module Ai
 
       word_count = markdown.split(/\s+/).size
       Rails.logger.info("Ai::CommunityBotTrendingArticleCreator: Generated #{word_count} words for '#{title}'")
-      if word_count < MIN_WORD_COUNT
+      min_words = (@target_word_count * 0.6).to_i
+      if word_count < min_words
         Rails.logger.warn("Ai::CommunityBotTrendingArticleCreator: Article below minimum word count (#{word_count}/#{MIN_WORD_COUNT})")
       end
 

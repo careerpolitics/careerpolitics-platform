@@ -191,6 +191,9 @@ module TrendDiscovery
       options.add_argument("--user-agent=#{profile[:user_agent]}")
       options.add_argument("--proxy-server=http://#{proxy}") if proxy.present?
 
+      options.exclude_switches << "enable-automation"
+      options.exclude_switches << "enable-logging"
+
       options.add_preference("intl.accept_languages", profile[:languages].join(","))
       options.add_preference("credentials_enable_service", false)
       options.add_preference("profile.password_manager_enabled", false)
