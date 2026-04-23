@@ -11,7 +11,6 @@ module TrendDiscovery
                  bytes = value.to_i * (unit == "m" ? 1024 * 1024 : 1024 * 1024 * 1024)
                  bytes.clamp(256 * 1024 * 1024, 8 * 1024 * 1024 * 1024) # 256MB..8GB
                end
-    SHM_SIZE = ENV.fetch("SELENIUM_SHM_SIZE", "2g").to_i * 1024 * 1024 * 1024
     NETWORK = ENV.fetch("SELENIUM_NETWORK", nil)
     CONTAINER_TIMEOUT = ENV.fetch("SELENIUM_CONTAINER_TIMEOUT", "120").to_i
     READY_POLL_INTERVAL = 2

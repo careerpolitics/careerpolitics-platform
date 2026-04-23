@@ -3,7 +3,7 @@ module Ai
     VERSION = "2.0".freeze
     MAX_TAGS = 4
     MIN_WORD_COUNT = 1200
-    PostResult = Struct.new(:title, :body, :tags, keyword_init: true)
+    PostResult = Struct.new(:title, :body, :tags,:cover_image, keyword_init: true)
 
     def initialize(
       ai_context:,
@@ -87,7 +87,7 @@ module Ai
       # Step 7: Build prompt and call AI
       prompt = build_prompt(best_trend[:name], @language, headlines, platform_tags)
       response = @ai_client.call(prompt, response_mime_type: "application/json")
-      result = parse_response(response, platform_tags)
+      result = parse_response(response, platform_tags, headlines)
       return nil unless result
 
       # Step 8: Record cooldown
@@ -110,7 +110,7 @@ module Ai
         end
       end
 
-      trends_client = TrendDiscovery::GoogleTrendsClient.new(browser_client: browser)
+      trends_client = TrendDiscovery::GoogleTrendsClient.new(browser_client: browser, ai_client: @ai_client)
       trends_client.discover(geo: @geo, language: @language, max_trends: @max_trends)
     end
 
@@ -180,7 +180,35 @@ module Ai
         • Mention AI, prompts, generation, or automation
         • Include promotional content, Telegram links, or subscription prompts
         • Invent facts — if data is unavailable, write: "Official details are awaited."
+        ═══════════════════════════════════════
+        ENGAGEMENT & READER INTERACTION (HIGH PRIORITY)
+        ═══════════════════════════════════════
 
+        Articles that earn reactions, comments, and extended reading time rank highest on the platform.
+        You MUST weave in engagement triggers throughout the article:
+
+        **Discussion Hooks (MANDATORY — include at least 2):**
+        • End the article or a major section with a direct question to the reader
+          Examples: "Are you planning to appear for this exam? Share your preparation strategy below."
+          "Which post do you think offers the best career growth? Tell us in the comments."
+        • Present a debatable opinion or comparison that invites reader responses
+        • Ask readers to share their experience, tips, or doubts
+
+        **Reaction-Worthy Moments:**
+        • Include a surprising statistic, salary figure, or competition ratio that makes readers react
+        • Bold critical deadlines or breaking changes that readers will want to bookmark
+        • Provide genuinely useful insider tips that feel exclusive
+
+        **Visual Engagement Anchors:**
+        • Use images from source data within the article body (markdown image syntax)
+        • Use tables for ANY structured data — readers scan tables far more than paragraphs
+        • Use collapsible sections for dense reference material (syllabus, detailed breakdowns)
+        • Use card blocks to highlight the single most critical update
+
+        **Time-on-Page Boosters:**
+        • Structure content so readers scroll through the entire article
+        • Place high-value information (salary, eligibility, dates) in the middle, not just the top
+        • End with a strong call-to-action section that encourages comments
         ═══════════════════════════════════════
         ARTICLE STRUCTURE
         ═══════════════════════════════════════
@@ -236,16 +264,34 @@ module Ai
         Clear, actionable closing: bookmark dates, start preparation, gather documents, etc.
 
         ═══════════════════════════════════════
-        FORMATTING RULES
+        FORMATTING & RICH MEDIA RULES
         ═══════════════════════════════════════
 
+        **Text Formatting:**
         • **Short paragraphs**: 2–4 lines max per paragraph
         • **Bullet points**: for lists of 3+ items
-        • **Bold key terms**: dates, salary figures, eligibility criteria
-        • **Tables**: use for structured data (dates, vacancies, salary, exam pattern) — keep to 2–4 columns
-        • **Details block**: `{% details Summary %} ... {% enddetails %}` — use for long syllabi or detailed breakdowns (max 2)
-        • **Card block**: `{% card %} ... {% endcard %}` — use ONCE for the most critical update (deadline, breaking change)
-        • **CTA block**: `{% cta URL %} text {% endcta %}` — use ONCE only if an official apply/notification URL exists in source data
+        • **Bold key terms**: dates, salary figures, eligibility criteria, deadlines
+        • **Tables**: use for ANY structured data (dates, vacancies, salary, exam pattern) — aim for 2–3 tables per article
+
+        **Images (MANDATORY — include at least 1–2):**
+        • Use markdown image syntax: `![descriptive alt text](image_url)`
+        • Use relevant images from the source media URLs provided below
+        • Place images near relevant sections, not bunched together
+        • Every image MUST have descriptive alt text for SEO and accessibility
+
+        **Interactive Liquid Tags (use 3–5 per article):**
+        • `{% details Summary text %} ... {% enddetails %}` — collapsible sections for syllabus, detailed breakdowns, long tables (use 2–3 times)
+        • `{% card %} ... {% endcard %}` — highlight card for the most critical update, deadline, or breaking news (use ONCE)
+        • `{% cta URL %} button text {% endcta %}` — call-to-action button ONLY if an official apply/notification URL exists in source data (use max ONCE)
+
+        **Content Structure for Engagement:**
+        • Start with a hook paragraph (no heading)
+        • Use H2 (##) for major sections, H3 (###) for subsections
+        • Include at least 2 tables with structured data
+        • Place a `{% card %}` block around the most time-sensitive information
+        • Use `{% details %}` for reference sections readers may want to expand (syllabus, fee structure, etc.)
+        • End with a question or discussion prompt that encourages comments
+
 
         ═══════════════════════════════════════
         SEO OPTIMIZATION
@@ -303,6 +349,7 @@ module Ai
           "markdown": "Full article in Forem-compatible markdown (1500-2500 words)",
           "description": "Meta description (140-160 chars)",
           "tags": ["specific-exam", "category", "domain", "content-type"]
+          "cover_image": "URL of the best image from source media for the article cover (or null if none suitable)"
         }
 
         CRITICAL:
@@ -310,6 +357,9 @@ module Ai
         • No code fences or backticks wrapping the JSON
         • Ensure valid, parseable JSON (escape quotes in markdown properly)
         • The markdown field must contain the FULL article, not a summary
+        • The markdown must include inline images, table, liquid tags (details/card), and end with a discussion question
+        • cover_image should be a high quality, relevant image URL from the social media- this becomes the articles hero image
+
       PROMPT
     end
 
@@ -345,7 +395,7 @@ module Ai
       value.to_s.gsub(/\s+/, " ").strip
     end
 
-    def parse_response(response, platform_tags = [])
+    def parse_response(response, platform_tags = [], headlines =[])
       return nil if response.blank?
 
       json = JSON.parse(extract_json_payload(response))
@@ -354,6 +404,7 @@ module Ai
       markdown = json["markdown"].to_s.strip
       description = json["description"].to_s.strip
       raw_tags = sanitize_tags(json["tags"])
+      cover_image = pick_cover_image(json["cover_image"], headlines)
 
       if title.blank? || markdown.blank?
         Rails.logger.error("Ai::CommunityBotTrendingArticleCreator: AI response missing title or markdown")
@@ -366,8 +417,9 @@ module Ai
         Rails.logger.warn("Ai::CommunityBotTrendingArticleCreator: Article below minimum word count (#{word_count}/#{MIN_WORD_COUNT})")
       end
 
-      body = markdown
-      body = "---\ndescription: #{description}\n---\n\n#{body}" if description.present?
+      log_engagement_signals(markdown)
+
+      body = build_front_matter(description, cover_image) + markdown
 
       final_tags = if @tags.present?
                      @tags
@@ -379,6 +431,7 @@ module Ai
         title: title,
         body: body,
         tags: final_tags&.join(", "),
+        cover_image: cover_image
         )
     rescue JSON::ParserError => e
       Rails.logger.error("Ai::CommunityBotTrendingArticleCreator: Failed to parse AI JSON response: #{e.message}")
@@ -425,6 +478,49 @@ module Ai
 
       Rails.logger.info("Ai::CommunityBotTrendingArticleCreator: Tags: AI=#{ai_tags.inspect} → Final=#{matched.inspect}")
       matched.uniq.first(MAX_TAGS)
+    end
+
+    def pick_cover_image(ai_cover_image, headlines)
+      url = ai_cover_image.to_s.strip
+      return url if url.match?(%r{\Ahttps?://}) && !url.include?("data:")
+
+      headline_media = headlines.flat_map do |h|
+        [
+          h[:media_url],
+          h.dig(:article_details, :media_urls)&.first,
+        ]
+      end.compact.reject(&:blank?).uniq
+
+      picked = headline_media.find { |u| u.match?(%r{\Ahttps://}) }
+      Rails.logger.info("Ai::CommunityBotTrendingArticleCreator: Cover image: #{picked || 'none'}") if picked
+      picked
+    end
+
+    def build_front_matter(description, cover_image)
+      parts = []
+      parts << "description: #{description}" if description.present?
+      parts << "cover_image: #{cover_image}" if cover_image.present?
+
+      return "" if parts.empty?
+
+      "---\n#{parts.join("\n")}\n---\n\n"
+    end
+
+    def log_engagement_signals(markdown)
+      has_table = markdown.include?("|---") || markdown.include?("| ---")
+      has_image = markdown.match?(/!\[.+?\]\(.+?\)/)
+      has_details = markdown.include?("{% details")
+      has_card = markdown.include?("{% card")
+      has_question = markdown.match?(/\?\s*$/)
+
+      signals = []
+      signals << "tables" if has_table
+      signals << "images" if has_image
+      signals << "details_blocks" if has_details
+      signals << "card_blocks" if has_card
+      signals << "discussion_questions" if has_question
+
+      Rails.logger.info("Ai::CommunityBotTrendingArticleCreator: Engagement signals present: #{signals.join(', ').presence || 'NONE — article may underperform'}")
     end
 
     def sanitize_tags(tags_array)

@@ -344,6 +344,12 @@ module ScheduledAutomations
         article.tag_list = service_result.tags
       end
 
+      # Set cover image if the service provided one
+      if service_result.respond_to?(:cover_image) && service_result.cover_image.present?
+        article.main_image = service_result.cover_image
+        article.main_image_from_frontmatter = true
+      end
+
       # Set organization if specified
       if config["organization_id"].present?
         article.organization_id = config["organization_id"].to_i

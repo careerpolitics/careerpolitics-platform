@@ -7,7 +7,7 @@ module TrendDiscovery
     end
 
     def discover(trend:, geo:, language:, max_news:)
-      url = build_url(trend, geo, language)
+      url = build_url(trend, geo, language, max_news)
       Rails.logger.info("TrendDiscovery::GoogleNewsClient: Fetching news for '#{trend}' from #{url}")
 
       html = @browser.fetch_page(url, news_mode: true)
@@ -18,9 +18,9 @@ module TrendDiscovery
 
     private
 
-    def build_url(trend, geo, language)
+    def build_url(trend, geo, language, max_news)
       query = CGI.escape(trend)
-      params = ["q=#{query}", "tbm=nws"]
+      params = ["q=#{query}", "tbm=nws", "num=#{[10, max_news * 2].max}"]
       params << "gl=#{geo}" if geo.present?
       params << "hl=#{language}" if language.present?
 
@@ -31,7 +31,7 @@ module TrendDiscovery
       doc = Nokogiri::HTML(html)
       headlines = []
 
-      selectors = ["div.SoaBEf", "div.dbsr","a.Wlyd0e","article","g-card", "div.MjjYud g-card", "div.MjjYud"]
+      selectors = ["div.SoaBEf", "div.dbsr", "a.WlydOe", "article", "g-card", "div.MjjYud g-card", "div.MjjYud"]
       cards = []
 
       selectors.each do |selector|
@@ -60,7 +60,7 @@ module TrendDiscovery
     end
 
     def extract_headline(card, trend)
-      title_el = card.at_css("div.n0jPhd, div.mCBkyc, h3, a[role='heading']")
+      title_el = card.at_css("div.n0jPhd, div.mCBkyc, div.JheGif, h3, a[role='heading']")
       title = title_el&.text&.strip
       return nil if title.blank?
 
@@ -68,17 +68,16 @@ module TrendDiscovery
       raw_link = link_el&.[]("href").to_s
       link = resolve_google_redirect(raw_link)
 
-      source_el = card.at_css("div.CEMjEf span, div.NUnG9d span, span.WF4CUc, div.CEMjEf, cite")
+      source_el = card.at_css("div.CEMjEf span, div.NUnG9d span, span.WF4CUc, span.XTjFC, div.CEMjEf, cite")
       source = source_el&.text&.strip || "Unknown"
 
-      time_el = card.at_css("span.WG9SHc span, div.OSrXXb span, time, span.r0bn4c")
+      time_el = card.at_css("span.WG9SHc span, div.OSrXXb span, time, span.r0bn4c, span.ZE0LJd span")
       published_at = time_el&.text&.strip
 
-      summary_el = card.at_css("div.GI74Re, div.Y3v8qd, div.s3v9rd")
+      summary_el = card.at_css("div.GI74Re, div.Y3v8qd, div.s3v9rd, span.st")
       summary = summary_el&.text&.strip
 
-      media_el = card.at_css("img[src^='http'], g-img img[src^='http']")
-      media_url = media_el&.[]("src")
+      media_url = extract_media_url(card)
 
       {
         trend: trend,
@@ -123,6 +122,24 @@ module TrendDiscovery
       headlines
     end
 
+    def extract_media_url(card)
+      image = card.at_css("img[src], img[data-src], img[data-iurl], img[srcset], g-img img[src]")
+      return nil unless image
+
+      %w[src data-src data-iurl].each do |attr|
+        value = image[attr].to_s.strip
+        return value if value.start_with?("http")
+      end
+
+      srcset = image["srcset"].to_s.strip
+      if srcset.present?
+        candidate = srcset.split(",").first.to_s.strip.split(/\s+/).first
+        return candidate if candidate&.start_with?("http")
+      end
+
+      nil
+    end
+
     def resolve_google_redirect(raw_url)
       return raw_url if raw_url.blank?
 
@@ -134,7 +151,7 @@ module TrendDiscovery
       if raw_url.include?("/url?")
         uri = URI.parse(raw_url)
         params = CGI.parse(uri.query.to_s)
-        return params["q"]&.first || raw_url
+        return params["q"]&.first || params["url"]&.first || raw_url
       end
 
       raw_url
