@@ -8,11 +8,11 @@ Destination:
 Filter:
 Enter your keywords
 Wrap lines:
-I, [2026-04-23T07:18:09.435929 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2026-04-23T07:18:09.503530 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2026-04-23T07:18:09+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"sidekiq","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+I, [2026-04-23T08:40:09.435175 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2026-04-23T08:40:09.496102 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2026-04-23T08:40:09+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"sidekiq","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
 service_name is unknown, will set to unknown_service:sidekiq
 dataset will be ignored, sending data to unknown_service:sidekiq
-2026-04-23T07:18:09.965Z pid=1 tid=kix INFO: Booting Sidekiq 6.5.12 with Sidekiq::RedisConnection::RedisAdapter options {:url=>"redis://:REDACTED@careerpolitics-redis-master.redis.svc.cluster.local:6379"}
+2026-04-23T08:40:10.063Z pid=1 tid=kix INFO: Booting Sidekiq 6.5.12 with Sidekiq::RedisConnection::RedisAdapter options {:url=>"redis://:REDACTED@careerpolitics-redis-master.redis.svc.cluster.local:6379"}
 /opt/apps/forem/app/services/images/generate_subforem_images.rb:2: warning: already initialized constant Images::TEMPLATE_PATH
 /opt/apps/forem/app/services/images/generate_social_image_magickally.rb:4: warning: previous definition of TEMPLATE_PATH was here
 /opt/apps/forem/app/services/push_notifications/unified_notifier.rb:25: warning: key :payload is duplicated and overwritten on line 28
@@ -22,123 +22,112 @@ dataset will be ignored, sending data to unknown_service:sidekiq
 /opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:167: warning: previous definition of REQUEST_HAS_BODY was here
 /opt/apps/forem/app/services/edge_cache/bust/nginx.rb:46: warning: already initialized constant Net::HTTP::Purge::RESPONSE_HAS_BODY
 /opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:168: warning: previous definition of RESPONSE_HAS_BODY was here
-I, [2026-04-23T07:18:16.726969 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
-W, [2026-04-23T07:18:18.779554 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
-I, [2026-04-23T07:18:18.905951 #1]  INFO -- : CareerPolitics Android consumer app initialized
-2026-04-23T07:18:19.649Z pid=1 tid=kix INFO: Booted Rails 7.0.8.7 application in production environment
-2026-04-23T07:18:19.652Z pid=1 tid=kix INFO: Running in ruby 3.3.0 (2023-12-25 revision 5124f9ac75) [x86_64-linux]
-2026-04-23T07:18:19.652Z pid=1 tid=kix INFO: See LICENSE and the LGPL-3.0 for licensing details.
-2026-04-23T07:18:19.652Z pid=1 tid=kix INFO: Upgrade to Sidekiq Pro for more features and support: https://sidekiq.org
-2026-04-23T07:18:19.714Z pid=1 tid=kix INFO: Cron Jobs - added job with name: feeds_import
-2026-04-23T07:18:19.728Z pid=1 tid=kix INFO: Cron Jobs - added job with name: log_worker_queue_stats
-2026-04-23T07:18:19.735Z pid=1 tid=kix INFO: Cron Jobs - added job with name: record_daily_usage
-2026-04-23T07:18:19.742Z pid=1 tid=kix INFO: Cron Jobs - added job with name: record_daily_notifications
-2026-04-23T07:18:19.747Z pid=1 tid=kix INFO: Cron Jobs - added job with name: record_data_counts
-2026-04-23T07:18:19.753Z pid=1 tid=kix INFO: Cron Jobs - added job with name: check_data_update_script_statuses
-2026-04-23T07:18:19.759Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_yearly_club_badges
-2026-04-23T07:18:19.768Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_beloved_comment_badges
-2026-04-23T07:18:19.774Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_four_week_streak_badge
-2026-04-23T07:18:19.779Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_eight_week_streak_badge
-2026-04-23T07:18:19.785Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_sixteen_week_streak_badge
-2026-04-23T07:18:19.791Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_weekly_tag_badges
-2026-04-23T07:18:19.796Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_contributor_badges_from_github
-2026-04-23T07:18:19.802Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_community_wellness_badges
-2026-04-23T07:18:19.807Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_thumbs_up_badges
-2026-04-23T07:18:19.813Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_first_post_badges
-2026-04-23T07:18:19.819Z pid=1 tid=kix INFO: Cron Jobs - added job with name: resave_supported_tags
-2026-04-23T07:18:19.825Z pid=1 tid=kix INFO: Cron Jobs - added job with name: send_welcome_notifications
-2026-04-23T07:18:19.830Z pid=1 tid=kix INFO: Cron Jobs - added job with name: hourly_feed_cache_bust
-2026-04-23T07:18:19.836Z pid=1 tid=kix INFO: Cron Jobs - added job with name: daily_home_cache_bust
-2026-04-23T07:18:19.842Z pid=1 tid=kix INFO: Cron Jobs - added job with name: send_email_digest
-2026-04-23T07:18:19.848Z pid=1 tid=kix INFO: Cron Jobs - added job with name: remove_old_notifications
-2026-04-23T07:18:19.854Z pid=1 tid=kix INFO: Cron Jobs - added job with name: trim_old_ai_audits
-2026-04-23T07:18:19.859Z pid=1 tid=kix INFO: Cron Jobs - added job with name: remove_old_emails
-2026-04-23T07:18:19.864Z pid=1 tid=kix INFO: Cron Jobs - added job with name: sync_credits_counter_cache
-2026-04-23T07:18:19.870Z pid=1 tid=kix INFO: Cron Jobs - added job with name: get_podcast_episodes
-2026-04-23T07:18:19.875Z pid=1 tid=kix INFO: Cron Jobs - added job with name: update_latest_github_repos
-2026-04-23T07:18:19.881Z pid=1 tid=kix INFO: Cron Jobs - added job with name: push_notifications_cleanup
-2026-04-23T07:18:19.887Z pid=1 tid=kix INFO: Cron Jobs - added job with name: capture_query_stats
-2026-04-23T07:18:19.893Z pid=1 tid=kix INFO: Cron Jobs - added job with name: notify_about_published_articles
-2026-04-23T07:18:19.898Z pid=1 tid=kix INFO: Cron Jobs - added job with name: billboard_event_rollup
-2026-04-23T07:18:19.904Z pid=1 tid=kix INFO: Cron Jobs - added job with name: audience_segment_refresh
-2026-04-23T07:18:19.949Z pid=1 tid=kix INFO: Cron Jobs - added job with name: drip_email_worker
-2026-04-23T07:18:19.975Z pid=1 tid=kix INFO: Cron Jobs - added job with name: article_quality_reactions
-2026-04-23T07:18:19.982Z pid=1 tid=kix INFO: Cron Jobs - added job with name: article_label_cleanup
-2026-04-23T07:18:19.987Z pid=1 tid=kix INFO: Cron Jobs - added job with name: scheduled_automations_process
-2026-04-23T07:18:19.994Z pid=1 tid=kix INFO: Cron Jobs - added job with name: track_promotional_billboard_impressions
-2026-04-23T07:18:20.000Z pid=1 tid=kix INFO: Cron Jobs - added job with name: feed_import_log_cleanup
-2026-04-23T07:18:20.007Z pid=1 tid=kix INFO: Cron Jobs - added job with name: survey_daily_email
-2026-04-23T07:18:20.014Z pid=1 tid=kix INFO: Cron Jobs - added job with name: agent_session_raw_file_cleanup
-2026-04-23T07:18:20.021Z pid=1 tid=kix INFO: Cron Jobs - added job with name: reverify_organizations
-2026-04-23T07:18:20.026Z pid=1 tid=kix INFO: Cron Jobs - added job with name: events_manage_broadcast_billboards
-2026-04-23T07:18:20.034Z pid=1 tid=kix uniquejobs=upgrade_locks INFO: Already upgraded to 7.1.33
-2026-04-23T07:18:20.036Z pid=1 tid=kix uniquejobs=reaper INFO: Starting Reaper
-2026-04-23T07:18:20.083Z pid=1 tid=59x9 uniquejobs=reaper INFO: Nothing to delete; exiting.
-2026-04-23T07:18:20.086Z pid=1 tid=59x9 uniquejobs=reaper INFO: Nothing to delete; exiting.
-2026-04-23T07:18:33.387Z pid=1 tid=59yd class=Emails::RemoveOldEmailsWorker jid=02ac4d77da283847e68567dd INFO: start
-I, [2026-04-23T07:18:33.516942 #1]  INFO -- : {:tag=>"notification_delete", :statement=>"DELETE FROM ahoy_messages\nWHERE ahoy_messages.id IN (\n  SELECT ahoy_messages.id\n  FROM ahoy_messages\n  WHERE sent_at < '2026-02-23 07:18:33.419916' AND feedback_message_id IS NULL\n  LIMIT 50000\n)\n", :rows_deleted=>0, :duration=>0.018115408718585968}
-2026-04-23T07:18:33.518Z pid=1 tid=59yd class=Emails::RemoveOldEmailsWorker jid=02ac4d77da283847e68567dd elapsed=0.13 INFO: done
-2026-04-23T07:20:11.742Z pid=1 tid=5a7t class=Feeds::ImportArticlesWorker jid=01629417920c4e3d51ed3f87 INFO: start
-2026-04-23T07:20:11.750Z pid=1 tid=59yd class=Metrics::RecordBackgroundQueueStatsWorker jid=ac91bb7fc84176a160d6253c INFO: start
-2026-04-23T07:20:12.010Z pid=1 tid=59yd class=Metrics::RecordBackgroundQueueStatsWorker jid=ac91bb7fc84176a160d6253c elapsed=0.26 INFO: done
-2026-04-23T07:20:12.013Z pid=1 tid=59yd class=BadgeAchievements::BadgeAwardWorker jid=f74a746cb377da0a235c1909 INFO: start
-2026-04-23T07:20:12.065Z pid=1 tid=59yd class=BadgeAchievements::BadgeAwardWorker jid=f74a746cb377da0a235c1909 elapsed=0.052 INFO: done
-2026-04-23T07:20:12.068Z pid=1 tid=59yd class=Articles::PublishWorker jid=4fd12f17ea4316a3ce4137e4 INFO: start
-2026-04-23T07:20:12.074Z pid=1 tid=5a7t class=Feeds::ImportArticlesWorker jid=01629417920c4e3d51ed3f87 elapsed=0.332 INFO: done
-2026-04-23T07:20:12.086Z pid=1 tid=5a7t class=Events::ManageBroadcastBillboardsWorker jid=843b9fa67a944ed4274a4f18 INFO: start
-2026-04-23T07:20:12.173Z pid=1 tid=5a7t class=Events::ManageBroadcastBillboardsWorker jid=843b9fa67a944ed4274a4f18 elapsed=0.087 INFO: done
-2026-04-23T07:20:12.178Z pid=1 tid=5a7t class=CaptureQueryStatsWorker jid=2cbfc3ccb8cbffd19f16aeb8 INFO: start
-2026-04-23T07:20:12.180Z pid=1 tid=5a7t class=CaptureQueryStatsWorker jid=2cbfc3ccb8cbffd19f16aeb8 elapsed=0.002 INFO: done
-2026-04-23T07:20:12.185Z pid=1 tid=59yd class=Articles::PublishWorker jid=4fd12f17ea4316a3ce4137e4 elapsed=0.117 INFO: done
-2026-04-23T07:20:12.185Z pid=1 tid=5a7t class=ScheduledAutomations::ProcessWorker jid=d011e1b17f4ede2659f6c2f8 INFO: start
-I, [2026-04-23T07:20:12.187816 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
-I, [2026-04-23T07:20:12.204559 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
-2026-04-23T07:20:12.206Z pid=1 tid=5a7t class=ScheduledAutomations::ProcessWorker jid=d011e1b17f4ede2659f6c2f8 elapsed=0.021 INFO: done
-2026-04-23T07:25:22.857Z pid=1 tid=59yd class=CaptureQueryStatsWorker jid=8418bade839ea8fed3da6ade INFO: start
-2026-04-23T07:25:22.868Z pid=1 tid=5a7t class=Articles::PublishWorker jid=7ddf8ccd747c7683c0c45cdf INFO: start
-2026-04-23T07:25:22.976Z pid=1 tid=59yd class=CaptureQueryStatsWorker jid=8418bade839ea8fed3da6ade elapsed=0.119 INFO: done
-2026-04-23T07:25:22.979Z pid=1 tid=59yd class=Events::ManageBroadcastBillboardsWorker jid=d5cfea60c11b81dd682a9804 INFO: start
-2026-04-23T07:25:22.985Z pid=1 tid=5a7t class=Articles::PublishWorker jid=7ddf8ccd747c7683c0c45cdf elapsed=0.117 INFO: done
-2026-04-23T07:25:23.017Z pid=1 tid=59yd class=Events::ManageBroadcastBillboardsWorker jid=d5cfea60c11b81dd682a9804 elapsed=0.037 INFO: done
-2026-04-23T07:28:20.095Z pid=1 tid=59x9 uniquejobs=reaper INFO: Nothing to delete; exiting.
-2026-04-23T07:28:20.096Z pid=1 tid=59x9 uniquejobs=reaper INFO: Nothing to delete; exiting.
-2026-04-23T07:30:34.626Z pid=1 tid=59yd class=Metrics::RecordBackgroundQueueStatsWorker jid=d4fa3a6262547a3f5580c271 INFO: start
-2026-04-23T07:30:34.720Z pid=1 tid=5a7t class=Metrics::CheckDataUpdateScriptStatuses jid=82c4db7f773ee7f6c6b09268 INFO: start
-2026-04-23T07:30:34.839Z pid=1 tid=59yd class=Metrics::RecordBackgroundQueueStatsWorker jid=d4fa3a6262547a3f5580c271 elapsed=0.213 INFO: done
-2026-04-23T07:30:34.842Z pid=1 tid=59yd class=Events::ManageBroadcastBillboardsWorker jid=ff3af43fc4efdb6da2a9799e INFO: start
-2026-04-23T07:30:34.864Z pid=1 tid=59yd class=Events::ManageBroadcastBillboardsWorker jid=ff3af43fc4efdb6da2a9799e elapsed=0.022 INFO: done
-2026-04-23T07:30:34.867Z pid=1 tid=59yd class=Articles::PublishWorker jid=c7c295645ae51b3972cbbae6 INFO: start
-2026-04-23T07:30:34.879Z pid=1 tid=5a7t class=Metrics::CheckDataUpdateScriptStatuses jid=82c4db7f773ee7f6c6b09268 elapsed=0.159 INFO: done
-2026-04-23T07:30:34.882Z pid=1 tid=5a7t class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=09597b05af053c13963e02b0 INFO: start
-2026-04-23T07:30:34.894Z pid=1 tid=59yd class=Articles::PublishWorker jid=c7c295645ae51b3972cbbae6 elapsed=0.027 INFO: done
-2026-04-23T07:30:34.899Z pid=1 tid=59yd class=CaptureQueryStatsWorker jid=90c613b8639a872edb031d01 INFO: start
-2026-04-23T07:30:34.902Z pid=1 tid=59yd class=CaptureQueryStatsWorker jid=90c613b8639a872edb031d01 elapsed=0.003 INFO: done
-2026-04-23T07:30:34.908Z pid=1 tid=59yd class=ScheduledAutomations::ProcessWorker jid=14b5c5393562a52cb77bce09 INFO: start
-I, [2026-04-23T07:30:34.909673 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
-I, [2026-04-23T07:30:34.927974 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Found 1 automation(s) to execute
-W, [2026-04-23T07:30:34.928855 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
-2026-04-23T07:30:34.931Z pid=1 tid=5a7t class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=09597b05af053c13963e02b0 elapsed=0.049 INFO: done
-I, [2026-04-23T07:30:34.971314 #1]  INFO -- : Executing ScheduledAutomation #11 for user squirrel
-I, [2026-04-23T07:30:34.985499 #1]  INFO -- : ScheduledAutomations::Executor: running community_bot_trending_article_creator for automation_id=11 geo=IN language=en-IN max_trends=3
-I, [2026-04-23T07:30:34.985807 #1]  INFO -- : TrendDiscovery::ChromeManager: Using static Selenium URL http://careerpolitics-selenium.production.svc.cluster.local:4444/wd/hub
-I, [2026-04-23T07:30:34.996164 #1]  INFO -- : TrendDiscovery::GoogleTrendsClient: Fetching trends from https://trends.google.com/trending?geo=IN&category=9&status=active&hours=4&hl=en-IN
-W, [2026-04-23T07:30:35.010975 #1]  WARN -- : TrendDiscovery::SeleniumBrowserClient: Page load failed on attempt 1 for https://trends.google.com/trending?geo=IN&category=9&status=active&hours=4&hl=en-IN: These options are not w3c compliant: {:excludeSwitches=>["enable-automation", "enable-logging"], :useAutomationExtension=>false}
-I, [2026-04-23T07:30:35.011088 #1]  INFO -- : TrendDiscovery::SeleniumBrowserClient: Backing off 2107ms before retry
-W, [2026-04-23T07:30:37.118576 #1]  WARN -- : TrendDiscovery::SeleniumBrowserClient: Page load failed on attempt 2 for https://trends.google.com/trending?geo=IN&category=9&status=active&hours=4&hl=en-IN: These options are not w3c compliant: {:excludeSwitches=>["enable-automation", "enable-logging"], :useAutomationExtension=>false}
-I, [2026-04-23T07:30:37.118703 #1]  INFO -- : TrendDiscovery::SeleniumBrowserClient: Backing off 2087ms before retry
-I, [2026-04-23T07:30:39.205980 #1]  INFO -- : Ai::CommunityBotTrendingArticleCreator: Discovered 0 trends
-W, [2026-04-23T07:30:39.206142 #1]  WARN -- : Ai::CommunityBotTrendingArticleCreator: No fresh trends available after cooldown filter
-I, [2026-04-23T07:30:39.215901 #1]  INFO -- : ScheduledAutomation #11 completed: No content generated (service returned nil)
-I, [2026-04-23T07:30:39.216000 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Execution cycle complete
-2026-04-23T07:30:39.219Z pid=1 tid=59yd class=ScheduledAutomations::ProcessWorker jid=14b5c5393562a52cb77bce09 elapsed=4.311 INFO: done
-2026-04-23T07:35:28.555Z pid=1 tid=5a7t class=CaptureQueryStatsWorker jid=808ef987bd76221c49a49ed8 INFO: start
-2026-04-23T07:35:28.555Z pid=1 tid=59yd class=Articles::PublishWorker jid=6e0d249b90a93277b831adb0 INFO: start
-2026-04-23T07:35:28.641Z pid=1 tid=5a7t class=CaptureQueryStatsWorker jid=808ef987bd76221c49a49ed8 elapsed=0.087 INFO: done
-2026-04-23T07:35:28.644Z pid=1 tid=5a7t class=Articles::LabelCleanupWorker jid=77ba748528b52ab9016200e9 INFO: start
-2026-04-23T07:35:28.647Z pid=1 tid=59yd class=Articles::PublishWorker jid=6e0d249b90a93277b831adb0 elapsed=0.092 INFO: done
-2026-04-23T07:35:28.649Z pid=1 tid=59yd class=Events::ManageBroadcastBillboardsWorker jid=c99a30cfa644ac5d32826d2c INFO: start
-I, [2026-04-23T07:35:28.659659 #1]  INFO -- : LabelCleanupWorker: No eligible articles found for processing
-2026-04-23T07:35:28.660Z pid=1 tid=5a7t class=Articles::LabelCleanupWorker jid=77ba748528b52ab9016200e9 elapsed=0.016 INFO: done
-2026-04-23T07:35:28.670Z pid=1 tid=59yd class=Events::ManageBroadcastBillboardsWorker jid=c99a30cfa644ac5d32826d2c elapsed=0.021 INFO: done
-2026-04-23T07:37:17.276Z pid=1 tid=59yd class=Emails::DripEmailWorker jid=04e23d14965fcf0d501be40a INFO: start
-2026-04-23T07:37:17.377Z pid=1 tid=59yd class=Emails::DripEmailWorker jid=04e23d14965fcf0d501be40a elapsed=0.101 INFO: done
+I, [2026-04-23T08:40:17.482361 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
+W, [2026-04-23T08:40:19.742547 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
+I, [2026-04-23T08:40:19.841106 #1]  INFO -- : CareerPolitics Android consumer app initialized
+2026-04-23T08:40:20.667Z pid=1 tid=kix INFO: Booted Rails 7.0.8.7 application in production environment
+2026-04-23T08:40:20.669Z pid=1 tid=kix INFO: Running in ruby 3.3.0 (2023-12-25 revision 5124f9ac75) [x86_64-linux]
+2026-04-23T08:40:20.672Z pid=1 tid=kix INFO: See LICENSE and the LGPL-3.0 for licensing details.
+2026-04-23T08:40:20.672Z pid=1 tid=kix INFO: Upgrade to Sidekiq Pro for more features and support: https://sidekiq.org
+2026-04-23T08:40:20.742Z pid=1 tid=kix INFO: Cron Jobs - added job with name: feeds_import
+2026-04-23T08:40:20.750Z pid=1 tid=kix INFO: Cron Jobs - added job with name: log_worker_queue_stats
+2026-04-23T08:40:20.757Z pid=1 tid=kix INFO: Cron Jobs - added job with name: record_daily_usage
+2026-04-23T08:40:20.764Z pid=1 tid=kix INFO: Cron Jobs - added job with name: record_daily_notifications
+2026-04-23T08:40:20.772Z pid=1 tid=kix INFO: Cron Jobs - added job with name: record_data_counts
+2026-04-23T08:40:20.778Z pid=1 tid=kix INFO: Cron Jobs - added job with name: check_data_update_script_statuses
+2026-04-23T08:40:20.786Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_yearly_club_badges
+2026-04-23T08:40:20.792Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_beloved_comment_badges
+2026-04-23T08:40:20.799Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_four_week_streak_badge
+2026-04-23T08:40:20.805Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_eight_week_streak_badge
+2026-04-23T08:40:20.812Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_sixteen_week_streak_badge
+2026-04-23T08:40:20.820Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_weekly_tag_badges
+2026-04-23T08:40:20.826Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_contributor_badges_from_github
+2026-04-23T08:40:20.833Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_community_wellness_badges
+2026-04-23T08:40:20.838Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_thumbs_up_badges
+2026-04-23T08:40:20.843Z pid=1 tid=kix INFO: Cron Jobs - added job with name: award_first_post_badges
+2026-04-23T08:40:20.848Z pid=1 tid=kix INFO: Cron Jobs - added job with name: resave_supported_tags
+2026-04-23T08:40:20.854Z pid=1 tid=kix INFO: Cron Jobs - added job with name: send_welcome_notifications
+2026-04-23T08:40:20.859Z pid=1 tid=kix INFO: Cron Jobs - added job with name: hourly_feed_cache_bust
+2026-04-23T08:40:20.865Z pid=1 tid=kix INFO: Cron Jobs - added job with name: daily_home_cache_bust
+2026-04-23T08:40:20.871Z pid=1 tid=kix INFO: Cron Jobs - added job with name: send_email_digest
+2026-04-23T08:40:20.877Z pid=1 tid=kix INFO: Cron Jobs - added job with name: remove_old_notifications
+2026-04-23T08:40:20.885Z pid=1 tid=kix INFO: Cron Jobs - added job with name: trim_old_ai_audits
+2026-04-23T08:40:20.890Z pid=1 tid=kix INFO: Cron Jobs - added job with name: remove_old_emails
+2026-04-23T08:40:20.896Z pid=1 tid=kix INFO: Cron Jobs - added job with name: sync_credits_counter_cache
+2026-04-23T08:40:20.902Z pid=1 tid=kix INFO: Cron Jobs - added job with name: get_podcast_episodes
+2026-04-23T08:40:20.907Z pid=1 tid=kix INFO: Cron Jobs - added job with name: update_latest_github_repos
+2026-04-23T08:40:20.913Z pid=1 tid=kix INFO: Cron Jobs - added job with name: push_notifications_cleanup
+2026-04-23T08:40:20.921Z pid=1 tid=kix INFO: Cron Jobs - added job with name: capture_query_stats
+2026-04-23T08:40:20.926Z pid=1 tid=kix INFO: Cron Jobs - added job with name: notify_about_published_articles
+2026-04-23T08:40:20.932Z pid=1 tid=kix INFO: Cron Jobs - added job with name: billboard_event_rollup
+2026-04-23T08:40:20.937Z pid=1 tid=kix INFO: Cron Jobs - added job with name: audience_segment_refresh
+2026-04-23T08:40:20.943Z pid=1 tid=kix INFO: Cron Jobs - added job with name: drip_email_worker
+2026-04-23T08:40:20.962Z pid=1 tid=kix INFO: Cron Jobs - added job with name: article_quality_reactions
+2026-04-23T08:40:20.969Z pid=1 tid=kix INFO: Cron Jobs - added job with name: article_label_cleanup
+2026-04-23T08:40:20.976Z pid=1 tid=kix INFO: Cron Jobs - added job with name: scheduled_automations_process
+2026-04-23T08:40:20.982Z pid=1 tid=kix INFO: Cron Jobs - added job with name: track_promotional_billboard_impressions
+2026-04-23T08:40:20.987Z pid=1 tid=kix INFO: Cron Jobs - added job with name: feed_import_log_cleanup
+2026-04-23T08:40:21.035Z pid=1 tid=kix INFO: Cron Jobs - added job with name: survey_daily_email
+2026-04-23T08:40:21.042Z pid=1 tid=kix INFO: Cron Jobs - added job with name: agent_session_raw_file_cleanup
+2026-04-23T08:40:21.050Z pid=1 tid=kix INFO: Cron Jobs - added job with name: reverify_organizations
+2026-04-23T08:40:21.056Z pid=1 tid=kix INFO: Cron Jobs - added job with name: events_manage_broadcast_billboards
+2026-04-23T08:40:21.064Z pid=1 tid=kix uniquejobs=upgrade_locks INFO: Already upgraded to 7.1.33
+2026-04-23T08:40:21.068Z pid=1 tid=kix uniquejobs=reaper INFO: Starting Reaper
+2026-04-23T08:40:21.129Z pid=1 tid=59x9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-04-23T08:40:21.130Z pid=1 tid=59x9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-04-23T08:40:32.858Z pid=1 tid=59yd class=Metrics::RecordBackgroundQueueStatsWorker jid=aa3b20fa2beae0f72a5efa1c INFO: start
+2026-04-23T08:40:32.928Z pid=1 tid=59zh class=CaptureQueryStatsWorker jid=fe23e1beb1c21e0d6456e637 INFO: start
+2026-04-23T08:40:33.054Z pid=1 tid=59zh class=CaptureQueryStatsWorker jid=fe23e1beb1c21e0d6456e637 elapsed=0.125 INFO: done
+2026-04-23T08:40:33.085Z pid=1 tid=59yd class=Metrics::RecordBackgroundQueueStatsWorker jid=aa3b20fa2beae0f72a5efa1c elapsed=0.226 INFO: done
+2026-04-23T08:40:33.100Z pid=1 tid=59zh class=Articles::PublishWorker jid=114132a3c8cb7403fe39ea4b INFO: start
+2026-04-23T08:40:33.105Z pid=1 tid=59yd class=ScheduledAutomations::ProcessWorker jid=28abd9079a77dcdd6b06a26b INFO: start
+I, [2026-04-23T08:40:33.125089 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+I, [2026-04-23T08:40:33.156606 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2026-04-23T08:40:33.199Z pid=1 tid=59yd class=ScheduledAutomations::ProcessWorker jid=28abd9079a77dcdd6b06a26b elapsed=0.094 INFO: done
+2026-04-23T08:40:33.261Z pid=1 tid=59yd class=Events::ManageBroadcastBillboardsWorker jid=895f056e73e96dbeac118a8c INFO: start
+2026-04-23T08:40:33.367Z pid=1 tid=59zh class=Articles::PublishWorker jid=114132a3c8cb7403fe39ea4b elapsed=0.266 INFO: done
+2026-04-23T08:40:33.372Z pid=1 tid=59yd class=Events::ManageBroadcastBillboardsWorker jid=895f056e73e96dbeac118a8c elapsed=0.111 INFO: done
+2026-04-23T08:45:05.127Z pid=1 tid=59yd class=GithubRepos::UpdateLatestWorker jid=5387e6bb7103f200c32dc7d5 INFO: start
+2026-04-23T08:45:05.144Z pid=1 tid=59zh class=CaptureQueryStatsWorker jid=2e20a63c94def8d38a21a92d INFO: start
+2026-04-23T08:45:05.249Z pid=1 tid=59zh class=CaptureQueryStatsWorker jid=2e20a63c94def8d38a21a92d elapsed=0.105 INFO: done
+2026-04-23T08:45:05.251Z pid=1 tid=59zh class=Articles::PublishWorker jid=5b196fd6c52a1b68edd25b3c INFO: start
+2026-04-23T08:45:05.279Z pid=1 tid=59zh class=Articles::PublishWorker jid=5b196fd6c52a1b68edd25b3c elapsed=0.028 INFO: done
+2026-04-23T08:45:05.285Z pid=1 tid=59zh class=Events::ManageBroadcastBillboardsWorker jid=3568003e8db32d55e5b6451f INFO: start
+2026-04-23T08:45:05.291Z pid=1 tid=59yd class=GithubRepos::UpdateLatestWorker jid=5387e6bb7103f200c32dc7d5 elapsed=0.164 INFO: done
+2026-04-23T08:45:05.325Z pid=1 tid=59zh class=Events::ManageBroadcastBillboardsWorker jid=3568003e8db32d55e5b6451f elapsed=0.04 INFO: done
+2026-04-23T08:50:19.160Z pid=1 tid=59yd class=Metrics::RecordBackgroundQueueStatsWorker jid=301051942ad0aa14304d3565 INFO: start
+2026-04-23T08:50:19.161Z pid=1 tid=59zh class=CaptureQueryStatsWorker jid=56b7cb6fa81980d3d898f276 INFO: start
+2026-04-23T08:50:19.246Z pid=1 tid=59zh class=CaptureQueryStatsWorker jid=56b7cb6fa81980d3d898f276 elapsed=0.085 INFO: done
+2026-04-23T08:50:19.249Z pid=1 tid=59zh class=Events::ManageBroadcastBillboardsWorker jid=19bc8b2c18a83c1a3036546a INFO: start
+2026-04-23T08:50:19.273Z pid=1 tid=59zh class=Events::ManageBroadcastBillboardsWorker jid=19bc8b2c18a83c1a3036546a elapsed=0.024 INFO: done
+2026-04-23T08:50:19.277Z pid=1 tid=59zh class=Articles::PublishWorker jid=dbf2fd61b454b3cb4d62e625 INFO: start
+2026-04-23T08:50:19.306Z pid=1 tid=59zh class=Articles::PublishWorker jid=dbf2fd61b454b3cb4d62e625 elapsed=0.029 INFO: done
+2026-04-23T08:50:19.311Z pid=1 tid=59zh class=ScheduledAutomations::ProcessWorker jid=785ab4145d17c1587dc0be6d INFO: start
+I, [2026-04-23T08:50:19.312403 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+I, [2026-04-23T08:50:19.325362 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Found 1 automation(s) to execute
+W, [2026-04-23T08:50:19.326258 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+I, [2026-04-23T08:50:19.362101 #1]  INFO -- : Executing ScheduledAutomation #11 for user squirrel
+2026-04-23T08:50:19.372Z pid=1 tid=59yd class=Metrics::RecordBackgroundQueueStatsWorker jid=301051942ad0aa14304d3565 elapsed=0.211 INFO: done
+I, [2026-04-23T08:50:19.378274 #1]  INFO -- : ScheduledAutomations::Executor: running community_bot_trending_article_creator for automation_id=11 geo=IN language=en-IN max_trends=3
+I, [2026-04-23T08:50:19.378662 #1]  INFO -- : TrendDiscovery::ChromeManager: Using static Selenium URL http://careerpolitics-selenium.production.svc.cluster.local:4444/wd/hub
+I, [2026-04-23T08:50:19.388376 #1]  INFO -- : TrendDiscovery::GoogleTrendsClient: Fetching trends from https://trends.google.com/trending?geo=IN&category=9&status=active&hours=4&hl=en-IN
+2026-04-23T08:50:21.156Z pid=1 tid=59x9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-04-23T08:50:21.157Z pid=1 tid=59x9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+I, [2026-04-23T08:50:29.272907 #1]  INFO -- : Ai::CommunityBotTrendingArticleCreator: Discovered 3 trends
+I, [2026-04-23T08:50:29.284905 #1]  INFO -- : Ai::CommunityBotTrendingArticleCreator: 3 fresh trends after cooldown
+I, [2026-04-23T08:50:29.285372 #1]  INFO -- : TrendDiscovery::GoogleNewsClient: Fetching news for 'kseab' from https://www.google.com/search?q=kseab&tbm=nws&num=10&gl=IN&hl=en-IN
+I, [2026-04-23T08:50:36.141018 #1]  INFO -- : Ai::CommunityBotTrendingArticleCreator: Found 5 headlines for 'kseab'
+I, [2026-04-23T08:50:36.141149 #1]  INFO -- : TrendDiscovery::GoogleNewsClient: Fetching news for 'kseab' from https://www.google.com/search?q=kseab&tbm=nws&num=10&gl=IN&hl=en-IN
+I, [2026-04-23T08:50:41.960991 #1]  INFO -- : Ai::CommunityBotTrendingArticleCreator: Found 5 headlines for 'kseab'
+I, [2026-04-23T08:50:41.961107 #1]  INFO -- : TrendDiscovery::GoogleNewsClient: Fetching news for 'kseeb' from https://www.google.com/search?q=kseeb&tbm=nws&num=10&gl=IN&hl=en-IN
+I, [2026-04-23T08:50:48.715328 #1]  INFO -- : Ai::CommunityBotTrendingArticleCreator: Found 1 headlines for 'kseeb'
+I, [2026-04-23T08:50:48.859492 #1]  INFO -- : TrendDiscovery::HeadlineEnricher: Enriched headline for source='Mint' url='https://www.livemint.com/education/karnataka-sslc-result-2026-kseab-10th-result-today-check-step-to-download-marks-memo-at-karresultsnicin-11776912133353.html' mediaType=image
+I, [2026-04-23T08:50:48.937056 #1]  INFO -- : TrendDiscovery::HeadlineEnricher: Enriched headline for source='Hindustan Times' url='https://www.hindustantimes.com/india-news/karnataka-kseab-sslc-10th-result-2026-live-updates-download-kseab-sslc-class-10-scorecard-at-karresults-nic-in-101776915427945.html' mediaType=image
+I, [2026-04-23T08:50:49.172994 #1]  INFO -- : TrendDiscovery::HeadlineEnricher: Enriched headline for source='Vijay Karnataka' url='https://vijaykarnataka.com/news/karnataka/karnataka-sslc-results-to-be-declared-on-april-23-kseeb-official-information-time-website-link-released/articleshow/130444525.cms' mediaType=image
+I, [2026-04-23T08:50:49.173393 #1]  INFO -- : Ai::CommunityBotTrendingArticleCreator: Generating article for 'kseab' with 5 headlines
+E, [2026-04-23T08:51:37.186225 #1] ERROR -- : Ai::CommunityBotTrendingArticleCreator: Failed to parse AI JSON response: unexpected token at '{
+  "title": "KSEAB Karnataka SSLC Result 2026 Declared: Check Marksheet, Pass Percentage & Career Path",
+  "markdown": "The long wait for over 9 lakh students has finally ended. The Karnataka School Examination and Assessment Board (KSEAB) has officially declared the Karnataka SSLC Result 2026 today, **April 23, 2026, at 12 PM**. This result is not just a marksheet; it's the foundational document for your entire career, especially for those aspiring to enter prestigious government services in the future. Candidates can immediately access their scorecards on the official results portal, **karresults.nic.in**, using their registration number and date of birth.\n\nThis year's examination, conducted from March 18 to April 2, saw a massive turnout of **9,02,889 registered students**, including 8,12,855 fresh candidates. Understanding these results, navigating the new examination system, and planning your next steps are crucial. This guide provides a comprehensive analysis for students and parents to make informed decisions.\n\n## Key Highlights at a Glance\n\nFor those in a hurry, here’s a quick summary of the most critical information regarding the KSEAB 10th Result 2026. Bookmark this section for easy reference.\n\n| Particulars | Details |\n| :--- | :--- |\n| **Result Name** | Karnataka SSLC Main Examination Result 2026 |\n| **Conducting Board** | Karnataka School Examination and Assessment Board (KSEAB) |\n| **Result Status** | **Declared** |\n| **Result Date** | **April 23, 2026** |\n| **Result Time** | 12:00 PM onwards |\n| **Total Students Registered** | 9,02,889 |\n| **Credentials Required** | Registration Number, Date of Birth |\n| **Official Website** | `karresults.nic.in` |\n| **Passing Marks** | Minimum 35% in each subject |\n\n## How to Check Your KSEAB SSLC Result 2026: A Step-by-Step Guide\n\nAccessing your result online is a straightforward process. Follow these steps carefully to download your provisional marksheet without any hassle. Keep your hall ticket handy as you will need the details mentioned on it.\n\n1.  **Visit the Official Portal**: Navigate to the Karnataka results official website: **karresults.nic.in**.\n2.  **Find the Result Link**: On the homepage, look for the link that reads \"Karnataka SSLC Main Examination Result 2026\". Click on it.\n3.  **Enter Your Credentials**: A new login page will open. You will be prompted to enter your **Registration Number** and **Date of Birth** in the specified format (DD/MM/YYYY).\n\n'
+I, [2026-04-23T08:51:37.195241 #1]  INFO -- : ScheduledAutomation #11 completed: No content generated (service returned nil)
+I, [2026-04-23T08:51:37.195320 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Execution cycle complete
+2026-04-23T08:51:37.197Z pid=1 tid=59zh class=ScheduledAutomations::ProcessWorker jid=785ab4145d17c1587dc0be6d elapsed=77.886 INFO: done

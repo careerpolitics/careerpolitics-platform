@@ -1,11 +1,11 @@
 module TrendDiscovery
   class SeleniumBrowserClient
-    STEALTH_SCRIPT = <<~JS.freeze
+    STEALTH_SCRIPT_TEMPLATE = <<~JS.freeze
       Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
       delete navigator.__proto__.webdriver;
       window.chrome = window.chrome || {runtime: {}, loadTimes: () => ({}), csi: () => ({})};
-      Object.defineProperty(navigator, 'platform', {get: () => 'Win32'});
-      Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
+      Object.defineProperty(navigator, 'platform', {get: () => '%<platform>s'});
+      Object.defineProperty(navigator, 'languages', {get: () => %<languages>s});
       Object.defineProperty(navigator, 'plugins', {get: () => [
         {name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer'},
         {name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai'},
@@ -65,13 +65,37 @@ module TrendDiscovery
       "sorry",
     ].freeze
 
-    USER_AGENTS = [
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+    BROWSER_PROFILES = [
+      {
+        user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+        platform: "Win32",
+        languages: ["en-US", "en"],
+      },
+      {
+        user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        platform: "Win32",
+        languages: ["en-US", "en"],
+      },
+      {
+        user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+        platform: "MacIntel",
+        languages: ["en-US", "en"],
+      },
+      {
+        user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        platform: "MacIntel",
+        languages: ["en-US", "en"],
+      },
+      {
+        user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+        platform: "Linux x86_64",
+        languages: ["en-US", "en"],
+      },
+      {
+        user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+        platform: "Win32",
+        languages: ["en-US", "en"],
+      },
     ].freeze
 
     VIEWPORTS = [
@@ -150,7 +174,7 @@ module TrendDiscovery
 
     def create_driver(proxy: nil)
       viewport = VIEWPORTS.sample
-      user_agent = ENV["SELENIUM_USER_AGENT"].presence || USER_AGENTS.sample
+      profile = random_browser_profile
 
       options = Selenium::WebDriver::Chrome::Options.new
       options.page_load_strategy = :eager
@@ -159,18 +183,15 @@ module TrendDiscovery
       options.add_argument("--no-sandbox")
       options.add_argument("--disable-dev-shm-usage")
       options.add_argument("--disable-gpu")
-      options.add_argument("--disable-background-networking")
-      options.add_argument("--disable-background-timer-throttling")
-      options.add_argument("--disable-renderer-backgrounding")
+      options.add_argument("--disable-extensions")
+      options.add_argument("--mute-audio")
       options.add_argument("--disable-features=Translate,OptimizationHints,MediaRouter")
-      options.add_argument("--lang=en-US")
+      options.add_argument("--lang=#{profile[:languages].first}")
       options.add_argument("--disable-blink-features=AutomationControlled")
-      options.add_argument("--user-agent=#{user_agent}")
+      options.add_argument("--user-agent=#{profile[:user_agent]}")
       options.add_argument("--proxy-server=http://#{proxy}") if proxy.present?
 
-      options.add_option(:excludeSwitches, ["enable-automation", "enable-logging"])
-      options.add_option(:useAutomationExtension, false)
-      options.add_preference("intl.accept_languages", "en-US,en")
+      options.add_preference("intl.accept_languages", profile[:languages].join(","))
       options.add_preference("credentials_enable_service", false)
       options.add_preference("profile.password_manager_enabled", false)
 
@@ -180,16 +201,32 @@ module TrendDiscovery
         options: options,
         )
 
-      apply_stealth(driver)
+      apply_stealth(driver, profile: profile)
       driver
     end
 
-    def apply_stealth(driver)
+    def apply_stealth(driver, profile:)
+      stealth_script = build_stealth_script(profile)
       driver.navigate.to("data:,")
-      driver.execute_cdp("Page.addScriptToEvaluateOnNewDocument", source: STEALTH_SCRIPT)
-      driver.execute_script(STEALTH_SCRIPT)
+      driver.execute_cdp("Page.addScriptToEvaluateOnNewDocument", source: stealth_script)
+      driver.execute_script(stealth_script)
     rescue StandardError => e
       Rails.logger.debug("TrendDiscovery::SeleniumBrowserClient: Unable to apply stealth: #{e.message}")
+    end
+
+    def build_stealth_script(profile)
+      format(
+        STEALTH_SCRIPT_TEMPLATE,
+        platform: profile[:platform],
+        languages: profile[:languages].to_json,
+      )
+    end
+
+    def random_browser_profile
+      profile = BROWSER_PROFILES.sample.deep_dup
+      user_agent_override = ENV["SELENIUM_USER_AGENT"].presence
+      profile[:user_agent] = user_agent_override if user_agent_override
+      profile
     end
 
     def bot_detected?(driver)

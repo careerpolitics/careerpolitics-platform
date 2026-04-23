@@ -1,0 +1,47 @@
+require "rails_helper"
+
+RSpec.describe Ai::CommunityBotTrendingArticleCreator do
+  describe "#generate" do
+    let(:ai_client) { instance_double(Ai::Base) }
+    let(:chrome_manager) { instance_double(TrendDiscovery::ChromeManager, start!: "http://selenium:4444/wd/hub", stop!: true) }
+    let(:browser) { instance_double(TrendDiscovery::SeleniumBrowserClient) }
+    let(:news_client) { instance_double(TrendDiscovery::GoogleNewsClient) }
+    let(:enricher) { instance_double(TrendDiscovery::HeadlineEnricher) }
+
+    let(:service) do
+      described_class.new(
+        ai_context: "Career platform",
+        ai_client: ai_client,
+      )
+    end
+
+    it "retries AI generation when JSON parsing fails" do
+      trend = { name: "kseab", slug: "kseab" }
+      headlines = [{ title: "Headline", source: "Source" }]
+      parsed_result = described_class::PostResult.new(title: "Title", body: "Body", tags: "career", cover_image: nil)
+
+      allow(TrendDiscovery::ChromeManager).to receive(:new).and_return(chrome_manager)
+      allow(TrendDiscovery::SeleniumBrowserClient).to receive(:new).and_return(browser)
+      allow(TrendDiscovery::GoogleNewsClient).to receive(:new).and_return(news_client)
+      allow(TrendDiscovery::HeadlineEnricher).to receive(:new).and_return(enricher)
+
+      allow(service).to receive(:discover_trends).and_return([trend])
+      allow(service).to receive(:pick_fresh_trends).and_return([trend])
+      allow(news_client).to receive(:discover).and_return(headlines)
+      allow(enricher).to receive(:enrich).and_return(headlines)
+      allow(service).to receive(:pick_best_trend).and_return(trend)
+      allow(service).to receive(:fetch_platform_tags).and_return([])
+      allow(service).to receive(:build_prompt).and_return("BASE PROMPT")
+      allow(service).to receive(:parse_response).and_return(nil, parsed_result)
+      allow(TrendRunHistory).to receive(:create!)
+
+      allow(ai_client).to receive(:call).and_return("bad payload", "good payload")
+
+      result = service.generate
+
+      expect(result).to eq(parsed_result)
+      expect(ai_client).to have_received(:call).with("BASE PROMPT", response_mime_type: "application/json").once
+      expect(ai_client).to have_received(:call).with(include("RETRY INSTRUCTION (CRITICAL):"), response_mime_type: "application/json").once
+    end
+  end
+end
