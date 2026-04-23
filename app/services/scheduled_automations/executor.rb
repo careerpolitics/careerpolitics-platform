@@ -209,6 +209,7 @@ module ScheduledAutomations
         additional_instructions: @automation.additional_instructions,
         tags: config["tags"],
         affected_user: @user,
+        target_word_count: (config["target_word_count"] || 800).to_i,
         geo: config["geo"] || "IN",
         language: config["language"] || "en-IN",
         max_trends: (config["max_trends"] || 3).to_i,
