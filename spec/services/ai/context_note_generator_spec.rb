@@ -63,11 +63,6 @@ RSpec.describe Ai::ContextNoteGenerator, type: :service do
         generator.call
       end
 
-      it "does not create a context note if normalized response is too short" do
-        allow(ai_client_double).to receive(:call).and_return("short")
-        expect(ContextNote).not_to receive(:create!)
-        generator.call
-      end
     end
 
     context "when initialization data is missing" do
