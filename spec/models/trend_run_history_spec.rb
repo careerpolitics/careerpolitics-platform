@@ -27,4 +27,17 @@ RSpec.describe TrendRunHistory do
       expect(described_class.fresh?("brand-new-trend", 48)).to be(true)
     end
   end
+
+  describe ".used_since" do
+    it "returns a unique set of trend slugs within the cutoff window" do
+      recent = 1.hour.ago
+      cutoff = 3.hours.ago
+
+      described_class.create!(trend: "UP Board 1", trend_slug: "up-board", published: true, created_at: recent)
+      described_class.create!(trend: "UP Board 2", trend_slug: "up-board", published: true, created_at: recent)
+      described_class.create!(trend: "Old Trend", trend_slug: "old-trend", published: true, created_at: 2.days.ago)
+
+      expect(described_class.used_since(cutoff)).to eq(["up-board"].to_set)
+    end
+  end
 end
