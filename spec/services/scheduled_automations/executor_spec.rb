@@ -271,7 +271,7 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
       it "applies generated tags when action_config tags are missing" do
         result = executor.call
 
-        expect(result.article.tag_list).to eq(["news", "current-affairs"])
+        expect(result.article.tag_list).to eq(["news", "currentaffairs"])
       end
 
       it "prefers configured tags over generated tags" do

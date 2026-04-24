@@ -129,11 +129,7 @@ module TrendDiscovery
       return [] if response.blank?
 
       payload = response.to_s.strip
-      payload = payload.sub(/\A```
-
-(?:json)?\s*\n/, "").sub(/\n\s*
-
-```\s*\z/, "").strip
+      payload = payload.sub(/\A```(?:json)?\s*\n/, "").sub(/\n\s*```\s*\z/, "").strip
       json = JSON.parse(payload)
       topics = json["topics"]
       return [] unless topics.is_a?(Array)
