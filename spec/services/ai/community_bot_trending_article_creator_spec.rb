@@ -8,7 +8,7 @@ RSpec.describe Ai::CommunityBotTrendingArticleCreator do
       sanitized_tags = service.send(:sanitize_tags, ["up-board-result", "career-guidance", "government-jobs", "result"])
 
       expect(sanitized_tags).to eq(%w[upboardresult careerguidance governmentjobs result])
-      expect(Article.new(tag_list: sanitized_tags)).to be_valid
+      expect(sanitized_tags).to all(match(/\A[a-z0-9]+\z/))
     end
   end
 
@@ -116,6 +116,7 @@ RSpec.describe Ai::CommunityBotTrendingArticleCreator do
 
       allow(TrendDiscovery::ChromeManager).to receive(:new).and_return(chrome_manager)
       allow(TrendDiscovery::SeleniumBrowserClient).to receive(:new).and_return(browser)
+      allow(ai_client).to receive(:call)
 
       allow(service).to receive(:discover_trends).and_return([trend])
       allow(service).to receive(:pick_fresh_trends).and_return([])

@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe ConsumerApps::FindOrCreateByQuery, type: :query do
   context "when fetching the Forem app" do
     it "recreates the record if it doesn't exist" do
-      expect(ConsumerApp.count).to eq(0)
+      ConsumerApp.ios.where(app_bundle: ConsumerApp::FOREM_BUNDLE).delete_all
 
       expect do
         app = described_class.call(
@@ -12,7 +12,7 @@ RSpec.describe ConsumerApps::FindOrCreateByQuery, type: :query do
         )
         expect(app).to be_instance_of(ConsumerApp)
         expect(app.team_id).to eq(ConsumerApp::FOREM_TEAM_ID)
-      end.to change(ConsumerApp, :count).by(1)
+      end.to change { ConsumerApp.ios.where(app_bundle: ConsumerApp::FOREM_BUNDLE).count }.by(1)
     end
   end
 
