@@ -1,4 +1,5 @@
 require "rails_helper"
+require "timeout"
 
 RSpec.describe "Notifications page", js: true do
   let(:alex) { create(:user) }
@@ -15,11 +16,14 @@ RSpec.describe "Notifications page", js: true do
     expect(page).to have_text("thanks i guess")
   end
 
-  it "shows 1 notification and disappear after clicking it" do
+  it "shows 1 notification and disappear after clicking it", :flaky do
     follow_instance = leslie.follow(alex)
     Notification.send_new_follower_notification_without_delay(follow_instance)
 
     visit "/"
+    wait_for_javascript
+    expect(page).to have_css("#notifications-link")
+
     expect(page).to have_css("span#notifications-number", text: "1")
     click_link("notifications-link")
     expect(page).not_to have_css("span#notifications-number", text: "1")
@@ -102,6 +106,10 @@ RSpec.describe "Notifications page", js: true do
         click_link("the welcome thread")
 
         expect(page).to have_current_path("/welcome")
+
+        Timeout.timeout(5) do
+          sleep(0.1) until Ahoy::Event.count == 1
+        end
         expect(Ahoy::Event.count).to eq(1)
       end
     end

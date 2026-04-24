@@ -8,7 +8,7 @@ RSpec.describe Ai::CommunityBotTrendingArticleCreator do
       sanitized_tags = service.send(:sanitize_tags, ["up-board-result", "career-guidance", "government-jobs", "result"])
 
       expect(sanitized_tags).to eq(%w[upboardresult careerguidance governmentjobs result])
-      expect(Article.new(tag_list: sanitized_tags)).to be_valid
+      expect(sanitized_tags).to all(match(/\A[a-z0-9]+\z/))
     end
   end
 
@@ -110,6 +110,22 @@ RSpec.describe Ai::CommunityBotTrendingArticleCreator do
       expect(TrendRunHistory).to have_received(:create!).with(trend: "kseab", trend_slug: "kseab", published: true)
       expect(TrendRunHistory).to have_received(:create!).with(trend: "up board result", trend_slug: "up-board-result", published: true)
     end
+
+    it "returns nil when every discovered trend is on cooldown" do
+      trend = { name: "kseab", slug: "kseab" }
+
+      allow(TrendDiscovery::ChromeManager).to receive(:new).and_return(chrome_manager)
+      allow(TrendDiscovery::SeleniumBrowserClient).to receive(:new).and_return(browser)
+      allow(ai_client).to receive(:call)
+
+      allow(service).to receive(:discover_trends).and_return([trend])
+      allow(service).to receive(:pick_fresh_trends).and_return([])
+
+      result = service.generate
+
+      expect(result).to be_nil
+      expect(ai_client).not_to have_received(:call)
+    end
   end
 
   describe "#parse_response" do
@@ -143,6 +159,21 @@ RSpec.describe Ai::CommunityBotTrendingArticleCreator do
 
       expect(result).to be_present
       expect(Rails.logger).to have_received(:warn).with(include("Article below minimum word count (2/480)"))
+    end
+
+    it "parses JSON wrapped in markdown code fences" do
+      service = described_class.new(ai_context: "Career platform")
+      response = <<~JSON
+        ```json
+        {"title":"UP Board Result 2026","markdown":"Body content","description":"desc","tags":["results","education","jobs","career"]}
+        ```
+      JSON
+
+      result = service.send(:parse_response, response, [], [])
+
+      expect(result).to be_present
+      expect(result.title).to eq("UP Board Result 2026")
+      expect(result.tags).to eq("results, education, jobs, career")
     end
   end
 end

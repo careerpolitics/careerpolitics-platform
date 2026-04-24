@@ -33,7 +33,9 @@ RSpec.describe ConsumerApps::RpushAppQuery, type: :query do
     it "works when ConsumerApps have the same bundle but different platform" do
       # This is a regression test to avoid conflicting `name` in either
       # Rpush::Apns2::App or Rpush::Client::Redis::Fcm::App to break the app
+      allow(ApplicationConfig).to receive(:[]).and_return(nil)
       allow(ApplicationConfig).to receive(:[]).with("RPUSH_IOS_PEM").and_return("asdf123")
+      allow(ApplicationConfig).to receive(:[]).with("RPUSH_FCM_JSON").and_return("asdf123")
       allow(ApplicationConfig).to receive(:[]).with("RPUSH_FCM_KEY").and_return("asdf123")
 
       mock_rpush(ios_consumer_app)

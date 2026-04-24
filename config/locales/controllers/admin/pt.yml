@@ -115,6 +115,8 @@ pt:
       no_such_user: Usuário não encontrado
       scheduled: "Busca de episódios do podcast foi agendada (%{title}, #%{id})"
       updated: Podcast atualizado
+    job_posts_controller:
+      updated: Publicação de vaga atualizada com sucesso.
     profile_field_groups_controller:
       created: 'Grupo criado com sucesso: %{group}'
       updated: 'Grupo %{group} atualizado'

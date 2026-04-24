@@ -1,0 +1,33 @@
+pt:
+  services:
+    notifications:
+      push_notifications:
+        comment:
+          reply_title: "Resposta de @%{username}"
+          article_title: "Novo comentário de @%{username}"
+          thread_title: "Novo comentário na conversa"
+          article_body: "em %{article}: %{comment}"
+          thread_body: "em %{article}: %{comment}"
+        mention:
+          title: "@%{username} mencionou você"
+          article_body: "no artigo %{article}: %{text}"
+          comment_body: "em %{article}: %{text}"
+        reaction:
+          single_title: "@%{username} reagiu à sua postagem"
+          multiple_title: "%{count} pessoas reagiram à sua postagem"
+          single_body: "%{emoji} em %{title}"
+          multiple_body: "%{emoji} %{users} reagiram a %{title}"
+          multiple_body_with_others: "%{emoji} %{users} e mais %{count} reagiram a %{title}"
+        follower:
+          title: "Novo seguidor"
+          user_body: "@%{username} começou a seguir você"
+          organization_body: "@%{username} começou a seguir %{organization}"
+        badge:
+          title: "Insígnia conquistada! 🏅"
+          body: "Você conquistou a insígnia %{badge}"
+        milestone:
+          title: "Marco alcançado! 🎉"
+          views_body: "Sua postagem %{title} alcançou %{count} visualizações!"
+          reactions_body: "Sua postagem %{title} alcançou %{count} reações!"
+        generic:
+          body: "Sua postagem %{title} alcançou %{count} %{type}"

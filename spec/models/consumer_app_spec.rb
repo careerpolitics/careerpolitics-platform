@@ -40,11 +40,14 @@ RSpec.describe ConsumerApp do
           app_bundle: ConsumerApp::FOREM_BUNDLE,
           platform: ConsumerApp::FOREM_APP_PLATFORMS.sample,
         )
+        allow(ApplicationConfig).to receive(:[]).and_return(nil)
         allow(ApplicationConfig).to receive(:[]).with("RPUSH_IOS_PEM").and_return("asdf123")
+        allow(ApplicationConfig).to receive(:[]).with("RPUSH_FCM_JSON").and_return("asdf123")
         allow(ApplicationConfig).to receive(:[]).with("RPUSH_FCM_KEY").and_return("asdf123")
         expect(forem_consumer_app.operational?).to be(true)
 
         allow(ApplicationConfig).to receive(:[]).with("RPUSH_IOS_PEM").and_return(nil)
+        allow(ApplicationConfig).to receive(:[]).with("RPUSH_FCM_JSON").and_return(nil)
         allow(ApplicationConfig).to receive(:[]).with("RPUSH_FCM_KEY").and_return(nil)
         expect(forem_consumer_app.operational?).to be(false)
       end

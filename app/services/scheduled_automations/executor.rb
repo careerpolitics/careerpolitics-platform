@@ -68,7 +68,8 @@ module ScheduledAutomations
         end
 
         # Create or publish article(s) based on action
-        articles = Array(service_result).map { |single_result| perform_action(single_result) }
+        service_results = service_result.is_a?(Array) ? service_result : [service_result]
+        articles = service_results.map { |single_result| perform_action(single_result) }
         article = articles.last
 
         # Mark automation as completed and schedule next run
@@ -341,9 +342,9 @@ module ScheduledAutomations
 
       # Set tags from action config, otherwise fall back to service-generated tags
       if config["tags"].present?
-        article.tag_list = config["tags"]
+        article.tag_list = normalize_tags(config["tags"])
       elsif service_result.respond_to?(:tags) && service_result.tags.present?
-        article.tag_list = service_result.tags
+        article.tag_list = normalize_tags(service_result.tags)
       end
 
       # Set cover image if the service provided one
@@ -366,6 +367,15 @@ module ScheduledAutomations
       return unless config["subforem_id"].present?
 
       article.subforem_id = config["subforem_id"].to_i
+    end
+
+    def normalize_tags(tags)
+      input = tags.is_a?(Array) ? tags : tags.to_s.split(",")
+
+      input.filter_map do |tag|
+        normalized = tag.to_s.strip.downcase.gsub(/[^[:alnum:]]/, "")
+        normalized.presence
+      end.uniq
     end
   end
 end

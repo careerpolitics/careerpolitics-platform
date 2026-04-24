@@ -1,19 +1,20 @@
 module PushNotifications
   class Send
-    def self.call(user_ids:, body:, payload:)
-      new(user_ids: user_ids, body: body, payload: payload).call
+    def self.call(user_ids:, body:, payload:, title: nil)
+      new(user_ids: user_ids, body: body, payload: payload, title: title).call
     end
 
-    def initialize(user_ids:, body:, payload:)
+    def initialize(user_ids:, body:, payload:, title: nil)
       @user_ids = user_ids
       @body = body
       @payload = payload
+      @title = title
     end
 
     def call
       relation = Device.where(user_id: @user_ids)
 
-      title = @payload[:title] || @payload["title"]
+      title = @title || @payload[:title] || @payload["title"]
       relation.find_each do |device|
         device.create_notification(title, @body, @payload)
       end

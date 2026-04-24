@@ -8,6 +8,12 @@ RSpec.describe TrendRunHistory do
   end
 
   describe ".slugify" do
+    it "creates a normalized slug for latin trends" do
+      slug = described_class.slugify("  UP Board Result 2026!  ")
+
+      expect(slug).to eq("up-board-result-2026")
+    end
+
     it "returns a deterministic fallback slug for non-latin trends" do
       slug = described_class.slugify("शिखा वर्मा")
 
@@ -25,6 +31,19 @@ RSpec.describe TrendRunHistory do
 
     it "returns true when the slug has not been used in the cooldown window" do
       expect(described_class.fresh?("brand-new-trend", 48)).to be(true)
+    end
+  end
+
+  describe ".used_since" do
+    it "returns a unique set of trend slugs within the cutoff window" do
+      recent = 1.hour.ago
+      cutoff = 3.hours.ago
+
+      described_class.create!(trend: "UP Board 1", trend_slug: "up-board", published: true, created_at: recent)
+      described_class.create!(trend: "UP Board 2", trend_slug: "up-board", published: true, created_at: recent)
+      described_class.create!(trend: "Old Trend", trend_slug: "old-trend", published: true, created_at: 2.days.ago)
+
+      expect(described_class.used_since(cutoff)).to eq(["up-board"].to_set)
     end
   end
 end

@@ -150,6 +150,8 @@ fr:
       no_such_user: Aucun utilisateur n'existe
       scheduled: "La récupération des épisodes du podcast a été programmée (%{title}, #%{id})"
       updated: Podcast mis à jour
+    job_posts_controller:
+      updated: L'annonce d'emploi a été mise à jour avec succès.
     profile_field_groups_controller:
       deleted: Groupe %{group} supprimé
       updated: Groupe %{group} mis à jour

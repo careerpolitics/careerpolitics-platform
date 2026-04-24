@@ -1,0 +1,33 @@
+fr:
+  services:
+    notifications:
+      push_notifications:
+        comment:
+          reply_title: "Réponse de @%{username}"
+          article_title: "Nouveau commentaire de @%{username}"
+          thread_title: "Nouveau commentaire dans le fil"
+          article_body: "dans %{article} : %{comment}"
+          thread_body: "dans %{article} : %{comment}"
+        mention:
+          title: "@%{username} vous a mentionné"
+          article_body: "dans l'article %{article} : %{text}"
+          comment_body: "dans %{article} : %{text}"
+        reaction:
+          single_title: "@%{username} a réagi à votre publication"
+          multiple_title: "%{count} personnes ont réagi à votre publication"
+          single_body: "%{emoji} sur %{title}"
+          multiple_body: "%{emoji} %{users} ont réagi à %{title}"
+          multiple_body_with_others: "%{emoji} %{users} et %{count} autres ont réagi à %{title}"
+        follower:
+          title: "Nouveau follower"
+          user_body: "@%{username} vous suit désormais"
+          organization_body: "@%{username} suit désormais %{organization}"
+        badge:
+          title: "Badge obtenu ! 🏅"
+          body: "Vous avez obtenu le badge %{badge}"
+        milestone:
+          title: "Jalon atteint ! 🎉"
+          views_body: "Votre publication %{title} a atteint %{count} vues !"
+          reactions_body: "Votre publication %{title} a atteint %{count} réactions !"
+        generic:
+          body: "Votre publication %{title} a atteint %{count} %{type}"

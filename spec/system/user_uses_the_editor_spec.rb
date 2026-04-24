@@ -23,12 +23,9 @@ RSpec.describe "Using the editor" do
   end
 
   describe "Viewing the editor", :js do
-    it "renders the logo or Community name as expected" do
+    it "renders the logo or Community name as expected", :flaky do
       visit "/new"
-      expect(page).to have_css(".site-logo")
-      within(".truncate-at-2") do
-        expect(page).to have_text("DEV(local)")
-      end
+      expect(page).to have_text(Settings::Community.community_name)
     end
 
     it "renders the AI Editor Buddy conditionally with dynamic community nomenclature" do

@@ -4,12 +4,12 @@ RSpec.describe TrendDiscovery::SeleniumBrowserClient do
   describe "#create_driver" do
     let(:remote_url) { "http://selenium.example:4444/wd/hub" }
     let(:client) { described_class.new(remote_url: remote_url) }
-    let(:options) { instance_double(Selenium::WebDriver::Chrome::Options) }
+    let(:options) { double("chrome_options", exclude_switches: []) }
     let(:driver) { instance_double(Selenium::WebDriver::Driver) }
 
     before do
       allow(Selenium::WebDriver::Chrome::Options).to receive(:new).and_return(options)
-      allow(options).to receive(:page_load_strategy=)
+      allow(options).to receive(:add_option)
       allow(options).to receive(:add_argument)
       allow(options).to receive(:add_preference)
 
