@@ -257,6 +257,7 @@ kubectl apply -f kube/deployment-web.yaml
 kubectl apply -f kube/service-web.yaml
 kubectl apply -f kube/deployment-worker.yaml
 kubectl apply -f kube/ingress.yaml
+kubectl apply -f kube/deployment-selenium.yaml
 ```
 
 Monitor:
@@ -264,9 +265,11 @@ Monitor:
 ```bash
 kubectl rollout restart deployment/careerpolitics-web -n production
 kubectl rollout restart deployment/careerpolitics-worker -n production
+kubectl rollout restart deployment/careerpolitics-selenium- -n production
 
 kubectl rollout status deployment/careerpolitics-web -n production
 kubectl rollout status deployment/careerpolitics-worker -n production
+kubectl rollout status deployment/careerpolitics-selenium -n production
 ```
 
 ---

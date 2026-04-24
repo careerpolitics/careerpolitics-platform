@@ -91,6 +91,14 @@ services:
   sidekiq:
     <<: *backend
     command: bundle exec sidekiq
+    volumes:
+      - ${LOCAL_WORKSPACE_FOLDER:-.}:/app:cached
+      - bundle:/usr/local/bundle
+      - rails_cache:/app/tmp/cache
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      <<: *backend_environment
+      SELENIUM_NETWORK: ""
 
   postgres:
     image: postgres:13

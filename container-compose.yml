@@ -109,8 +109,10 @@ services:
       REDIS_SIDEKIQ_URL: redis://localhost:6379
       REDIS_URL: redis://localhost:6379
       DATABASE_URL: postgresql://forem:forem@db:5432/PracticalDeveloper_development
+      SELENIUM_NETWORK: ""
     volumes:
       - .:/opt/apps/forem:z
+      - /var/run/docker.sock:/var/run/docker.sock
     command: ["bundle", "exec", "sidekiq","-c","2"]
 
   db:
