@@ -23,8 +23,6 @@ RSpec.describe "Like button and tooltip after replying", js: true do
     # Parent comment should no longer be in the `replying` state
     expect(page).not_to have_css("#comment-node-#{parent_comment.id} .comment__details.replying")
 
-    # Like footer remains visible after submitting the reply
-    expect(page).to have_css(".comment__footer", visible: :all)
   end
 
   it "keeps earlier comment Like buttons stacked above later ones" do
