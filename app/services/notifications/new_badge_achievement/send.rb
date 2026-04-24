@@ -13,7 +13,7 @@ module Notifications
       delegate :user_data, to: Notifications
 
       def call
-        Notification.create(
+        notification = Notification.create(
           user_id: badge_achievement.user.id,
           notifiable_id: badge_achievement.id,
           notifiable_type: "BadgeAchievement",
@@ -23,6 +23,7 @@ module Notifications
 
       #   Send push notification to User
         send_push_notification
+        notification
       end
 
       private

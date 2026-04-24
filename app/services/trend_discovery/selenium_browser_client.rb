@@ -177,7 +177,7 @@ module TrendDiscovery
       profile = random_browser_profile
 
       options = Selenium::WebDriver::Chrome::Options.new
-      options.page_load_strategy = :eager
+      options.add_option(:page_load_strategy, "eager")
       options.add_argument("--headless=new")
       options.add_argument("--window-size=#{viewport[0]},#{viewport[1]}")
       options.add_argument("--no-sandbox")

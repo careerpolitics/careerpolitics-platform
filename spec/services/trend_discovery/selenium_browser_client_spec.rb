@@ -9,7 +9,7 @@ RSpec.describe TrendDiscovery::SeleniumBrowserClient do
 
     before do
       allow(Selenium::WebDriver::Chrome::Options).to receive(:new).and_return(options)
-      allow(options).to receive(:page_load_strategy=)
+      allow(options).to receive(:add_option)
       allow(options).to receive(:add_argument)
       allow(options).to receive(:add_preference)
 

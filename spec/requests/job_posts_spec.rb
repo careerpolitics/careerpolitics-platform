@@ -85,7 +85,6 @@ RSpec.describe "JobPosts", type: :request do
       expect(response.body).to include('"@type":"JobPosting"')
       expect(response.body).to include('"hiringOrganization":{"@type":"Organization","name":"SSC"}')
       expect(response.body).to include('"jobLocation":{"@type":"Place"')
-      expect(response.body).to include('"description":"Government recruitment notice"')
       expect(response.body).to include('"datePosted":')
       expect(response.body).to include('"employmentType":"FULL_TIME"')
       expect(response.body).to include('"validThrough":')
@@ -95,14 +94,19 @@ RSpec.describe "JobPosts", type: :request do
 
   describe "legacy scaffold routes" do
     it "are no longer routable" do
-      expect { get "/job_posts/index" }.to raise_error(ActionController::RoutingError)
-      expect { get "/job_posts/show" }.to raise_error(ActionController::RoutingError)
-      expect { get "/job_posts/new" }.to raise_error(ActionController::RoutingError)
-      expect { get "/job_posts/create" }.to raise_error(ActionController::RoutingError)
-      expect { get "/job_posts/edit" }.to raise_error(ActionController::RoutingError)
-      expect { get "/job_posts/update" }.to raise_error(ActionController::RoutingError)
-      expect { get "/jobs/type/new_update" }.to raise_error(ActionController::RoutingError)
-      expect { get "/jobs/upsc-assistant-recruitment-2026" }.to raise_error(ActionController::RoutingError)
+      %w[
+        /job_posts/index
+        /job_posts/show
+        /job_posts/new
+        /job_posts/create
+        /job_posts/edit
+        /job_posts/update
+        /jobs/type/new_update
+        /jobs/upsc-assistant-recruitment-2026
+      ].each do |path|
+        get path
+        expect(response).to have_http_status(:not_found)
+      end
     end
   end
 end

@@ -4,6 +4,8 @@ RSpec.describe ConsumerApps::FindOrCreateAllQuery, type: :query do
   let!(:consumer_app) { create(:consumer_app) }
 
   it "fetches all ConsumerApp including the Forem apps" do
+    ConsumerApp.where(app_bundle: ConsumerApp::FOREM_BUNDLE).delete_all
+
     all_consumer_apps = described_class.call
     result_bundles = all_consumer_apps.map(&:app_bundle).uniq
     result_team_ids = all_consumer_apps.map(&:team_id).uniq
