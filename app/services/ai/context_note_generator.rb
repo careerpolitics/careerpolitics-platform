@@ -1,6 +1,7 @@
 module Ai
   class ContextNoteGenerator
     VERSION = "1.0"
+    MAX_NOTE_LENGTH = 200
 
     def initialize(article, tag)
       @article = article
@@ -16,9 +17,12 @@ module Ai
 
       return if response.blank? || response.strip == "INVALID"
 
+      note_text = normalize_note_text(response)
+      return if note_text.blank?
+
       # Create the context note with the response
       context_note = ContextNote.create!(
-        body_markdown: response.strip,
+        body_markdown: note_text,
         article: @article,
         tag: @tag,
       )
@@ -39,9 +43,16 @@ module Ai
 
         Based on the above article, please generate a context note that follows these instructions:
         #{instructions}
+        Keep the note under #{MAX_NOTE_LENGTH} characters.
 
         If the article does not fit the valid criteria based on the instructions, return only the word "INVALID" and nothing else.
       PROMPT
+    end
+
+    private
+
+    def normalize_note_text(response)
+      response.to_s.strip.gsub(/\s+/, " ")[0...MAX_NOTE_LENGTH]
     end
   end
 end
