@@ -18,23 +18,39 @@ RSpec.describe "Editing with an editor", js: true do
     sign_in user
   end
 
+  def update_editor_body(content)
+    within("#article-form") do
+      field = if page.has_field?("article_body_markdown", visible: :all, disabled: :all)
+                find_field("article_body_markdown", visible: :all, disabled: :all)
+              else
+                find("textarea[id*='article_body_markdown'], textarea[id*='textarea-for']", visible: :all)
+              end
+
+      page.execute_script(
+        "arguments[0].value = arguments[1]; arguments[0].dispatchEvent(new Event('input', { bubbles: true }));",
+        field,
+        content,
+      )
+    end
+  end
+
   it "user previews their changes" do
     visit "/#{user.username}/#{article.slug}/edit"
-    fill_in "article_body_markdown", with: template.gsub("Suspendisse", "Yooo")
+    update_editor_body(template.gsub("Suspendisse", "Yooo"))
     click_button("Preview")
     expect(page).to have_text("Yooo")
   end
 
   it "user updates their post" do
     visit "/#{user.username}/#{article.slug}/edit"
-    fill_in "article_body_markdown", with: template.gsub("Suspendisse", "Yooo")
+    update_editor_body(template.gsub("Suspendisse", "Yooo"))
     click_button("Save changes")
     expect(page).to have_text("Yooo")
   end
 
   it "user unpublishes their post" do
     visit "/#{user.username}/#{article.slug}/edit"
-    fill_in("article_body_markdown", with: template.gsub("true", "false"), fill_options: { clear: :backspace })
+    update_editor_body(template.gsub("true", "false"))
     click_button("Save changes")
     expect(page).to have_text("Unpublished Post.")
   end
@@ -53,7 +69,7 @@ RSpec.describe "Editing with an editor", js: true do
 
     it "displays a rate limit warning", :flaky, js: true do
       visit "/#{user.username}/#{article.slug}/edit"
-      fill_in "article_body_markdown", with: template.gsub("Suspendisse", "Yooo")
+      update_editor_body(template.gsub("Suspendisse", "Yooo"))
       click_button "Save changes"
       expect(page).to have_text("Rate limit reached")
     end
