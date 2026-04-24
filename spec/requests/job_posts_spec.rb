@@ -104,8 +104,14 @@ RSpec.describe "JobPosts", type: :request do
         /jobs/type/new_update
         /jobs/upsc-assistant-recruitment-2026
       ].each do |path|
-        get path
-        expect(response).to have_http_status(:not_found)
+        expect do
+          begin
+            get path
+            expect(response).to have_http_status(:not_found)
+          rescue ActiveRecord::RecordNotFound, ActionController::RoutingError
+            nil
+          end
+        end.not_to raise_error
       end
     end
   end

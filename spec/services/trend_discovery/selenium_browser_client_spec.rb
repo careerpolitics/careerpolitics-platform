@@ -6,12 +6,14 @@ RSpec.describe TrendDiscovery::SeleniumBrowserClient do
     let(:client) { described_class.new(remote_url: remote_url) }
     let(:options) { instance_double(Selenium::WebDriver::Chrome::Options) }
     let(:driver) { instance_double(Selenium::WebDriver::Driver) }
+    let(:exclude_switches) { [] }
 
     before do
       allow(Selenium::WebDriver::Chrome::Options).to receive(:new).and_return(options)
       allow(options).to receive(:add_option)
       allow(options).to receive(:add_argument)
       allow(options).to receive(:add_preference)
+      allow(options).to receive(:exclude_switches).and_return(exclude_switches)
 
       allow(Selenium::WebDriver).to receive(:for).and_return(driver)
       allow(client).to receive(:apply_stealth)
