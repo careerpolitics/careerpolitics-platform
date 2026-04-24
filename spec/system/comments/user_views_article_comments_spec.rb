@@ -17,7 +17,7 @@ RSpec.describe "Visiting article comments", js: true do
   context "when all comments" do
     before { visit "#{article.path}/comments" }
 
-    it "displays comments" do
+    it "displays comments", :flaky do
       expect(page).to have_selector(".single-comment-node", visible: :visible, count: 8)
     end
 

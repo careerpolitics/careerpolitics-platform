@@ -1,4 +1,5 @@
 require "rails_helper"
+require "timeout"
 
 RSpec.describe "Notifications page", js: true do
   let(:alex) { create(:user) }
@@ -102,6 +103,10 @@ RSpec.describe "Notifications page", js: true do
         click_link("the welcome thread")
 
         expect(page).to have_current_path("/welcome")
+
+        Timeout.timeout(5) do
+          sleep(0.1) until Ahoy::Event.count == 1
+        end
         expect(Ahoy::Event.count).to eq(1)
       end
     end

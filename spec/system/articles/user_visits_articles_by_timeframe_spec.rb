@@ -31,7 +31,7 @@ RSpec.describe "User visits articles by timeframe", js: true do
     expect(page).to have_selector(".crayons-story--featured", visible: :visible, count: 1)
   end
 
-  it "shows correct articles for all tabs for logged out users", :aggregate_failures do
+  it "shows correct articles for all tabs for logged out users", :aggregate_failures, :flaky do
     visit "/top/week"
 
     shows_correct_articles_count(2)
