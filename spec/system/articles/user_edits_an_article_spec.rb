@@ -2,7 +2,11 @@ require "rails_helper"
 
 RSpec.describe "Editing with an editor", js: true do
   let(:template) { file_fixture("article_published.txt").read }
-  let(:user) { create(:user) }
+  let(:user) do
+    u = create(:user)
+    u.setting.update(editor_version: "v1")
+    u
+  end
   let(:article) { create(:article, user: user, body_markdown: template) }
   let(:svg_image) { file_fixture("300x100.svg").read }
 

@@ -14,7 +14,7 @@ RSpec.describe "User index" do
     end
 
     context "when 1 article" do
-      it "shows header", :aggregate_failures, js: true do
+      it "shows header", :aggregate_failures do
         expect(page).to have_css("h1.crayons-title", text: user.name)
         within(".profile-header__actions") do
           expect(page).to have_button(I18n.t("core.follow"))
