@@ -5,35 +5,110 @@ on:
     branches:
       - main
 
+env:
+  IMAGE_NAME: muraridevv/careerpolitics-platform
+  KUBE_NAMESPACE: production
+
 jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set image tag
+        id: meta
+        run: echo "tag=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Containerfile
+          target: production
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.IMAGE_NAME }}:latest
+          build-args: |
+            VCS_REF=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
   deploy:
     runs-on: ubuntu-latest
-    concurrency: ${{ matrix.environment }}
-    environment: ${{ matrix.environment }}
-
-    strategy:
-      matrix:
-        environment: [ production, staging ]
+    needs: [build-and-push]
+    concurrency: production
+    environment: production
 
     steps:
-      - name: Install Heroku CLI
-        run: |
-          curl https://cli-assets.heroku.com/install.sh | sh 
-
       - uses: actions/checkout@v6
-      
-      - uses: akhileshns/heroku-deploy@v3.14.15
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
         with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-      
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Configure kubectl
+        run: doctl kubernetes cluster kubeconfig save ${{ secrets.DOKS_CLUSTER_NAME }}
+
+      # --- Run database migrations via a Kubernetes Job ---
+      - name: Delete previous migration job (if any)
+        run: kubectl delete job careerpolitics-migrate -n ${{ env.KUBE_NAMESPACE }} --ignore-not-found
+
+      - name: Run database migrations
+        run: |
+          # Patch the migration job manifest to use the new image tag
+          sed -i 's|image: .*|image: ${{ env.IMAGE_NAME }}:${{ github.sha }}|' kube/job-migrate.yaml
+          kubectl apply -f kube/job-migrate.yaml
+          kubectl wait --for=condition=complete --timeout=300s job/careerpolitics-migrate -n ${{ env.KUBE_NAMESPACE }}
+
+      - name: Check migration logs
+        if: failure()
+        run: kubectl logs job/careerpolitics-migrate -n ${{ env.KUBE_NAMESPACE }}
+
+      - name: Cleanup migration job
+        run: kubectl delete job careerpolitics-migrate -n ${{ env.KUBE_NAMESPACE }} --ignore-not-found
+
+      # --- Deploy application ---
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f kube/config-app.yaml
+          kubectl apply -f kube/service-web.yaml
+          kubectl apply -f kube/ingress.yaml
+
+      - name: Update web deployment image
+        run: |
+          kubectl set image deployment/careerpolitics-web \
+            web=${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            -n ${{ env.KUBE_NAMESPACE }}
+
+      - name: Update worker deployment image
+        run: |
+          kubectl set image deployment/careerpolitics-worker \
+            worker=${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            -n ${{ env.KUBE_NAMESPACE }}
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/careerpolitics-web -n ${{ env.KUBE_NAMESPACE }} --timeout=300s
+          kubectl rollout status deployment/careerpolitics-worker -n ${{ env.KUBE_NAMESPACE }} --timeout=300s
+
+      # --- Notifications ---
       - uses: honeybadger-io/github-notify-deploy-action@v1
         with:
           api_key: ${{ secrets.HONEYBADGER_API_KEY_RUBY }}
-        if: matrix.environment == 'production'
-      
+
       - uses: honeybadger-io/github-notify-deploy-action@v1
         with:
           api_key: ${{ secrets.HONEYBADGER_API_KEY_JAVASCRIPT }}
-        if: matrix.environment == 'production'

@@ -1,5 +1,4 @@
 # This workflow posts an automated comment on every new issue
-# https://github.com/marketplace/actions/create-or-update-comment (https://github.com/peter-evans/create-or-update-comment)
 
 name: Automatic Comment
 on:
@@ -11,22 +10,19 @@ permissions:
 jobs:
   comment:
     permissions:
-      issues: write  # for peter-evans/create-or-update-comment to create or update comment
-      pull-requests: write  # for peter-evans/create-or-update-comment to create or update comment
+      issues: write
+      pull-requests: write
     name: Comment
     runs-on: ubuntu-latest
     steps:
       - name: Automatic Comment
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
-            Thanks for the issue, we will take it into consideration! Our team of engineers is busy working on many types of features, please give us time to get back to you.
-            
-            To our amazing contributors: [issues labeled `bug`](https://github.com/forem/forem/issues?q=is%3Aissue+is%3Aopen+label%3Abug) are always up for grabs, but for feature requests, please wait until we add a `ready for dev` before starting to work on it.
+            Thanks for opening this issue! The Career Politics team will review it and get back to you as soon as possible.
 
-            If this is a feature request from an external contributor (not core team at Forem), please close the issue and re-post via [GitHub Discussions](https://github.com/forem/forem/discussions/categories/feature-requests).
+            - **Bugs**: Issues labeled `bug` are prioritized. Please include steps to reproduce if applicable.
+            - **Feature requests**: Please wait until we add a `ready for dev` label before starting work on it.
 
-            To claim an issue to work on, please leave a comment. If you've claimed the issue and need help, please ping @forem-team. The OSS Community Manager or the engineers on OSS rotation will follow up.
-
-            For full info on how to contribute, please check out our [contributors guide](https://developers.forem.com/contributing-guide/forem).
+            To claim an issue, leave a comment. If you need help, tag @careerpolitics-team.
