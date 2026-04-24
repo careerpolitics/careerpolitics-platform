@@ -2,7 +2,7 @@ module Ai
   class ContextNoteGenerator
     VERSION = "1.0"
     MIN_NOTE_LENGTH = 10
-    MAX_NOTE_LENGTH = 75
+    MAX_NOTE_LENGTH = 200
 
     def initialize(article, tag)
       @article = article
