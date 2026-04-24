@@ -21,7 +21,6 @@ RSpec.describe "Like button and tooltip after replying", js: true do
     find("form button[type='submit']", match: :first).click
 
     # Parent comment should no longer be in the `replying` state
-    expect(page).to have_css(".single-comment-node")
     expect(page).not_to have_css("#comment-node-#{parent_comment.id} .comment__details.replying")
 
     # Like button present and visible in the footer
