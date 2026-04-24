@@ -268,6 +268,21 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
         expect(result.article.body_markdown).to eq("Generated post body")
       end
 
+      it "treats a struct-like service result as a single article payload" do
+        struct_result = Struct.new(:title, :body, :tags, :cover_image).new(
+          "Structured Community Update",
+          "Structured body",
+          ["news"],
+          nil,
+        )
+        allow(mock_post_service).to receive(:generate).and_return(struct_result)
+
+        result = executor.call
+
+        expect(result.success?).to be(true)
+        expect(result.article.title).to eq("Structured Community Update")
+      end
+
       it "applies generated tags when action_config tags are missing" do
         result = executor.call
 
