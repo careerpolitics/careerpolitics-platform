@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_04_09_173612) do
+ActiveRecord::Schema[7.0].define(version: 2026_04_19_073000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "ltree"
@@ -1687,6 +1687,16 @@ ActiveRecord::Schema[7.0].define(version: 2026_04_09_173612) do
     t.index ["social_preview_template"], name: "index_tags_on_social_preview_template"
     t.index ["supported"], name: "index_tags_on_supported"
     t.index ["taggings_count"], name: "index_tags_on_taggings_count"
+  end
+
+  create_table "trend_run_histories", force: :cascade do |t|
+    t.string "trend", null: false
+    t.string "trend_slug", null: false
+    t.boolean "published", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_trend_run_histories_on_created_at"
+    t.index ["trend_slug"], name: "index_trend_run_histories_on_trend_slug"
   end
 
   create_table "trends", force: :cascade do |t|
