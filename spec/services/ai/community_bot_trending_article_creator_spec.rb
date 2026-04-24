@@ -127,5 +127,22 @@ RSpec.describe Ai::CommunityBotTrendingArticleCreator do
       expect(result.body).to include("[upresults.nic.in](https://upresults.nic.in)")
       expect(result.body).to include("[https://upmsp.edu.in](https://upmsp.edu.in)")
     end
+
+    it "logs a short-content warning without raising errors" do
+      service = described_class.new(ai_context: "Career platform", target_word_count: 800)
+      response = {
+        title: "Quick update",
+        markdown: "too short",
+        description: "desc",
+        tags: %w[results education jobs career]
+      }.to_json
+
+      allow(Rails.logger).to receive(:warn)
+
+      result = service.send(:parse_response, response, [], [])
+
+      expect(result).to be_present
+      expect(Rails.logger).to have_received(:warn).with(include("Article below minimum word count (2/480)"))
+    end
   end
 end

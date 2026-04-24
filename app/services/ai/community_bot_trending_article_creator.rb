@@ -282,7 +282,7 @@ module Ai
       Rails.logger.info("Ai::CommunityBotTrendingArticleCreator: Generated #{word_count} words for '#{title}'")
       min_words = (@target_word_count * 0.6).to_i
       if word_count < min_words
-        Rails.logger.warn("Ai::CommunityBotTrendingArticleCreator: Article below minimum word count (#{word_count}/#{MIN_WORD_COUNT})")
+        Rails.logger.warn("Ai::CommunityBotTrendingArticleCreator: Article below minimum word count (#{word_count}/#{min_words})")
       end
 
       log_engagement_signals(markdown)
