@@ -102,7 +102,13 @@ module Ai
       candidate = parsed_response["candidates"].first
       raise "No candidates received from the API." unless candidate
 
-      candidate.dig("content", "parts", 0, "text")
+      parts = candidate.dig("content", "parts")
+      raise 'Malformed response: "parts" key not found.' unless parts.is_a?(Array)
+
+      text = parts.filter_map { |part| part["text"] if part.is_a?(Hash) }.join
+      raise "No text parts received from the API." if text.blank?
+
+      text
     end
   end
 end

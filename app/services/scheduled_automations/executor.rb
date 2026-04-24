@@ -67,8 +67,9 @@ module ScheduledAutomations
           )
         end
 
-        # Create or publish the article based on action
-        article = perform_action(service_result)
+        # Create or publish article(s) based on action
+        articles = Array(service_result).map { |single_result| perform_action(single_result) }
+        article = articles.last
 
         # Mark automation as completed and schedule next run
         next_run_time = @automation.calculate_next_run_time
@@ -119,6 +120,8 @@ module ScheduledAutomations
         call_community_bot_post_creator_service
       when "community_bot_current_affairs_news_post_creator"
         call_community_bot_current_affairs_news_post_creator_service
+      when "community_bot_trending_article_creator"
+        call_community_bot_trending_article_creator_service
       else
         raise ArgumentError, "Unknown service: #{@automation.service_name}"
       end
@@ -190,6 +193,31 @@ module ScheduledAutomations
         tags: @automation.action_config["tags"],
         affected_user: @user,
       )
+
+      service.generate
+    end
+
+    def call_community_bot_trending_article_creator_service
+      config = @automation.action_config
+
+      Rails.logger.info(
+        "ScheduledAutomations::Executor: running community_bot_trending_article_creator for automation_id=#{@automation.id} " \
+          "geo=#{config['geo']} language=#{config['language']} max_trends=#{config['max_trends']}",
+        )
+
+      service = Ai::CommunityBotTrendingArticleCreator.new(
+        ai_context: config["ai_context"] || "",
+        additional_instructions: @automation.additional_instructions,
+        tags: config["tags"],
+        affected_user: @user,
+        target_word_count: (config["target_word_count"] || 800).to_i,
+        geo: config["geo"] || "IN",
+        language: config["language"] || "en-IN",
+        max_trends: (config["max_trends"] || 3).to_i,
+        max_news_per_trend: (config["max_news_per_trend"] || 5).to_i,
+        trend_cooldown_hours: (config["trend_cooldown_hours"] || 48).to_i,
+        requested_trends: config["requested_trends"]&.split(",")&.map(&:strip)&.reject(&:blank?),
+        )
 
       service.generate
     end
@@ -316,6 +344,12 @@ module ScheduledAutomations
         article.tag_list = config["tags"]
       elsif service_result.respond_to?(:tags) && service_result.tags.present?
         article.tag_list = service_result.tags
+      end
+
+      # Set cover image if the service provided one
+      if service_result.respond_to?(:cover_image) && service_result.cover_image.present?
+        article.main_image = service_result.cover_image
+        article.main_image_from_frontmatter = true
       end
 
       # Set organization if specified

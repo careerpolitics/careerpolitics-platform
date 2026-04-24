@@ -285,18 +285,32 @@ RSpec.describe Admin::ScheduledAutomationsController do
   end
 
   describe "PATCH #toggle_enabled" do
-    # Skip these tests for now as they require additional policy setup
-    # The functionality is already covered by model and integration tests
     it "disables the automation" do
-      skip "Authorization setup complex, functionality tested elsewhere"
+      automation.update!(enabled: true)
+
+      patch toggle_enabled_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
+
+      expect(automation.reload.enabled).to be(false)
     end
 
     it "enables the automation" do
-      skip "Authorization setup complex, functionality tested elsewhere"
+      automation.update!(enabled: false)
+
+      patch toggle_enabled_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
+
+      expect(automation.reload.enabled).to be(true)
     end
 
     it "redirects to index" do
-      skip "Authorization setup complex, functionality tested elsewhere"
+      patch toggle_enabled_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
+
+      expect(response).to redirect_to(admin_subforem_community_bot_scheduled_automations_path(subforem, bot))
+    end
+
+    it "works for top-level community bot route" do
+      patch toggle_enabled_admin_community_bot_scheduled_automation_path(bot, automation)
+
+      expect(response).to redirect_to(admin_community_bot_scheduled_automations_path(bot))
     end
   end
 end

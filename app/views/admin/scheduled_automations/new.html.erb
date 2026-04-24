@@ -18,10 +18,10 @@
 
     <div class="mb-4">
       <label class="crayons-field__label" for="service_name">AI Service</label>
-      <%= f.select :service_name, 
-          [["GitHub Repo Recap", "github_repo_recap"], ["Community Bot Quiz Post Creator", "community_bot_post_creator"], ["Community Bot Current Affairs News Post Creator", "community_bot_current_affairs_news_post_creator"]], 
+      <%= f.select :service_name,
+          [["GitHub Repo Recap", "github_repo_recap"], ["Community Bot Quiz Post Creator", "community_bot_post_creator"], ["Community Bot Current Affairs News Post Creator", "community_bot_current_affairs_news_post_creator"], ["Trending Article Creator (Selenium)","community_bot_trending_article_creator"]],
           { prompt: "Select a service" },
-          class: "crayons-select", 
+          class: "crayons-select",
           id: "service_name",
           onchange: "updateServiceFields()" %>
       <p class="crayons-field__description">Select the AI service to use for generating content</p>
@@ -29,20 +29,20 @@
 
     <div class="mb-4">
       <label class="crayons-field__label" for="action">Action</label>
-      <%= f.select :action, 
-          [["Create Draft", "create_draft"], ["Publish Article", "publish_article"]], 
+      <%= f.select :action,
+          [["Create Draft", "create_draft"], ["Publish Article", "publish_article"]],
           { prompt: "Select an action" },
-          class: "crayons-select", 
+          class: "crayons-select",
           id: "action" %>
       <p class="crayons-field__description">Choose whether to create a draft or publish the article directly</p>
     </div>
 
     <div class="mb-4">
       <label class="crayons-field__label" for="frequency">Frequency</label>
-      <%= f.select :frequency, 
-          [["Hourly", "hourly"], ["Daily", "daily"], ["Weekly", "weekly"], ["Custom Interval", "custom_interval"]], 
+      <%= f.select :frequency,
+          [["Hourly", "hourly"], ["Daily", "daily"], ["Weekly", "weekly"], ["Custom Interval", "custom_interval"]],
           { prompt: "Select frequency" },
-          class: "crayons-select", 
+          class: "crayons-select",
           id: "frequency",
           onchange: "updateFrequencyFields()" %>
       <p class="crayons-field__description">How often should this automation run?</p>
@@ -58,7 +58,7 @@
       <!-- GitHub Repo Recap specific fields -->
       <div id="github-repo-recap-fields" style="display: none;">
         <h3 class="crayons-subtitle-2 mb-3">GitHub Repo Recap Configuration</h3>
-        
+
         <div class="mb-4">
           <label class="crayons-field__label" for="repo_name">Repository Name</label>
           <input type="text" name="scheduled_automation[action_config][repo_name]" id="repo_name" class="crayons-textfield" placeholder="owner/repo (e.g., forem/forem)">
@@ -106,13 +106,88 @@
           <p class="crayons-field__description">Optional. If provided, generated quizzes will be published under this organization.</p>
         </div>
       </div>
+
+    <!-- Trending Article Creator specific fields -->
+    <div id="community-bot-trending-article-creator-fields" style="display: none;">
+      <h3 class="crayons-subtitle-2 mb-3">Trending Article Creator Configuration</h3>
+
+      <div class="mb-4">
+        <label class="crayons-field__label" for="trending_ai_context">AI Context</label>
+        <textarea name="scheduled_automation[action_config][ai_context]" id="trending_ai_context" class="crayons-textfield" rows="4" placeholder="Describe the platform focus, audience, and any specific instructions for article generation"><%= @automation.action_config["ai_context"] %></textarea>
+        <p class="crayons-field__description">Context for the AI article generator (e.g., "Focus on government job notifications for Indian aspirants")</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="crayons-field__label" for="trending_geo">Geo</label>
+          <input type="text" name="scheduled_automation[action_config][geo]" id="trending_geo" class="crayons-textfield" value="<%= @automation.action_config["geo"] || "IN" %>" placeholder="IN">
+          <p class="crayons-field__description">Country code for Google Trends (e.g., IN, US, GB)</p>
+        </div>
+        <div>
+          <label class="crayons-field__label" for="trending_language">Language</label>
+          <input type="text" name="scheduled_automation[action_config][language]" id="trending_language" class="crayons-textfield" value="<%= @automation.action_config["language"] || "en-IN" %>" placeholder="en-IN">
+          <p class="crayons-field__description">Language code (e.g., en-IN, en-US, hi)</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="crayons-field__label" for="trending_max_trends">Max Trends</label>
+          <input type="number" name="scheduled_automation[action_config][max_trends]" id="trending_max_trends" class="crayons-textfield" min="1" max="24" value="<%= @automation.action_config["max_trends"] || 3 %>">
+          <p class="crayons-field__description">Number of trends to discover</p>
+        </div>
+        <div>
+          <label class="crayons-field__label" for="trending_max_news">Max News Per Trend</label>
+          <input type="number" name="scheduled_automation[action_config][max_news_per_trend]" id="trending_max_news" class="crayons-textfield" min="1" max="20" value="<%= @automation.action_config["max_news_per_trend"] || 5 %>">
+          <p class="crayons-field__description">Headlines to collect per trend</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="crayons-field__label" for="trending_target_word_count">Target Word Count</label>
+          <input type="number" name="scheduled_automation[action_config][target_word_count]" id="trending_target_word_count" class="crayons-textfield" min="400" max="2000" step="100" value="<%= @automation.action_config["target_word_count"] || 800 %>">
+          <p class="crayons-field__description">Approximate article length (400–2000). Shorter = fewer AI tokens used.</p>
+        </div>
+        <div>
+          <label class="crayons-field__label" for="trending_cooldown">Cooldown (Hours)</label>
+          <input type="number" name="scheduled_automation[action_config][trend_cooldown_hours]" id="trending_cooldown" class="crayons-textfield" min="1" max="720" value="<%= @automation.action_config["trend_cooldown_hours"] || 48 %>">
+          <p class="crayons-field__description">Hours before a trend can be reused</p>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="crayons-field__label" for="trending_requested_trends">Requested Trends (optional override)</label>
+        <textarea name="scheduled_automation[action_config][requested_trends]" id="trending_requested_trends" class="crayons-textfield" rows="2" placeholder="SSC CGL 2025, UPSC Prelims, Railway RRB NTPC"><%= @automation.action_config["requested_trends"] %></textarea>
+        <p class="crayons-field__description">Comma-separated list. If provided, skips Google Trends discovery and uses these instead.</p>
+      </div>
+
+      <div class="mb-4">
+        <label class="crayons-field__label" for="trending_tags">Tags (comma-separated)</label>
+        <input type="text" name="scheduled_automation[action_config][tags]" id="trending_tags" class="crayons-textfield" placeholder="government-jobs, trending, current-affairs" value="<%= @automation.action_config["tags"] %>">
+        <p class="crayons-field__description">Optional. If blank, AI will generate tags.</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="crayons-field__label" for="trending_series">Series</label>
+          <input type="text" name="scheduled_automation[action_config][series]" id="trending_series" class="crayons-textfield" placeholder="trending-articles" value="<%= @automation.action_config["series"] %>">
+          <p class="crayons-field__description">Optional series slug</p>
+        </div>
+        <div>
+          <label class="crayons-field__label" for="trending_organization_id">Organization ID</label>
+          <input type="number" name="scheduled_automation[action_config][organization_id]" id="trending_organization_id" class="crayons-textfield" min="1" placeholder="123" value="<%= @automation.action_config["organization_id"] %>">
+          <p class="crayons-field__description">Optional. Publish under this org.</p>
+        </div>
+      </div>
+    </div>
     </div>
 
     <div class="mb-4">
       <label class="crayons-field__label" for="additional_instructions">Additional Instructions</label>
-      <%= f.text_area :additional_instructions, 
-          rows: 4, 
-          class: "crayons-textfield", 
+      <%= f.text_area :additional_instructions,
+          rows: 4,
+          class: "crayons-textfield",
           id: "additional_instructions",
           placeholder: "Add any additional context or instructions to customize the AI-generated content..." %>
       <p class="crayons-field__description">Optional additional instructions to customize the generated content</p>
@@ -129,9 +204,9 @@
 function updateFrequencyFields() {
   const frequency = document.getElementById('frequency').value;
   const container = document.getElementById('frequency-config-fields');
-  
+
   let html = '';
-  
+
   if (frequency === 'hourly') {
     html = `
       <h3 class="crayons-subtitle-2 mb-3">Hourly Schedule</h3>
@@ -207,7 +282,7 @@ function updateFrequencyFields() {
       </div>
     `;
   }
-  
+
   container.innerHTML = html;
 }
 
@@ -215,14 +290,14 @@ function updateServiceFields() {
   const serviceName = document.getElementById('service_name').value;
   const mappedServiceName = serviceName === "community_bot_current_affairs_news_post_creator" ? "community_bot_post_creator" : serviceName;
   const normalizedServiceName = mappedServiceName.replace(/_/g, "-");
-  
+
   // Hide all service-specific fields
   document.querySelectorAll('[id$="-fields"]').forEach(el => {
     if (el.id !== 'frequency-config-fields' && el.id !== 'service-config-fields') {
       el.style.display = 'none';
     }
   });
-  
+
   // Show the selected service's fields
   if (serviceName) {
     const serviceFields = document.getElementById(`${mappedServiceName}-fields`) ||
@@ -237,7 +312,7 @@ function updateServiceFields() {
 document.addEventListener('DOMContentLoaded', function() {
   const frequency = document.getElementById('frequency').value;
   const serviceName = document.getElementById('service_name').value;
-  
+
   // Only update fields if values are selected
   if (frequency) {
     updateFrequencyFields();

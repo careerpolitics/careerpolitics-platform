@@ -322,6 +322,36 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
       end
     end
 
+    context "when service_name is community_bot_trending_article_creator" do
+      let(:trend_result_one) do
+        double("PostResultOne", title: "Trend One", body: "Body one", tags: ["trend-one"], cover_image: nil)
+      end
+      let(:trend_result_two) do
+        double("PostResultTwo", title: "Trend Two", body: "Body two", tags: ["trend-two"], cover_image: nil)
+      end
+      let(:mock_trending_service) { double("CommunityBotTrendingArticleCreator", generate: [trend_result_one, trend_result_two]) }
+
+      before do
+        automation.update!(
+          service_name: "community_bot_trending_article_creator",
+          action: "create_draft",
+          action_config: { "ai_context" => "Write trend updates" },
+        )
+        allow(Ai::CommunityBotTrendingArticleCreator).to receive(:new).and_return(mock_trending_service)
+      end
+
+      it "creates one article for each generated trend result" do
+        expect { executor.call }.to change(Article, :count).by(2)
+      end
+
+      it "returns the last created article in the result payload" do
+        result = executor.call
+
+        expect(result.success?).to be(true)
+        expect(result.article.title).to eq("Trend Two")
+      end
+    end
+
     context "when service_name is unknown" do
       before { automation.update!(service_name: "unknown_service") }
 

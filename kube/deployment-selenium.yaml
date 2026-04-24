@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: careerpolitics-selenium
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: careerpolitics
+      component: selenium
+  template:
+    metadata:
+      labels:
+        app: careerpolitics
+        component: selenium
+    spec:
+      containers:
+        - name: selenium-chrome
+          image: selenium/standalone-chrome:latest
+          ports:
+            - containerPort: 4444
+          env:
+            - name: SE_NODE_MAX_SESSIONS
+              value: "1"
+            - name: SE_SESSION_REQUEST_TIMEOUT
+              value: "120"
+            - name: SE_NODE_SESSION_TIMEOUT
+              value: "120"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+          readinessProbe:
+            httpGet:
+              path: /wd/hub/status
+              port: 4444
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /wd/hub/status
+              port: 4444
+            initialDelaySeconds: 15
+            periodSeconds: 10
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: careerpolitics-selenium
+  namespace: production
+spec:
+  selector:
+    app: careerpolitics
+    component: selenium
+  ports:
+    - port: 4444
+      targetPort: 4444
+  type: ClusterIP
