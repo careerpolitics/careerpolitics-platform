@@ -349,8 +349,14 @@ module ScheduledAutomations
 
       # Set cover image if the service provided one
       if service_result.respond_to?(:cover_image) && service_result.cover_image.present?
-        article.main_image = service_result.cover_image
-        article.main_image_from_frontmatter = true
+        if valid_cover_image_url?(service_result.cover_image)
+          article.main_image = service_result.cover_image
+          article.main_image_from_frontmatter = true
+        else
+          Rails.logger.warn(
+            "ScheduledAutomations::Executor: Skipping invalid cover image URL for automation ##{@automation.id}: #{service_result.cover_image}",
+          )
+        end
       end
 
       # Set organization if specified
@@ -376,6 +382,13 @@ module ScheduledAutomations
         normalized = tag.to_s.strip.downcase.gsub(/[^[:alnum:]]/, "")
         normalized.presence
       end.uniq
+    end
+
+    def valid_cover_image_url?(url)
+      parsed_url = URI.parse(url.to_s)
+      parsed_url.is_a?(URI::HTTP) && parsed_url.host.present?
+    rescue URI::InvalidURIError
+      false
     end
   end
 end

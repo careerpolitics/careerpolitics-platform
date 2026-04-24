@@ -365,6 +365,22 @@ RSpec.describe ScheduledAutomations::Executor, type: :service do
         expect(result.success?).to be(true)
         expect(result.article.title).to eq("Trend Two")
       end
+
+      it "skips invalid generated cover images instead of failing article creation" do
+        invalid_cover_image_result = double(
+          "PostResultWithInvalidCoverImage",
+          title: "Trend Invalid Cover",
+          body: "Body invalid cover",
+          tags: ["trend-invalid"],
+          cover_image: "![invalid](https://example.com/image.jpg)",
+        )
+        allow(mock_trending_service).to receive(:generate).and_return([invalid_cover_image_result])
+
+        result = executor.call
+
+        expect(result.success?).to be(true)
+        expect(result.article.main_image).to be_nil
+      end
     end
 
     context "when service_name is unknown" do
