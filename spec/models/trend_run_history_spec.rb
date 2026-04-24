@@ -8,6 +8,12 @@ RSpec.describe TrendRunHistory do
   end
 
   describe ".slugify" do
+    it "creates a normalized slug for latin trends" do
+      slug = described_class.slugify("  UP Board Result 2026!  ")
+
+      expect(slug).to eq("up-board-result-2026")
+    end
+
     it "returns a deterministic fallback slug for non-latin trends" do
       slug = described_class.slugify("शिखा वर्मा")
 
