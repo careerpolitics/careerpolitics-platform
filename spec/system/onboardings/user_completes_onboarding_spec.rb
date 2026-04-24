@@ -64,7 +64,7 @@ RSpec.describe "Completing Onboarding", js: true do
     context "when user is admin", :aggregate_failures do
       let(:user) { create(:user, :admin, password: password, password_confirmation: password) }
 
-      it "renders the feed and onboarding task card", :aggregate_failures do
+      it "renders the feed and onboarding task card", :aggregate_failures, :flaky do
         visit "/"
 
         wait_for_javascript

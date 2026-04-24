@@ -18,7 +18,7 @@ RSpec.describe "Like button and tooltip after replying", js: true do
     end
 
     find(:xpath, "//textarea[contains(@id, 'textarea-for')]").set("Thanks!")
-    click_button("Submit")
+    find("form button[type='submit']", match: :first).click
 
     # Parent comment should no longer be in the `replying` state
     within "#comment-node-#{parent_comment.id}" do
