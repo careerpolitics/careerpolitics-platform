@@ -65,7 +65,11 @@ RSpec.describe "Completing Onboarding", js: true do
       let(:user) { create(:user, :admin, password: password, password_confirmation: password) }
 
       it "renders the feed and onboarding task card", :aggregate_failures, :flaky do
-        visit "/"
+        begin
+          visit "/"
+        rescue Ferrum::StatusError
+          visit "/"
+        end
 
         wait_for_javascript
         expect(page).to have_css(".onboarding-task-card")

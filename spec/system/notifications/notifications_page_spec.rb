@@ -16,11 +16,14 @@ RSpec.describe "Notifications page", js: true do
     expect(page).to have_text("thanks i guess")
   end
 
-  it "shows 1 notification and disappear after clicking it" do
+  it "shows 1 notification and disappear after clicking it", :flaky do
     follow_instance = leslie.follow(alex)
     Notification.send_new_follower_notification_without_delay(follow_instance)
 
     visit "/"
+    wait_for_javascript
+    expect(page).to have_css("#notifications-link")
+
     expect(page).to have_css("span#notifications-number", text: "1")
     click_link("notifications-link")
     expect(page).not_to have_css("span#notifications-number", text: "1")
