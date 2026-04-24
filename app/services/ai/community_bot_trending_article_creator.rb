@@ -166,6 +166,7 @@ module Ai
 
         FORMATTING:
         • H2 for sections, H3 for subsections; short paragraphs (2–4 lines)
+        • All source URLs must be clickable Markdown links like `[upmsp.edu.in](https://upmsp.edu.in)` (never plain text or single-quoted domains)
         • Use 2–4 liquid tags: `{% details Summary %} ... {% enddetails %}` for dense reference data, `{% card %} ... {% endcard %}` for the most critical update (once)
         • `{% cta URL %} text {% endcta %}` only if an official URL exists in sources
 
@@ -267,7 +268,7 @@ module Ai
       json = JSON.parse(extract_json_payload(response))
 
       title = json["title"].to_s.strip
-      markdown = json["markdown"].to_s.strip
+      markdown = normalize_markdown_links(json["markdown"].to_s.strip)
       description = json["description"].to_s.strip
       raw_tags = sanitize_tags(json["tags"])
       cover_image = pick_cover_image(json["cover_image"], headlines)
@@ -317,6 +318,16 @@ module Ai
       end
 
       trimmed
+    end
+
+    def normalize_markdown_links(markdown)
+      return markdown if markdown.blank?
+
+      markdown.gsub(/'((?:https?:\/\/)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s'"]*)?)'/i) do
+        raw_url = Regexp.last_match(1)
+        href = raw_url.match?(%r{\Ahttps?://}i) ? raw_url : "https://#{raw_url}"
+        "[#{raw_url}](#{href})"
+      end
     end
 
     def match_platform_tags(ai_tags, platform_tags)

@@ -111,4 +111,21 @@ RSpec.describe Ai::CommunityBotTrendingArticleCreator do
       expect(TrendRunHistory).to have_received(:create!).with(trend: "up board result", trend_slug: "up-board-result", published: true)
     end
   end
+
+  describe "#parse_response" do
+    it "converts single-quoted domain links into clickable markdown links" do
+      service = described_class.new(ai_context: "Career platform")
+      response = {
+        title: "UP Board Result 2026",
+        markdown: "Official websites: 'upresults.nic.in' and 'https://upmsp.edu.in'",
+        description: "desc",
+        tags: %w[results education jobs career]
+      }.to_json
+
+      result = service.send(:parse_response, response, [], [])
+
+      expect(result.body).to include("[upresults.nic.in](https://upresults.nic.in)")
+      expect(result.body).to include("[https://upmsp.edu.in](https://upmsp.edu.in)")
+    end
+  end
 end
