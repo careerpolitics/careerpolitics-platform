@@ -95,14 +95,14 @@ RSpec.describe "JobPosts", type: :request do
 
   describe "legacy scaffold routes" do
     it "are no longer routable" do
-      expect(get: "/job_posts/index").not_to be_routable
-      expect(get: "/job_posts/show").not_to be_routable
-      expect(get: "/job_posts/new").not_to be_routable
-      expect(get: "/job_posts/create").not_to be_routable
-      expect(get: "/job_posts/edit").not_to be_routable
-      expect(get: "/job_posts/update").not_to be_routable
-      expect(get: "/jobs/type/new_update").not_to be_routable
-      expect(get: "/jobs/upsc-assistant-recruitment-2026").not_to be_routable
+      expect { get "/job_posts/index" }.to raise_error(ActionController::RoutingError)
+      expect { get "/job_posts/show" }.to raise_error(ActionController::RoutingError)
+      expect { get "/job_posts/new" }.to raise_error(ActionController::RoutingError)
+      expect { get "/job_posts/create" }.to raise_error(ActionController::RoutingError)
+      expect { get "/job_posts/edit" }.to raise_error(ActionController::RoutingError)
+      expect { get "/job_posts/update" }.to raise_error(ActionController::RoutingError)
+      expect { get "/jobs/type/new_update" }.to raise_error(ActionController::RoutingError)
+      expect { get "/jobs/upsc-assistant-recruitment-2026" }.to raise_error(ActionController::RoutingError)
     end
   end
 end
