@@ -23,6 +23,10 @@ class CommunityBotPolicy < ApplicationPolicy
     has_mod_permission?
   end
 
+  def toggle_enabled?
+    update?
+  end
+
   private
 
   def has_mod_permission?
