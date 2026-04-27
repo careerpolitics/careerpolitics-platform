@@ -54,6 +54,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Notify Slack — deployment started
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":rocket: *Deployment started* — `${{ github.repository }}` (`${{ github.sha }}`)\nTriggered by *${{ github.actor }}*"
+            }
+
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
         with:
@@ -112,3 +122,25 @@ jobs:
       - uses: honeybadger-io/github-notify-deploy-action@v1
         with:
           api_key: ${{ secrets.HONEYBADGER_API_KEY_JAVASCRIPT }}
+
+      - name: Notify Slack — deployment succeeded
+        if: success()
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":white_check_mark: *Deployment succeeded* — `${{ github.repository }}` (`${{ github.sha }}`)\nDeployed by *${{ github.actor }}*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>"
+            }
+
+      - name: Notify Slack — deployment failed
+        if: failure()
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":x: *Deployment failed* — `${{ github.repository }}` (`${{ github.sha }}`)\nTriggered by *${{ github.actor }}*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>"
+            }
