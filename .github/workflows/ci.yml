@@ -129,7 +129,7 @@ jobs:
           bin/rails javascript:build
 
       - name: RSpec
-        run: bundle exec rspec --force-color --force documentation --format RspecJunitFormatter --out tmp/rspec.xml
+        run: bundle exec rspec --force-color --format documentation --format RspecJunitFormatter --out tmp/rspec.xml
       - name: Upload RSpec artifacts
         uses: actions/upload-artifact@v4
         if: failure()
