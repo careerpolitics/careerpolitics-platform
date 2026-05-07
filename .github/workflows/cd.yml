@@ -84,6 +84,11 @@ jobs:
             --from-literal=ALGOLIA_API_KEY='${{ secrets.ALGOLIA_API_KEY }}' \
             --from-literal=SMTP_USER_NAME='${{ secrets.SMTP_USER_NAME }}' \
             --from-literal=SMTP_PASSWORD='${{ secrets.SMTP_PASSWORD }}' \
+            --from-literal=GA_API_SECRET='${{ secrets.GA_API_SECRET }}' \
+            --from-literal=GEMINI_API_KEY='${{ secrets.GEMINI_API_KEY }}' \
+            --from-literal=HONEYCOMB_API_KEY='${{ secrets.HONEYCOMB_API_KEY }}' \
+            --from-literal=MAILCHIMP_API_KEY='${{ secrets.MAILCHIMP_API_KEY }}' \
+            --from-literal=RECAPTCHA_SECRET='${{ secrets.RECAPTCHA_SECRET }}' \
             --namespace=${{ env.KUBE_NAMESPACE }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
