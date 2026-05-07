@@ -57,6 +57,13 @@ jobs:
     needs: [build]
     timeout-minutes: 30
 
+
+    strategy:
+      fail-fast: false
+      matrix:
+        ci_node_total: [4]
+        ci_node_index: [0, 1, 2, 3]
+
     services:
       postgres:
         image: postgres:13-alpine
@@ -129,17 +136,23 @@ jobs:
           bin/rails javascript:build
 
       - name: RSpec
-        run: bundle exec rspec --force-color --format documentation --format RspecJunitFormatter --out tmp/rspec.xml
+        env:
+          CI_NODE_TOTAL: ${{ matrix.ci_node_total }}
+          CI_NODE_INDEX: ${{ matrix.ci_node_index }}
+        run: |
+          SPECS=$(find spec -name '*_spec.rb' | sort | awk "NR % $CI_NODE_TOTAL == $CI_NODE_INDEX"
+          echo "Running $(echo "$SPECS" | wc -l) spec files on node $CI_NODE_INDEX/$CI_NODE_TOTAL"
+          bundle exec rspec --force-color --format documentation --format RspecJunitFormatter --out tmp/rspec.xml $SPECS
       - name: Upload RSpec artifacts
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: rspec-artifacts
+          name: rspec-artifacts-${{ matrix.ci_node_index }}
           path: tmp/capybara
       - name: Rename folder
-        run: if [ -d "coverage/simplecov" ]; then mv coverage/simplecov coverage/simplecov-0; fi
+        run: if [ -d "coverage/simplecov" ]; then mv coverage/simplecov coverage/simplecov-${{ matrix.ci_node_index }}; fi
       - name: Upload test coverage result
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-rspec
+          name: coverage-rspec-${{ matrix.ci_node_index }}
           path: coverage/
