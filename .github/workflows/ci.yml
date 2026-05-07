@@ -17,9 +17,7 @@ env:
   NODE_ENV: test
   DATABASE_URL_TEST: postgres://postgres:postgres@localhost:5432/careerpolitics_test
   DATABASE_NAME_TEST: careerpolitics_test
-  KNAPSACK_PRO_FIXED_QUEUE_SPLIT: true
   POSTGRES_PASSWORD: postgres
-  KNAPSACK_PRO_LOG_LEVEL: info
   YARN_ENABLE_HARDENED_MODE: 0
 
 jobs:
@@ -57,11 +55,7 @@ jobs:
   rspec:
     runs-on: ubuntu-latest
     needs: [build]
-    timeout-minutes: 20
-    env:
-      KNAPSACK_PRO_CI_NODE_TOTAL: ${{ matrix.ci_node_total }}
-      KNAPSACK_PRO_CI_NODE_INDEX: ${{ matrix.ci_node_index }}
-      KNAPSACK_PRO_TEST_SUITE_TOKEN_RSPEC: ${{ secrets.KNAPSACK_PRO_TEST_SUITE_TOKEN_RSPEC }}
+    timeout-minutes: 30
 
     services:
       postgres:
@@ -86,12 +80,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
-    strategy:
-      fail-fast: false
-      matrix:
-        ci_node_total: [15]
-        ci_node_index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
 
     steps:
       - uses: actions/checkout@v6
@@ -141,17 +129,17 @@ jobs:
           bin/rails javascript:build
 
       - name: RSpec
-        run: bin/knapsack_pro_rspec
+        run: bundle exec rspec --force-color --force documentation --format RspecJunitFormatter --out tmp/rspec.xml
       - name: Upload RSpec artifacts
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: rspec-artifacts-${{ matrix.ci_node_index }}
+          name: rspec-artifacts
           path: tmp/capybara
       - name: Rename folder
-        run: if [ -d "coverage/simplecov" ]; then mv coverage/simplecov coverage/simplecov-${{ matrix.ci_node_index }}; fi
+        run: if [ -d "coverage/simplecov" ]; then mv coverage/simplecov coverage/simplecov-0; fi
       - name: Upload test coverage result
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-rspec-${{ matrix.ci_node_index }}
+          name: coverage-rspec
           path: coverage/
