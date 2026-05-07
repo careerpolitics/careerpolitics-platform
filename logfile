@@ -1,0 +1,32 @@
+Run ruby/setup-ruby@v1
+Using 3.3.0 as input from file .ruby-version
+Modifying PATH
+Downloading Ruby
+Extracting  Ruby
+Print Ruby version
+Installing Bundler
+> bundle install
+Setting BUNDLER_VERSION=2.4.17 for "bundle config|lock" commands below to ensure Bundler 2.4.17 is used
+/opt/hostedtoolcache/Ruby/3.3.0/x64/bin/bundle config set --local path /home/runner/work/careerpolitics-platform/careerpolitics-platform/vendor/bundle
+/opt/hostedtoolcache/Ruby/3.3.0/x64/bin/bundle config set --local deployment true
+Print lockfile
+Cache key: setup-ruby-bundler-cache-v6-ubuntu-24.04-x64-ruby-3.3.0-wd-/home/runner/work/careerpolitics-platform/careerpolitics-platform-with--without--only--Gemfile.lock-47467be39f19d0f109ddb3ad04edd13fae0ee56f70edaeff193aeb92982100df
+Cache hit for: setup-ruby-bundler-cache-v6-ubuntu-24.04-x64-ruby-3.3.0-wd-/home/runner/work/careerpolitics-platform/careerpolitics-platform-with--without--only--Gemfile.lock-47467be39f19d0f109ddb3ad04edd13fae0ee56f70edaeff193aeb92982100df
+Received 0 of 150666464 (0.0%), 0.0 MBs/sec
+Received 125829120 of 150666464 (83.5%), 60.0 MBs/sec
+Received 150666464 of 150666464 (100.0%), 62.3 MBs/sec
+Cache Size: ~144 MB (150666464 B)
+/usr/bin/tar -xf /home/runner/work/_temp/9aa0fb75-f1b6-42da-8c41-4bc5749f467f/cache.tzst -P -C /home/runner/work/careerpolitics-platform/careerpolitics-platform --use-compress-program unzstd
+Cache restored successfully
+Found cache for key: setup-ruby-bundler-cache-v6-ubuntu-24.04-x64-ruby-3.3.0-wd-/home/runner/work/careerpolitics-platform/careerpolitics-platform-with--without--only--Gemfile.lock-47467be39f19d0f109ddb3ad04edd13fae0ee56f70edaeff193aeb92982100df
+/opt/hostedtoolcache/Ruby/3.3.0/x64/bin/bundle install --jobs 4
+, but the lockfile can't be updated because frozen mode is set
+
+You have deleted from the Gemfile:
+* knapsack_pro (~> 5.1)
+
+Run `bundle install` elsewhere and add the updated Gemfile.lock to version
+control.
+If this is a development machine, remove the Gemfile freeze by running `bundle
+config set frozen false`.
+Error: The process '/opt/hostedtoolcache/Ruby/3.3.0/x64/bin/bundle' failed with exit code 16
