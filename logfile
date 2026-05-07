@@ -1,0 +1,28 @@
+Failures:
+
+  1) Completing Onboarding when the user has seen onboarding shows a call to action for creating a post and can dismiss the onboarding task card
+     Failure/Error: visit "/"
+
+     Ferrum::StatusError:
+       Request to http://runnervmeorf1:41575/ failed (net::ERR_ABORTED)
+
+     [Screenshot Image]: /home/runner/work/careerpolitics-platform/careerpolitics-platform/tmp/capybara/failures_r_spec_example_groups_completing_onboarding_when_the_user_has_seen_onboarding_shows_a_call_to_action_for_creating_a_post_and_can_dismiss_the_onboarding_task_card_147.png
+
+
+     # ./spec/system/onboardings/user_completes_onboarding_spec.rb:43:in `block (3 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
+     # ./spec/support/initializers/ci_csv_formatter.rb:92:in `block (2 levels) in <top (required)>'
+
+Finished in 14 minutes 7 seconds (files took 9.57 seconds to load)
+3088 examples, 1 failure, 17 pending
+
+Failed examples:
+
+rspec ./spec/system/onboardings/user_completes_onboarding_spec.rb:42 # Completing Onboarding when the user has seen onboarding shows a call to action for creating a post and can dismiss the onboarding task card
+
+[TEST PROF INFO] Time spent in factories: 07:21.755 (51.98% of total time)
+Stopped processing SimpleCov as a previous error not related to SimpleCov has been detected
+JSON Coverage report generated for rspec_ci_node_1 to /home/runner/work/careerpolitics-platform/careerpolitics-platform/coverage/simplecov.         17532 / 37359 LOC (46.93%) covered.
+Error: Process completed with exit code 1.

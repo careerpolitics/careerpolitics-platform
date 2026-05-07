@@ -3,26 +3,26 @@
 # for further details
 
 # Default global ownership
-* @forem/core-reviewers
+* @muraridevv
 
 # Dependency ownership
-Gemfile      @forem/core-reviewers @forem/platform
-Gemfile.lock @forem/core-reviewers @forem/platform
-package.json @forem/core-reviewers @forem/platform
-yarn.lock    @forem/core-reviewers @forem/platform
+Gemfile      @muraridevv
+Gemfile.lock @muraridevv
+package.json @muraridevv
+yarn.lock    @muraridevv
 
 # Platform specific ownership
-.buildkite/                              @forem/platform @forem/core-reviewers
-Containerfile                            @forem/platform @forem/core-reviewers
-Dockerfile                               @forem/platform @forem/core-reviewers
-app/controllers/async_info_controller.rb @forem/platform @forem/core-reviewers
-app/services/search/                     @forem/platform @forem/core-reviewers
-app/workers/                             @forem/platform @forem/core-reviewers
-config/                                  @forem/platform @forem/core-reviewers
-db/                                      @forem/platform @forem/core-reviewers
-docker-compose.yml                       @forem/platform @forem/core-reviewers
-lib/                                     @forem/platform @forem/core-reviewers
-podman-compose.yml                       @forem/platform @forem/core-reviewers
-scripts/                                 @forem/platform @forem/core-reviewers
-spec/rails_helper.rb                     @forem/platform @forem/core-reviewers
-spec/support/                            @forem/platform @forem/core-reviewers
+.buildkite/                              muraridevv
+Containerfile                            muraridevv
+Dockerfile                               muraridevv
+app/controllers/async_info_controller.rb muraridevv
+app/services/search/                     muraridevv
+app/workers/                             muraridevv
+config/                                  muraridevv
+db/                                      muraridevv
+docker-compose.yml                       muraridevv
+lib/                                     muraridevv
+podman-compose.yml                       muraridevv
+scripts/                                 muraridevv
+spec/rails_helper.rb                     muraridevv
+spec/support/                            muraridevv
