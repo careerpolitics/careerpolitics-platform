@@ -1,5 +1,5 @@
-Run bundle exec rspec --force-color --force documentation --format RspecJunitFormatter --out tmp/rspec.xml
-  bundle exec rspec --force-color --force documentation --format RspecJunitFormatter --out tmp/rspec.xml
+Run bundle exec rspec --force-color --format documentation --format RspecJunitFormatter --out tmp/rspec.xml
+  bundle exec rspec --force-color --format documentation --format RspecJunitFormatter --out tmp/rspec.xml
   shell: /usr/bin/bash -e {0}
   env:
     COVERAGE: true
@@ -9,42 +9,28 @@ Run bundle exec rspec --force-color --force documentation --format RspecJunitFor
     DATABASE_NAME_TEST: careerpolitics_test
     POSTGRES_PASSWORD: postgres
     YARN_ENABLE_HARDENED_MODE: 0
+An error occurred while loading ./spec/controllers/admin/billboard_placement_area_configs_controller_spec.rb. - Did you mean?
+                    rspec ./spec/controllers/billboard_events_controller_spec.rb
 
-An error occurred while loading ./documentation.
-Failure/Error: __send__(method, file)
+Failure/Error: require "knapsack_pro"
 
 LoadError:
-  cannot load such file -- /home/runner/work/careerpolitics-platform/careerpolitics-platform/documentation
-# /home/runner/work/careerpolitics-platform/careerpolitics-platform/vendor/bundle/ruby/3.3.0/gems/rspec-core-3.12.3/lib/rspec/core/configuration.rb:2117:in `load'
-# /home/runner/work/careerpolitics-platform/careerpolitics-platform/vendor/bundle/ruby/3.3.0/gems/rspec-core-3.12.3/lib/rspec/core/configuration.rb:2117:in `load_file_handling_errors'
-# /home/runner/work/careerpolitics-platform/careerpolitics-platform/vendor/bundle/ruby/3.3.0/gems/rspec-core-3.12.3/lib/rspec/core/configuration.rb:1617:in `block in load_spec_files'
-# /home/runner/work/careerpolitics-platform/careerpolitics-platform/vendor/bundle/ruby/3.3.0/gems/rspec-core-3.12.3/lib/rspec/core/configuration.rb:1615:in `each'
-# /home/runner/work/careerpolitics-platform/careerpolitics-platform/vendor/bundle/ruby/3.3.0/gems/rspec-core-3.12.3/lib/rspec/core/configuration.rb:1615:in `load_spec_files'
-# /home/runner/work/careerpolitics-platform/careerpolitics-platform/vendor/bundle/ruby/3.3.0/gems/rspec-core-3.12.3/lib/rspec/core/runner.rb:102:in `setup'
-# /home/runner/work/careerpolitics-platform/careerpolitics-platform/vendor/bundle/ruby/3.3.0/gems/rspec-core-3.12.3/lib/rspec/core/runner.rb:86:in `run'
-# /home/runner/work/careerpolitics-platform/careerpolitics-platform/vendor/bundle/ruby/3.3.0/gems/rspec-core-3.12.3/lib/rspec/core/runner.rb:71:in `run'
-# /home/runner/work/careerpolitics-platform/careerpolitics-platform/vendor/bundle/ruby/3.3.0/gems/rspec-core-3.12.3/lib/rspec/core/runner.rb:45:in `invoke'
-# /home/runner/work/careerpolitics-platform/careerpolitics-platform/vendor/bundle/ruby/3.3.0/gems/rspec-core-3.12.3/exe/rspec:4:in `<top (required)>'
-# /home/runner/work/careerpolitics-platform/careerpolitics-platform/vendor/bundle/ruby/3.3.0/bin/rspec:25:in `load'
-# /home/runner/work/careerpolitics-platform/careerpolitics-platform/vendor/bundle/ruby/3.3.0/bin/rspec:25:in `<top (required)>'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/lib/ruby/gems/3.3.0/gems/bundler-2.4.17/lib/bundler/cli/exec.rb:58:in `load'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/lib/ruby/gems/3.3.0/gems/bundler-2.4.17/lib/bundler/cli/exec.rb:58:in `kernel_load'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/lib/ruby/gems/3.3.0/gems/bundler-2.4.17/lib/bundler/cli/exec.rb:23:in `run'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/lib/ruby/gems/3.3.0/gems/bundler-2.4.17/lib/bundler/cli.rb:492:in `exec'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/lib/ruby/gems/3.3.0/gems/bundler-2.4.17/lib/bundler/vendor/thor/lib/thor/command.rb:27:in `run'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/lib/ruby/gems/3.3.0/gems/bundler-2.4.17/lib/bundler/vendor/thor/lib/thor/invocation.rb:127:in `invoke_command'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/lib/ruby/gems/3.3.0/gems/bundler-2.4.17/lib/bundler/vendor/thor/lib/thor.rb:392:in `dispatch'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/lib/ruby/gems/3.3.0/gems/bundler-2.4.17/lib/bundler/cli.rb:34:in `dispatch'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/lib/ruby/gems/3.3.0/gems/bundler-2.4.17/lib/bundler/vendor/thor/lib/thor/base.rb:485:in `start'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/lib/ruby/gems/3.3.0/gems/bundler-2.4.17/lib/bundler/cli.rb:28:in `start'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/lib/ruby/gems/3.3.0/gems/bundler-2.4.17/exe/bundle:37:in `block in <top (required)>'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/lib/ruby/gems/3.3.0/gems/bundler-2.4.17/lib/bundler/friendly_errors.rb:117:in `with_friendly_errors'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/lib/ruby/gems/3.3.0/gems/bundler-2.4.17/exe/bundle:29:in `<top (required)>'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/bin/bundle:25:in `load'
-# /opt/hostedtoolcache/Ruby/3.3.0/x64/bin/bundle:25:in `<main>'
-#
-#   Showing full backtrace because every line was filtered out.
-#   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
-#   RSpec::Configuration#backtrace_inclusion_patterns for more information.
-No examples found.
-Error: Process completed with exit code 1.
+  cannot load such file -- knapsack_pro
+# ./spec/rails_helper.rb:4:in `<top (required)>'
+# ./spec/controllers/admin/billboard_placement_area_configs_controller_spec.rb:1:in `<top (required)>'
+An error occurred while loading ./spec/controllers/admin/user_queries_controller_spec.rb. - Did you mean?
+                    rspec ./spec/controllers/surveys_controller_spec.rb
+                    rspec ./spec/controllers/billboard_events_controller_spec.rb
+                    rspec ./spec/controllers/ai_chats_controller_spec.rb
+
+Failure/Error: require "knapsack_pro"
+
+LoadError:
+  cannot load such file -- knapsack_pro
+# ./spec/rails_helper.rb:4:in `<top (required)>'
+# ./spec/controllers/admin/user_queries_controller_spec.rb:1:in `<top (required)>'
+An error occurred while loading ./spec/controllers/ai_chats_controller_spec.rb. - Did you mean?
+                    rspec ./spec/controllers/application_controller_spec.rb
+                    rspec ./spec/controllers/surveys_controller_spec.rb
+
+Failure/Error: require "knapsack_pro"
