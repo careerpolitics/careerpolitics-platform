@@ -140,7 +140,7 @@ jobs:
           CI_NODE_TOTAL: ${{ matrix.ci_node_total }}
           CI_NODE_INDEX: ${{ matrix.ci_node_index }}
         run: |
-          SPECS=$(find spec -name '*_spec.rb' | sort | awk "NR % $CI_NODE_TOTAL == $CI_NODE_INDEX"
+          SPECS=$(find spec -name '*_spec.rb' | sort | awk "NR % $CI_NODE_TOTAL == $CI_NODE_INDEX")
           echo "Running $(echo "$SPECS" | wc -l) spec files on node $CI_NODE_INDEX/$CI_NODE_TOTAL"
           bundle exec rspec --force-color --format documentation --format RspecJunitFormatter --out tmp/rspec.xml $SPECS
       - name: Upload RSpec artifacts
