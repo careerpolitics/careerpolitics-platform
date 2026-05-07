@@ -162,7 +162,7 @@ jobs:
             LABEL="Deployment failed"
           fi
 
-          curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+          curl -s -X POST "${{ secrets.SLACK_DEPLOY_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
             -d "{
               \"channel\": \"${{ secrets.SLACK_DEPLOY_CHANNEL }}\",
