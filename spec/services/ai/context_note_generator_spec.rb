@@ -40,12 +40,12 @@ RSpec.describe Ai::ContextNoteGenerator, type: :service do
       end
 
       it "truncates an overly long AI response to avoid validation errors" do
-        allow(ai_client_double).to receive(:call).and_return("a" * 250)
+        allow(ai_client_double).to receive(:call).and_return("a" * 120)
 
         note = generator.call
 
         expect(note).to be_a(ContextNote)
-        expect(note.body_markdown.length).to eq(200)
+        expect(note.body_markdown.length).to eq(75)
       end
     end
 
