@@ -1,22 +1,30 @@
-Run yarn install --immutable
-  yarn install --immutable
-  shell: /usr/bin/bash -e {0}
-  env:
-    COVERAGE: true
-    RAILS_ENV: test
-    NODE_ENV: test
-    DATABASE_URL_TEST: ***localhost:5432/careerpolitics_test
-    DATABASE_NAME_TEST: careerpolitics_test
-    POSTGRES_PASSWORD: postgres
-    YARN_ENABLE_HARDENED_MODE: 0
-    E2E: true
-➤ YN0000: · Yarn 4.1.0
-➤ YN0000: ┌ Resolution step
-Resolution step
-➤ YN0000: └ Completed
-➤ YN0000: ┌ Post-resolution validation
-Post-resolution validation
-➤ YN0028: The lockfile would have been modified by this install, which is explicitly forbidden.
-➤ YN0000: └ Completed
-➤ YN0000: · Failed with errors in 0s 221ms
-Error: Process completed with exit code 1.
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
+/home/runner/work/_temp/9af002a7-593e-4869-ba51-6e96f8197006.sh: line 8: redis-cli: command not found
