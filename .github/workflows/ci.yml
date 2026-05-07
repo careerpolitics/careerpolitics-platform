@@ -7,6 +7,8 @@ on:
   merge_group:
     branches:
       - main
+permissions:
+  contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
@@ -66,7 +68,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:13-alpine
+        image: postgres:16-alpine
         env:
           POSTGRES_PASSWORD: postgres
         ports:
@@ -81,12 +83,6 @@ jobs:
         image: redis
         ports:
           - 6379:6379
-        # ADDED: Options to make the healthcheck more reliable
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - uses: actions/checkout@v6
@@ -98,10 +94,6 @@ jobs:
             public/assets
           key: ${{ runner.os }}-compiled-assets-v3-${{ hashFiles('app/assets/**', 'app/javascript/**', '**/package.json', '**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-compiled-assets-v3-
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: '.nvmrc'
-          cache: yarn
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -109,7 +101,7 @@ jobs:
 
       # MODIFIED: Added postgresql-client and redis-tools for the wait step
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y imagemagick postgresql-client redis-tools
+        run: sudo apt-get update && sudo apt-get install -y imagemagick redis-tools
 
       # NEW: This is the fix. It waits until Postgres and Redis are fully ready
       - name: Wait for services
