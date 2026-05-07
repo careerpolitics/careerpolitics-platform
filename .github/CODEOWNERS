@@ -12,17 +12,17 @@ package.json @muraridevv
 yarn.lock    @muraridevv
 
 # Platform specific ownership
-.buildkite/                              muraridevv
-Containerfile                            muraridevv
-Dockerfile                               muraridevv
-app/controllers/async_info_controller.rb muraridevv
-app/services/search/                     muraridevv
-app/workers/                             muraridevv
-config/                                  muraridevv
-db/                                      muraridevv
-docker-compose.yml                       muraridevv
-lib/                                     muraridevv
-podman-compose.yml                       muraridevv
-scripts/                                 muraridevv
-spec/rails_helper.rb                     muraridevv
-spec/support/                            muraridevv
+.buildkite/                              @muraridevv
+Containerfile                            @muraridevv
+Dockerfile                               @muraridevv
+app/controllers/async_info_controller.rb @muraridevv
+app/services/search/                     @muraridevv
+app/workers/                             @muraridevv
+config/                                  @muraridevv
+db/                                      @muraridevv
+docker-compose.yml                       @muraridevv
+lib/                                     @muraridevv
+podman-compose.yml                       @muraridevv
+scripts/                                 @muraridevv
+spec/rails_helper.rb                     @muraridevv
+spec/support/                            @muraridevv

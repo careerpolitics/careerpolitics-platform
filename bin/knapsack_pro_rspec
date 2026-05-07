@@ -1,2 +1,0 @@
-#!/bin/bash
-bundle exec rspec --force-color --format documentation --format RspecJunitFormatter --out tmp/rspec.xml "$@"

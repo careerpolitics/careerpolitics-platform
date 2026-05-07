@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 env:
   IMAGE_NAME: muraridevv/careerpolitics-platform
   KUBE_NAMESPACE: production
@@ -54,16 +57,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Notify Slack — deployment started
-        uses: slackapi/slack-github-action@v2
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            {
-              "text": ":rocket: *Deployment started* — `${{ github.repository }}` (`${{ github.sha }}`)\nTriggered by *${{ github.actor }}*"
-            }
-
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
         with:
@@ -72,6 +65,28 @@ jobs:
       - name: Configure kubectl
         run: doctl kubernetes cluster kubeconfig save ${{ secrets.DOKS_CLUSTER_NAME }}
 
+      # --- Apply app secrets from GitHub Environment Secrets ---
+      - name: Apply app secrets
+        run: |
+          kubectl create secret generic careerpolitics-secrets \
+            --from-literal=SECRET_KEY_BASE='${{ secrets.SECRET_KEY_BASE }}' \
+            --from-literal=DATABASE_URL='${{ secrets.DATABASE_URL }}' \
+            --from-literal=REDIS_URL='${{ secrets.REDIS_URL }}' \
+            --from-literal=FOREM_OWNER_SECRET='${{ secrets.FOREM_OWNER_SECRET }}' \
+            --from-literal=DO_SPACES_ACCESS_KEY_ID='${{ secrets.DO_SPACES_ACCESS_KEY_ID }}' \
+            --from-literal=DO_SPACES_SECRET_ACCESS_KEY='${{ secrets.DO_SPACES_SECRET_ACCESS_KEY }}' \
+            --from-literal=AWS_ID='${{ secrets.AWS_ID }}' \
+            --from-literal=AWS_SECRET='${{ secrets.AWS_SECRET }}' \
+            --from-literal=CLOUDINARY_API_KEY='${{ secrets.CLOUDINARY_API_KEY }}' \
+            --from-literal=CLOUDINARY_API_SECRET='${{ secrets.CLOUDINARY_API_SECRET }}' \
+            --from-literal=HONEYBADGER_API_KEY='${{ secrets.HONEYBADGER_API_KEY }}' \
+            --from-literal=HONEYBADGER_JS_API_KEY='${{ secrets.HONEYBADGER_JS_API_KEY }}' \
+            --from-literal=ALGOLIA_API_KEY='${{ secrets.ALGOLIA_API_KEY }}' \
+            --from-literal=SMTP_USER_NAME='${{ secrets.SMTP_USER_NAME }}' \
+            --from-literal=SMTP_PASSWORD='${{ secrets.SMTP_PASSWORD }}' \
+            --namespace=${{ env.KUBE_NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
       # --- Run database migrations via a Kubernetes Job ---
       - name: Delete previous migration job (if any)
         run: kubectl delete job careerpolitics-migrate -n ${{ env.KUBE_NAMESPACE }} --ignore-not-found
@@ -79,7 +94,7 @@ jobs:
       - name: Run database migrations
         run: |
           # Patch the migration job manifest to use the new image tag
-          sed -i 's|image: .*|image: ${{ env.IMAGE_NAME }}:${{ github.sha }}|' kube/job-migrate.yaml
+          sed -i 's|^\(\s*image:\s*\).*|\1${{ env.IMAGE_NAME }}:${{ github.sha }}|' kube/job-migrate.yaml
           kubectl apply -f kube/job-migrate.yaml
           kubectl wait --for=condition=complete --timeout=300s job/careerpolitics-migrate -n ${{ env.KUBE_NAMESPACE }}
 
@@ -123,24 +138,35 @@ jobs:
         with:
           api_key: ${{ secrets.HONEYBADGER_API_KEY_JAVASCRIPT }}
 
-      - name: Notify Slack — deployment succeeded
-        if: success()
-        uses: slackapi/slack-github-action@v2
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            {
-              "text": ":white_check_mark: *Deployment succeeded* — `${{ github.repository }}` (`${{ github.sha }}`)\nDeployed by *${{ github.actor }}*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>"
-            }
+  notify-slack:
+    runs-on: ubuntu-latest
+    needs: [build-and-push, deploy]
+    if: always()
+    steps:
+      - name: Notify Slack
+        run: |
+          BUILD="${{ needs.build-and-push.result }}"
+          DEPLOY="${{ needs.deploy.result }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          SHA="${{ github.sha }}"
+          ACTOR="${{ github.actor }}"
 
-      - name: Notify Slack — deployment failed
-        if: failure()
-        uses: slackapi/slack-github-action@v2
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            {
-              "text": ":x: *Deployment failed* — `${{ github.repository }}` (`${{ github.sha }}`)\nTriggered by *${{ github.actor }}*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>"
-            }
+          if [[ "$BUILD" == "success" && "$DEPLOY" == "success" ]]; then
+            EMOJI=":white_check_mark:"
+            LABEL="Deployment succeeded"
+          elif [[ "$BUILD" != "success" ]]; then
+            EMOJI=":x:"
+            LABEL="Build failed (deploy did not run)"
+          else
+            EMOJI=":x:"
+            LABEL="Deployment failed"
+          fi
+
+          curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"channel\": \"${{ secrets.SLACK_DEPLOY_CHANNEL }}\",
+              \"username\": \"deploy_bot\",
+              \"icon_emoji\": \"$EMOJI\",
+              \"text\": \"$EMOJI *$LABEL*\n*Commit:* \`${SHA:0:7}\`\n*Triggered by:* $ACTOR\n<$RUN_URL|View workflow run>\"
+            }"
