@@ -19,7 +19,7 @@
     <div class="mb-4">
       <label class="crayons-field__label" for="service_name">AI Service</label>
       <%= f.select :service_name,
-          [["GitHub Repo Recap", "github_repo_recap"], ["Community Bot Quiz Post Creator", "community_bot_post_creator"], ["Community Bot Current Affairs News Post Creator", "community_bot_current_affairs_news_post_creator"], ["Trending Article Creator (Selenium)","community_bot_trending_article_creator"]],
+          [["GitHub Repo Recap", "github_repo_recap"], ["Community Bot Quiz Post Creator", "community_bot_post_creator"], ["Community Bot Current Affairs News Post Creator", "community_bot_current_affairs_news_post_creator"], ["Community Bot PIB Announcement Post Creator","community_bot_pib_announcement_post_creator"], ["Trending Article Creator (Selenium)","community_bot_trending_article_creator"]],
           { prompt: "Select a service" },
           class: "crayons-select",
           id: "service_name",
@@ -104,6 +104,61 @@
           <label class="crayons-field__label" for="community_bot_organization_id">Organization ID</label>
           <input type="number" name="scheduled_automation[action_config][organization_id]" id="community_bot_organization_id" class="crayons-textfield" min="1" placeholder="123" value="<%= @automation.action_config["organization_id"] %>">
           <p class="crayons-field__description">Optional. If provided, generated quizzes will be published under this organization.</p>
+        </div>
+      </div>
+
+      <!-- PIB Announcement Post Creator specific fields -->
+      <div id="community-bot-pib-announcement-post-creator-fields" style="display: none;">
+        <h3 class="crayons-subtitle-2 mb-3">PIB Announcement Post Creator Configuration</h3>
+
+        <div class="mb-4">
+          <label class="crayons-field__label" for="pib_ai_context">AI Context</label>
+          <textarea name="scheduled_automation[action_config][ai_context]" id="pib_ai_context" class="crayons-textfield" rows="6" placeholder="Describe how the AI should summarize PIB announcements for your platform's audience"><%= @automation.action_config["ai_context"] %></textarea>
+          <p class="crayons-field__description">Required. Instructions for the AI on how to filter and summarize PIB announcements (e.g., "Summarize PIB announcements relevant for UPSC civil services aspirants")</p>
+        </div>
+
+        <div class="mb-4">
+          <label class="crayons-field__label" for="pib_feed_url">PIB RSS Feed URL</label>
+          <input type="text" name="scheduled_automation[action_config][feed_url]" id="pib_feed_url" class="crayons-textfield" placeholder="https://www.pib.gov.in/RssMain.aspx?ModId=6&reg=3&lang=1" value="<%= @automation.action_config["feed_url"] %>">
+          <p class="crayons-field__description">Optional. Defaults to the main English PIB feed. Change to use a different language or module feed.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="crayons-field__label" for="pib_max_feed_items">Max Feed Items to Consider</label>
+            <input type="number" name="scheduled_automation[action_config][max_feed_items]" id="pib_max_feed_items" class="crayons-textfield" min="1" max="50" value="<%= @automation.action_config["max_feed_items"] || 30 %>">
+            <p class="crayons-field__description">How many RSS items to read from the feed (1–50)</p>
+          </div>
+          <div>
+            <label class="crayons-field__label" for="pib_max_selected_items">Max Items After AI Filtering</label>
+            <input type="number" name="scheduled_automation[action_config][max_selected_items]" id="pib_max_selected_items" class="crayons-textfield" min="1" max="20" value="<%= @automation.action_config["max_selected_items"] || 8 %>">
+            <p class="crayons-field__description">Max articles to include in the summary post (1–20)</p>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="crayons-field__label" for="pib_tags">Tags (comma-separated)</label>
+          <input type="text" name="scheduled_automation[action_config][tags]" id="pib_tags" class="crayons-textfield" placeholder="pib, government, policy" value="<%= @automation.action_config["tags"] %>">
+          <p class="crayons-field__description">Optional. If blank, AI will generate tags.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="crayons-field__label" for="pib_series">Series</label>
+            <input type="text" name="scheduled_automation[action_config][series]" id="pib_series" class="crayons-textfield" placeholder="pib-daily-digest" value="<%= @automation.action_config["series"] %>">
+            <p class="crayons-field__description">Optional series slug</p>
+          </div>
+          <div>
+            <label class="crayons-field__label" for="pib_organization_id">Organization ID</label>
+            <input type="number" name="scheduled_automation[action_config][organization_id]" id="pib_organization_id" class="crayons-textfield" min="1" placeholder="123" value="<%= @automation.action_config["organization_id"] %>">
+            <p class="crayons-field__description">Optional. Publish under this org.</p>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="crayons-field__label" for="pib_subforem_id">Subforem ID</label>
+          <input type="number" name="scheduled_automation[action_config][subforem_id]" id="pib_subforem_id" class="crayons-textfield" min="1" placeholder="1" value="<%= @automation.action_config["subforem_id"] %>">
+          <p class="crayons-field__description">Optional. Publish to a specific subforem.</p>
         </div>
       </div>
 
