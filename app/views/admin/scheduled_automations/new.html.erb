@@ -19,7 +19,7 @@
     <div class="mb-4">
       <label class="crayons-field__label" for="service_name">AI Service</label>
       <%= f.select :service_name,
-          [["GitHub Repo Recap", "github_repo_recap"], ["Community Bot Quiz Post Creator", "community_bot_post_creator"], ["Community Bot Current Affairs News Post Creator", "community_bot_current_affairs_news_post_creator"], ["Trending Article Creator (Selenium)","community_bot_trending_article_creator"]],
+          [["GitHub Repo Recap", "github_repo_recap"], ["Community Bot Quiz Post Creator", "community_bot_post_creator"], ["Community Bot Current Affairs News Post Creator", "community_bot_current_affairs_news_post_creator"], ["Community Bot PIB Announcement Post Creator","community_bot_pib_announcement_post_creator"], ["Trending Article Creator (Selenium)","community_bot_trending_article_creator"]],
           { prompt: "Select a service" },
           class: "crayons-select",
           id: "service_name",
