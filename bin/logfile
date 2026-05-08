@@ -1,87 +1,38 @@
-Failures:
-
-  1) Admin::ScheduledAutomationsController PATCH #reactivate reactivates a failed automation
-     Failure/Error: authorize @bot, policy_class: CommunityBotPolicy
-
-     NoMethodError:
-       undefined method `reactivate?' for an instance of CommunityBotPolicy
-     # ./app/controllers/admin/scheduled_automations_controller.rb:108:in `authorize_bot'
-     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
-     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
-     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
-     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:321:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
-
-  2) Admin::ScheduledAutomationsController PATCH #reactivate schedules the next run time
-     Failure/Error: authorize @bot, policy_class: CommunityBotPolicy
-
-     NoMethodError:
-       undefined method `reactivate?' for an instance of CommunityBotPolicy
-     # ./app/controllers/admin/scheduled_automations_controller.rb:108:in `authorize_bot'
-     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
-     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
-     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
-     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:331:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
-
-  3) Admin::ScheduledAutomationsController PATCH #reactivate redirects to index with success flash
-     Failure/Error: authorize @bot, policy_class: CommunityBotPolicy
-
-     NoMethodError:
-       undefined method `reactivate?' for an instance of CommunityBotPolicy
-     # ./app/controllers/admin/scheduled_automations_controller.rb:108:in `authorize_bot'
-     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
-     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
-     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
-     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:340:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
-
-  4) Admin::ScheduledAutomationsController PATCH #reactivate rejects reactivation of non-failed automations
-     Failure/Error: authorize @bot, policy_class: CommunityBotPolicy
-
-     NoMethodError:
-       undefined method `reactivate?' for an instance of CommunityBotPolicy
-     # ./app/controllers/admin/scheduled_automations_controller.rb:108:in `authorize_bot'
-     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
-     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
-     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
-     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:349:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
-
-  5) Admin::ScheduledAutomationsController PATCH #reactivate works for top-level community bot route
-     Failure/Error: authorize @bot, policy_class: CommunityBotPolicy
-
-     NoMethodError:
-       undefined method `reactivate?' for an instance of CommunityBotPolicy
-     # ./app/controllers/admin/scheduled_automations_controller.rb:108:in `authorize_bot'
-     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
-     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
-     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
-     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:358:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
-
-Finished in 13 minutes 20 seconds (files took 9.96 seconds to load)
-3037 examples, 5 failures, 26 pending
-
-Failed examples:
-
-rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:318 # Admin::ScheduledAutomationsController PATCH #reactivate reactivates a failed automation
-rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:328 # Admin::ScheduledAutomationsController PATCH #reactivate schedules the next run time
-rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:337 # Admin::ScheduledAutomationsController PATCH #reactivate redirects to index with success flash
-rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:346 # Admin::ScheduledAutomationsController PATCH #reactivate rejects reactivation of non-failed automations
-rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:355 # Admin::ScheduledAutomationsController PATCH #reactivate works for top-level community bot route
-
-[TEST PROF INFO] Time spent in factories: 05:50.962 (43.72% of total time)
-Stopped processing SimpleCov as a previous error not related to SimpleCov has been detected
-JSON Coverage report generated for rspec_ci_node_0 to /home/runner/work/careerpolitics-platform/careerpolitics-platform/coverage/simplecov.         17997 / 39506 LOC (45.56%) covered.
-Error: Process completed with exit code 1.
+murari@Murari:~/careerpolitics-platform$ helm repo add grafana https://grafana.github.io/helm-charts &&
+  helm repo update &&
+  helm upgrade --install --rollback-on-failure --timeout 300s grafana-k8s-monitoring grafana/k8s-monitoring \
+    --version "^4" --namespace "monitoring" --create-namespace --values - <<'EOF'
+cluster:
+  name: careerpolitics-cluster
+destinations:
+EOF deploy: truettps://prometheus-prod-43-prod-ap-south-1.grafana.net./api/promnitoringWZhbmEtdG9rZW4tZ3JhZmFuYS10b2tlbiIsImsiOiJUdjNVM3RXMVg4bDQ1MjZMcjdCNWFZSXQiLCJtIjp7InIiOiJwcm
+"grafana" has been added to your repositories
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "ingress-nginx" chart repository
+...Successfully got an update from the "jetstack" chart repository
+...Successfully got an update from the "grafana" chart repository
+...Successfully got an update from the "bitnami" chart repository
+Update Complete. ⎈Happy Helming!⎈
+Error: unknown flag: --rollback-on-failure
+murari@Murari:~/careerpolitics-platform$ kubectl get pods - monitoring
+Error from server (NotFound): pods "-" not found
+Error from server (NotFound): pods "monitoring" not found
+murari@Murari:~/careerpolitics-platform$ kubectl get pods -n monitoring
+No resources found in monitoring namespace.
+murari@Murari:~/careerpolitics-platform$ helm repo add grafana https://grafana.github.io/helm-charts &&
+  helm repo update &&
+  helm upgrade --install --rollback-on-failure --timeout 300s grafana-k8s-monitoring grafana/k8s-monitoring \
+    --version "^4" --namespace "monitoring" --create-namespace --values - <<'EOF'
+cluster:
+  name: careerpolitics-cluster
+destinations:
+EOF deploy: truettps://prometheus-prod-43-prod-ap-south-1.grafana.net./api/promnitoringWZhbmEtdG9rZW4tZ3JhZmFuYS10b2tlbiIsImsiOiJUdjNVM3RXMVg4bDQ1MjZMcjdCNWFZSXQiLCJtIjp7InIiOiJwcm
+"grafana" already exists with the same configuration, skipping
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "ingress-nginx" chart repository
+...Successfully got an update from the "jetstack" chart repository
+...Successfully got an update from the "grafana" chart repository
+...Successfully got an update from the "bitnami" chart repository
+Update Complete. ⎈Happy Helming!⎈
+Error: unknown flag: --rollback-on-failure
+murari@Murari:~/careerpolitics-platform$
