@@ -1,67 +1,87 @@
 Failures:
 
-  1) ScheduledAutomation PATCH #reactivate reactivates a failed automation
-     Failure/Error: automation.update!(state: "failed")
+  1) Admin::ScheduledAutomationsController PATCH #reactivate reactivates a failed automation
+     Failure/Error: authorize @bot, policy_class: CommunityBotPolicy
 
-     NameError:
-       undefined local variable or method `automation' for #<RSpec::ExampleGroups::ScheduledAutomation::PATCHReactivate:0x00007f5675558638>
-     # ./spec/models/scheduled_automation_spec.rb:396:in `block (3 levels) in <top (required)>'
+     NoMethodError:
+       undefined method `reactivate?' for an instance of CommunityBotPolicy
+     # ./app/controllers/admin/scheduled_automations_controller.rb:108:in `authorize_bot'
+     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
+     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
+     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
+     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:321:in `block (3 levels) in <top (required)>'
      # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
      # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
      # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
 
-  2) ScheduledAutomation PATCH #reactivate schedules the next run time
-     Failure/Error: automation.update!(state: "failed", next_run_at: nil)
+  2) Admin::ScheduledAutomationsController PATCH #reactivate schedules the next run time
+     Failure/Error: authorize @bot, policy_class: CommunityBotPolicy
 
-     NameError:
-       undefined local variable or method `automation' for #<RSpec::ExampleGroups::ScheduledAutomation::PATCHReactivate:0x00007f56767543f0>
-     # ./spec/models/scheduled_automation_spec.rb:406:in `block (3 levels) in <top (required)>'
+     NoMethodError:
+       undefined method `reactivate?' for an instance of CommunityBotPolicy
+     # ./app/controllers/admin/scheduled_automations_controller.rb:108:in `authorize_bot'
+     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
+     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
+     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
+     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:331:in `block (3 levels) in <top (required)>'
      # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
      # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
      # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
 
-  3) ScheduledAutomation PATCH #reactivate redirects to index with success flash
-     Failure/Error: automation.update!(state: "failed")
+  3) Admin::ScheduledAutomationsController PATCH #reactivate redirects to index with success flash
+     Failure/Error: authorize @bot, policy_class: CommunityBotPolicy
 
-     NameError:
-       undefined local variable or method `automation' for #<RSpec::ExampleGroups::ScheduledAutomation::PATCHReactivate:0x00007f56770e3358>
-     # ./spec/models/scheduled_automation_spec.rb:415:in `block (3 levels) in <top (required)>'
+     NoMethodError:
+       undefined method `reactivate?' for an instance of CommunityBotPolicy
+     # ./app/controllers/admin/scheduled_automations_controller.rb:108:in `authorize_bot'
+     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
+     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
+     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
+     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:340:in `block (3 levels) in <top (required)>'
      # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
      # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
      # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
 
-  4) ScheduledAutomation PATCH #reactivate rejects reactivation of non-failed automations
-     Failure/Error: automation.update!(state: "active")
+  4) Admin::ScheduledAutomationsController PATCH #reactivate rejects reactivation of non-failed automations
+     Failure/Error: authorize @bot, policy_class: CommunityBotPolicy
 
-     NameError:
-       undefined local variable or method `automation' for #<RSpec::ExampleGroups::ScheduledAutomation::PATCHReactivate:0x00007f56771492e8>
-     # ./spec/models/scheduled_automation_spec.rb:424:in `block (3 levels) in <top (required)>'
+     NoMethodError:
+       undefined method `reactivate?' for an instance of CommunityBotPolicy
+     # ./app/controllers/admin/scheduled_automations_controller.rb:108:in `authorize_bot'
+     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
+     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
+     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
+     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:349:in `block (3 levels) in <top (required)>'
      # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
      # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
      # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
 
-  5) ScheduledAutomation PATCH #reactivate works for top-level community bot route
-     Failure/Error: automation.update!(state: "failed")
+  5) Admin::ScheduledAutomationsController PATCH #reactivate works for top-level community bot route
+     Failure/Error: authorize @bot, policy_class: CommunityBotPolicy
 
-     NameError:
-       undefined local variable or method `automation' for #<RSpec::ExampleGroups::ScheduledAutomation::PATCHReactivate:0x00007f567723e2e8>
-     # ./spec/models/scheduled_automation_spec.rb:433:in `block (3 levels) in <top (required)>'
+     NoMethodError:
+       undefined method `reactivate?' for an instance of CommunityBotPolicy
+     # ./app/controllers/admin/scheduled_automations_controller.rb:108:in `authorize_bot'
+     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
+     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
+     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
+     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:358:in `block (3 levels) in <top (required)>'
      # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
      # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
      # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
 
-Finished in 13 minutes 3 seconds (files took 9.83 seconds to load)
+Finished in 13 minutes 20 seconds (files took 9.96 seconds to load)
 3037 examples, 5 failures, 26 pending
 
 Failed examples:
 
-rspec ./spec/models/scheduled_automation_spec.rb:395 # ScheduledAutomation PATCH #reactivate reactivates a failed automation
-rspec ./spec/models/scheduled_automation_spec.rb:405 # ScheduledAutomation PATCH #reactivate schedules the next run time
-rspec ./spec/models/scheduled_automation_spec.rb:414 # ScheduledAutomation PATCH #reactivate redirects to index with success flash
-rspec ./spec/models/scheduled_automation_spec.rb:423 # ScheduledAutomation PATCH #reactivate rejects reactivation of non-failed automations
-rspec ./spec/models/scheduled_automation_spec.rb:432 # ScheduledAutomation PATCH #reactivate works for top-level community bot route
+rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:318 # Admin::ScheduledAutomationsController PATCH #reactivate reactivates a failed automation
+rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:328 # Admin::ScheduledAutomationsController PATCH #reactivate schedules the next run time
+rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:337 # Admin::ScheduledAutomationsController PATCH #reactivate redirects to index with success flash
+rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:346 # Admin::ScheduledAutomationsController PATCH #reactivate rejects reactivation of non-failed automations
+rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:355 # Admin::ScheduledAutomationsController PATCH #reactivate works for top-level community bot route
 
-[TEST PROF INFO] Time spent in factories: 05:42.816 (43.62% of total time)
+[TEST PROF INFO] Time spent in factories: 05:50.962 (43.72% of total time)
 Stopped processing SimpleCov as a previous error not related to SimpleCov has been detected
-JSON Coverage report generated for rspec_ci_node_0 to /home/runner/work/careerpolitics-platform/careerpolitics-platform/coverage/simplecov.         18008 / 39486 LOC (45.61%) covered.
+JSON Coverage report generated for rspec_ci_node_0 to /home/runner/work/careerpolitics-platform/careerpolitics-platform/coverage/simplecov.         17997 / 39506 LOC (45.56%) covered.
 Error: Process completed with exit code 1.
