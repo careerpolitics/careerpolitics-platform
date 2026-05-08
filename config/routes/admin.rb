@@ -155,6 +155,7 @@ namespace :admin do
       resources :scheduled_automations, only: %i[index show new create edit update destroy] do
         member do
           patch :toggle_enabled
+          patch :reactivate
         end
       end
     end
@@ -178,6 +179,7 @@ namespace :admin do
         resources :scheduled_automations, only: %i[index show new create edit update destroy] do
           member do
             patch :toggle_enabled
+            patch :reactivate
           end
         end
       end
