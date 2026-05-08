@@ -1,89 +1,1011 @@
-Failures:
+web
+----------------
+Follow Logs:
+Show timestamp:
+Since:
+-1
+Tail:
+-1
+Destination:
+Filter:
+Enter your keywords
+Wrap lines:
+I, [2026-05-08T03:27:09.646521 #62]  INFO -- : [dd3753e6252626b49bb46496b74ae313] Processing by PagesController#show as HTML
+I, [2026-05-08T03:27:09.647095 #62]  INFO -- : [dd3753e6252626b49bb46496b74ae313]   Parameters: {"locale"=>nil, "slug_0"=>"knowledge", "slug_1"=>"india-history", "slug_2"=>"styles"}
+I, [2026-05-08T03:27:09.676193 #62]  INFO -- : [dd3753e6252626b49bb46496b74ae313]   Rendered text template (Duration: 0.2ms | Allocations: 33)
+I, [2026-05-08T03:27:09.678079 #62]  INFO -- : [dd3753e6252626b49bb46496b74ae313] Completed 200 OK in 30ms (Views: 2.1ms | ActiveRecord: 5.4ms | Allocations: 2561)
+I, [2026-05-08T03:27:09.738544 #55]  INFO -- : [2ca7b6b1ca71a6d1ec27dd3295992ed0] Processing by StoriesController#show as */*
+I, [2026-05-08T03:27:09.740345 #55]  INFO -- : [2ca7b6b1ca71a6d1ec27dd3295992ed0]   Parameters: {"locale"=>nil, "username"=>"knowledge", "slug"=>"scripts"}
+I, [2026-05-08T03:27:09.822739 #55]  INFO -- : [a2d602b2c1897815d118db19b737a6e8] Processing by Notifications::CountsController#index as */*
+I, [2026-05-08T03:27:09.823392 #55]  INFO -- : [a2d602b2c1897815d118db19b737a6e8]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:27:09.855243 #55]  INFO -- : [2ca7b6b1ca71a6d1ec27dd3295992ed0]   Rendered text template (Duration: 0.3ms | Allocations: 33)
+W, [2026-05-08T03:27:09.856407 #55]  WARN -- : [2ca7b6b1ca71a6d1ec27dd3295992ed0] Security warning: an embedded <script> tag on another site requested protected JavaScript. If you know what you're doing, go ahead and disable forgery protection on this action to permit cross-origin JavaScript embedding.
+I, [2026-05-08T03:27:09.857653 #55]  INFO -- : [2ca7b6b1ca71a6d1ec27dd3295992ed0] Completed 422 Unprocessable Entity in 117ms (Views: 1.7ms | ActiveRecord: 70.8ms | Allocations: 25578)
+F, [2026-05-08T03:27:09.859674 #55] FATAL -- : [2ca7b6b1ca71a6d1ec27dd3295992ed0]
+[2ca7b6b1ca71a6d1ec27dd3295992ed0] ActionController::InvalidCrossOriginRequest (Security warning: an embedded <script> tag on another site requested protected JavaScript. If you know what you're doing, go ahead and disable forgery protection on this action to permit cross-origin JavaScript embedding.):
+[2ca7b6b1ca71a6d1ec27dd3295992ed0]
+[2ca7b6b1ca71a6d1ec27dd3295992ed0] app/lib/middlewares/set_subforem.rb:24:in `call'
+[2ca7b6b1ca71a6d1ec27dd3295992ed0] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
+I, [2026-05-08T03:27:09.890222 #55]  INFO -- : [a2d602b2c1897815d118db19b737a6e8]   Rendered text template (Duration: 0.2ms | Allocations: 31)
+I, [2026-05-08T03:27:09.891476 #55]  INFO -- : [a2d602b2c1897815d118db19b737a6e8] Completed 200 OK in 64ms (Views: 3.9ms | ActiveRecord: 43.8ms | Allocations: 13033)
+I, [2026-05-08T03:27:10.057105 #55]  INFO -- : [b0e3eef284e243b2cedb2ca865f22594] Started GET "/async_info/base_data" for 103.24.87.144 at 2026-05-08 03:27:10 +0000
+I, [2026-05-08T03:27:10.085556 #55]  INFO -- : [fba3543013fae16b7c69b35d083288bc] Started GET "/bb/page_fixed_bottom?page_id=7" for 103.24.87.144 at 2026-05-08 03:27:10 +0000
+I, [2026-05-08T03:27:10.118764 #62]  INFO -- : [4150fb221cef0449be43524b38452e48] Started GET "/notifications?i=i" for 103.24.87.144 at 2026-05-08 03:27:10 +0000
+I, [2026-05-08T03:27:10.119135 #55]  INFO -- : [b0e3eef284e243b2cedb2ca865f22594] Processing by AsyncInfoController#base_data as JSON
+I, [2026-05-08T03:27:10.119718 #55]  INFO -- : [b0e3eef284e243b2cedb2ca865f22594]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:27:10.157956 #62]  INFO -- : [4150fb221cef0449be43524b38452e48] Processing by NotificationsController#index as */*
+I, [2026-05-08T03:27:10.158391 #62]  INFO -- : [4150fb221cef0449be43524b38452e48]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-08T03:27:10.176328 #55]  INFO -- : [fba3543013fae16b7c69b35d083288bc] Processing by BillboardsController#show as */*
+I, [2026-05-08T03:27:10.178306 #55]  INFO -- : [fba3543013fae16b7c69b35d083288bc]   Parameters: {"page_id"=>"7", "locale"=>nil, "placement_area"=>"page_fixed_bottom"}
+I, [2026-05-08T03:27:10.265130 #55]  INFO -- : [fba3543013fae16b7c69b35d083288bc]   Rendered billboards/show.html.erb (Duration: 1.1ms | Allocations: 190)
+I, [2026-05-08T03:27:10.266335 #55]  INFO -- : [fba3543013fae16b7c69b35d083288bc] Completed 200 OK in 88ms (Views: 9.0ms | ActiveRecord: 42.2ms | Allocations: 13722)
+I, [2026-05-08T03:27:10.309622 #62]  INFO -- : [87e9a6bbfffbc78ffa5470154955d3b9] Started GET "/t/govtjobsafter10th" for 66.249.68.32 at 2026-05-08 03:27:10 +0000
+I, [2026-05-08T03:27:10.371568 #55]  INFO -- : [b0e3eef284e243b2cedb2ca865f22594] Completed 200 OK in 251ms (Views: 0.4ms | ActiveRecord: 128.1ms | Allocations: 42433)
+I, [2026-05-08T03:27:10.707621 #62]  INFO -- : [4150fb221cef0449be43524b38452e48]   Rendered notifications/index.html.erb within layouts/application (Duration: 399.5ms | Allocations: 28722)
+I, [2026-05-08T03:27:10.712547 #62]  INFO -- : [4150fb221cef0449be43524b38452e48]   Rendered layout layouts/application.html.erb (Duration: 404.4ms | Allocations: 29808)
+I, [2026-05-08T03:27:10.713978 #62]  INFO -- : [4150fb221cef0449be43524b38452e48] Completed 200 OK in 555ms (Views: 413.8ms | ActiveRecord: 60.3ms | Allocations: 45188)
+I, [2026-05-08T03:27:10.721896 #62]  INFO -- : [87e9a6bbfffbc78ffa5470154955d3b9] Processing by Stories::TaggedArticlesController#index as HTML
+I, [2026-05-08T03:27:10.722622 #62]  INFO -- : [87e9a6bbfffbc78ffa5470154955d3b9]   Parameters: {"locale"=>nil, "tag"=>"govtjobsafter10th"}
+I, [2026-05-08T03:27:10.871533 #62]  INFO -- : [87e9a6bbfffbc78ffa5470154955d3b9]   Rendered stories/tagged_articles/index.html.erb within layouts/application (Duration: 45.8ms | Allocations: 11846)
+I, [2026-05-08T03:27:10.901914 #62]  INFO -- : [87e9a6bbfffbc78ffa5470154955d3b9]   Rendered layout layouts/application.html.erb (Duration: 76.2ms | Allocations: 24723)
+I, [2026-05-08T03:27:10.903017 #62]  INFO -- : [87e9a6bbfffbc78ffa5470154955d3b9] Completed 200 OK in 180ms (Views: 137.1ms | ActiveRecord: 20.9ms | Allocations: 31206)
+I, [2026-05-08T03:27:11.865373 #62]  INFO -- : [4544fedd090aaf3eafb6cc43053e4698] Started POST "/page_views" for 103.24.87.144 at 2026-05-08 03:27:11 +0000
+I, [2026-05-08T03:27:13.385335 #62]  INFO -- : [700a66a790c15604651244f777d7e3bc] Started GET "/?i=i" for 103.24.87.144 at 2026-05-08 03:27:13 +0000
+I, [2026-05-08T03:27:13.416831 #62]  INFO -- : [700a66a790c15604651244f777d7e3bc] Processing by StoriesController#index as */*
+I, [2026-05-08T03:27:13.417217 #62]  INFO -- : [700a66a790c15604651244f777d7e3bc]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-08T03:27:13.651973 #55]  INFO -- : [2f7a6fe3c8c0cfc181fa0f7a0f0bfdf0] Started GET "/?i=i" for 103.24.87.144 at 2026-05-08 03:27:13 +0000
+I, [2026-05-08T03:27:13.695079 #55]  INFO -- : [2f7a6fe3c8c0cfc181fa0f7a0f0bfdf0] Processing by StoriesController#index as */*
+I, [2026-05-08T03:27:13.695369 #55]  INFO -- : [2f7a6fe3c8c0cfc181fa0f7a0f0bfdf0]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-08T03:27:13.761800 #62]  INFO -- : [700a66a790c15604651244f777d7e3bc]   Rendered articles/index.html.erb within layouts/application (Duration: 308.5ms | Allocations: 158263)
+I, [2026-05-08T03:27:13.764321 #62]  INFO -- : [700a66a790c15604651244f777d7e3bc]   Rendered layout layouts/application.html.erb (Duration: 311.1ms | Allocations: 159557)
+I, [2026-05-08T03:27:13.765117 #62]  INFO -- : [700a66a790c15604651244f777d7e3bc] Completed 200 OK in 348ms (Views: 265.5ms | ActiveRecord: 60.3ms | Allocations: 166143)
+I, [2026-05-08T03:27:13.898868 #55]  INFO -- : [2f7a6fe3c8c0cfc181fa0f7a0f0bfdf0]   Rendered articles/index.html.erb within layouts/application (Duration: 166.1ms | Allocations: 97651)
+I, [2026-05-08T03:27:13.901621 #55]  INFO -- : [2f7a6fe3c8c0cfc181fa0f7a0f0bfdf0]   Rendered layout layouts/application.html.erb (Duration: 168.9ms | Allocations: 98952)
+I, [2026-05-08T03:27:13.903700 #55]  INFO -- : [2f7a6fe3c8c0cfc181fa0f7a0f0bfdf0] Completed 200 OK in 208ms (Views: 131.3ms | ActiveRecord: 54.8ms | Allocations: 104271)
+I, [2026-05-08T03:27:14.106879 #62]  INFO -- : [3dcb07692af5bb03e13fe37829e4eb3e] Started GET "/sidebars/home" for 103.24.87.144 at 2026-05-08 03:27:14 +0000
+I, [2026-05-08T03:27:14.107690 #55]  INFO -- : [b8802e3a7a73a4a71e244c474e594770] Started GET "/async_info/base_data" for 103.24.87.144 at 2026-05-08 03:27:14 +0000
+I, [2026-05-08T03:27:14.111589 #55]  INFO -- : [4afe677be165d4730911824acaa1e162] Started GET "/notifications/counts" for 103.24.87.144 at 2026-05-08 03:27:14 +0000
+I, [2026-05-08T03:27:14.124325 #62]  INFO -- : [960b9bcd57b8b58c10891470a39014b1] Started GET "/bb/sidebar_left" for 103.24.87.144 at 2026-05-08 03:27:14 +0000
+I, [2026-05-08T03:27:14.174994 #55]  INFO -- : [b8802e3a7a73a4a71e244c474e594770] Processing by AsyncInfoController#base_data as JSON
+I, [2026-05-08T03:27:14.177939 #55]  INFO -- : [b8802e3a7a73a4a71e244c474e594770]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:27:14.208838 #55]  INFO -- : [4afe677be165d4730911824acaa1e162] Processing by Notifications::CountsController#index as */*
+I, [2026-05-08T03:27:14.209543 #55]  INFO -- : [4afe677be165d4730911824acaa1e162]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:27:14.217706 #62]  INFO -- : [3dcb07692af5bb03e13fe37829e4eb3e] Processing by SidebarsController#show as */*
+I, [2026-05-08T03:27:14.218261 #62]  INFO -- : [3dcb07692af5bb03e13fe37829e4eb3e]   Parameters: {"locale"=>nil, "id"=>"home"}
+I, [2026-05-08T03:27:14.227104 #55]  INFO -- : [b8802e3a7a73a4a71e244c474e594770] Completed 200 OK in 45ms (Views: 0.3ms | ActiveRecord: 28.8ms | Allocations: 9214)
+I, [2026-05-08T03:27:14.230434 #55]  INFO -- : [4afe677be165d4730911824acaa1e162]   Rendered text template (Duration: 0.1ms | Allocations: 31)
+I, [2026-05-08T03:27:14.232799 #55]  INFO -- : [4afe677be165d4730911824acaa1e162] Completed 200 OK in 23ms (Views: 2.6ms | ActiveRecord: 10.6ms | Allocations: 5101)
+I, [2026-05-08T03:27:14.236567 #62]  INFO -- : [960b9bcd57b8b58c10891470a39014b1] Processing by BillboardsController#show as */*
+I, [2026-05-08T03:27:14.237198 #62]  INFO -- : [960b9bcd57b8b58c10891470a39014b1]   Parameters: {"locale"=>nil, "placement_area"=>"sidebar_left"}
+I, [2026-05-08T03:27:14.328436 #62]  INFO -- : [960b9bcd57b8b58c10891470a39014b1]   Rendered billboards/show.html.erb (Duration: 2.5ms | Allocations: 559)
+I, [2026-05-08T03:27:14.329693 #62]  INFO -- : [960b9bcd57b8b58c10891470a39014b1] Completed 200 OK in 82ms (Views: 10.5ms | ActiveRecord: 45.1ms | Allocations: 14725)
+I, [2026-05-08T03:27:14.445526 #55]  INFO -- : [e1fb5930230b728dc87fb96726696832] Started GET "/bb/sidebar_left_2" for 103.24.87.144 at 2026-05-08 03:27:14 +0000
+I, [2026-05-08T03:27:14.460797 #55]  INFO -- : [ccd908dcd47326f192e8e19d29d38f3c] Started GET "/notifications?i=i" for 103.24.87.144 at 2026-05-08 03:27:14 +0000
+I, [2026-05-08T03:27:14.502254 #62]  INFO -- : [47ac54017478b65e1dbd78eaafa94f72] Started GET "/search/feed_content?per_page=15&page=0&sort_by=hotness_score&sort_direction=desc&approved=&class_name=Article" for 103.24.87.144 at 2026-05-08 03:27:14 +0000
+I, [2026-05-08T03:27:14.504254 #55]  INFO -- : [e1fb5930230b728dc87fb96726696832] Processing by BillboardsController#show as */*
+I, [2026-05-08T03:27:14.504749 #55]  INFO -- : [e1fb5930230b728dc87fb96726696832]   Parameters: {"locale"=>nil, "placement_area"=>"sidebar_left_2"}
+I, [2026-05-08T03:27:14.545301 #62]  INFO -- : [47ac54017478b65e1dbd78eaafa94f72] Processing by SearchController#feed_content as JSON
+I, [2026-05-08T03:27:14.545732 #62]  INFO -- : [47ac54017478b65e1dbd78eaafa94f72]   Parameters: {"per_page"=>"15", "page"=>"0", "sort_by"=>"hotness_score", "sort_direction"=>"desc", "approved"=>"", "class_name"=>"Article", "locale"=>nil}
+I, [2026-05-08T03:27:14.565661 #55]  INFO -- : [ccd908dcd47326f192e8e19d29d38f3c] Processing by NotificationsController#index as */*
+I, [2026-05-08T03:27:14.566605 #55]  INFO -- : [ccd908dcd47326f192e8e19d29d38f3c]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-08T03:27:14.584351 #55]  INFO -- : [e1fb5930230b728dc87fb96726696832]   Rendered billboards/show.html.erb (Duration: 0.2ms | Allocations: 34)
+I, [2026-05-08T03:27:14.585637 #55]  INFO -- : [e1fb5930230b728dc87fb96726696832] Completed 200 OK in 80ms (Views: 1.7ms | ActiveRecord: 47.1ms | Allocations: 15044)
+I, [2026-05-08T03:27:14.659959 #62]  INFO -- : [47ac54017478b65e1dbd78eaafa94f72] Completed 200 OK in 113ms (Views: 4.1ms | ActiveRecord: 21.1ms | Allocations: 25097)
+I, [2026-05-08T03:27:14.713273 #62]  INFO -- : [3dcb07692af5bb03e13fe37829e4eb3e]   Rendered sidebars/show.html.erb (Duration: 404.3ms | Allocations: 83142)
+I, [2026-05-08T03:27:14.714441 #62]  INFO -- : [3dcb07692af5bb03e13fe37829e4eb3e] Completed 200 OK in 488ms (Views: 359.8ms | ActiveRecord: 87.9ms | Allocations: 99156)
+I, [2026-05-08T03:27:14.761927 #55]  INFO -- : [ccd908dcd47326f192e8e19d29d38f3c]   Rendered notifications/index.html.erb within layouts/application (Duration: 81.6ms | Allocations: 17233)
+I, [2026-05-08T03:27:14.763665 #62]  INFO -- : [866b4c97e4c8a658de50312415d9a2db] Started GET "/follows/bulk_show?ids%5B%5D=18&ids%5B%5D=23&followable_type=User" for 103.24.87.144 at 2026-05-08 03:27:14 +0000
+I, [2026-05-08T03:27:14.766107 #55]  INFO -- : [ccd908dcd47326f192e8e19d29d38f3c]   Rendered layout layouts/application.html.erb (Duration: 85.8ms | Allocations: 18428)
+I, [2026-05-08T03:27:14.767792 #55]  INFO -- : [ccd908dcd47326f192e8e19d29d38f3c] Completed 200 OK in 200ms (Views: 82.0ms | ActiveRecord: 73.1ms | Allocations: 31957)
+I, [2026-05-08T03:27:14.789649 #55]  INFO -- : [a0aa548befba2411b39794a8e9f9e219] Started GET "/sidebars/home" for 103.24.87.144 at 2026-05-08 03:27:14 +0000
+I, [2026-05-08T03:27:14.800132 #62]  INFO -- : [866b4c97e4c8a658de50312415d9a2db] Processing by FollowsController#bulk_show as JSON
+I, [2026-05-08T03:27:14.800310 #62]  INFO -- : [866b4c97e4c8a658de50312415d9a2db]   Parameters: {"ids"=>["18", "23"], "followable_type"=>"User", "locale"=>nil}
+I, [2026-05-08T03:27:14.805160 #55]  INFO -- : [34044b622947384fecc3b3b3b00038b1] Started GET "/stories/feed/?page=1&type_of=discover" for 103.24.87.144 at 2026-05-08 03:27:14 +0000
+I, [2026-05-08T03:27:14.823856 #62]  INFO -- : [866b4c97e4c8a658de50312415d9a2db] Completed 200 OK in 23ms (Views: 0.4ms | ActiveRecord: 5.5ms | Allocations: 4535)
+I, [2026-05-08T03:27:14.829867 #55]  INFO -- : [a0aa548befba2411b39794a8e9f9e219] Processing by SidebarsController#show as */*
+I, [2026-05-08T03:27:14.831871 #55]  INFO -- : [a0aa548befba2411b39794a8e9f9e219]   Parameters: {"locale"=>nil, "id"=>"home"}
+I, [2026-05-08T03:27:14.864993 #55]  INFO -- : [34044b622947384fecc3b3b3b00038b1] Processing by Stories::FeedsController#show as JSON
+I, [2026-05-08T03:27:14.865517 #55]  INFO -- : [34044b622947384fecc3b3b3b00038b1]   Parameters: {"page"=>"1", "type_of"=>"discover", "locale"=>nil}
+I, [2026-05-08T03:27:14.874632 #62]  INFO -- : [7e891773e762a27d37d728c7cb6cc90c] Started GET "/bb/feed_first" for 103.24.87.144 at 2026-05-08 03:27:14 +0000
+I, [2026-05-08T03:27:14.922019 #62]  INFO -- : [7e891773e762a27d37d728c7cb6cc90c] Processing by BillboardsController#show as */*
+I, [2026-05-08T03:27:14.922768 #62]  INFO -- : [7e891773e762a27d37d728c7cb6cc90c]   Parameters: {"locale"=>nil, "placement_area"=>"feed_first"}
+I, [2026-05-08T03:27:14.982329 #62]  INFO -- : [7e891773e762a27d37d728c7cb6cc90c]   Rendered billboards/show.html.erb (Duration: 0.2ms | Allocations: 34)
+I, [2026-05-08T03:27:14.983729 #62]  INFO -- : [7e891773e762a27d37d728c7cb6cc90c] Completed 200 OK in 61ms (Views: 1.8ms | ActiveRecord: 16.1ms | Allocations: 9016)
+I, [2026-05-08T03:27:15.037620 #62]  INFO -- : [6063c6b6791d28cbd043ce3597c28c70] Started GET "/bb/feed_second" for 103.24.87.144 at 2026-05-08 03:27:15 +0000
+I, [2026-05-08T03:27:15.085344 #62]  INFO -- : [6063c6b6791d28cbd043ce3597c28c70] Processing by BillboardsController#show as */*
+I, [2026-05-08T03:27:15.085915 #62]  INFO -- : [6063c6b6791d28cbd043ce3597c28c70]   Parameters: {"locale"=>nil, "placement_area"=>"feed_second"}
+I, [2026-05-08T03:27:15.157715 #55]  INFO -- : [34044b622947384fecc3b3b3b00038b1]   Rendered stories/feeds/show.json.jbuilder (Duration: 95.6ms | Allocations: 24330)
+I, [2026-05-08T03:27:15.160471 #55]  INFO -- : [34044b622947384fecc3b3b3b00038b1] Completed 200 OK in 292ms (Views: 113.0ms | ActiveRecord: 120.6ms | Allocations: 67063)
+I, [2026-05-08T03:27:15.180659 #62]  INFO -- : [6063c6b6791d28cbd043ce3597c28c70]   Rendered billboards/show.html.erb (Duration: 49.0ms | Allocations: 24738)
+I, [2026-05-08T03:27:15.182174 #62]  INFO -- : [6063c6b6791d28cbd043ce3597c28c70] Completed 200 OK in 96ms (Views: 50.6ms | ActiveRecord: 13.7ms | Allocations: 32793)
+I, [2026-05-08T03:27:15.187956 #55]  INFO -- : [a0aa548befba2411b39794a8e9f9e219]   Rendered sidebars/show.html.erb (Duration: 278.5ms | Allocations: 71930)
+I, [2026-05-08T03:27:15.188800 #55]  INFO -- : [a0aa548befba2411b39794a8e9f9e219] Completed 200 OK in 356ms (Views: 216.7ms | ActiveRecord: 112.4ms | Allocations: 88636)
+I, [2026-05-08T03:27:15.202265 #62]  INFO -- : [73ee2f8d5491a253c4e55d3ca696e85e] Started GET "/bb/feed_third" for 103.24.87.144 at 2026-05-08 03:27:15 +0000
+I, [2026-05-08T03:27:15.270468 #62]  INFO -- : [73ee2f8d5491a253c4e55d3ca696e85e] Processing by BillboardsController#show as */*
+I, [2026-05-08T03:27:15.270734 #62]  INFO -- : [73ee2f8d5491a253c4e55d3ca696e85e]   Parameters: {"locale"=>nil, "placement_area"=>"feed_third"}
+I, [2026-05-08T03:27:15.354328 #62]  INFO -- : [7cc71fc072dc3d57c9aa19136a6d1efb] Started GET "/?i=i" for 103.24.87.144 at 2026-05-08 03:27:15 +0000
+I, [2026-05-08T03:27:15.369235 #62]  INFO -- : [73ee2f8d5491a253c4e55d3ca696e85e]   Rendered billboards/show.html.erb (Duration: 0.2ms | Allocations: 34)
+I, [2026-05-08T03:27:15.374398 #62]  INFO -- : [73ee2f8d5491a253c4e55d3ca696e85e] Completed 200 OK in 103ms (Views: 6.9ms | ActiveRecord: 24.2ms | Allocations: 8164)
+I, [2026-05-08T03:27:15.544373 #62]  INFO -- : [7cc71fc072dc3d57c9aa19136a6d1efb] Processing by StoriesController#index as */*
+I, [2026-05-08T03:27:15.545807 #62]  INFO -- : [7cc71fc072dc3d57c9aa19136a6d1efb]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-08T03:27:15.552030 #62]  INFO -- : [e8e2dd869231f884daacea626f801bcc] Started GET "/follows/bulk_show?ids%5B%5D=18&ids%5B%5D=23&followable_type=User" for 103.24.87.144 at 2026-05-08 03:27:15 +0000
+I, [2026-05-08T03:27:15.678414 #62]  INFO -- : [7cc71fc072dc3d57c9aa19136a6d1efb]   Rendered articles/index.html.erb within layouts/application (Duration: 25.6ms | Allocations: 2642)
+I, [2026-05-08T03:27:15.684097 #62]  INFO -- : [7cc71fc072dc3d57c9aa19136a6d1efb]   Rendered layout layouts/application.html.erb (Duration: 31.3ms | Allocations: 3935)
+I, [2026-05-08T03:27:15.685283 #62]  INFO -- : [7cc71fc072dc3d57c9aa19136a6d1efb] Completed 200 OK in 139ms (Views: 32.7ms | ActiveRecord: 17.5ms | Allocations: 12166)
+I, [2026-05-08T03:27:15.730029 #62]  INFO -- : [e8e2dd869231f884daacea626f801bcc] Processing by FollowsController#bulk_show as JSON
+I, [2026-05-08T03:27:15.730388 #62]  INFO -- : [e8e2dd869231f884daacea626f801bcc]   Parameters: {"ids"=>["18", "23"], "followable_type"=>"User", "locale"=>nil}
+I, [2026-05-08T03:27:15.763244 #62]  INFO -- : [e8e2dd869231f884daacea626f801bcc] Completed 200 OK in 32ms (Views: 0.3ms | ActiveRecord: 6.5ms | Allocations: 4285)
+I, [2026-05-08T03:27:15.790647 #62]  INFO -- : [5f868a89d475221f1499c96e4c9289c2] Started POST "/bb_tabulations" for 103.24.87.144 at 2026-05-08 03:27:15 +0000
+I, [2026-05-08T03:27:16.287876 #55]  INFO -- : [fe4843fc78941ab526f285e17897361e] Started GET "/jobs?i=i" for 103.24.87.144 at 2026-05-08 03:27:16 +0000
+I, [2026-05-08T03:27:16.322627 #55]  INFO -- : [53daf98adbe733570178a3c08587e77e] Started GET "/pod?i=i" for 103.24.87.144 at 2026-05-08 03:27:16 +0000
+I, [2026-05-08T03:27:16.349182 #62]  INFO -- : [a2c6466e771529b0a6c7e43b86c99c4d] Started GET "/tags?i=i" for 103.24.87.144 at 2026-05-08 03:27:16 +0000
+I, [2026-05-08T03:27:16.354245 #55]  INFO -- : [fe4843fc78941ab526f285e17897361e] Processing by JobPostsController#index as */*
+I, [2026-05-08T03:27:16.358176 #55]  INFO -- : [fe4843fc78941ab526f285e17897361e]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-08T03:27:16.363964 #62]  INFO -- : [a439c2a07c99019ad746125ec024bbf9] Started GET "/arjun-verma/neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd?i=i" for 103.24.87.144 at 2026-05-08 03:27:16 +0000
+I, [2026-05-08T03:27:16.405879 #55]  INFO -- : [53daf98adbe733570178a3c08587e77e] Processing by PodcastEpisodesController#index as */*
+I, [2026-05-08T03:27:16.411398 #62]  INFO -- : [a2c6466e771529b0a6c7e43b86c99c4d] Processing by TagsController#index as */*
+I, [2026-05-08T03:27:16.412971 #55]  INFO -- : [53daf98adbe733570178a3c08587e77e]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-08T03:27:16.411717 #62]  INFO -- : [a2c6466e771529b0a6c7e43b86c99c4d]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-08T03:27:16.442970 #62]  INFO -- : [a439c2a07c99019ad746125ec024bbf9] Processing by StoriesController#show as */*
+I, [2026-05-08T03:27:16.443614 #62]  INFO -- : [a439c2a07c99019ad746125ec024bbf9]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"arjun-verma", "slug"=>"neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd"}
+I, [2026-05-08T03:27:16.515773 #55]  INFO -- : [53daf98adbe733570178a3c08587e77e]   Rendered podcast_episodes/index.html.erb within layouts/application (Duration: 40.5ms | Allocations: 13645)
+I, [2026-05-08T03:27:16.518851 #55]  INFO -- : [53daf98adbe733570178a3c08587e77e]   Rendered layout layouts/application.html.erb (Duration: 43.6ms | Allocations: 14705)
+I, [2026-05-08T03:27:16.519986 #55]  INFO -- : [53daf98adbe733570178a3c08587e77e] Completed 200 OK in 106ms (Views: 37.3ms | ActiveRecord: 45.3ms | Allocations: 28929)
+I, [2026-05-08T03:27:16.566888 #62]  INFO -- : [a2c6466e771529b0a6c7e43b86c99c4d]   Rendered tags/index.html.erb within layouts/application (Duration: 116.9ms | Allocations: 26104)
+I, [2026-05-08T03:27:16.571396 #62]  INFO -- : [a2c6466e771529b0a6c7e43b86c99c4d]   Rendered layout layouts/application.html.erb (Duration: 121.7ms | Allocations: 28152)
+I, [2026-05-08T03:27:16.574600 #62]  INFO -- : [a2c6466e771529b0a6c7e43b86c99c4d] Completed 200 OK in 159ms (Views: 70.2ms | ActiveRecord: 63.3ms | Allocations: 35767)
+I, [2026-05-08T03:27:16.801184 #55]  INFO -- : [fe4843fc78941ab526f285e17897361e]   Rendered job_posts/index.html.erb within layouts/application (Duration: 402.4ms | Allocations: 85542)
+I, [2026-05-08T03:27:16.803490 #55]  INFO -- : [fe4843fc78941ab526f285e17897361e]   Rendered layout layouts/application.html.erb (Duration: 404.7ms | Allocations: 86656)
+I, [2026-05-08T03:27:16.804441 #55]  INFO -- : [fe4843fc78941ab526f285e17897361e] Completed 200 OK in 445ms (Views: 250.1ms | ActiveRecord: 174.1ms | Allocations: 96530)
+I, [2026-05-08T03:27:16.832607 #62]  INFO -- : [a439c2a07c99019ad746125ec024bbf9]   Rendered articles/show.html.erb within layouts/application (Duration: 222.2ms | Allocations: 43197)
+I, [2026-05-08T03:27:16.834384 #62]  INFO -- : [a439c2a07c99019ad746125ec024bbf9]   Rendered layout layouts/application.html.erb (Duration: 224.0ms | Allocations: 44266)
+I, [2026-05-08T03:27:16.835060 #62]  INFO -- : [a439c2a07c99019ad746125ec024bbf9] Completed 200 OK in 391ms (Views: 211.1ms | ActiveRecord: 133.7ms | Allocations: 80145)
+I, [2026-05-08T03:27:16.989458 #62]  INFO -- : [3c08553f21f2194cce0550de4e9fbc94] Started POST "/bb_tabulations" for 103.24.87.144 at 2026-05-08 03:27:16 +0000
+I, [2026-05-08T03:27:17.873597 #62]  INFO -- : [59035ec61baa0c673a05c1b2e98d3b21] Started POST "/feed_events" for 103.24.87.144 at 2026-05-08 03:27:17 +0000
+I, [2026-05-08T03:27:18.051340 #62]  INFO -- : [20d63fa9d02212df024cfe125bb73120] Started GET "/notifications/counts" for 103.24.87.144 at 2026-05-08 03:27:18 +0000
+I, [2026-05-08T03:27:18.055138 #55]  INFO -- : [7bf321af62ad2f1150b86d5b1411947d] Started GET "/async_info/base_data" for 103.24.87.144 at 2026-05-08 03:27:18 +0000
+I, [2026-05-08T03:27:18.059269 #55]  INFO -- : [e2e226de52d781c14e2c32213a9283a4] Started GET "/follows/bulk_show?ids%5B%5D=23&followable_type=User" for 103.24.87.144 at 2026-05-08 03:27:18 +0000
+I, [2026-05-08T03:27:18.081139 #62]  INFO -- : [264d4529e69510cb13527344f09d51a8] Started GET "/arjun-verma/neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd/bb/post_body_bottom" for 103.24.87.144 at 2026-05-08 03:27:18 +0000
+I, [2026-05-08T03:27:18.211482 #62]  INFO -- : [20d63fa9d02212df024cfe125bb73120] Processing by Notifications::CountsController#index as */*
+I, [2026-05-08T03:27:18.213375 #62]  INFO -- : [20d63fa9d02212df024cfe125bb73120]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:27:18.303392 #55]  INFO -- : [7bf321af62ad2f1150b86d5b1411947d] Processing by AsyncInfoController#base_data as JSON
+I, [2026-05-08T03:27:18.304894 #55]  INFO -- : [7bf321af62ad2f1150b86d5b1411947d]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:27:18.313981 #55]  INFO -- : [e2e226de52d781c14e2c32213a9283a4] Processing by FollowsController#bulk_show as JSON
+I, [2026-05-08T03:27:18.323819 #55]  INFO -- : [e2e226de52d781c14e2c32213a9283a4]   Parameters: {"ids"=>["23"], "followable_type"=>"User", "locale"=>nil}
+I, [2026-05-08T03:27:18.335956 #62]  INFO -- : [20d63fa9d02212df024cfe125bb73120]   Rendered text template (Duration: 0.2ms | Allocations: 31)
+I, [2026-05-08T03:27:18.339749 #62]  INFO -- : [20d63fa9d02212df024cfe125bb73120] Completed 200 OK in 125ms (Views: 6.3ms | ActiveRecord: 11.6ms | Allocations: 7654)
+I, [2026-05-08T03:27:18.338433 #62]  INFO -- : [264d4529e69510cb13527344f09d51a8] Processing by BillboardsController#show as */*
+I, [2026-05-08T03:27:18.341971 #62]  INFO -- : [264d4529e69510cb13527344f09d51a8]   Parameters: {"locale"=>nil, "username"=>"arjun-verma", "slug"=>"neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd", "placement_area"=>"post_body_bottom"}
+I, [2026-05-08T03:27:18.365204 #55]  INFO -- : [e2e226de52d781c14e2c32213a9283a4] Completed 200 OK in 41ms (Views: 0.5ms | ActiveRecord: 14.7ms | Allocations: 4878)
+I, [2026-05-08T03:27:18.367765 #55]  INFO -- : [7bf321af62ad2f1150b86d5b1411947d] Completed 200 OK in 62ms (Views: 0.4ms | ActiveRecord: 21.9ms | Allocations: 9721)
+I, [2026-05-08T03:27:18.369023 #62]  INFO -- : [53f21fe13aed6bad097df288fc76391e] Started GET "/arjun-verma/neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd/actions_panel" for 103.24.87.144 at 2026-05-08 03:27:18 +0000
+I, [2026-05-08T03:27:18.413362 #62]  INFO -- : [53f21fe13aed6bad097df288fc76391e] Processing by ModerationsController#actions_panel as HTML
+I, [2026-05-08T03:27:18.413847 #62]  INFO -- : [53f21fe13aed6bad097df288fc76391e]   Parameters: {"locale"=>nil, "username"=>"arjun-verma", "slug"=>"neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd"}
+I, [2026-05-08T03:27:18.428555 #62]  INFO -- : [264d4529e69510cb13527344f09d51a8]   Rendered billboards/show.html.erb (Duration: 9.9ms | Allocations: 2364)
+I, [2026-05-08T03:27:18.430007 #62]  INFO -- : [264d4529e69510cb13527344f09d51a8] Completed 200 OK in 88ms (Views: 11.4ms | ActiveRecord: 38.4ms | Allocations: 21990)
+I, [2026-05-08T03:27:18.589418 #55]  INFO -- : [0886d1985c7aeeef414cddc42f59ae75] Started GET "/reactions?commentable_id=1056&commentable_type=Article" for 103.24.87.144 at 2026-05-08 03:27:18 +0000
+I, [2026-05-08T03:27:18.592788 #55]  INFO -- : [0c07cab15568b9f49827e394af5cbaf8] Started GET "/arjun-verma/neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd/bb/post_comments" for 103.24.87.144 at 2026-05-08 03:27:18 +0000
+I, [2026-05-08T03:27:18.632319 #62]  INFO -- : [190bf1f8f6df8255ad5fef3845d4dd13] Started GET "/notification_subscriptions/Article/1056" for 103.24.87.144 at 2026-05-08 03:27:18 +0000
+I, [2026-05-08T03:27:18.645235 #55]  INFO -- : [0886d1985c7aeeef414cddc42f59ae75] Processing by ReactionsController#index as */*
+I, [2026-05-08T03:27:18.646839 #55]  INFO -- : [0886d1985c7aeeef414cddc42f59ae75]   Parameters: {"commentable_id"=>"1056", "commentable_type"=>"Article", "locale"=>nil}
+I, [2026-05-08T03:27:18.660842 #55]  INFO -- : [0c07cab15568b9f49827e394af5cbaf8] Processing by BillboardsController#show as */*
+I, [2026-05-08T03:27:18.661505 #55]  INFO -- : [0c07cab15568b9f49827e394af5cbaf8]   Parameters: {"locale"=>nil, "username"=>"arjun-verma", "slug"=>"neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd", "placement_area"=>"post_comments"}
+I, [2026-05-08T03:27:18.681739 #62]  INFO -- : [190bf1f8f6df8255ad5fef3845d4dd13] Processing by NotificationSubscriptionsController#show as JSON
+I, [2026-05-08T03:27:18.682847 #62]  INFO -- : [190bf1f8f6df8255ad5fef3845d4dd13]   Parameters: {"locale"=>nil, "notifiable_type"=>"Article", "notifiable_id"=>"1056"}
+I, [2026-05-08T03:27:18.694968 #55]  INFO -- : [0886d1985c7aeeef414cddc42f59ae75] Completed 200 OK in 47ms (Views: 0.2ms | ActiveRecord: 27.1ms | Allocations: 11967)
+I, [2026-05-08T03:27:18.706925 #62]  INFO -- : [190bf1f8f6df8255ad5fef3845d4dd13] Completed 200 OK in 23ms (Views: 0.3ms | ActiveRecord: 10.4ms | Allocations: 2754)
+I, [2026-05-08T03:27:18.761330 #55]  INFO -- : [0c07cab15568b9f49827e394af5cbaf8]   Rendered billboards/show.html.erb (Duration: 5.7ms | Allocations: 1149)
+I, [2026-05-08T03:27:18.762397 #55]  INFO -- : [0c07cab15568b9f49827e394af5cbaf8] Completed 200 OK in 100ms (Views: 7.2ms | ActiveRecord: 44.8ms | Allocations: 17278)
+I, [2026-05-08T03:27:18.923363 #62]  INFO -- : [53f21fe13aed6bad097df288fc76391e]   Rendered moderations/actions_panel.html.erb within layouts/application (Duration: 442.5ms | Allocations: 78820)
+I, [2026-05-08T03:27:18.931632 #55]  INFO -- : [1c077673ab2815f4433b18063cb7051b] Started GET "/arjun-verma/neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd/bb/post_sidebar" for 103.24.87.144 at 2026-05-08 03:27:18 +0000
+I, [2026-05-08T03:27:18.965496 #62]  INFO -- : [ef23a3ba2c0d94fb0f07650928a40713] Started GET "/notifications?i=i" for 103.24.87.144 at 2026-05-08 03:27:18 +0000
+I, [2026-05-08T03:27:18.991537 #55]  INFO -- : [376e09ba8f07967e7a46fecac82f5200] Started GET "/reactions?article_id=1056" for 103.24.87.144 at 2026-05-08 03:27:18 +0000
+I, [2026-05-08T03:27:19.031861 #62]  INFO -- : [53f21fe13aed6bad097df288fc76391e]   Rendered layout layouts/application.html.erb (Duration: 551.0ms | Allocations: 102486)
+I, [2026-05-08T03:27:19.035231 #62]  INFO -- : [53f21fe13aed6bad097df288fc76391e] Completed 200 OK in 621ms (Views: 502.9ms | ActiveRecord: 83.2ms | Allocations: 117276)
+I, [2026-05-08T03:27:19.050606 #55]  INFO -- : [1c077673ab2815f4433b18063cb7051b] Processing by BillboardsController#show as */*
+I, [2026-05-08T03:27:19.052011 #55]  INFO -- : [1c077673ab2815f4433b18063cb7051b]   Parameters: {"locale"=>nil, "username"=>"arjun-verma", "slug"=>"neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd", "placement_area"=>"post_sidebar"}
+I, [2026-05-08T03:27:19.076649 #62]  INFO -- : [ef23a3ba2c0d94fb0f07650928a40713] Processing by NotificationsController#index as */*
+I, [2026-05-08T03:27:19.076840 #62]  INFO -- : [ef23a3ba2c0d94fb0f07650928a40713]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-08T03:27:19.088979 #55]  INFO -- : [376e09ba8f07967e7a46fecac82f5200] Processing by ReactionsController#index as */*
+I, [2026-05-08T03:27:19.089810 #55]  INFO -- : [376e09ba8f07967e7a46fecac82f5200]   Parameters: {"article_id"=>"1056", "locale"=>nil}
+I, [2026-05-08T03:27:19.133098 #55]  INFO -- : [376e09ba8f07967e7a46fecac82f5200] Completed 200 OK in 37ms (Views: 0.2ms | ActiveRecord: 16.1ms | Allocations: 7769)
+I, [2026-05-08T03:27:19.146520 #55]  INFO -- : [1c077673ab2815f4433b18063cb7051b]   Rendered billboards/show.html.erb (Duration: 0.2ms | Allocations: 34)
+I, [2026-05-08T03:27:19.148917 #55]  INFO -- : [1c077673ab2815f4433b18063cb7051b] Completed 200 OK in 89ms (Views: 3.0ms | ActiveRecord: 54.2ms | Allocations: 18254)
+I, [2026-05-08T03:27:19.170192 #62]  INFO -- : [ef23a3ba2c0d94fb0f07650928a40713]   Rendered notifications/index.html.erb within layouts/application (Duration: 54.2ms | Allocations: 12275)
+I, [2026-05-08T03:27:19.172481 #62]  INFO -- : [ef23a3ba2c0d94fb0f07650928a40713]   Rendered layout layouts/application.html.erb (Duration: 56.5ms | Allocations: 13335)
+I, [2026-05-08T03:27:19.173148 #62]  INFO -- : [ef23a3ba2c0d94fb0f07650928a40713] Completed 200 OK in 96ms (Views: 52.6ms | ActiveRecord: 20.4ms | Allocations: 17941)
+I, [2026-05-08T03:27:19.196101 #62]  INFO -- : [0ffe4859cddfa5857561bd4cfcf82f7b] Started GET "/notifications/counts" for 103.24.87.144 at 2026-05-08 03:27:19 +0000
+I, [2026-05-08T03:27:19.233179 #55]  INFO -- : [fa961905c73b20246c2580979a846148] Started GET "/async_info/base_data" for 103.24.87.144 at 2026-05-08 03:27:19 +0000
+I, [2026-05-08T03:27:19.237155 #62]  INFO -- : [0ffe4859cddfa5857561bd4cfcf82f7b] Processing by Notifications::CountsController#index as */*
+I, [2026-05-08T03:27:19.237677 #62]  INFO -- : [0ffe4859cddfa5857561bd4cfcf82f7b]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:27:19.252910 #62]  INFO -- : [0ffe4859cddfa5857561bd4cfcf82f7b]   Rendered text template (Duration: 0.4ms | Allocations: 31)
+I, [2026-05-08T03:27:19.254239 #62]  INFO -- : [0ffe4859cddfa5857561bd4cfcf82f7b] Completed 200 OK in 16ms (Views: 1.7ms | ActiveRecord: 4.5ms | Allocations: 2508)
+I, [2026-05-08T03:27:19.277410 #62]  INFO -- : [d2052a0d2fbe526adec8575facbdd43b] Started GET "/user_subscriptions/subscribed?source_type=Article&source_id=1056" for 103.24.87.144 at 2026-05-08 03:27:19 +0000
+I, [2026-05-08T03:27:19.282386 #55]  INFO -- : [fa961905c73b20246c2580979a846148] Processing by AsyncInfoController#base_data as JSON
+I, [2026-05-08T03:27:19.282670 #55]  INFO -- : [fa961905c73b20246c2580979a846148]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:27:19.303429 #55]  INFO -- : [fa961905c73b20246c2580979a846148] Completed 200 OK in 20ms (Views: 0.3ms | ActiveRecord: 5.3ms | Allocations: 3853)
+I, [2026-05-08T03:27:19.315455 #55]  INFO -- : [52d133e70bd3d7240ac641ce3857c030] Started GET "/notifications?i=i" for 103.24.87.144 at 2026-05-08 03:27:19 +0000
+I, [2026-05-08T03:27:19.316225 #62]  INFO -- : [d2052a0d2fbe526adec8575facbdd43b] Processing by UserSubscriptionsController#subscribed as JSON
+I, [2026-05-08T03:27:19.316656 #62]  INFO -- : [d2052a0d2fbe526adec8575facbdd43b]   Parameters: {"source_type"=>"Article", "source_id"=>"1056", "locale"=>nil}
+I, [2026-05-08T03:27:19.330272 #62]  INFO -- : [d2052a0d2fbe526adec8575facbdd43b] Completed 200 OK in 13ms (Views: 0.5ms | ActiveRecord: 1.8ms | Allocations: 2435)
+I, [2026-05-08T03:27:19.354877 #55]  INFO -- : [52d133e70bd3d7240ac641ce3857c030] Processing by NotificationsController#index as */*
+I, [2026-05-08T03:27:19.355489 #55]  INFO -- : [52d133e70bd3d7240ac641ce3857c030]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-08T03:27:19.431576 #55]  INFO -- : [52d133e70bd3d7240ac641ce3857c030]   Rendered notifications/index.html.erb within layouts/application (Duration: 45.9ms | Allocations: 12254)
+I, [2026-05-08T03:27:19.433315 #55]  INFO -- : [52d133e70bd3d7240ac641ce3857c030]   Rendered layout layouts/application.html.erb (Duration: 47.7ms | Allocations: 13312)
+I, [2026-05-08T03:27:19.434246 #55]  INFO -- : [52d133e70bd3d7240ac641ce3857c030] Completed 200 OK in 77ms (Views: 44.2ms | ActiveRecord: 14.2ms | Allocations: 17897)
+I, [2026-05-08T03:27:19.911679 #55]  INFO -- : [0f59c032da2a49e67a4c83ecf00382cf] Started POST "/page_views" for 103.24.87.144 at 2026-05-08 03:27:19 +0000
+I, [2026-05-08T03:27:35.890246 #55]  INFO -- : [183ea5575da30cd34f651ad1d027a782] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:27:35 +0000
+I, [2026-05-08T03:27:47.969311 #55]  INFO -- : [c9a4aef75ac58740237dd6f4066a1ed9] Started GET "/robots.txt" for 216.244.66.196 at 2026-05-08 03:27:47 +0000
+I, [2026-05-08T03:27:48.212901 #55]  INFO -- : [c9a4aef75ac58740237dd6f4066a1ed9] Processing by PagesController#robots as TEXT
+I, [2026-05-08T03:27:48.213064 #55]  INFO -- : [c9a4aef75ac58740237dd6f4066a1ed9]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:27:48.217293 #55]  INFO -- : [c9a4aef75ac58740237dd6f4066a1ed9]   Rendered pages/robots.text.erb (Duration: 0.5ms | Allocations: 281)
+I, [2026-05-08T03:27:48.218788 #55]  INFO -- : [c9a4aef75ac58740237dd6f4066a1ed9] Completed 200 OK in 5ms (Views: 1.9ms | ActiveRecord: 0.0ms | Allocations: 1444)
+I, [2026-05-08T03:27:50.911126 #55]  INFO -- : [dcc74fc08b6916caeeb2b56809d43cce] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:27:50 +0000
+I, [2026-05-08T03:28:05.893823 #55]  INFO -- : [66c7434fe68d3a8d4f6faf80d87cfca3] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:28:05 +0000
+I, [2026-05-08T03:28:15.494477 #62]  INFO -- : [12c62ac1173b4c6f7a80ea965ee02d38] Started GET "/feed" for 8.29.198.25 at 2026-05-08 03:28:15 +0000
+I, [2026-05-08T03:28:15.620353 #62]  INFO -- : [12c62ac1173b4c6f7a80ea965ee02d38] Processing by ArticlesController#feed as RSS
+I, [2026-05-08T03:28:15.620544 #62]  INFO -- : [12c62ac1173b4c6f7a80ea965ee02d38]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:28:15.857722 #62]  INFO -- : [12c62ac1173b4c6f7a80ea965ee02d38]   Rendered articles/feed.rss.builder (Duration: 206.9ms | Allocations: 137857)
+I, [2026-05-08T03:28:15.859199 #62]  INFO -- : [12c62ac1173b4c6f7a80ea965ee02d38] Completed 200 OK in 238ms (Views: 212.4ms | ActiveRecord: 9.3ms | Allocations: 143270)
+I, [2026-05-08T03:28:20.902805 #55]  INFO -- : [d0403f1b5220504de2833b483801ecca] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:28:20 +0000
+I, [2026-05-08T03:28:35.897240 #55]  INFO -- : [14a7a67be3e414454cb706615d4785b1] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:28:35 +0000
+I, [2026-05-08T03:29:38.940137 #55]  INFO -- : [5d54df792e18ffa6a7cdc888333c6972] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:29:38 +0000
+I, [2026-05-08T03:30:38.915809 #55]  INFO -- : [88b5b12c6b84d5ccfc766b77e1780cd1] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:30:38 +0000
+I, [2026-05-08T03:31:38.927783 #62]  INFO -- : [01a01beb0dd2fcbb6fd735bd69b1acb0] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:31:38 +0000
+I, [2026-05-08T03:32:38.903233 #62]  INFO -- : [07d01f1c98786f811021187237a20227] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:32:38 +0000
+I, [2026-05-08T03:33:38.905677 #62]  INFO -- : [48c6b6fdcd1cc5797cd3beb5f0cb59c9] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:33:38 +0000
+I, [2026-05-08T03:33:40.294560 #55]  INFO -- : [9d4790573e8b39cc5c019c12b6069755] Started GET "/t/examguide" for 216.244.66.196 at 2026-05-08 03:33:40 +0000
+I, [2026-05-08T03:33:40.414570 #55]  INFO -- : [9d4790573e8b39cc5c019c12b6069755] Processing by Stories::TaggedArticlesController#index as */*
+I, [2026-05-08T03:33:40.415080 #55]  INFO -- : [9d4790573e8b39cc5c019c12b6069755]   Parameters: {"locale"=>nil, "tag"=>"examguide"}
+I, [2026-05-08T03:33:40.522489 #55]  INFO -- : [9d4790573e8b39cc5c019c12b6069755]   Rendered stories/tagged_articles/index.html.erb within layouts/application (Duration: 79.1ms | Allocations: 7181)
+I, [2026-05-08T03:33:40.546494 #55]  INFO -- : [9d4790573e8b39cc5c019c12b6069755]   Rendered layout layouts/application.html.erb (Duration: 103.3ms | Allocations: 20495)
+I, [2026-05-08T03:33:40.547451 #55]  INFO -- : [9d4790573e8b39cc5c019c12b6069755] Completed 200 OK in 132ms (Views: 98.5ms | ActiveRecord: 19.2ms | Allocations: 24424)
+I, [2026-05-08T03:34:38.924929 #55]  INFO -- : [03ac2832845bbd5f0e38c70183f7cc19] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:34:38 +0000
+I, [2026-05-08T03:35:38.896406 #55]  INFO -- : [f5fdd99fadc65a8e4ff6d75ee6331439] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:35:38 +0000
+I, [2026-05-08T03:36:38.895082 #62]  INFO -- : [1226690ceaa2b9a94d8abba9cdf4888e] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:36:38 +0000
+I, [2026-05-08T03:37:38.919850 #55]  INFO -- : [16c53678f0d1d61a997a5c479c6d21a5] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:37:38 +0000
+I, [2026-05-08T03:38:38.900802 #62]  INFO -- : [22cc56ffe9742c25a8c2a737cab2e3ce] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:38:38 +0000
+I, [2026-05-08T03:38:48.983264 #62]  INFO -- : [ea9801af83efd0da9c18972020e50a47] Started GET "/the_cp_team/uttarakhand-board-10th-12th-results-2026-expected-late-april-official-websites-how-to-check-3ol0" for 57.141.20.18 at 2026-05-08 03:38:48 +0000
+I, [2026-05-08T03:38:49.013647 #62]  INFO -- : [ea9801af83efd0da9c18972020e50a47] Processing by StoriesController#show as */*
+I, [2026-05-08T03:38:49.014330 #62]  INFO -- : [ea9801af83efd0da9c18972020e50a47]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"uttarakhand-board-10th-12th-results-2026-expected-late-april-official-websites-how-to-check-3ol0"}
+I, [2026-05-08T03:38:49.146402 #62]  INFO -- : [ea9801af83efd0da9c18972020e50a47]   Rendered articles/show.html.erb within layouts/application (Duration: 58.8ms | Allocations: 22680)
+I, [2026-05-08T03:38:49.169206 #62]  INFO -- : [ea9801af83efd0da9c18972020e50a47]   Rendered layout layouts/application.html.erb (Duration: 81.6ms | Allocations: 35845)
+I, [2026-05-08T03:38:49.169895 #62]  INFO -- : [ea9801af83efd0da9c18972020e50a47] Completed 200 OK in 155ms (Views: 75.2ms | ActiveRecord: 54.0ms | Allocations: 44241)
+I, [2026-05-08T03:39:38.935639 #55]  INFO -- : [2ce800bce0246dfa072f0a13be979211] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:39:38 +0000
+I, [2026-05-08T03:39:52.007554 #62]  INFO -- : [b75ef5602ef09e6371dcfa1d83279fc4] Started GET "/the_cp_team/up-board-10th-12th-result-2026-expected-in-april-key-dates-checking-procedure-impact-24fe" for 57.141.20.52 at 2026-05-08 03:39:52 +0000
+I, [2026-05-08T03:39:52.057450 #62]  INFO -- : [b75ef5602ef09e6371dcfa1d83279fc4] Processing by StoriesController#show as */*
+I, [2026-05-08T03:39:52.057891 #62]  INFO -- : [b75ef5602ef09e6371dcfa1d83279fc4]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"up-board-10th-12th-result-2026-expected-in-april-key-dates-checking-procedure-impact-24fe"}
+I, [2026-05-08T03:39:52.163841 #62]  INFO -- : [b75ef5602ef09e6371dcfa1d83279fc4]   Rendered articles/show.html.erb within layouts/application (Duration: 58.4ms | Allocations: 22335)
+I, [2026-05-08T03:39:52.186373 #62]  INFO -- : [b75ef5602ef09e6371dcfa1d83279fc4]   Rendered layout layouts/application.html.erb (Duration: 81.0ms | Allocations: 35132)
+I, [2026-05-08T03:39:52.187277 #62]  INFO -- : [b75ef5602ef09e6371dcfa1d83279fc4] Completed 200 OK in 129ms (Views: 76.6ms | ActiveRecord: 23.6ms | Allocations: 43148)
+I, [2026-05-08T03:39:54.740010 #55]  INFO -- : [874727009425ea3acb6c9d4fcad3202a] Started GET "/the_cp_team/aaj-kii-bhaart-kii-ttonp-10-breking-nyuuj-3lfo" for 57.141.20.54 at 2026-05-08 03:39:54 +0000
+I, [2026-05-08T03:39:54.773502 #55]  INFO -- : [874727009425ea3acb6c9d4fcad3202a] Processing by StoriesController#show as */*
+I, [2026-05-08T03:39:54.773984 #55]  INFO -- : [874727009425ea3acb6c9d4fcad3202a]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"aaj-kii-bhaart-kii-ttonp-10-breking-nyuuj-3lfo"}
+I, [2026-05-08T03:39:54.895242 #55]  INFO -- : [874727009425ea3acb6c9d4fcad3202a]   Rendered articles/show.html.erb within layouts/application (Duration: 61.9ms | Allocations: 23067)
+I, [2026-05-08T03:39:54.916133 #55]  INFO -- : [874727009425ea3acb6c9d4fcad3202a]   Rendered layout layouts/application.html.erb (Duration: 82.8ms | Allocations: 36237)
+I, [2026-05-08T03:39:54.916934 #55]  INFO -- : [874727009425ea3acb6c9d4fcad3202a] Completed 200 OK in 143ms (Views: 78.3ms | ActiveRecord: 36.2ms | Allocations: 44417)
+I, [2026-05-08T03:40:04.699154 #62]  INFO -- : [11b7ac66f5351451287177fec6ea85fd] Started GET "/5hy4m11/ssc-gd-constable-2025-final-marks-released-5cog" for 57.141.20.16 at 2026-05-08 03:40:04 +0000
+I, [2026-05-08T03:40:04.744128 #62]  INFO -- : [11b7ac66f5351451287177fec6ea85fd] Processing by StoriesController#show as */*
+I, [2026-05-08T03:40:04.744704 #62]  INFO -- : [11b7ac66f5351451287177fec6ea85fd]   Parameters: {"locale"=>nil, "username"=>"5hy4m11", "slug"=>"ssc-gd-constable-2025-final-marks-released-5cog"}
+I, [2026-05-08T03:40:04.908290 #62]  INFO -- : [11b7ac66f5351451287177fec6ea85fd]   Rendered articles/show.html.erb within layouts/application (Duration: 100.0ms | Allocations: 28745)
+I, [2026-05-08T03:40:04.936105 #62]  INFO -- : [11b7ac66f5351451287177fec6ea85fd]   Rendered layout layouts/application.html.erb (Duration: 127.9ms | Allocations: 41560)
+I, [2026-05-08T03:40:04.937575 #62]  INFO -- : [11b7ac66f5351451287177fec6ea85fd] Completed 200 OK in 192ms (Views: 112.6ms | ActiveRecord: 46.2ms | Allocations: 49124)
+I, [2026-05-08T03:40:38.929555 #55]  INFO -- : [10eba28b5b2c38d60aa13d35442bebce] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:40:38 +0000
+I, [2026-05-08T03:41:38.916506 #55]  INFO -- : [50215f9a8bb756c8937c54c5b2594e2f] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:41:38 +0000
+I, [2026-05-08T03:42:06.310986 #55]  INFO -- : [84a23e1075be1649a82c5b96c3704084] Started GET "/the_cp_team/karnataka-2nd-puc-result-2026-released-check-scores-toppers-and-re-exam-dates-4fbc" for 100.28.44.58 at 2026-05-08 03:42:06 +0000
+I, [2026-05-08T03:42:06.355950 #55]  INFO -- : [84a23e1075be1649a82c5b96c3704084] Processing by StoriesController#show as HTML
+I, [2026-05-08T03:42:06.356426 #55]  INFO -- : [84a23e1075be1649a82c5b96c3704084]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"karnataka-2nd-puc-result-2026-released-check-scores-toppers-and-re-exam-dates-4fbc"}
+I, [2026-05-08T03:42:06.538294 #55]  INFO -- : [84a23e1075be1649a82c5b96c3704084]   Rendered articles/show.html.erb within layouts/application (Duration: 124.8ms | Allocations: 35942)
+I, [2026-05-08T03:42:06.606386 #55]  INFO -- : [84a23e1075be1649a82c5b96c3704084]   Rendered layout layouts/application.html.erb (Duration: 192.9ms | Allocations: 51785)
+I, [2026-05-08T03:42:06.608445 #55]  INFO -- : [84a23e1075be1649a82c5b96c3704084] Completed 200 OK in 251ms (Views: 178.6ms | ActiveRecord: 38.2ms | Allocations: 60064)
+I, [2026-05-08T03:42:09.650853 #62]  INFO -- : [729276f5e693d7b4c00508a85b2c512e] Started GET "/the_cp_team/tgcet-result-2026-declared-check-scorecard-merit-list-at-tgcetcgggovin-ade" for 3.229.2.217 at 2026-05-08 03:42:09 +0000
+I, [2026-05-08T03:42:09.748958 #62]  INFO -- : [729276f5e693d7b4c00508a85b2c512e] Processing by StoriesController#show as HTML
+I, [2026-05-08T03:42:09.749383 #62]  INFO -- : [729276f5e693d7b4c00508a85b2c512e]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"tgcet-result-2026-declared-check-scorecard-merit-list-at-tgcetcgggovin-ade"}
+I, [2026-05-08T03:42:09.904242 #62]  INFO -- : [729276f5e693d7b4c00508a85b2c512e]   Rendered articles/show.html.erb within layouts/application (Duration: 89.2ms | Allocations: 28877)
+I, [2026-05-08T03:42:09.931192 #62]  INFO -- : [729276f5e693d7b4c00508a85b2c512e]   Rendered layout layouts/application.html.erb (Duration: 116.2ms | Allocations: 41675)
+I, [2026-05-08T03:42:09.932196 #62]  INFO -- : [729276f5e693d7b4c00508a85b2c512e] Completed 200 OK in 182ms (Views: 110.2ms | ActiveRecord: 39.9ms | Allocations: 50155)
+I, [2026-05-08T03:42:16.238900 #55]  INFO -- : [53421dc092bc59aad162666c2c00d95a] Started GET "/the_cp_team/karnataka-2nd-puc-result-2026-announced-check-your-marks-on-april-9-2mfp" for 3.81.253.213 at 2026-05-08 03:42:16 +0000
+I, [2026-05-08T03:42:16.277680 #55]  INFO -- : [53421dc092bc59aad162666c2c00d95a] Processing by StoriesController#show as HTML
+I, [2026-05-08T03:42:16.278271 #55]  INFO -- : [53421dc092bc59aad162666c2c00d95a]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"karnataka-2nd-puc-result-2026-announced-check-your-marks-on-april-9-2mfp"}
+I, [2026-05-08T03:42:16.411108 #55]  INFO -- : [53421dc092bc59aad162666c2c00d95a]   Rendered articles/show.html.erb within layouts/application (Duration: 81.6ms | Allocations: 25944)
+I, [2026-05-08T03:42:16.437841 #55]  INFO -- : [53421dc092bc59aad162666c2c00d95a]   Rendered layout layouts/application.html.erb (Duration: 108.4ms | Allocations: 38754)
+I, [2026-05-08T03:42:16.438691 #55]  INFO -- : [53421dc092bc59aad162666c2c00d95a] Completed 200 OK in 160ms (Views: 100.0ms | ActiveRecord: 29.5ms | Allocations: 46908)
+I, [2026-05-08T03:42:18.914676 #62]  INFO -- : [632aaed798156d10b2e83bf861b7e484] Started GET "/t/examcity" for 3.214.176.44 at 2026-05-08 03:42:18 +0000
+I, [2026-05-08T03:42:18.952632 #62]  INFO -- : [632aaed798156d10b2e83bf861b7e484] Processing by Stories::TaggedArticlesController#index as HTML
+I, [2026-05-08T03:42:18.953078 #62]  INFO -- : [632aaed798156d10b2e83bf861b7e484]   Parameters: {"locale"=>nil, "tag"=>"examcity"}
+I, [2026-05-08T03:42:19.080800 #62]  INFO -- : [632aaed798156d10b2e83bf861b7e484]   Rendered stories/tagged_articles/index.html.erb within layouts/application (Duration: 80.3ms | Allocations: 22570)
+I, [2026-05-08T03:42:19.111417 #62]  INFO -- : [632aaed798156d10b2e83bf861b7e484]   Rendered layout layouts/application.html.erb (Duration: 111.0ms | Allocations: 35341)
+I, [2026-05-08T03:42:19.112525 #62]  INFO -- : [632aaed798156d10b2e83bf861b7e484] Completed 200 OK in 159ms (Views: 102.9ms | ActiveRecord: 29.5ms | Allocations: 42021)
+I, [2026-05-08T03:42:38.932619 #62]  INFO -- : [d62ff027589d4648c98729da6bc4fc40] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:42:38 +0000
+I, [2026-05-08T03:43:04.576272 #62]  INFO -- : [466d215a3922fdad46399a5a503afb15] Started GET "/new/ntaupdates" for 47.82.10.83 at 2026-05-08 03:43:04 +0000
+I, [2026-05-08T03:43:04.630974 #62]  INFO -- : [466d215a3922fdad46399a5a503afb15] Processing by ArticlesController#new as */*
+I, [2026-05-08T03:43:04.631421 #62]  INFO -- : [466d215a3922fdad46399a5a503afb15]   Parameters: {"locale"=>nil, "template"=>"ntaupdates"}
+I, [2026-05-08T03:43:04.704886 #62]  INFO -- : [466d215a3922fdad46399a5a503afb15]   Rendered articles/new.html.erb within layouts/application (Duration: 59.6ms | Allocations: 9782)
+I, [2026-05-08T03:43:04.736850 #62]  INFO -- : [466d215a3922fdad46399a5a503afb15]   Rendered layout layouts/application.html.erb (Duration: 91.6ms | Allocations: 22663)
+I, [2026-05-08T03:43:04.740690 #62]  INFO -- : [466d215a3922fdad46399a5a503afb15] Completed 200 OK in 108ms (Views: 90.2ms | ActiveRecord: 7.9ms | Allocations: 24597)
+I, [2026-05-08T03:43:26.383309 #62]  INFO -- : [e0d4bc2938a5204df61cd5d8457cc80e] Started GET "/robots.txt" for 57.141.12.27 at 2026-05-08 03:43:26 +0000
+I, [2026-05-08T03:43:26.415883 #62]  INFO -- : [e0d4bc2938a5204df61cd5d8457cc80e] Processing by PagesController#robots as TEXT
+I, [2026-05-08T03:43:26.416409 #62]  INFO -- : [e0d4bc2938a5204df61cd5d8457cc80e]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:43:26.423708 #62]  INFO -- : [e0d4bc2938a5204df61cd5d8457cc80e]   Rendered pages/robots.text.erb (Duration: 1.4ms | Allocations: 398)
+I, [2026-05-08T03:43:26.424652 #62]  INFO -- : [e0d4bc2938a5204df61cd5d8457cc80e] Completed 200 OK in 8ms (Views: 3.5ms | ActiveRecord: 0.0ms | Allocations: 1921)
+I, [2026-05-08T03:43:27.004235 #62]  INFO -- : [bb3578e356f9ad0376c2ceb8f54ee6c8] Started GET "/robots.txt" for 57.141.12.31 at 2026-05-08 03:43:27 +0000
+I, [2026-05-08T03:43:27.049191 #62]  INFO -- : [bb3578e356f9ad0376c2ceb8f54ee6c8] Processing by PagesController#robots as TEXT
+I, [2026-05-08T03:43:27.049499 #62]  INFO -- : [bb3578e356f9ad0376c2ceb8f54ee6c8]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:43:27.053963 #62]  INFO -- : [bb3578e356f9ad0376c2ceb8f54ee6c8]   Rendered pages/robots.text.erb (Duration: 0.6ms | Allocations: 281)
+I, [2026-05-08T03:43:27.054947 #62]  INFO -- : [bb3578e356f9ad0376c2ceb8f54ee6c8] Completed 200 OK in 5ms (Views: 1.7ms | ActiveRecord: 0.0ms | Allocations: 1438)
+I, [2026-05-08T03:43:38.914296 #55]  INFO -- : [5434cf0f4c3fdb5d8b6a064564933da8] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:43:38 +0000
+I, [2026-05-08T03:43:42.113423 #62]  INFO -- : [aa108de1f4b38ef68a8ebc683d4bf494] Started GET "/feed" for 104.131.105.190 at 2026-05-08 03:43:42 +0000
+I, [2026-05-08T03:43:42.148351 #62]  INFO -- : [aa108de1f4b38ef68a8ebc683d4bf494] Processing by ArticlesController#feed as RSS
+I, [2026-05-08T03:43:42.148636 #62]  INFO -- : [aa108de1f4b38ef68a8ebc683d4bf494]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:43:42.336088 #62]  INFO -- : [aa108de1f4b38ef68a8ebc683d4bf494]   Rendered articles/feed.rss.builder (Duration: 160.1ms | Allocations: 135139)
+I, [2026-05-08T03:43:42.337290 #62]  INFO -- : [aa108de1f4b38ef68a8ebc683d4bf494] Completed 200 OK in 188ms (Views: 161.4ms | ActiveRecord: 10.1ms | Allocations: 139860)
+I, [2026-05-08T03:44:38.959031 #55]  INFO -- : [e04100e2b7ae3bd5775bd2ed0cfb6a2f] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:44:38 +0000
+I, [2026-05-08T03:45:39.075314 #55]  INFO -- : [8e492f657364475b26f1bee4f2302207] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:45:39 +0000
+I, [2026-05-08T03:46:25.363163 #55]  INFO -- : [eaf41f424901e6c7e500c06703f4386a] Started GET "/the_cp_team/cbse-class-12-result-2026-date-expected-in-april-check-official-websites-preparation-steps-3135" for 57.141.20.10 at 2026-05-08 03:46:25 +0000
+I, [2026-05-08T03:46:25.511654 #55]  INFO -- : [eaf41f424901e6c7e500c06703f4386a] Processing by StoriesController#show as */*
+I, [2026-05-08T03:46:25.511871 #55]  INFO -- : [eaf41f424901e6c7e500c06703f4386a]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"cbse-class-12-result-2026-date-expected-in-april-check-official-websites-preparation-steps-3135"}
+I, [2026-05-08T03:46:25.733595 #55]  INFO -- : [eaf41f424901e6c7e500c06703f4386a]   Rendered articles/show.html.erb within layouts/application (Duration: 68.3ms | Allocations: 22332)
+I, [2026-05-08T03:46:25.765960 #55]  INFO -- : [eaf41f424901e6c7e500c06703f4386a]   Rendered layout layouts/application.html.erb (Duration: 100.8ms | Allocations: 35654)
+I, [2026-05-08T03:46:25.766931 #55]  INFO -- : [eaf41f424901e6c7e500c06703f4386a] Completed 200 OK in 255ms (Views: 98.2ms | ActiveRecord: 35.8ms | Allocations: 43805)
+I, [2026-05-08T03:46:38.928119 #55]  INFO -- : [274eb06ef233e68bf7629d7d39e02459] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:46:38 +0000
+I, [2026-05-08T03:47:38.923058 #62]  INFO -- : [351fb5bc6546c912da8a129b94064b3b] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:47:38 +0000
+I, [2026-05-08T03:48:38.945165 #62]  INFO -- : [2ee455d9f73d6c69e4398d7123c3d5af] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:48:38 +0000
+I, [2026-05-08T03:49:38.939736 #55]  INFO -- : [6f4579faae8210e0ee4ce1949b889111] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:49:38 +0000
+I, [2026-05-08T03:50:07.290361 #55]  INFO -- : [277813bddd61a86d5da0ea5155eed590] Started GET "/robots.txt" for 173.252.95.17 at 2026-05-08 03:50:07 +0000
+I, [2026-05-08T03:50:07.338682 #55]  INFO -- : [277813bddd61a86d5da0ea5155eed590] Processing by PagesController#robots as TEXT
+I, [2026-05-08T03:50:07.339001 #55]  INFO -- : [277813bddd61a86d5da0ea5155eed590]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:50:07.343316 #55]  INFO -- : [277813bddd61a86d5da0ea5155eed590]   Rendered pages/robots.text.erb (Duration: 0.7ms | Allocations: 281)
+I, [2026-05-08T03:50:07.344643 #55]  INFO -- : [277813bddd61a86d5da0ea5155eed590] Completed 200 OK in 5ms (Views: 1.9ms | ActiveRecord: 0.0ms | Allocations: 1442)
+I, [2026-05-08T03:50:38.950467 #55]  INFO -- : [b23795b641bd3801068d6ce49715961f] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:50:38 +0000
+I, [2026-05-08T03:51:35.255443 #62]  INFO -- : [d309740a0ef785fc4864d5d24354ffe4] Started GET "/the_cp_team/bihar-bpsc-apo-recruitment-2026-2i53" for 57.141.20.16 at 2026-05-08 03:51:35 +0000
+I, [2026-05-08T03:51:35.521201 #62]  INFO -- : [d309740a0ef785fc4864d5d24354ffe4] Processing by StoriesController#show as */*
+I, [2026-05-08T03:51:35.521460 #62]  INFO -- : [d309740a0ef785fc4864d5d24354ffe4]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"bihar-bpsc-apo-recruitment-2026-2i53"}
+I, [2026-05-08T03:51:35.763536 #62]  INFO -- : [d309740a0ef785fc4864d5d24354ffe4]   Rendered articles/show.html.erb within layouts/application (Duration: 64.3ms | Allocations: 22026)
+I, [2026-05-08T03:51:35.792557 #62]  INFO -- : [d309740a0ef785fc4864d5d24354ffe4]   Rendered layout layouts/application.html.erb (Duration: 93.4ms | Allocations: 35204)
+I, [2026-05-08T03:51:35.793541 #62]  INFO -- : [d309740a0ef785fc4864d5d24354ffe4] Completed 200 OK in 271ms (Views: 87.0ms | ActiveRecord: 71.8ms | Allocations: 43494)
+I, [2026-05-08T03:51:38.947732 #62]  INFO -- : [b09aa59afe15bb1db30e01ca16460a03] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:51:38 +0000
+I, [2026-05-08T03:51:42.423878 #62]  INFO -- : [f9d9fddbd11ced45e351c3969d7e13e5] Started GET "/" for 104.131.105.190 at 2026-05-08 03:51:42 +0000
+I, [2026-05-08T03:51:42.463965 #62]  INFO -- : [f9d9fddbd11ced45e351c3969d7e13e5] Processing by StoriesController#index as HTML
+I, [2026-05-08T03:51:42.464317 #62]  INFO -- : [f9d9fddbd11ced45e351c3969d7e13e5]   Parameters: {"locale"=>nil}
+I, [2026-05-08T03:51:43.262790 #62]  INFO -- : [f9d9fddbd11ced45e351c3969d7e13e5]   Rendered articles/index.html.erb within layouts/application (Duration: 733.8ms | Allocations: 361267)
+I, [2026-05-08T03:51:43.283020 #62]  INFO -- : [f9d9fddbd11ced45e351c3969d7e13e5]   Rendered layout layouts/application.html.erb (Duration: 754.1ms | Allocations: 374271)
+I, [2026-05-08T03:51:43.283675 #62]  INFO -- : [f9d9fddbd11ced45e351c3969d7e13e5] Completed 200 OK in 819ms (Views: 655.9ms | ActiveRecord: 123.1ms | Allocations: 385546)
+I, [2026-05-08T03:52:38.990916 #55]  INFO -- : [8e75a1bff398105c4071633a1a2fa92c] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:52:38 +0000
+I, [2026-05-08T03:53:38.950085 #55]  INFO -- : [a3292305cc0328a2b1ac5564675140c4] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:53:38 +0000
+I, [2026-05-08T03:54:38.905717 #55]  INFO -- : [077d06407d6d4aef942b475d7a07ebed] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:54:38 +0000
+I, [2026-05-08T03:55:38.948239 #62]  INFO -- : [a098141649c7d0de75903d9ecf221490] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:55:38 +0000
+I, [2026-05-08T03:56:01.134799 #55]  INFO -- : [030c5991619f90629d17fc3c9b4f7170] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:56:01 +0000
+I, [2026-05-08T03:56:05.901452 #55]  INFO -- : [c996e87d35f0d90639b680910583da30] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:56:05 +0000
+I, [2026-05-08T03:56:20.902562 #55]  INFO -- : [411f8eeb2ddf5e27f5f0775730d52c4f] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:56:20 +0000
+I, [2026-05-08T03:56:35.918035 #55]  INFO -- : [be40b8bba7418edec6a73e24afff45ad] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:56:35 +0000
+I, [2026-05-08T03:56:50.913303 #55]  INFO -- : [e262f40e9bb16cf8e1cb95da22bac36d] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:56:50 +0000
+I, [2026-05-08T03:57:38.918756 #62]  INFO -- : [febf12ef43f2a88ac1a9e91d6de65010] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:57:38 +0000
+I, [2026-05-08T03:58:38.951771 #62]  INFO -- : [886a5a90c5aa41e719258469ac852f48] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:58:38 +0000
+I, [2026-05-08T03:59:38.918891 #55]  INFO -- : [38e14aa63e4dce72622febcdadba720b] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 03:59:38 +0000
+I, [2026-05-08T04:00:01.516960 #62]  INFO -- : [0d10f07e3e4bb9047621d4af904ec5d5] Started GET "/t/governmentjobs" for 66.249.68.32 at 2026-05-08 04:00:01 +0000
+I, [2026-05-08T04:00:01.763048 #62]  INFO -- : [0d10f07e3e4bb9047621d4af904ec5d5] Processing by Stories::TaggedArticlesController#index as */*
+I, [2026-05-08T04:00:01.763305 #62]  INFO -- : [0d10f07e3e4bb9047621d4af904ec5d5]   Parameters: {"locale"=>nil, "tag"=>"governmentjobs"}
+I, [2026-05-08T04:00:02.447127 #62]  INFO -- : [0d10f07e3e4bb9047621d4af904ec5d5]   Rendered stories/tagged_articles/index.html.erb within layouts/application (Duration: 602.2ms | Allocations: 145947)
+I, [2026-05-08T04:00:02.486952 #62]  INFO -- : [0d10f07e3e4bb9047621d4af904ec5d5]   Rendered layout layouts/application.html.erb (Duration: 642.2ms | Allocations: 159261)
+I, [2026-05-08T04:00:02.490587 #62]  INFO -- : [0d10f07e3e4bb9047621d4af904ec5d5] Completed 200 OK in 726ms (Views: 612.6ms | ActiveRecord: 80.6ms | Allocations: 164605)
+I, [2026-05-08T04:00:32.676219 #55]  INFO -- : [0d38b7e5a2c1a934a94fd26d5b675351] Started GET "/t/ukboard" for 66.249.68.33 at 2026-05-08 04:00:32 +0000
+I, [2026-05-08T04:00:32.714053 #55]  INFO -- : [0d38b7e5a2c1a934a94fd26d5b675351] Processing by Stories::TaggedArticlesController#index as HTML
+I, [2026-05-08T04:00:32.714518 #55]  INFO -- : [0d38b7e5a2c1a934a94fd26d5b675351]   Parameters: {"locale"=>nil, "tag"=>"ukboard"}
+I, [2026-05-08T04:00:32.765650 #55]  INFO -- : [0d38b7e5a2c1a934a94fd26d5b675351]   Rendered stories/tagged_articles/index.html.erb within layouts/application (Duration: 22.8ms | Allocations: 7760)
+I, [2026-05-08T04:00:32.789498 #55]  INFO -- : [0d38b7e5a2c1a934a94fd26d5b675351]   Rendered layout layouts/application.html.erb (Duration: 46.7ms | Allocations: 20899)
+I, [2026-05-08T04:00:32.790610 #55]  INFO -- : [0d38b7e5a2c1a934a94fd26d5b675351] Completed 200 OK in 75ms (Views: 44.4ms | ActiveRecord: 15.3ms | Allocations: 24770)
+I, [2026-05-08T04:00:38.983360 #55]  INFO -- : [98e93cb38b21c70954507201f4d14071] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 04:00:38 +0000
+I, [2026-05-08T04:00:57.763455 #55]  INFO -- : [90913dde263746a14da9eb7a0363f1c7] Started GET "/the_cp_team/bpsc-aedo-2026-mock-test-3-general-aptitude-full-question-paper-with-answers-solutions-3i92" for 54.235.172.108 at 2026-05-08 04:00:57 +0000
+I, [2026-05-08T04:00:57.810547 #55]  INFO -- : [90913dde263746a14da9eb7a0363f1c7] Processing by StoriesController#show as HTML
+I, [2026-05-08T04:00:57.810785 #55]  INFO -- : [90913dde263746a14da9eb7a0363f1c7]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"bpsc-aedo-2026-mock-test-3-general-aptitude-full-question-paper-with-answers-solutions-3i92"}
+I, [2026-05-08T04:00:58.070220 #55]  INFO -- : [90913dde263746a14da9eb7a0363f1c7]   Rendered articles/show.html.erb within layouts/application (Duration: 114.6ms | Allocations: 28297)
+I, [2026-05-08T04:00:58.101017 #55]  INFO -- : [90913dde263746a14da9eb7a0363f1c7]   Rendered layout layouts/application.html.erb (Duration: 145.4ms | Allocations: 41123)
+I, [2026-05-08T04:00:58.105911 #55]  INFO -- : [90913dde263746a14da9eb7a0363f1c7] Completed 200 OK in 295ms (Views: 127.6ms | ActiveRecord: 88.5ms | Allocations: 53528)
+I, [2026-05-08T04:01:38.960849 #55]  INFO -- : [de6258db88baaa75223f3a40d07c9336] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 04:01:38 +0000
+I, [2026-05-08T04:02:38.974701 #55]  INFO -- : [eed41e88cac959237664ee4a825eb08b] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 04:02:38 +0000
+I, [2026-05-08T04:03:38.947084 #62]  INFO -- : [37d8c96bc637f145d15d20d18dd36107] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 04:03:38 +0000
+I, [2026-05-08T04:04:22.076287 #62]  INFO -- : [a20e4172046b46a80bc56db272728a66] Started GET "/the_cp_team/cbse-class-10-result-2026-expected-mid-april-official-date-websites-how-to-check-10kc" for 57.141.20.29 at 2026-05-08 04:04:22 +0000
+I, [2026-05-08T04:04:22.116032 #62]  INFO -- : [a20e4172046b46a80bc56db272728a66] Processing by StoriesController#show as */*
+I, [2026-05-08T04:04:22.116256 #62]  INFO -- : [a20e4172046b46a80bc56db272728a66]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"cbse-class-10-result-2026-expected-mid-april-official-date-websites-how-to-check-10kc"}
+I, [2026-05-08T04:04:22.231473 #62]  INFO -- : [a20e4172046b46a80bc56db272728a66]   Rendered articles/show.html.erb within layouts/application (Duration: 57.7ms | Allocations: 22384)
+I, [2026-05-08T04:04:22.256448 #62]  INFO -- : [a20e4172046b46a80bc56db272728a66]   Rendered layout layouts/application.html.erb (Duration: 82.8ms | Allocations: 35549)
+I, [2026-05-08T04:04:22.257295 #62]  INFO -- : [a20e4172046b46a80bc56db272728a66] Completed 200 OK in 141ms (Views: 77.3ms | ActiveRecord: 33.5ms | Allocations: 43718)
+I, [2026-05-08T04:04:29.305287 #62]  INFO -- : [f7450b479461ed942b3786a914366a88] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 04:04:29 +0000
+I, [2026-05-08T04:04:31.275139 #62]  INFO -- : [334a46041fdca7e1e3b2544dc4fdec83] Started GET "/arjun-verma/neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd" for 103.24.87.144 at 2026-05-08 04:04:31 +0000
+I, [2026-05-08T04:04:31.310721 #62]  INFO -- : [334a46041fdca7e1e3b2544dc4fdec83] Processing by StoriesController#show as HTML
+I, [2026-05-08T04:04:31.312446 #62]  INFO -- : [334a46041fdca7e1e3b2544dc4fdec83]   Parameters: {"locale"=>nil, "username"=>"arjun-verma", "slug"=>"neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd"}
+I, [2026-05-08T04:04:31.447781 #62]  INFO -- : [334a46041fdca7e1e3b2544dc4fdec83]   Rendered articles/show.html.erb within layouts/application (Duration: 84.1ms | Allocations: 36178)
+I, [2026-05-08T04:04:31.494226 #62]  INFO -- : [334a46041fdca7e1e3b2544dc4fdec83]   Rendered layout layouts/application.html.erb (Duration: 130.6ms | Allocations: 57711)
+I, [2026-05-08T04:04:31.494847 #62]  INFO -- : [334a46041fdca7e1e3b2544dc4fdec83] Completed 200 OK in 182ms (Views: 121.7ms | ActiveRecord: 34.0ms | Allocations: 66385)
+I, [2026-05-08T04:04:31.750688 #62]  INFO -- : [8089bc95bedb418ddf2afa0b05b3957c] Started GET "/reactions?article_id=1056" for 103.24.87.144 at 2026-05-08 04:04:31 +0000
+I, [2026-05-08T04:04:31.782332 #62]  INFO -- : [8089bc95bedb418ddf2afa0b05b3957c] Processing by ReactionsController#index as */*
+I, [2026-05-08T04:04:31.782584 #62]  INFO -- : [8089bc95bedb418ddf2afa0b05b3957c]   Parameters: {"article_id"=>"1056", "locale"=>nil}
+I, [2026-05-08T04:04:31.799066 #62]  INFO -- : [8089bc95bedb418ddf2afa0b05b3957c] Completed 200 OK in 16ms (Views: 0.2ms | ActiveRecord: 5.4ms | Allocations: 3734)
+I, [2026-05-08T04:04:31.850194 #62]  INFO -- : [9243c353bd2d7568c9690f723f2618e3] Started GET "/notifications/counts" for 103.24.87.144 at 2026-05-08 04:04:31 +0000
+I, [2026-05-08T04:04:31.940667 #55]  INFO -- : [5354a17cee844eaaf8f8518f13d1e45f] Started GET "/async_info/base_data" for 103.24.87.144 at 2026-05-08 04:04:31 +0000
+I, [2026-05-08T04:04:31.946382 #55]  INFO -- : [888d54df098f1efcdb7ee2902a826850] Started GET "/reactions?commentable_id=1056&commentable_type=Article" for 103.24.87.144 at 2026-05-08 04:04:31 +0000
+I, [2026-05-08T04:04:31.953778 #62]  INFO -- : [9243c353bd2d7568c9690f723f2618e3] Processing by Notifications::CountsController#index as */*
+I, [2026-05-08T04:04:31.957417 #62]  INFO -- : [9243c353bd2d7568c9690f723f2618e3]   Parameters: {"locale"=>nil}
+I, [2026-05-08T04:04:31.976302 #62]  INFO -- : [dae1cb5c4341e35e56d66537a4d05f21] Started GET "/follows/bulk_show?ids%5B%5D=23&followable_type=User" for 103.24.87.144 at 2026-05-08 04:04:31 +0000
+I, [2026-05-08T04:04:32.025733 #62]  INFO -- : [9243c353bd2d7568c9690f723f2618e3]   Rendered text template (Duration: 0.2ms | Allocations: 31)
+I, [2026-05-08T04:04:32.027405 #62]  INFO -- : [9243c353bd2d7568c9690f723f2618e3] Completed 200 OK in 69ms (Views: 2.1ms | ActiveRecord: 56.8ms | Allocations: 5700)
+I, [2026-05-08T04:04:32.127475 #62]  INFO -- : [dae1cb5c4341e35e56d66537a4d05f21] Processing by FollowsController#bulk_show as JSON
+I, [2026-05-08T04:04:32.127962 #62]  INFO -- : [dae1cb5c4341e35e56d66537a4d05f21]   Parameters: {"ids"=>["23"], "followable_type"=>"User", "locale"=>nil}
+I, [2026-05-08T04:04:32.146909 #62]  INFO -- : [dae1cb5c4341e35e56d66537a4d05f21] Completed 200 OK in 19ms (Views: 0.2ms | ActiveRecord: 5.8ms | Allocations: 3132)
+I, [2026-05-08T04:04:32.156058 #55]  INFO -- : [888d54df098f1efcdb7ee2902a826850] Processing by ReactionsController#index as */*
+I, [2026-05-08T04:04:32.156478 #55]  INFO -- : [888d54df098f1efcdb7ee2902a826850]   Parameters: {"commentable_id"=>"1056", "commentable_type"=>"Article", "locale"=>nil}
+I, [2026-05-08T04:04:32.163497 #55]  INFO -- : [5354a17cee844eaaf8f8518f13d1e45f] Processing by AsyncInfoController#base_data as JSON
+I, [2026-05-08T04:04:32.163729 #55]  INFO -- : [5354a17cee844eaaf8f8518f13d1e45f]   Parameters: {"locale"=>nil}
+I, [2026-05-08T04:04:32.183145 #55]  INFO -- : [888d54df098f1efcdb7ee2902a826850] Completed 200 OK in 26ms (Views: 0.3ms | ActiveRecord: 13.3ms | Allocations: 7145)
+I, [2026-05-08T04:04:32.241735 #55]  INFO -- : [5354a17cee844eaaf8f8518f13d1e45f] Completed 200 OK in 78ms (Views: 0.5ms | ActiveRecord: 37.9ms | Allocations: 19574)
+I, [2026-05-08T04:04:32.248798 #62]  INFO -- : [a8d3096d45ddeaf661a5ea1ccf54d47d] Started GET "/arjun-verma/neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd/bb/post_body_bottom" for 103.24.87.144 at 2026-05-08 04:04:32 +0000
+I, [2026-05-08T04:04:32.286773 #62]  INFO -- : [a8d3096d45ddeaf661a5ea1ccf54d47d] Processing by BillboardsController#show as */*
+I, [2026-05-08T04:04:32.287268 #62]  INFO -- : [a8d3096d45ddeaf661a5ea1ccf54d47d]   Parameters: {"locale"=>nil, "username"=>"arjun-verma", "slug"=>"neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd", "placement_area"=>"post_body_bottom"}
+I, [2026-05-08T04:04:32.361363 #62]  INFO -- : [c9fb797be26f4df795c7dc22f0759af1] Started GET "/arjun-verma/neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd/bb/post_comments" for 103.24.87.144 at 2026-05-08 04:04:32 +0000
+I, [2026-05-08T04:04:32.386129 #55]  INFO -- : [f9f2ace36d7523a837522774f8e2f7d4] Started GET "/user_subscriptions/subscribed?source_type=Article&source_id=1056" for 103.24.87.144 at 2026-05-08 04:04:32 +0000
+I, [2026-05-08T04:04:32.390859 #62]  INFO -- : [a8d3096d45ddeaf661a5ea1ccf54d47d]   Rendered billboards/show.html.erb (Duration: 7.2ms | Allocations: 940)
+I, [2026-05-08T04:04:32.393404 #62]  INFO -- : [a8d3096d45ddeaf661a5ea1ccf54d47d] Completed 200 OK in 106ms (Views: 9.8ms | ActiveRecord: 42.5ms | Allocations: 22596)
+I, [2026-05-08T04:04:32.414187 #55]  INFO -- : [48807398f6eec1c66f2a229d7c3ee0a9] Started GET "/arjun-verma/neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd/bb/post_fixed_bottom" for 103.24.87.144 at 2026-05-08 04:04:32 +0000
+I, [2026-05-08T04:04:32.434584 #62]  INFO -- : [c9fb797be26f4df795c7dc22f0759af1] Processing by BillboardsController#show as */*
+I, [2026-05-08T04:04:32.435581 #62]  INFO -- : [c9fb797be26f4df795c7dc22f0759af1]   Parameters: {"locale"=>nil, "username"=>"arjun-verma", "slug"=>"neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd", "placement_area"=>"post_comments"}
+I, [2026-05-08T04:04:32.451543 #55]  INFO -- : [f9f2ace36d7523a837522774f8e2f7d4] Processing by UserSubscriptionsController#subscribed as JSON
+I, [2026-05-08T04:04:32.452105 #55]  INFO -- : [f9f2ace36d7523a837522774f8e2f7d4]   Parameters: {"source_type"=>"Article", "source_id"=>"1056", "locale"=>nil}
+I, [2026-05-08T04:04:32.471695 #55]  INFO -- : [f9f2ace36d7523a837522774f8e2f7d4] Completed 200 OK in 16ms (Views: 0.4ms | ActiveRecord: 7.9ms | Allocations: 4846)
+I, [2026-05-08T04:04:32.479284 #55]  INFO -- : [48807398f6eec1c66f2a229d7c3ee0a9] Processing by BillboardsController#show as */*
+I, [2026-05-08T04:04:32.485554 #55]  INFO -- : [48807398f6eec1c66f2a229d7c3ee0a9]   Parameters: {"locale"=>nil, "username"=>"arjun-verma", "slug"=>"neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd", "placement_area"=>"post_fixed_bottom"}
+I, [2026-05-08T04:04:32.491366 #62]  INFO -- : [c9fb797be26f4df795c7dc22f0759af1]   Rendered billboards/show.html.erb (Duration: 3.8ms | Allocations: 423)
+I, [2026-05-08T04:04:32.494314 #62]  INFO -- : [c9fb797be26f4df795c7dc22f0759af1] Completed 200 OK in 58ms (Views: 6.9ms | ActiveRecord: 19.8ms | Allocations: 9738)
+I, [2026-05-08T04:04:32.544505 #62]  INFO -- : [f1c9153cd50cabc6d079a7ccb89589cb] Started GET "/arjun-verma/neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd/actions_panel" for 103.24.87.144 at 2026-05-08 04:04:32 +0000
+I, [2026-05-08T04:04:32.563327 #55]  INFO -- : [48807398f6eec1c66f2a229d7c3ee0a9]   Rendered billboards/show.html.erb (Duration: 0.2ms | Allocations: 34)
+I, [2026-05-08T04:04:32.564715 #55]  INFO -- : [48807398f6eec1c66f2a229d7c3ee0a9] Completed 200 OK in 78ms (Views: 1.7ms | ActiveRecord: 27.6ms | Allocations: 10148)
+I, [2026-05-08T04:04:32.578986 #62]  INFO -- : [f1c9153cd50cabc6d079a7ccb89589cb] Processing by ModerationsController#actions_panel as HTML
+I, [2026-05-08T04:04:32.579243 #62]  INFO -- : [f1c9153cd50cabc6d079a7ccb89589cb]   Parameters: {"locale"=>nil, "username"=>"arjun-verma", "slug"=>"neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd"}
+I, [2026-05-08T04:04:32.622287 #62]  INFO -- : [2431a87a047f83115d0674361dd47ea7] Started GET "/arjun-verma/neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd/bb/post_sidebar" for 103.24.87.144 at 2026-05-08 04:04:32 +0000
+I, [2026-05-08T04:04:32.727380 #62]  INFO -- : [2431a87a047f83115d0674361dd47ea7] Processing by BillboardsController#show as */*
+I, [2026-05-08T04:04:32.728714 #62]  INFO -- : [2431a87a047f83115d0674361dd47ea7]   Parameters: {"locale"=>nil, "username"=>"arjun-verma", "slug"=>"neet-2026-answer-key-download-pdf-calculate-score-raise-objections-2acd", "placement_area"=>"post_sidebar"}
+I, [2026-05-08T04:04:32.746861 #55]  INFO -- : [2e7b7a95d74cf51d817aae203096c773] Started GET "/notification_subscriptions/Article/1056" for 103.24.87.144 at 2026-05-08 04:04:32 +0000
+F, [2026-05-08T04:04:32.831817 #55] FATAL -- : [746098feba094a3c9583c90dc4c09ed9]
+[746098feba094a3c9583c90dc4c09ed9] ActionController::RoutingError (No route matches [POST] "/ahoy/visits"):
+[746098feba094a3c9583c90dc4c09ed9]
+I, [2026-05-08T04:04:32.845477 #62]  INFO -- : [2431a87a047f83115d0674361dd47ea7]   Rendered billboards/show.html.erb (Duration: 0.2ms | Allocations: 34)
+I, [2026-05-08T04:04:32.846906 #62]  INFO -- : [2431a87a047f83115d0674361dd47ea7] Completed 200 OK in 110ms (Views: 3.0ms | ActiveRecord: 65.8ms | Allocations: 18914)
+I, [2026-05-08T04:04:32.851914 #55]  INFO -- : [2e7b7a95d74cf51d817aae203096c773] Processing by NotificationSubscriptionsController#show as JSON
+I, [2026-05-08T04:04:32.854444 #55]  INFO -- : [2e7b7a95d74cf51d817aae203096c773]   Parameters: {"locale"=>nil, "notifiable_type"=>"Article", "notifiable_id"=>"1056"}
+I, [2026-05-08T04:04:32.877347 #55]  INFO -- : [2e7b7a95d74cf51d817aae203096c773] Completed 200 OK in 22ms (Views: 0.2ms | ActiveRecord: 10.9ms | Allocations: 3093)
+I, [2026-05-08T04:04:32.908002 #62]  INFO -- : [f1c9153cd50cabc6d079a7ccb89589cb]   Rendered moderations/actions_panel.html.erb within layouts/application (Duration: 298.0ms | Allocations: 65979)
+I, [2026-05-08T04:04:33.008089 #62]  INFO -- : [f1c9153cd50cabc6d079a7ccb89589cb]   Rendered layout layouts/application.html.erb (Duration: 398.2ms | Allocations: 86546)
+I, [2026-05-08T04:04:33.019266 #62]  INFO -- : [f1c9153cd50cabc6d079a7ccb89589cb] Completed 200 OK in 439ms (Views: 320.6ms | ActiveRecord: 94.1ms | Allocations: 92110)
+I, [2026-05-08T04:04:33.066179 #55]  INFO -- : [c3ee9aae3ce75bef428912c7898cc60d] Started GET "/notifications?i=i" for 103.24.87.144 at 2026-05-08 04:04:33 +0000
+I, [2026-05-08T04:04:33.216555 #55]  INFO -- : [c3ee9aae3ce75bef428912c7898cc60d] Processing by NotificationsController#index as */*
+I, [2026-05-08T04:04:33.216760 #55]  INFO -- : [c3ee9aae3ce75bef428912c7898cc60d]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-08T04:04:33.266485 #62]  INFO -- : [8ca2aec469b27f9728c6daa3fc73c448] Started GET "/notifications/counts" for 103.24.87.144 at 2026-05-08 04:04:33 +0000
+I, [2026-05-08T04:04:33.321663 #62]  INFO -- : [8ca2aec469b27f9728c6daa3fc73c448] Processing by Notifications::CountsController#index as */*
+I, [2026-05-08T04:04:33.321850 #62]  INFO -- : [8ca2aec469b27f9728c6daa3fc73c448]   Parameters: {"locale"=>nil}
+I, [2026-05-08T04:04:33.332404 #55]  INFO -- : [fd0b0f2e8bdd3cd03c8b30cbfdf596b8] Started GET "/async_info/base_data" for 103.24.87.144 at 2026-05-08 04:04:33 +0000
+I, [2026-05-08T04:04:33.337724 #62]  INFO -- : [8ca2aec469b27f9728c6daa3fc73c448]   Rendered text template (Duration: 0.1ms | Allocations: 31)
+I, [2026-05-08T04:04:33.340168 #62]  INFO -- : [8ca2aec469b27f9728c6daa3fc73c448] Completed 200 OK in 18ms (Views: 2.6ms | ActiveRecord: 4.6ms | Allocations: 2518)
+I, [2026-05-08T04:04:33.351004 #55]  INFO -- : [c3ee9aae3ce75bef428912c7898cc60d]   Rendered notifications/index.html.erb within layouts/application (Duration: 95.6ms | Allocations: 13887)
+I, [2026-05-08T04:04:33.353663 #55]  INFO -- : [c3ee9aae3ce75bef428912c7898cc60d]   Rendered layout layouts/application.html.erb (Duration: 98.2ms | Allocations: 15078)
+I, [2026-05-08T04:04:33.354616 #55]  INFO -- : [c3ee9aae3ce75bef428912c7898cc60d] Completed 200 OK in 138ms (Views: 94.3ms | ActiveRecord: 17.8ms | Allocations: 19690)
+I, [2026-05-08T04:04:33.387899 #55]  INFO -- : [fd0b0f2e8bdd3cd03c8b30cbfdf596b8] Processing by AsyncInfoController#base_data as JSON
+I, [2026-05-08T04:04:33.388322 #55]  INFO -- : [fd0b0f2e8bdd3cd03c8b30cbfdf596b8]   Parameters: {"locale"=>nil}
+I, [2026-05-08T04:04:33.412540 #55]  INFO -- : [fd0b0f2e8bdd3cd03c8b30cbfdf596b8] Completed 200 OK in 24ms (Views: 0.4ms | ActiveRecord: 5.9ms | Allocations: 3851)
+I, [2026-05-08T04:04:33.425695 #55]  INFO -- : [cb085f75fc2434641b93632936514752] Started GET "/notifications?i=i" for 103.24.87.144 at 2026-05-08 04:04:33 +0000
+I, [2026-05-08T04:04:33.461637 #55]  INFO -- : [cb085f75fc2434641b93632936514752] Processing by NotificationsController#index as */*
+I, [2026-05-08T04:04:33.462126 #55]  INFO -- : [cb085f75fc2434641b93632936514752]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-08T04:04:33.549045 #55]  INFO -- : [cb085f75fc2434641b93632936514752]   Rendered notifications/index.html.erb within layouts/application (Duration: 62.1ms | Allocations: 12391)
+I, [2026-05-08T04:04:33.551724 #55]  INFO -- : [cb085f75fc2434641b93632936514752]   Rendered layout layouts/application.html.erb (Duration: 64.7ms | Allocations: 13448)
+I, [2026-05-08T04:04:33.552585 #55]  INFO -- : [cb085f75fc2434641b93632936514752] Completed 200 OK in 90ms (Views: 61.4ms | ActiveRecord: 13.8ms | Allocations: 18159)
+I, [2026-05-08T04:04:33.909263 #55]  INFO -- : [8c4b91792af370c109aba136da10427f] Started POST "/page_views" for 103.24.87.144 at 2026-05-08 04:04:33 +0000
+I, [2026-05-08T04:04:49.910265 #55]  INFO -- : [7f2de0b18b3e394da1c2d112238c94fb] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 04:04:49 +0000
+I, [2026-05-08T04:05:03.935960 #55]  INFO -- : [ae0b301c534a0dc12ecefda8bb23a4bf] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 04:05:03 +0000
+I, [2026-05-08T04:05:19.904373 #55]  INFO -- : [363c282408965a816af20c6bd8e28bec] Started PATCH "/page_views/1056" for 103.24.87.144 at 2026-05-08 04:05:19 +0000
 
-  1) Admin::ScheduledAutomationsController PATCH #reactivate reactivates a failed automation
-     Failure/Error: unless @automation.state == "failed"
 
-     NoMethodError:
-       undefined method `state' for nil
-     # ./app/controllers/admin/scheduled_automations_controller.rb:79:in `reactivate'
-     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
-     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
-     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
-     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:321:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
-
-  2) Admin::ScheduledAutomationsController PATCH #reactivate schedules the next run time
-     Failure/Error: unless @automation.state == "failed"
-
-     NoMethodError:
-       undefined method `state' for nil
-     # ./app/controllers/admin/scheduled_automations_controller.rb:79:in `reactivate'
-     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
-     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
-     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
-     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:331:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
-
-  3) Admin::ScheduledAutomationsController PATCH #reactivate redirects to index with success flash
-     Failure/Error: unless @automation.state == "failed"
-
-     NoMethodError:
-       undefined method `state' for nil
-     # ./app/controllers/admin/scheduled_automations_controller.rb:79:in `reactivate'
-     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
-     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
-     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
-     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:340:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
-
-  4) Admin::ScheduledAutomationsController PATCH #reactivate rejects reactivation of non-failed automations
-     Failure/Error: unless @automation.state == "failed"
-
-     NoMethodError:
-       undefined method `state' for nil
-     # ./app/controllers/admin/scheduled_automations_controller.rb:79:in `reactivate'
-     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
-     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
-     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
-     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:349:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
-
-  5) Admin::ScheduledAutomationsController PATCH #reactivate works for top-level community bot route
-     Failure/Error: unless @automation.state == "failed"
-
-     NoMethodError:
-       undefined method `state' for nil
-     # ./app/controllers/admin/scheduled_automations_controller.rb:79:in `reactivate'
-     # ./app/controllers/application_controller.rb:150:in `handle_argument_error'
-     # ./app/lib/middlewares/set_subforem.rb:24:in `call'
-     # ./app/lib/middlewares/set_time_zone.rb:10:in `call'
-     # ./spec/requests/admin/scheduled_automations_controller_spec.rb:358:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
-     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
-
-Finished in 11 minutes 50 seconds (files took 10.06 seconds to load)
-3204 examples, 5 failures, 13 pending
-
-Failed examples:
-
-rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:318 # Admin::ScheduledAutomationsController PATCH #reactivate reactivates a failed automation
-rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:328 # Admin::ScheduledAutomationsController PATCH #reactivate schedules the next run time
-rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:337 # Admin::ScheduledAutomationsController PATCH #reactivate redirects to index with success flash
-rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:346 # Admin::ScheduledAutomationsController PATCH #reactivate rejects reactivation of non-failed automations
-rspec ./spec/requests/admin/scheduled_automations_controller_spec.rb:355 # Admin::ScheduledAutomationsController PATCH #reactivate works for top-level community bot route
-
-[TEST PROF INFO] Time spent in factories: 06:22.362 (53.65% of total time)
-Stopped processing SimpleCov as a previous error not related to SimpleCov has been detected
-JSON Coverage report generated for rspec_ci_node_0 to /home/runner/work/careerpolitics-platform/careerpolitics-platform/coverage/simplecov.         18218 / 39003 LOC (46.71%) covered.
-Error: Process completed with exit code 1.
-0s
-0s
+worker
+-----------------------
+Follow Logs:
+Show timestamp:
+Since:
+-1
+Tail:
+-1
+Destination:
+Filter:
+Enter your keywords
+Wrap lines:
+2026-05-08T04:20:04.231Z pid=1 tid=5l19 class=ScheduledAutomations::ProcessWorker jid=8d3d7af14f49d957c74b5b2f INFO: start
+I, [2026-05-08T04:20:04.244316 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2026-05-08T04:20:04.200Z pid=1 tid=5flp class=Articles::PublishWorker jid=6132f155fbcdc22aee42d941 INFO: start
+2026-05-08T04:20:04.200Z pid=1 tid=5fmt class=CaptureQueryStatsWorker jid=7cb1d3ad754e2b815dfa96d1 INFO: start
+2026-05-08T04:20:04.289Z pid=1 tid=5fnx class=Events::ManageBroadcastBillboardsWorker jid=d2b7438009d6b4c0c807a2bd INFO: start
+2026-05-08T04:20:04.542Z pid=1 tid=5fmt class=CaptureQueryStatsWorker jid=7cb1d3ad754e2b815dfa96d1 elapsed=0.342 INFO: done
+2026-05-08T04:20:04.566Z pid=1 tid=5foh class=Feeds::ImportArticlesWorker jid=f97c7614ccd33298e572fa82 elapsed=0.368 INFO: done
+I, [2026-05-08T04:20:04.571690 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2026-05-08T04:20:04.575Z pid=1 tid=5l19 class=ScheduledAutomations::ProcessWorker jid=8d3d7af14f49d957c74b5b2f elapsed=0.344 INFO: done
+2026-05-08T04:20:04.588Z pid=1 tid=5lu5 class=Metrics::RecordBackgroundQueueStatsWorker jid=7436b832986de4ddc2005b84 elapsed=0.389 INFO: done
+2026-05-08T04:20:04.613Z pid=1 tid=5fnx class=Events::ManageBroadcastBillboardsWorker jid=d2b7438009d6b4c0c807a2bd elapsed=0.324 INFO: done
+2026-05-08T04:20:04.634Z pid=1 tid=5fp1 class=Slack::Messengers::Worker jid=693ea331c3d35e873dee27c3 INFO: start
+2026-05-08T04:20:04.650Z pid=1 tid=5lt1 class=Notifications::NotifiableActionWorker jid=c344f01e46d58d269b1625bb INFO: start
+2026-05-08T04:20:04.651Z pid=1 tid=5ltl class=Slack::Messengers::Worker jid=1f7b89961005370b811f1e56 INFO: start
+2026-05-08T04:20:04.653Z pid=1 tid=5fp1 class=Slack::Messengers::Worker jid=693ea331c3d35e873dee27c3 elapsed=0.019 INFO: done
+2026-05-08T04:20:04.671Z pid=1 tid=5l1t class=Notifications::NotifiableActionWorker jid=4837635a7f51328588d93a9f INFO: start
+2026-05-08T04:20:04.672Z pid=1 tid=5fh9 class=Slack::Messengers::Worker jid=fb4a4ca8ae9e5cc94b89755a INFO: start
+2026-05-08T04:20:04.676Z pid=1 tid=5ltl class=Slack::Messengers::Worker jid=1f7b89961005370b811f1e56 elapsed=0.026 INFO: done
+2026-05-08T04:20:04.685Z pid=1 tid=5flp class=Articles::PublishWorker jid=6132f155fbcdc22aee42d941 elapsed=0.484 INFO: done
+2026-05-08T04:20:04.686Z pid=1 tid=5l0p class=Notifications::NotifiableActionWorker jid=02391b9fbb2dd7fdcbe65d5e INFO: start
+2026-05-08T04:20:04.691Z pid=1 tid=5fh9 class=Slack::Messengers::Worker jid=fb4a4ca8ae9e5cc94b89755a elapsed=0.02 INFO: done
+W, [2026-05-08T04:20:04.741278 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+W, [2026-05-08T04:20:04.747423 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+2026-05-08T04:20:04.762Z pid=1 tid=5lt1 class=Notifications::NotifiableActionWorker jid=c344f01e46d58d269b1625bb elapsed=0.111 INFO: done
+W, [2026-05-08T04:20:04.767424 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+2026-05-08T04:20:04.773Z pid=1 tid=5l1t class=Notifications::NotifiableActionWorker jid=4837635a7f51328588d93a9f elapsed=0.102 INFO: done
+2026-05-08T04:20:04.777Z pid=1 tid=5l05 class=BadgeAchievements::BadgeAwardWorker jid=a429f6ee3d2cd2c8b3ced05a elapsed=0.577 INFO: done
+2026-05-08T04:20:04.779Z pid=1 tid=5l0p class=Notifications::NotifiableActionWorker jid=02391b9fbb2dd7fdcbe65d5e elapsed=0.093 INFO: done
+2026-05-08T04:23:23.687Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T04:23:23.688Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T04:25:15.606Z pid=1 tid=5lu5 class=CaptureQueryStatsWorker jid=31298119f06a85558b24c298 INFO: start
+2026-05-08T04:25:15.674Z pid=1 tid=5lt1 class=Articles::PublishWorker jid=083560741fb6d54dfcd6eeab INFO: start
+2026-05-08T04:25:15.675Z pid=1 tid=5fh9 class=Events::ManageBroadcastBillboardsWorker jid=e96515a3dc6732808cf358b4 INFO: start
+2026-05-08T04:25:15.788Z pid=1 tid=5lu5 class=CaptureQueryStatsWorker jid=31298119f06a85558b24c298 elapsed=0.182 INFO: done
+2026-05-08T04:25:15.811Z pid=1 tid=5fh9 class=Events::ManageBroadcastBillboardsWorker jid=e96515a3dc6732808cf358b4 elapsed=0.136 INFO: done
+2026-05-08T04:25:15.816Z pid=1 tid=5fqp class=Notifications::NotifiableActionWorker jid=05a22186067400444420414d INFO: start
+2026-05-08T04:25:15.825Z pid=1 tid=5fm9 class=Notifications::NotifiableActionWorker jid=64d8cd6691ebcf2d764266b2 INFO: start
+2026-05-08T04:25:15.834Z pid=1 tid=5lt1 class=Articles::PublishWorker jid=083560741fb6d54dfcd6eeab elapsed=0.16 INFO: done
+2026-05-08T04:25:15.835Z pid=1 tid=5fl5 class=Notifications::NotifiableActionWorker jid=d568acd330430e7b7ed29b28 INFO: start
+W, [2026-05-08T04:25:15.863583 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+W, [2026-05-08T04:25:15.871398 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+2026-05-08T04:25:15.874Z pid=1 tid=5fqp class=Notifications::NotifiableActionWorker jid=05a22186067400444420414d elapsed=0.057 INFO: done
+W, [2026-05-08T04:25:15.878375 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+2026-05-08T04:25:15.879Z pid=1 tid=5fm9 class=Notifications::NotifiableActionWorker jid=64d8cd6691ebcf2d764266b2 elapsed=0.055 INFO: done
+2026-05-08T04:25:15.886Z pid=1 tid=5fl5 class=Notifications::NotifiableActionWorker jid=d568acd330430e7b7ed29b28 elapsed=0.051 INFO: done
+2026-05-08T04:30:21.235Z pid=1 tid=5foh class=Metrics::RecordBackgroundQueueStatsWorker jid=204da42c561deea7cdae10ae INFO: start
+2026-05-08T04:30:21.259Z pid=1 tid=5l0p class=Metrics::CheckDataUpdateScriptStatuses jid=60f08545862991ccbff64089 INFO: start
+2026-05-08T04:30:21.355Z pid=1 tid=5fh9 class=CaptureQueryStatsWorker jid=730134a858e707e356aa13f2 INFO: start
+2026-05-08T04:30:21.373Z pid=1 tid=5l1t class=Articles::PublishWorker jid=efd7a90f087662fa19f6d31b INFO: start
+2026-05-08T04:30:21.401Z pid=1 tid=5l05 class=ScheduledAutomations::ProcessWorker jid=dfc35419774ed3392c1ae553 INFO: start
+I, [2026-05-08T04:30:21.404976 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2026-05-08T04:30:21.424Z pid=1 tid=5fnx class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=bcb7ba4481879b1583282f10 INFO: start
+2026-05-08T04:30:21.454Z pid=1 tid=5fp1 class=Events::ManageBroadcastBillboardsWorker jid=085bc1039cf3ff4b4b4a42f4 INFO: start
+2026-05-08T04:30:21.585Z pid=1 tid=5l0p class=Metrics::CheckDataUpdateScriptStatuses jid=60f08545862991ccbff64089 elapsed=0.326 INFO: done
+2026-05-08T04:30:21.595Z pid=1 tid=5fh9 class=CaptureQueryStatsWorker jid=730134a858e707e356aa13f2 elapsed=0.24 INFO: done
+2026-05-08T04:30:21.602Z pid=1 tid=5foh class=Metrics::RecordBackgroundQueueStatsWorker jid=204da42c561deea7cdae10ae elapsed=0.366 INFO: done
+I, [2026-05-08T04:30:21.631664 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2026-05-08T04:30:21.634Z pid=1 tid=5l05 class=ScheduledAutomations::ProcessWorker jid=dfc35419774ed3392c1ae553 elapsed=0.233 INFO: done
+2026-05-08T04:30:21.662Z pid=1 tid=5fnx class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=bcb7ba4481879b1583282f10 elapsed=0.238 INFO: done
+2026-05-08T04:30:21.669Z pid=1 tid=5fp1 class=Events::ManageBroadcastBillboardsWorker jid=085bc1039cf3ff4b4b4a42f4 elapsed=0.215 INFO: done
+2026-05-08T04:30:21.679Z pid=1 tid=5lu5 class=Notifications::NotifiableActionWorker jid=c7c2a155428cd88f5022cfe1 INFO: start
+2026-05-08T04:30:21.687Z pid=1 tid=5lt1 class=Notifications::NotifiableActionWorker jid=573938ea5fdc639c2d79d559 INFO: start
+2026-05-08T04:30:21.693Z pid=1 tid=5fl5 class=Notifications::NotifiableActionWorker jid=4c39818e5dcb9a388a4ee088 INFO: start
+2026-05-08T04:30:21.694Z pid=1 tid=5l1t class=Articles::PublishWorker jid=efd7a90f087662fa19f6d31b elapsed=0.32 INFO: done
+W, [2026-05-08T04:30:21.734831 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+W, [2026-05-08T04:30:21.738376 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+W, [2026-05-08T04:30:21.741312 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+2026-05-08T04:30:21.745Z pid=1 tid=5lu5 class=Notifications::NotifiableActionWorker jid=c7c2a155428cd88f5022cfe1 elapsed=0.065 INFO: done
+2026-05-08T04:30:21.756Z pid=1 tid=5fl5 class=Notifications::NotifiableActionWorker jid=4c39818e5dcb9a388a4ee088 elapsed=0.064 INFO: done
+2026-05-08T04:30:21.764Z pid=1 tid=5lt1 class=Notifications::NotifiableActionWorker jid=573938ea5fdc639c2d79d559 elapsed=0.077 INFO: done
+2026-05-08T04:33:23.697Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T04:33:23.698Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T04:35:02.888Z pid=1 tid=5flp class=CaptureQueryStatsWorker jid=fe2b7b2827e8750b7e8e5df2 INFO: start
+2026-05-08T04:35:02.998Z pid=1 tid=5ltl class=Articles::PublishWorker jid=0484bfdf86392f788a7ad18a INFO: start
+2026-05-08T04:35:03.004Z pid=1 tid=5fm9 class=Articles::LabelCleanupWorker jid=d66a4556a830fac57bf813fb INFO: start
+2026-05-08T04:35:03.090Z pid=1 tid=5fmt class=Events::ManageBroadcastBillboardsWorker jid=508675e57fcb002a031b10f6 INFO: start
+2026-05-08T04:35:03.230Z pid=1 tid=5flp class=CaptureQueryStatsWorker jid=fe2b7b2827e8750b7e8e5df2 elapsed=0.342 INFO: done
+I, [2026-05-08T04:35:03.279105 #1]  INFO -- : LabelCleanupWorker: Processing 1 articles with no_moderation_label
+I, [2026-05-08T04:35:03.296627 #1]  INFO -- : LabelCleanupWorker: Enqueued 1 HandleSpamWorker jobs
+2026-05-08T04:35:03.297Z pid=1 tid=5fqp class=Articles::HandleSpamWorker jid=97be24a4581389504fa52455 INFO: start
+2026-05-08T04:35:03.299Z pid=1 tid=5fm9 class=Articles::LabelCleanupWorker jid=d66a4556a830fac57bf813fb elapsed=0.295 INFO: done
+2026-05-08T04:35:03.378Z pid=1 tid=5l19 class=Notifications::NotifiableActionWorker jid=e0ecef7ad25bd93f64a1041c INFO: start
+2026-05-08T04:35:03.390Z pid=1 tid=5fmt class=Events::ManageBroadcastBillboardsWorker jid=508675e57fcb002a031b10f6 elapsed=0.3 INFO: done
+2026-05-08T04:35:03.395Z pid=1 tid=5l1t class=Notifications::NotifiableActionWorker jid=3ea9003cc23e334eab88e4a8 INFO: start
+2026-05-08T04:35:03.420Z pid=1 tid=5ltl class=Articles::PublishWorker jid=0484bfdf86392f788a7ad18a elapsed=0.423 INFO: done
+2026-05-08T04:35:03.423Z pid=1 tid=5l05 class=Notifications::NotifiableActionWorker jid=340d387b05365495d6844098 INFO: start
+W, [2026-05-08T04:35:03.466295 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+W, [2026-05-08T04:35:03.498998 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+2026-05-08T04:35:03.501Z pid=1 tid=5l19 class=Notifications::NotifiableActionWorker jid=e0ecef7ad25bd93f64a1041c elapsed=0.123 INFO: done
+W, [2026-05-08T04:35:03.511722 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+2026-05-08T04:35:03.517Z pid=1 tid=5l1t class=Notifications::NotifiableActionWorker jid=3ea9003cc23e334eab88e4a8 elapsed=0.121 INFO: done
+2026-05-08T04:35:03.522Z pid=1 tid=5l05 class=Notifications::NotifiableActionWorker jid=340d387b05365495d6844098 elapsed=0.099 INFO: done
+2026-05-08T04:35:18.283Z pid=1 tid=5fh9 class=LinkedDomains::UpdateScoreWorker jid=98c9c5b0ebfb37883e9b6190 INFO: start
+2026-05-08T04:35:18.297Z pid=1 tid=5fqp class=Articles::HandleSpamWorker jid=97be24a4581389504fa52455 elapsed=15.0 INFO: done
+2026-05-08T04:35:18.297Z pid=1 tid=5l0p class=LinkedDomains::UpdateScoreWorker jid=ac27ffa27db52ed2e8d03515 INFO: start
+2026-05-08T04:35:18.299Z pid=1 tid=5fnx class=LinkedDomains::UpdateScoreWorker jid=8d51f9c8feba03196ce2e132 INFO: start
+2026-05-08T04:35:18.299Z pid=1 tid=5foh class=LinkedDomains::UpdateScoreWorker jid=e2cb217131b7602ff447a209 INFO: start
+2026-05-08T04:35:18.300Z pid=1 tid=5fp1 class=LinkedDomains::UpdateScoreWorker jid=1ac27f12a0d3d56eeddc6fda INFO: start
+2026-05-08T04:35:18.300Z pid=1 tid=5lt1 class=LinkedDomains::UpdateScoreWorker jid=bce086dce9be64cc7fe9c33b INFO: start
+2026-05-08T04:35:18.301Z pid=1 tid=5fl5 class=LinkedDomains::UpdateScoreWorker jid=f0a6616ebaec200930158adb INFO: start
+2026-05-08T04:35:18.301Z pid=1 tid=5lu5 class=LinkedDomains::UpdateScoreWorker jid=b116904779a0a67d2fcb4d9c INFO: start
+2026-05-08T04:35:18.302Z pid=1 tid=5flp class=LinkedDomains::UpdateScoreWorker jid=a09f124c91096e9116932dda INFO: start
+2026-05-08T04:35:18.398Z pid=1 tid=5l0p class=LinkedDomains::UpdateScoreWorker jid=ac27ffa27db52ed2e8d03515 elapsed=0.101 INFO: done
+2026-05-08T04:35:18.412Z pid=1 tid=5fh9 class=LinkedDomains::UpdateScoreWorker jid=98c9c5b0ebfb37883e9b6190 elapsed=0.129 INFO: done
+2026-05-08T04:35:18.424Z pid=1 tid=5foh class=LinkedDomains::UpdateScoreWorker jid=e2cb217131b7602ff447a209 elapsed=0.124 INFO: done
+2026-05-08T04:35:18.430Z pid=1 tid=5fl5 class=LinkedDomains::UpdateScoreWorker jid=f0a6616ebaec200930158adb elapsed=0.129 INFO: done
+2026-05-08T04:35:18.438Z pid=1 tid=5lu5 class=LinkedDomains::UpdateScoreWorker jid=b116904779a0a67d2fcb4d9c elapsed=0.137 INFO: done
+2026-05-08T04:35:18.440Z pid=1 tid=5flp class=LinkedDomains::UpdateScoreWorker jid=a09f124c91096e9116932dda elapsed=0.139 INFO: done
+2026-05-08T04:35:18.552Z pid=1 tid=5lt1 class=LinkedDomains::UpdateScoreWorker jid=bce086dce9be64cc7fe9c33b elapsed=0.253 INFO: done
+2026-05-08T04:35:18.558Z pid=1 tid=5fp1 class=LinkedDomains::UpdateScoreWorker jid=1ac27f12a0d3d56eeddc6fda elapsed=0.259 INFO: done
+2026-05-08T04:35:18.565Z pid=1 tid=5fnx class=LinkedDomains::UpdateScoreWorker jid=8d51f9c8feba03196ce2e132 elapsed=0.266 INFO: done
+2026-05-08T04:37:17.384Z pid=1 tid=5l05 class=Emails::DripEmailWorker jid=a63fea7f3b2bdab975808060 INFO: start
+2026-05-08T04:37:17.469Z pid=1 tid=5l05 class=Emails::DripEmailWorker jid=a63fea7f3b2bdab975808060 elapsed=0.085 INFO: done
+2026-05-08T04:38:47.018Z pid=1 tid=5flp class=Articles::UpdatePageViewsWorker jid=eaf2e406a23b61112a69cb5e INFO: start
+2026-05-08T04:38:47.099Z pid=1 tid=5foh class=Articles::UpdateArticleActivityWorker jid=8f01fadf7eb36a89838f364c INFO: start
+2026-05-08T04:38:47.101Z pid=1 tid=5fl5 class=Users::UpdateUserActivitiesWorker jid=f1c864264720197dac23e8f7 INFO: start
+2026-05-08T04:38:47.171Z pid=1 tid=5flp class=Articles::UpdatePageViewsWorker jid=eaf2e406a23b61112a69cb5e elapsed=0.153 INFO: done
+2026-05-08T04:38:47.267Z pid=1 tid=5foh class=Articles::UpdateArticleActivityWorker jid=8f01fadf7eb36a89838f364c elapsed=0.168 INFO: done
+2026-05-08T04:38:47.317Z pid=1 tid=5fl5 class=Users::UpdateUserActivitiesWorker jid=f1c864264720197dac23e8f7 elapsed=0.216 INFO: done
+2026-05-08T04:40:26.753Z pid=1 tid=5l19 class=Metrics::RecordBackgroundQueueStatsWorker jid=d07ee21590d4d635f5765bb4 INFO: start
+2026-05-08T04:40:26.817Z pid=1 tid=5l1t class=CaptureQueryStatsWorker jid=9502c27adf7196a4455b1cf4 INFO: start
+2026-05-08T04:40:26.831Z pid=1 tid=5fqp class=Articles::PublishWorker jid=1ed9803c9a4603dee990be47 INFO: start
+2026-05-08T04:40:26.858Z pid=1 tid=5fm9 class=ScheduledAutomations::ProcessWorker jid=5ff974bd79806cb1ae27f093 INFO: start
+I, [2026-05-08T04:40:26.860135 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2026-05-08T04:40:26.883Z pid=1 tid=5ltl class=Events::ManageBroadcastBillboardsWorker jid=5df1914bbfcd7d62c5e46095 INFO: start
+2026-05-08T04:40:26.957Z pid=1 tid=5l19 class=Metrics::RecordBackgroundQueueStatsWorker jid=d07ee21590d4d635f5765bb4 elapsed=0.205 INFO: done
+2026-05-08T04:40:26.970Z pid=1 tid=5l1t class=CaptureQueryStatsWorker jid=9502c27adf7196a4455b1cf4 elapsed=0.153 INFO: done
+2026-05-08T04:40:26.988Z pid=1 tid=5fmt class=Notifications::NotifiableActionWorker jid=890e9a02127294799877e65e INFO: start
+2026-05-08T04:40:26.996Z pid=1 tid=5lt1 class=Notifications::NotifiableActionWorker jid=5a640dacdf66c5bb5de02b5f INFO: start
+2026-05-08T04:40:27.006Z pid=1 tid=5flp class=Notifications::NotifiableActionWorker jid=dc06ff973e62b86e8bcd0b5a INFO: start
+2026-05-08T04:40:27.006Z pid=1 tid=5fqp class=Articles::PublishWorker jid=1ed9803c9a4603dee990be47 elapsed=0.175 INFO: done
+I, [2026-05-08T04:40:27.039447 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+W, [2026-05-08T04:40:27.043555 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+2026-05-08T04:40:27.044Z pid=1 tid=5fm9 class=ScheduledAutomations::ProcessWorker jid=5ff974bd79806cb1ae27f093 elapsed=0.186 INFO: done
+W, [2026-05-08T04:40:27.040893 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+W, [2026-05-08T04:40:27.048244 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+2026-05-08T04:40:27.053Z pid=1 tid=5lt1 class=Notifications::NotifiableActionWorker jid=5a640dacdf66c5bb5de02b5f elapsed=0.057 INFO: done
+2026-05-08T04:40:27.059Z pid=1 tid=5fmt class=Notifications::NotifiableActionWorker jid=890e9a02127294799877e65e elapsed=0.071 INFO: done
+2026-05-08T04:40:27.060Z pid=1 tid=5flp class=Notifications::NotifiableActionWorker jid=dc06ff973e62b86e8bcd0b5a elapsed=0.055 INFO: done
+2026-05-08T04:40:27.070Z pid=1 tid=5ltl class=Events::ManageBroadcastBillboardsWorker jid=5df1914bbfcd7d62c5e46095 elapsed=0.187 INFO: done
+2026-05-08T04:43:23.713Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T04:43:23.714Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T04:45:16.821Z pid=1 tid=5fnx class=GithubRepos::UpdateLatestWorker jid=2939fff9f67c26a581491edb INFO: start
+2026-05-08T04:45:16.837Z pid=1 tid=5l0p class=CaptureQueryStatsWorker jid=57203d37feb5d715aaaa36f3 INFO: start
+2026-05-08T04:45:16.855Z pid=1 tid=5fp1 class=Articles::PublishWorker jid=565572f9649fe1c1a04fd42e INFO: start
+2026-05-08T04:45:16.902Z pid=1 tid=5l05 class=Events::ManageBroadcastBillboardsWorker jid=99519a3ff5defea713784272 INFO: start
+2026-05-08T04:45:17.003Z pid=1 tid=5l0p class=CaptureQueryStatsWorker jid=57203d37feb5d715aaaa36f3 elapsed=0.167 INFO: done
+2026-05-08T04:45:17.009Z pid=1 tid=5fnx class=GithubRepos::UpdateLatestWorker jid=2939fff9f67c26a581491edb elapsed=0.189 INFO: done
+2026-05-08T04:45:17.037Z pid=1 tid=5fp1 class=Articles::PublishWorker jid=565572f9649fe1c1a04fd42e elapsed=0.182 INFO: done
+2026-05-08T04:45:17.054Z pid=1 tid=5l05 class=Events::ManageBroadcastBillboardsWorker jid=99519a3ff5defea713784272 elapsed=0.152 INFO: done
+2026-05-08T04:47:01.010Z pid=1 tid=5fl5 class=Billboards::DataUpdateWorker jid=136c1107d3088b8608855cfe INFO: start
+2026-05-08T04:47:01.107Z pid=1 tid=5fl5 class=Billboards::DataUpdateWorker jid=136c1107d3088b8608855cfe elapsed=0.097 INFO: done
+2026-05-08T04:50:06.763Z pid=1 tid=5l1t class=Metrics::RecordBackgroundQueueStatsWorker jid=6addcf12608774b550fd48e7 INFO: start
+2026-05-08T04:50:06.861Z pid=1 tid=5l19 class=CaptureQueryStatsWorker jid=5702fc492ca04e7b074bda13 INFO: start
+2026-05-08T04:50:06.868Z pid=1 tid=5fl5 class=Events::ManageBroadcastBillboardsWorker jid=7cadc249489e89e64154551a INFO: start
+2026-05-08T04:50:06.864Z pid=1 tid=5fh9 class=ScheduledAutomations::ProcessWorker jid=d285fa5db05a5b9e815c64f6 INFO: start
+I, [2026-05-08T04:50:06.877644 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2026-05-08T04:50:06.862Z pid=1 tid=5foh class=Articles::PublishWorker jid=fb13b5297494156e43175bf4 INFO: start
+2026-05-08T04:50:07.033Z pid=1 tid=5l19 class=CaptureQueryStatsWorker jid=5702fc492ca04e7b074bda13 elapsed=0.172 INFO: done
+I, [2026-05-08T04:50:07.056436 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2026-05-08T04:50:07.058Z pid=1 tid=5l1t class=Metrics::RecordBackgroundQueueStatsWorker jid=6addcf12608774b550fd48e7 elapsed=0.295 INFO: done
+2026-05-08T04:50:07.065Z pid=1 tid=5fh9 class=ScheduledAutomations::ProcessWorker jid=d285fa5db05a5b9e815c64f6 elapsed=0.201 INFO: done
+2026-05-08T04:50:07.082Z pid=1 tid=5foh class=Articles::PublishWorker jid=fb13b5297494156e43175bf4 elapsed=0.22 INFO: done
+2026-05-08T04:50:07.085Z pid=1 tid=5fl5 class=Events::ManageBroadcastBillboardsWorker jid=7cadc249489e89e64154551a elapsed=0.217 INFO: done
+2026-05-08T04:53:23.722Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T04:53:23.723Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T04:55:40.737Z pid=1 tid=5lt1 class=CaptureQueryStatsWorker jid=5b872822d9b3c6b36a5d4078 INFO: start
+2026-05-08T04:55:40.777Z pid=1 tid=5fmt class=Articles::PublishWorker jid=b7bf79e09dcd5dc8f3ade00e INFO: start
+2026-05-08T04:55:40.884Z pid=1 tid=5fh9 class=Events::ManageBroadcastBillboardsWorker jid=0959880d44d98279b0817811 INFO: start
+2026-05-08T04:55:41.012Z pid=1 tid=5lt1 class=CaptureQueryStatsWorker jid=5b872822d9b3c6b36a5d4078 elapsed=0.275 INFO: done
+2026-05-08T04:55:41.035Z pid=1 tid=5fmt class=Articles::PublishWorker jid=b7bf79e09dcd5dc8f3ade00e elapsed=0.258 INFO: done
+2026-05-08T04:55:41.066Z pid=1 tid=5fh9 class=Events::ManageBroadcastBillboardsWorker jid=0959880d44d98279b0817811 elapsed=0.182 INFO: done
+2026-05-08T05:00:14.966Z pid=1 tid=5lt1 class=Metrics::RecordBackgroundQueueStatsWorker jid=938b67b055d5cc17aaf0ec3a INFO: start
+2026-05-08T05:00:15.024Z pid=1 tid=5fh9 class=BustCachePathWorker jid=f63313a067b947c16bc5e787 INFO: start
+2026-05-08T05:00:15.029Z pid=1 tid=5l19 class=Notifications::RemoveOldNotificationsWorker jid=9fc74eea0848d72aa030ff82 INFO: start
+2026-05-08T05:00:15.118Z pid=1 tid=5l1t class=CaptureQueryStatsWorker jid=2942ee25e27cf829bc640382 INFO: start
+2026-05-08T05:00:15.137Z pid=1 tid=5l0p class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=16199511a363dbe7143129b1 INFO: start
+2026-05-08T05:00:15.123Z pid=1 tid=5fnx class=Events::ManageBroadcastBillboardsWorker jid=57f9f44b1dc4874ce71d94a9 INFO: start
+2026-05-08T05:00:15.139Z pid=1 tid=5flp class=ScheduledAutomations::ProcessWorker jid=c4e82119aae8cda10f03b2c8 INFO: start
+I, [2026-05-08T05:00:15.172851 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2026-05-08T05:00:15.118Z pid=1 tid=5fl5 class=Articles::PublishWorker jid=0b043c18e3c8f3ec97d033f6 INFO: start
+2026-05-08T05:00:15.485Z pid=1 tid=5l1t class=CaptureQueryStatsWorker jid=2942ee25e27cf829bc640382 elapsed=0.367 INFO: done
+2026-05-08T05:00:15.512Z pid=1 tid=5fh9 class=BustCachePathWorker jid=f63313a067b947c16bc5e787 elapsed=0.488 INFO: done
+2026-05-08T05:00:15.524Z pid=1 tid=5lt1 class=Metrics::RecordBackgroundQueueStatsWorker jid=938b67b055d5cc17aaf0ec3a elapsed=0.558 INFO: done
+I, [2026-05-08T05:00:15.535159 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2026-05-08T05:00:15.567Z pid=1 tid=5fl5 class=Articles::PublishWorker jid=0b043c18e3c8f3ec97d033f6 elapsed=0.449 INFO: done
+I, [2026-05-08T05:00:15.570643 #1]  INFO -- : {:tag=>"notification_delete", :statement=>"DELETE FROM notifications WHERE notifications.id IN ( SELECT notifications.id FROM notifications WHERE created_at < '2026-02-12 05:00:15.112487' LIMIT 50000 )", :rows_deleted=>0, :duration=>0.05865032225847244}
+2026-05-08T05:00:15.571Z pid=1 tid=5l19 class=Notifications::RemoveOldNotificationsWorker jid=9fc74eea0848d72aa030ff82 elapsed=0.542 INFO: done
+2026-05-08T05:00:15.576Z pid=1 tid=5fnx class=Events::ManageBroadcastBillboardsWorker jid=57f9f44b1dc4874ce71d94a9 elapsed=0.453 INFO: done
+2026-05-08T05:00:15.602Z pid=1 tid=5flp class=ScheduledAutomations::ProcessWorker jid=c4e82119aae8cda10f03b2c8 elapsed=0.463 INFO: done
+2026-05-08T05:00:15.611Z pid=1 tid=5l0p class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=16199511a363dbe7143129b1 elapsed=0.474 INFO: done
+2026-05-08T05:03:23.735Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T05:03:23.736Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T05:04:31.708Z pid=1 tid=5lt1 class=Billboards::DataUpdateWorker jid=c53d274df0099dada5b49791 INFO: start
+2026-05-08T05:04:31.817Z pid=1 tid=5lt1 class=Billboards::DataUpdateWorker jid=c53d274df0099dada5b49791 elapsed=0.109 INFO: done
+2026-05-08T05:05:14.007Z pid=1 tid=5fp1 class=Podcasts::EnqueueGetEpisodesWorker jid=ae4f7c3314293eb622e12df8 INFO: start
+2026-05-08T05:05:14.008Z pid=1 tid=5fqp class=CaptureQueryStatsWorker jid=11aaf54790aecebd480a5fcf INFO: start
+2026-05-08T05:05:14.008Z pid=1 tid=5ltl class=Articles::PublishWorker jid=9cc4042f81b9ef11e1ce2665 INFO: start
+2026-05-08T05:05:14.009Z pid=1 tid=5fm9 class=Articles::LabelCleanupWorker jid=b8c6da43e5b995fca94c46f9 INFO: start
+2026-05-08T05:05:14.009Z pid=1 tid=5fmt class=Events::ManageBroadcastBillboardsWorker jid=a49c911fa441d804395d14cf INFO: start
+2026-05-08T05:05:14.064Z pid=1 tid=5l19 class=Podcasts::GetEpisodesWorker jid=75492a41de3c65ad276482f5 INFO: start
+2026-05-08T05:05:14.066Z pid=1 tid=5foh class=Podcasts::GetEpisodesWorker jid=85cb2c38e3b9b11ac94e3f9d INFO: start
+2026-05-08T05:05:14.066Z pid=1 tid=5lt1 class=Podcasts::GetEpisodesWorker jid=700dff6525b7b2a65269540f INFO: start
+2026-05-08T05:05:14.067Z pid=1 tid=5fp1 class=Podcasts::EnqueueGetEpisodesWorker jid=ae4f7c3314293eb622e12df8 elapsed=0.059 INFO: done
+2026-05-08T05:05:14.364Z pid=1 tid=5fqp class=CaptureQueryStatsWorker jid=11aaf54790aecebd480a5fcf elapsed=0.356 INFO: done
+2026-05-08T05:05:14.371Z pid=1 tid=5l19 class=Podcasts::GetEpisodesWorker jid=75492a41de3c65ad276482f5 elapsed=0.307 INFO: done
+I, [2026-05-08T05:05:14.389521 #1]  INFO -- : LabelCleanupWorker: No eligible articles found for processing
+2026-05-08T05:05:14.391Z pid=1 tid=5fm9 class=Articles::LabelCleanupWorker jid=b8c6da43e5b995fca94c46f9 elapsed=0.382 INFO: done
+2026-05-08T05:05:14.412Z pid=1 tid=5ltl class=Articles::PublishWorker jid=9cc4042f81b9ef11e1ce2665 elapsed=0.404 INFO: done
+2026-05-08T05:05:14.435Z pid=1 tid=5fmt class=Events::ManageBroadcastBillboardsWorker jid=a49c911fa441d804395d14cf elapsed=0.426 INFO: done
+2026-05-08T05:05:15.067Z pid=1 tid=5lt1 class=Podcasts::GetEpisodesWorker jid=700dff6525b7b2a65269540f elapsed=1.0 INFO: done
+2026-05-08T05:05:20.271Z pid=1 tid=5foh class=Podcasts::GetEpisodesWorker jid=85cb2c38e3b9b11ac94e3f9d elapsed=6.205 INFO: done
+2026-05-08T05:08:08.570Z pid=1 tid=5fmt class=Articles::QualityReactionWorker jid=6ee2558bfac8a582ea4e6528 INFO: start
+2026-05-08T05:08:08.718Z pid=1 tid=5fmt class=Articles::QualityReactionWorker jid=6ee2558bfac8a582ea4e6528 elapsed=0.148 INFO: done
+2026-05-08T05:10:11.709Z pid=1 tid=5fmt class=Metrics::RecordBackgroundQueueStatsWorker jid=600b52dfc34fe2fbbd7802b2 INFO: start
+2026-05-08T05:10:11.724Z pid=1 tid=5fqp class=Metrics::RecordDataCountsWorker jid=7c2a0d7a9c449157b4b97070 INFO: start
+2026-05-08T05:10:11.777Z pid=1 tid=5l19 class=CaptureQueryStatsWorker jid=a13aa54070cc9608ca377e6e INFO: start
+2026-05-08T05:10:11.828Z pid=1 tid=5fm9 class=Articles::PublishWorker jid=c141615a0f2defb569861fce INFO: start
+2026-05-08T05:10:11.832Z pid=1 tid=5ltl class=ScheduledAutomations::ProcessWorker jid=947bde1e54fe552c83870daa INFO: start
+I, [2026-05-08T05:10:11.836565 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2026-05-08T05:10:11.829Z pid=1 tid=5lt1 class=Events::ManageBroadcastBillboardsWorker jid=aea8806a8caf609e5d3e4f0f INFO: start
+I, [2026-05-08T05:10:12.063663 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"users", :table_size=>26}}
+I, [2026-05-08T05:10:12.075315 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"articles", :table_size=>1010}}
+I, [2026-05-08T05:10:12.083620 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"organizations", :table_size=>1}}
+I, [2026-05-08T05:10:12.092461 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"comments", :table_size=>23}}
+I, [2026-05-08T05:10:12.101234 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"podcasts", :table_size=>3}}
+2026-05-08T05:10:12.109Z pid=1 tid=5l19 class=CaptureQueryStatsWorker jid=a13aa54070cc9608ca377e6e elapsed=0.332 INFO: done
+I, [2026-05-08T05:10:12.115495 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"podcast_episodes", :table_size=>127}}
+I, [2026-05-08T05:10:12.126715 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"classified_listings", :table_size=>0}}
+I, [2026-05-08T05:10:12.143005 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"page_views", :table_size=>2373}}
+2026-05-08T05:10:12.152Z pid=1 tid=5fmt class=Metrics::RecordBackgroundQueueStatsWorker jid=600b52dfc34fe2fbbd7802b2 elapsed=0.444 INFO: done
+I, [2026-05-08T05:10:12.169530 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2026-05-08T05:10:12.171Z pid=1 tid=5ltl class=ScheduledAutomations::ProcessWorker jid=947bde1e54fe552c83870daa elapsed=0.34 INFO: done
+2026-05-08T05:10:12.176Z pid=1 tid=5lt1 class=Events::ManageBroadcastBillboardsWorker jid=aea8806a8caf609e5d3e4f0f elapsed=0.348 INFO: done
+2026-05-08T05:10:12.181Z pid=1 tid=5fm9 class=Articles::PublishWorker jid=c141615a0f2defb569861fce elapsed=0.353 INFO: done
+I, [2026-05-08T05:10:12.185879 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"notifications", :table_size=>5476}}
+I, [2026-05-08T05:10:12.190275 #1]  INFO -- : {:message=>"db_table_size", :table_info=>{:table_name=>"profiles", :table_size=>26}}
+2026-05-08T05:10:12.191Z pid=1 tid=5fqp class=Metrics::RecordDataCountsWorker jid=7c2a0d7a9c449157b4b97070 elapsed=0.467 INFO: done
+2026-05-08T05:12:41.336Z pid=1 tid=5fp1 class=LinkedDomains::UpdateScoreWorker jid=8e7aeded355f58716445672d INFO: start
+2026-05-08T05:12:41.348Z pid=1 tid=5foh class=LinkedDomains::UpdateScoreWorker jid=9972a12cd66e39041f120ca8 INFO: start
+2026-05-08T05:12:41.357Z pid=1 tid=5fm9 class=LinkedDomains::UpdateScoreWorker jid=4b6aed7c82b375d63c30ef9e INFO: start
+2026-05-08T05:12:41.366Z pid=1 tid=5fm9 class=LinkedDomains::UpdateScoreWorker jid=4b6aed7c82b375d63c30ef9e elapsed=0.009 INFO: done
+2026-05-08T05:12:41.406Z pid=1 tid=5ltl class=LinkedDomains::UpdateScoreWorker jid=3841aff02746df80bf7c2bc7 INFO: start
+2026-05-08T05:12:41.408Z pid=1 tid=5l19 class=LinkedDomains::UpdateScoreWorker jid=d20a11566eaee23084ffce53 INFO: start
+2026-05-08T05:12:41.408Z pid=1 tid=5lt1 class=LinkedDomains::UpdateScoreWorker jid=2370e5fbe9585f52f046e6a8 INFO: start
+2026-05-08T05:12:41.409Z pid=1 tid=5fmt class=LinkedDomains::UpdateScoreWorker jid=bd4ed52645272470b0b92584 INFO: start
+2026-05-08T05:12:41.446Z pid=1 tid=5l19 class=LinkedDomains::UpdateScoreWorker jid=d20a11566eaee23084ffce53 elapsed=0.038 INFO: done
+2026-05-08T05:12:41.452Z pid=1 tid=5l19 class=LinkedDomains::UpdateScoreWorker jid=8d23063d52f75f6a05ef3d5b INFO: start
+2026-05-08T05:12:41.410Z pid=1 tid=5lu5 class=LinkedDomains::UpdateScoreWorker jid=fac85df5baf09ce72343484e INFO: start
+2026-05-08T05:12:41.410Z pid=1 tid=5l1t class=LinkedDomains::UpdateScoreWorker jid=8edb9a7ed682ac97dc909d13 INFO: start
+2026-05-08T05:12:41.410Z pid=1 tid=5flp class=LinkedDomains::UpdateScoreWorker jid=c34bce2ee67c35558d4d02cd INFO: start
+2026-05-08T05:12:41.411Z pid=1 tid=5l05 class=LinkedDomains::UpdateScoreWorker jid=20636b2fc8958709775b67c9 INFO: start
+2026-05-08T05:12:41.411Z pid=1 tid=5l0p class=LinkedDomains::UpdateScoreWorker jid=1b4d9bf91c90445d7130e70f INFO: start
+2026-05-08T05:12:41.532Z pid=1 tid=5l0p class=LinkedDomains::UpdateScoreWorker jid=1b4d9bf91c90445d7130e70f elapsed=0.121 INFO: done
+2026-05-08T05:12:41.412Z pid=1 tid=5fl5 class=LinkedDomains::UpdateScoreWorker jid=85c54d0eb93f9aa15861ad7b INFO: start
+2026-05-08T05:12:41.412Z pid=1 tid=5fm9 class=LinkedDomains::UpdateScoreWorker jid=04873a3c30635b44339c8e01 INFO: start
+2026-05-08T05:12:41.409Z pid=1 tid=5fqp class=LinkedDomains::UpdateScoreWorker jid=205c0de6733ceccc7a0e8bac INFO: start
+2026-05-08T05:12:41.449Z pid=1 tid=5lt1 class=LinkedDomains::UpdateScoreWorker jid=2370e5fbe9585f52f046e6a8 elapsed=0.041 INFO: done
+2026-05-08T05:12:41.592Z pid=1 tid=5lt1 class=LinkedDomains::UpdateScoreWorker jid=bb31c2025b7730ac3aa52467 INFO: start
+2026-05-08T05:12:41.534Z pid=1 tid=5l05 class=LinkedDomains::UpdateScoreWorker jid=20636b2fc8958709775b67c9 elapsed=0.123 INFO: done
+2026-05-08T05:12:41.411Z pid=1 tid=5fnx class=LinkedDomains::UpdateScoreWorker jid=9ab52f465be4e73b2a1c2de9 INFO: start
+2026-05-08T05:12:41.541Z pid=1 tid=5l0p class=LinkedDomains::UpdateScoreWorker jid=0dbc771d81f728f2d2c991a7 INFO: start
+2026-05-08T05:12:41.410Z pid=1 tid=5fh9 class=LinkedDomains::UpdateScoreWorker jid=99f461f57a87f8563a8b2173 INFO: start
+2026-05-08T05:12:42.173Z pid=1 tid=5l1t class=LinkedDomains::UpdateScoreWorker jid=8edb9a7ed682ac97dc909d13 elapsed=0.763 INFO: done
+2026-05-08T05:12:42.180Z pid=1 tid=5ltl class=LinkedDomains::UpdateScoreWorker jid=3841aff02746df80bf7c2bc7 elapsed=0.774 INFO: done
+2026-05-08T05:12:42.184Z pid=1 tid=5flp class=LinkedDomains::UpdateScoreWorker jid=c34bce2ee67c35558d4d02cd elapsed=0.774 INFO: done
+2026-05-08T05:12:42.211Z pid=1 tid=5fp1 class=LinkedDomains::UpdateScoreWorker jid=8e7aeded355f58716445672d elapsed=0.875 INFO: done
+2026-05-08T05:12:42.228Z pid=1 tid=5lu5 class=LinkedDomains::UpdateScoreWorker jid=fac85df5baf09ce72343484e elapsed=0.818 INFO: done
+2026-05-08T05:12:42.229Z pid=1 tid=5foh class=LinkedDomains::UpdateScoreWorker jid=9972a12cd66e39041f120ca8 elapsed=0.881 INFO: done
+2026-05-08T05:12:42.255Z pid=1 tid=5fmt class=LinkedDomains::UpdateScoreWorker jid=bd4ed52645272470b0b92584 elapsed=0.846 INFO: done
+2026-05-08T05:12:42.275Z pid=1 tid=5l19 class=LinkedDomains::UpdateScoreWorker jid=8d23063d52f75f6a05ef3d5b elapsed=0.823 INFO: done
+2026-05-08T05:12:42.300Z pid=1 tid=5fl5 class=LinkedDomains::UpdateScoreWorker jid=85c54d0eb93f9aa15861ad7b elapsed=0.889 INFO: done
+2026-05-08T05:12:42.315Z pid=1 tid=5fnx class=LinkedDomains::UpdateScoreWorker jid=9ab52f465be4e73b2a1c2de9 elapsed=0.904 INFO: done
+2026-05-08T05:12:42.325Z pid=1 tid=5fqp class=LinkedDomains::UpdateScoreWorker jid=205c0de6733ceccc7a0e8bac elapsed=0.916 INFO: done
+2026-05-08T05:12:42.357Z pid=1 tid=5fm9 class=LinkedDomains::UpdateScoreWorker jid=04873a3c30635b44339c8e01 elapsed=0.945 INFO: done
+2026-05-08T05:12:42.358Z pid=1 tid=5fh9 class=LinkedDomains::UpdateScoreWorker jid=99f461f57a87f8563a8b2173 elapsed=0.948 INFO: done
+2026-05-08T05:12:42.361Z pid=1 tid=5lt1 class=LinkedDomains::UpdateScoreWorker jid=bb31c2025b7730ac3aa52467 elapsed=0.769 INFO: done
+2026-05-08T05:12:42.379Z pid=1 tid=5l0p class=LinkedDomains::UpdateScoreWorker jid=0dbc771d81f728f2d2c991a7 elapsed=0.839 INFO: done
+2026-05-08T05:13:07.749Z pid=1 tid=5l05 class=LinkedDomains::UpdateScoreWorker jid=385f8d985354451de2b2ed9d INFO: start
+2026-05-08T05:13:07.762Z pid=1 tid=5l1t class=LinkedDomains::UpdateScoreWorker jid=5a5af69f3aafe088fbc9a210 INFO: start
+2026-05-08T05:13:07.763Z pid=1 tid=5flp class=LinkedDomains::UpdateScoreWorker jid=6b99c87258e3e3023cbd47a5 INFO: start
+2026-05-08T05:13:07.812Z pid=1 tid=5l05 class=LinkedDomains::UpdateScoreWorker jid=385f8d985354451de2b2ed9d elapsed=0.063 INFO: done
+2026-05-08T05:13:07.816Z pid=1 tid=5l1t class=LinkedDomains::UpdateScoreWorker jid=5a5af69f3aafe088fbc9a210 elapsed=0.054 INFO: done
+2026-05-08T05:13:07.817Z pid=1 tid=5flp class=LinkedDomains::UpdateScoreWorker jid=6b99c87258e3e3023cbd47a5 elapsed=0.054 INFO: done
+2026-05-08T05:13:23.744Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T05:13:23.745Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T05:13:45.858Z pid=1 tid=5l05 class=Billboards::DataUpdateWorker jid=580458b06843ad3f463cae13 INFO: start
+2026-05-08T05:13:45.888Z pid=1 tid=5l05 class=Billboards::DataUpdateWorker jid=580458b06843ad3f463cae13 elapsed=0.03 INFO: done
+2026-05-08T05:13:45.959Z pid=1 tid=5flp class=Billboards::DataUpdateWorker jid=ab9afa2c6ba8983cdbfd6ea0 INFO: start
+2026-05-08T05:13:45.988Z pid=1 tid=5flp class=Billboards::DataUpdateWorker jid=ab9afa2c6ba8983cdbfd6ea0 elapsed=0.029 INFO: done
+2026-05-08T05:15:29.436Z pid=1 tid=5ltl class=CaptureQueryStatsWorker jid=6cb5cd205401dffcfef7f0b5 INFO: start
+2026-05-08T05:15:29.483Z pid=1 tid=5l05 class=Articles::PublishWorker jid=3150f5f018d60ffee48e88f9 INFO: start
+2026-05-08T05:15:29.484Z pid=1 tid=5fmt class=Events::ManageBroadcastBillboardsWorker jid=311f17d5166b6aafc1c8a83d INFO: start
+2026-05-08T05:15:29.632Z pid=1 tid=5ltl class=CaptureQueryStatsWorker jid=6cb5cd205401dffcfef7f0b5 elapsed=0.196 INFO: done
+2026-05-08T05:15:29.665Z pid=1 tid=5l05 class=Articles::PublishWorker jid=3150f5f018d60ffee48e88f9 elapsed=0.181 INFO: done
+2026-05-08T05:15:29.671Z pid=1 tid=5fmt class=Events::ManageBroadcastBillboardsWorker jid=311f17d5166b6aafc1c8a83d elapsed=0.187 INFO: done
+2026-05-08T05:15:40.594Z pid=1 tid=5fp1 class=Articles::UpdatePageViewsWorker jid=8e977fdcb50899122cae1b86 INFO: start
+2026-05-08T05:15:40.633Z pid=1 tid=5foh class=Articles::UpdateArticleActivityWorker jid=3c8736a4989c710879ee2bee INFO: start
+2026-05-08T05:15:40.634Z pid=1 tid=5l19 class=Users::UpdateUserActivitiesWorker jid=f41070bac82166a8f6a5e9a6 INFO: start
+2026-05-08T05:15:40.664Z pid=1 tid=5fp1 class=Articles::UpdatePageViewsWorker jid=8e977fdcb50899122cae1b86 elapsed=0.07 INFO: done
+2026-05-08T05:15:40.759Z pid=1 tid=5foh class=Articles::UpdateArticleActivityWorker jid=3c8736a4989c710879ee2bee elapsed=0.126 INFO: done
+2026-05-08T05:15:40.772Z pid=1 tid=5l19 class=Users::UpdateUserActivitiesWorker jid=f41070bac82166a8f6a5e9a6 elapsed=0.138 INFO: done
+2026-05-08T05:18:12.415Z pid=1 tid=5fqp class=Emails::RemoveOldEmailsWorker jid=b0d82ae6b2a783b1f480f497 INFO: start
+I, [2026-05-08T05:18:12.549090 #1]  INFO -- : {:tag=>"notification_delete", :statement=>"DELETE FROM ahoy_messages\nWHERE ahoy_messages.id IN (\n  SELECT ahoy_messages.id\n  FROM ahoy_messages\n  WHERE sent_at < '2026-03-08 05:18:12.417481' AND feedback_message_id IS NULL\n  LIMIT 50000\n)\n", :rows_deleted=>0, :duration=>0.01796608790755272}
+2026-05-08T05:18:12.549Z pid=1 tid=5fqp class=Emails::RemoveOldEmailsWorker jid=b0d82ae6b2a783b1f480f497 elapsed=0.134 INFO: done
+2026-05-08T05:20:32.259Z pid=1 tid=5ltl class=Feeds::ImportArticlesWorker jid=dd207ed674c06f6ada381b9c INFO: start
+2026-05-08T05:20:32.277Z pid=1 tid=5l05 class=Metrics::RecordBackgroundQueueStatsWorker jid=209057ccc9a28e261324b012 INFO: start
+2026-05-08T05:20:32.344Z pid=1 tid=5fmt class=BadgeAchievements::BadgeAwardWorker jid=3a56eced843e1df8dd224f18 INFO: start
+2026-05-08T05:20:32.429Z pid=1 tid=5fl5 class=CaptureQueryStatsWorker jid=ecf8d24b95a7f252090708b4 INFO: start
+2026-05-08T05:20:32.435Z pid=1 tid=5fnx class=ScheduledAutomations::ProcessWorker jid=986e9c0069f963ef2d29482d INFO: start
+I, [2026-05-08T05:20:32.437897 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2026-05-08T05:20:32.431Z pid=1 tid=5fp1 class=Events::ManageBroadcastBillboardsWorker jid=899cc5b810b2a402a2d617f5 INFO: start
+2026-05-08T05:20:32.429Z pid=1 tid=5lu5 class=Articles::PublishWorker jid=88fd90e95195d78fe6f9b4f2 INFO: start
+2026-05-08T05:20:32.582Z pid=1 tid=5l05 class=Metrics::RecordBackgroundQueueStatsWorker jid=209057ccc9a28e261324b012 elapsed=0.305 INFO: done
+2026-05-08T05:20:32.594Z pid=1 tid=5ltl class=Feeds::ImportArticlesWorker jid=dd207ed674c06f6ada381b9c elapsed=0.334 INFO: done
+2026-05-08T05:20:32.608Z pid=1 tid=5fl5 class=CaptureQueryStatsWorker jid=ecf8d24b95a7f252090708b4 elapsed=0.179 INFO: done
+2026-05-08T05:20:32.640Z pid=1 tid=5fmt class=BadgeAchievements::BadgeAwardWorker jid=3a56eced843e1df8dd224f18 elapsed=0.297 INFO: done
+I, [2026-05-08T05:20:32.652082 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2026-05-08T05:20:32.654Z pid=1 tid=5fnx class=ScheduledAutomations::ProcessWorker jid=986e9c0069f963ef2d29482d elapsed=0.219 INFO: done
+2026-05-08T05:20:32.667Z pid=1 tid=5fp1 class=Events::ManageBroadcastBillboardsWorker jid=899cc5b810b2a402a2d617f5 elapsed=0.236 INFO: done
+2026-05-08T05:20:32.672Z pid=1 tid=5lu5 class=Articles::PublishWorker jid=88fd90e95195d78fe6f9b4f2 elapsed=0.243 INFO: done
+2026-05-08T05:22:18.760Z pid=1 tid=5lu5 class=Users::SubscribeToMailchimpNewsletterWorker jid=8398d2928c6d3c61991cb11f INFO: start
+2026-05-08T05:22:20.750Z pid=1 tid=5lu5 class=Users::SubscribeToMailchimpNewsletterWorker jid=8398d2928c6d3c61991cb11f elapsed=1.99 INFO: done
+2026-05-08T05:23:23.753Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T05:23:23.754Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T05:25:01.545Z pid=1 tid=5lu5 class=CaptureQueryStatsWorker jid=08fcde1beff4cf9a0a8a33d5 INFO: start
+2026-05-08T05:25:01.572Z pid=1 tid=5fqp class=Articles::PublishWorker jid=d7ad9edb138eb1fd2e3e9022 INFO: start
+2026-05-08T05:25:01.633Z pid=1 tid=5l1t class=Events::ManageBroadcastBillboardsWorker jid=0389e3c3784428ec95c9fb59 INFO: start
+2026-05-08T05:25:01.795Z pid=1 tid=5lu5 class=CaptureQueryStatsWorker jid=08fcde1beff4cf9a0a8a33d5 elapsed=0.25 INFO: done
+2026-05-08T05:25:01.847Z pid=1 tid=5l1t class=Events::ManageBroadcastBillboardsWorker jid=0389e3c3784428ec95c9fb59 elapsed=0.213 INFO: done
+2026-05-08T05:25:01.857Z pid=1 tid=5fqp class=Articles::PublishWorker jid=d7ad9edb138eb1fd2e3e9022 elapsed=0.284 INFO: done
+2026-05-08T05:30:17.909Z pid=1 tid=5l0p class=Metrics::RecordBackgroundQueueStatsWorker jid=7ebd4e1a4759d2fa86589c34 INFO: start
+2026-05-08T05:30:17.934Z pid=1 tid=5lt1 class=Metrics::CheckDataUpdateScriptStatuses jid=696cf86004394e4beb67e93d INFO: start
+2026-05-08T05:30:18.005Z pid=1 tid=5fp1 class=CaptureQueryStatsWorker jid=ee159ed034cd4a33dc55cd91 INFO: start
+2026-05-08T05:30:18.137Z pid=1 tid=5fp1 class=CaptureQueryStatsWorker jid=ee159ed034cd4a33dc55cd91 elapsed=0.133 INFO: done
+2026-05-08T05:30:18.146Z pid=1 tid=5lt1 class=Metrics::CheckDataUpdateScriptStatuses jid=696cf86004394e4beb67e93d elapsed=0.212 INFO: done
+2026-05-08T05:30:18.186Z pid=1 tid=5l0p class=Metrics::RecordBackgroundQueueStatsWorker jid=7ebd4e1a4759d2fa86589c34 elapsed=0.277 INFO: done
+2026-05-08T05:30:18.204Z pid=1 tid=5fm9 class=Articles::PublishWorker jid=f810afd38b052a2459b0c822 INFO: start
+2026-05-08T05:30:18.324Z pid=1 tid=5fmt class=ScheduledAutomations::ProcessWorker jid=09eab2e31bd692a161973896 INFO: start
+I, [2026-05-08T05:30:18.334338 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2026-05-08T05:30:18.349Z pid=1 tid=5lu5 class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=04b97d3d9f5e6615e7726d41 INFO: start
+I, [2026-05-08T05:30:18.381342 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Found 1 automation(s) to execute
+W, [2026-05-08T05:30:18.383108 #1]  WARN -- : Scoped order is ignored, it's forced to be batch order.
+2026-05-08T05:30:18.389Z pid=1 tid=5fm9 class=Articles::PublishWorker jid=f810afd38b052a2459b0c822 elapsed=0.185 INFO: done
+2026-05-08T05:30:18.401Z pid=1 tid=5l1t class=Events::ManageBroadcastBillboardsWorker jid=33ab307514bc3f4f4e631994 INFO: start
+I, [2026-05-08T05:30:18.410899 #1]  INFO -- : Executing ScheduledAutomation #28 for user vikash-anand_bot_1778217738
+2026-05-08T05:30:18.430Z pid=1 tid=5lu5 class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=04b97d3d9f5e6615e7726d41 elapsed=0.081 INFO: done
+2026-05-08T05:30:18.451Z pid=1 tid=5l1t class=Events::ManageBroadcastBillboardsWorker jid=33ab307514bc3f4f4e631994 elapsed=0.05 INFO: done
+E, [2026-05-08T05:30:18.460282 #1] ERROR -- : ScheduledAutomation #28 failed: ArgumentError - ai_context is required in action_config for community_bot_pib_announcement_post_creator service
+E, [2026-05-08T05:30:18.460477 #1] ERROR -- : /opt/apps/forem/app/services/scheduled_automations/executor.rb:233:in `call_community_bot_pib_announcement_post_creator_service'
+/opt/apps/forem/app/services/scheduled_automations/executor.rb:127:in `call_ai_service'
+/opt/apps/forem/app/services/scheduled_automations/executor.rb:56:in `call'
+/opt/apps/forem/app/services/scheduled_automations/executor.rb:19:in `call'
+/opt/apps/forem/app/workers/scheduled_automations/process_worker.rb:106:in `execute_automation'
+/opt/apps/forem/app/workers/scheduled_automations/process_worker.rb:37:in `block in perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:71:in `each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:71:in `block in find_each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:138:in `block in find_in_batches'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:245:in `block in in_batches'
+<internal:kernel>:187:in `loop'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:229:in `in_batches'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:137:in `find_in_batches'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/relation/batches.rb:70:in `find_each'
+/opt/apps/forem/app/workers/scheduled_automations/process_worker.rb:36:in `perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:202:in `execute_job'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:170:in `block (2 levels) in process'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:177:in `block in invoke'
+/opt/apps/forem/lib/sidekiq/memory_killer.rb:13:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/lib/sidekiq/sidekiq_connection_cleanup.rb:6:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware.rb:36:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware.rb:36:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/lib/sidekiq/honeycomb_middleware.rb:16:in `block in call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/client.rb:65:in `start_span'
+/usr/local/lib/ruby/3.3.0/forwardable.rb:240:in `start_span'
+/opt/apps/forem/lib/sidekiq/honeycomb_middleware.rb:8:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/lib/sidekiq/transaction_safe_rescue.rb:13:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/contrib/sidekiq/server_tracer.rb:79:in `block in call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/tracer.rb:529:in `skip_trace'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/tracer.rb:136:in `trace'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing.rb:18:in `trace'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/contrib/sidekiq/server_tracer.rb:40:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-throttled-1.5.2/lib/sidekiq/throttled/middlewares/server.rb:15:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeybadger-4.12.2/lib/honeybadger/plugins/sidekiq.rb:10:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:182:in `invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:169:in `block in process'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:136:in `block (6 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_retry.rb:113:in `local'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:135:in `block (5 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/rails.rb:14:in `block in call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/execution_wrapper.rb:92:in `wrap'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/reloader.rb:72:in `block in wrap'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/execution_wrapper.rb:92:in `wrap'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/reloader.rb:71:in `wrap'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/rails.rb:13:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:131:in `block (4 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:263:in `stats'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:126:in `block (3 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_logger.rb:13:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:125:in `block (2 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_retry.rb:80:in `global'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:124:in `block in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_logger.rb:39:in `prepare'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:123:in `dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:168:in `process'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:78:in `process_one'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:68:in `run'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/component.rb:8:in `watchdog'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/component.rb:17:in `block in safe_thread'
+E, [2026-05-08T05:30:18.500732 #1] ERROR -- : ScheduledAutomation #28 failed: ArgumentError: ai_context is required in action_config for community_bot_pib_announcement_post_creator service
+I, [2026-05-08T05:30:18.501026 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Execution cycle complete
+2026-05-08T05:30:18.503Z pid=1 tid=5fmt class=ScheduledAutomations::ProcessWorker jid=09eab2e31bd692a161973896 elapsed=0.179 INFO: done
+2026-05-08T05:33:23.763Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T05:33:23.764Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T05:35:06.917Z pid=1 tid=5lt1 class=CaptureQueryStatsWorker jid=535848319eaa7351ced893ec INFO: start
+2026-05-08T05:35:06.972Z pid=1 tid=5l0p class=Articles::PublishWorker jid=f32d451ee2a2c1b3747623c1 INFO: start
+2026-05-08T05:35:06.974Z pid=1 tid=5fl5 class=Articles::LabelCleanupWorker jid=344cbaa078b5f5248d4e90b7 INFO: start
+2026-05-08T05:35:06.975Z pid=1 tid=5fp1 class=Events::ManageBroadcastBillboardsWorker jid=04984b721e0baed176bf8d3b INFO: start
+2026-05-08T05:35:07.229Z pid=1 tid=5lt1 class=CaptureQueryStatsWorker jid=535848319eaa7351ced893ec elapsed=0.312 INFO: done
+I, [2026-05-08T05:35:07.253052 #1]  INFO -- : LabelCleanupWorker: No eligible articles found for processing
+2026-05-08T05:35:07.254Z pid=1 tid=5fl5 class=Articles::LabelCleanupWorker jid=344cbaa078b5f5248d4e90b7 elapsed=0.279 INFO: done
+2026-05-08T05:35:07.264Z pid=1 tid=5l0p class=Articles::PublishWorker jid=f32d451ee2a2c1b3747623c1 elapsed=0.292 INFO: done
+2026-05-08T05:35:07.273Z pid=1 tid=5fp1 class=Events::ManageBroadcastBillboardsWorker jid=04984b721e0baed176bf8d3b elapsed=0.298 INFO: done
+2026-05-08T05:37:19.528Z pid=1 tid=5l0p class=Emails::DripEmailWorker jid=2c8c23a8ee033b5ee735bc64 INFO: start
+2026-05-08T05:37:19.642Z pid=1 tid=5l0p class=Emails::DripEmailWorker jid=2c8c23a8ee033b5ee735bc64 elapsed=0.114 INFO: done
+2026-05-08T05:40:24.500Z pid=1 tid=5lt1 class=Metrics::RecordBackgroundQueueStatsWorker jid=72595cd0e3c67d9a474cbf17 INFO: start
+2026-05-08T05:40:24.508Z pid=1 tid=5l05 class=CaptureQueryStatsWorker jid=57ee89b0b6ab81054b1b5210 INFO: start
+2026-05-08T05:40:24.556Z pid=1 tid=5l1t class=Articles::PublishWorker jid=263ff7d4e8df4cb0d3871890 INFO: start
+2026-05-08T05:40:24.604Z pid=1 tid=5fm9 class=ScheduledAutomations::ProcessWorker jid=9179928d53eef26402e73e49 INFO: start
+I, [2026-05-08T05:40:24.607599 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2026-05-08T05:40:24.639Z pid=1 tid=5flp class=Events::ManageBroadcastBillboardsWorker jid=4dd58df7a8a892084f23136e INFO: start
+2026-05-08T05:40:24.760Z pid=1 tid=5lt1 class=Metrics::RecordBackgroundQueueStatsWorker jid=72595cd0e3c67d9a474cbf17 elapsed=0.26 INFO: done
+2026-05-08T05:40:24.761Z pid=1 tid=5l05 class=CaptureQueryStatsWorker jid=57ee89b0b6ab81054b1b5210 elapsed=0.253 INFO: done
+2026-05-08T05:40:24.793Z pid=1 tid=5l1t class=Articles::PublishWorker jid=263ff7d4e8df4cb0d3871890 elapsed=0.237 INFO: done
+I, [2026-05-08T05:40:24.833901 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2026-05-08T05:40:24.836Z pid=1 tid=5fm9 class=ScheduledAutomations::ProcessWorker jid=9179928d53eef26402e73e49 elapsed=0.233 INFO: done
+2026-05-08T05:40:24.855Z pid=1 tid=5flp class=Events::ManageBroadcastBillboardsWorker jid=4dd58df7a8a892084f23136e elapsed=0.216 INFO: done
+2026-05-08T05:43:23.771Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T05:43:23.772Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T05:45:05.777Z pid=1 tid=5fh9 class=GithubRepos::UpdateLatestWorker jid=e3c20e2b7adb7db4e6b8cbc1 INFO: start
+2026-05-08T05:45:05.838Z pid=1 tid=5fmt class=CaptureQueryStatsWorker jid=115cd379e25e883eb1c4cfe8 INFO: start
+2026-05-08T05:45:05.839Z pid=1 tid=5lu5 class=Articles::PublishWorker jid=ea57c89eb579c1bfc84b54a9 INFO: start
+2026-05-08T05:45:05.840Z pid=1 tid=5l19 class=Events::ManageBroadcastBillboardsWorker jid=b8823ffcd1bd637339a827d6 INFO: start
+2026-05-08T05:45:06.062Z pid=1 tid=5fh9 class=GithubRepos::UpdateLatestWorker jid=e3c20e2b7adb7db4e6b8cbc1 elapsed=0.285 INFO: done
+2026-05-08T05:45:06.068Z pid=1 tid=5fmt class=CaptureQueryStatsWorker jid=115cd379e25e883eb1c4cfe8 elapsed=0.23 INFO: done
+2026-05-08T05:45:06.082Z pid=1 tid=5l19 class=Events::ManageBroadcastBillboardsWorker jid=b8823ffcd1bd637339a827d6 elapsed=0.242 INFO: done
+2026-05-08T05:45:06.092Z pid=1 tid=5lu5 class=Articles::PublishWorker jid=ea57c89eb579c1bfc84b54a9 elapsed=0.254 INFO: done
+2026-05-08T05:50:19.083Z pid=1 tid=5lu5 class=Metrics::RecordBackgroundQueueStatsWorker jid=4722720910d7dadc718a31dd INFO: start
+2026-05-08T05:50:19.227Z pid=1 tid=5l19 class=CaptureQueryStatsWorker jid=f09c01d374e57f9e867f00a8 INFO: start
+2026-05-08T05:50:19.227Z pid=1 tid=5fh9 class=Articles::PublishWorker jid=7cb3cbb8b159f25a9f39ff94 INFO: start
+2026-05-08T05:50:19.228Z pid=1 tid=5foh class=Events::ManageBroadcastBillboardsWorker jid=44b4f721564dc569f7c7a7c4 INFO: start
+2026-05-08T05:50:19.237Z pid=1 tid=5fmt class=ScheduledAutomations::ProcessWorker jid=035e30c4c896b9a5c1648808 INFO: start
+I, [2026-05-08T05:50:19.257663 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2026-05-08T05:50:19.447Z pid=1 tid=5l19 class=CaptureQueryStatsWorker jid=f09c01d374e57f9e867f00a8 elapsed=0.22 INFO: done
+2026-05-08T05:50:19.476Z pid=1 tid=5lu5 class=Metrics::RecordBackgroundQueueStatsWorker jid=4722720910d7dadc718a31dd elapsed=0.393 INFO: done
+2026-05-08T05:50:19.482Z pid=1 tid=5fh9 class=Articles::PublishWorker jid=7cb3cbb8b159f25a9f39ff94 elapsed=0.255 INFO: done
+I, [2026-05-08T05:50:19.483991 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2026-05-08T05:50:19.488Z pid=1 tid=5fmt class=ScheduledAutomations::ProcessWorker jid=035e30c4c896b9a5c1648808 elapsed=0.251 INFO: done
+2026-05-08T05:50:19.502Z pid=1 tid=5foh class=Events::ManageBroadcastBillboardsWorker jid=44b4f721564dc569f7c7a7c4 elapsed=0.273 INFO: done
+2026-05-08T05:53:23.781Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T05:53:23.782Z pid=1 tid=5fdx uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-08T05:55:32.937Z pid=1 tid=5lu5 class=CaptureQueryStatsWorker jid=442e996c4c12a4bdfe7de094 INFO: start
+2026-05-08T05:55:32.954Z pid=1 tid=5foh class=Articles::PublishWorker jid=73c591bcb158cd031815d8be INFO: start
+2026-05-08T05:55:33.074Z pid=1 tid=5lu5 class=CaptureQueryStatsWorker jid=442e996c4c12a4bdfe7de094 elapsed=0.137 INFO: done
+2026-05-08T05:55:33.116Z pid=1 tid=5fmt class=Events::ManageBroadcastBillboardsWorker jid=ffd912e6ee11196e2dd3d300 INFO: start
+2026-05-08T05:55:33.133Z pid=1 tid=5foh class=Articles::PublishWorker jid=73c591bcb158cd031815d8be elapsed=0.18 INFO: done
+2026-05-08T05:55:33.224Z pid=1 tid=5fmt class=Events::ManageBroadcastBillboardsWorker jid=ffd912e6ee11196e2dd3d300 elapsed=0.108 INFO: done
+2026-05-08T06:00:19.939Z pid=1 tid=5l19 class=Metrics::RecordBackgroundQueueStatsWorker jid=5dc8acf7e5c15a82f6efa1a2 INFO: start
+2026-05-08T06:00:19.992Z pid=1 tid=5fmt class=BustCachePathWorker jid=0cecd7b8b58e3fd71db3b388 INFO: start
+2026-05-08T06:00:20.041Z pid=1 tid=5fh9 class=CaptureQueryStatsWorker jid=7aac1e11e180f158fd2b492b INFO: start
+2026-05-08T06:00:20.078Z pid=1 tid=5lu5 class=Articles::PublishWorker jid=b2ef90eb3a33dcd676a1a1fa INFO: start
+2026-05-08T06:00:20.102Z pid=1 tid=5foh class=ScheduledAutomations::ProcessWorker jid=a9c4ffd440360b93510c5b12 INFO: start
+I, [2026-05-08T06:00:20.137040 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2026-05-08T06:00:20.140Z pid=1 tid=5fqp class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=0ec88542ded2ca8b6fd7c9f7 INFO: start
+2026-05-08T06:00:20.141Z pid=1 tid=5l1t class=Organizations::ReverifyAllWorker jid=56613de4e93e4ba9ea54c430 INFO: start
+2026-05-08T06:00:20.141Z pid=1 tid=5flp class=Events::ManageBroadcastBillboardsWorker jid=3d0979a6e84ea1f06e14dc82 INFO: start
+2026-05-08T06:00:20.142Z pid=1 tid=5fm9 class=AiAudits::TrimOldAuditsWorker jid=fe81e244b880a13cf63342c1 INFO: start
+2026-05-08T06:00:20.318Z pid=1 tid=5l19 class=Metrics::RecordBackgroundQueueStatsWorker jid=5dc8acf7e5c15a82f6efa1a2 elapsed=0.379 INFO: done
+2026-05-08T06:00:20.387Z pid=1 tid=5fmt class=BustCachePathWorker jid=0cecd7b8b58e3fd71db3b388 elapsed=0.395 INFO: done
+2026-05-08T06:00:20.388Z pid=1 tid=5fh9 class=CaptureQueryStatsWorker jid=7aac1e11e180f158fd2b492b elapsed=0.347 INFO: done
+2026-05-08T06:00:20.454Z pid=1 tid=5lu5 class=Articles::PublishWorker jid=b2ef90eb3a33dcd676a1a1fa elapsed=0.377 INFO: done
+I, [2026-05-08T06:00:20.520247 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2026-05-08T06:00:20.523Z pid=1 tid=5foh class=ScheduledAutomations::ProcessWorker jid=a9c4ffd440360b93510c5b12 elapsed=0.421 INFO: done
+2026-05-08T06:00:20.525Z pid=1 tid=5l1t class=Organizations::ReverifyAllWorker jid=56613de4e93e4ba9ea54c430 elapsed=0.384 INFO: done
+2026-05-08T06:00:20.553Z pid=1 tid=5flp class=Events::ManageBroadcastBillboardsWorker jid=3d0979a6e84ea1f06e14dc82 elapsed=0.412 INFO: done
+2026-05-08T06:00:20.611Z pid=1 tid=5fqp class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=0ec88542ded2ca8b6fd7c9f7 elapsed=0.471 INFO: done
+2026-05-08T06:00:20.737Z pid=1 tid=5fm9 class=AiAudits::TrimOldAuditsWorker jid=fe81e244b880a13cf63342c1 elapsed=0.595 INFO: done
