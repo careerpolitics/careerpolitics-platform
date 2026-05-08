@@ -1,86 +1,67 @@
-Run slackapi/slack-github-action@v2
-  with:
-    webhook-type: incoming-webhook
-    payload: {
-    "text": ":rocket: *Deployment started* — `careerpolitics/careerpolitics-platform` (`a61037c3d79626af17540d7c3b17c4ae74a6ee68`)\nTriggered by *muraridevv*"
-  }
+Failures:
 
-    errors: false
-    payload-templated: false
-    retries: 5
-  env:
-    IMAGE_NAME: muraridevv/careerpolitics-platform
-    KUBE_NAMESPACE: production
+  1) ScheduledAutomation PATCH #reactivate reactivates a failed automation
+     Failure/Error: automation.update!(state: "failed")
 
-Error: Missing input! Either a method or webhook is required to take action.
-SlackError: Missing input! Either a method or webhook is required to take action.
-    at Config.validate (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/config.js:193:1)
-    at new Config (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/config.js:124:1)
-    at send (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/send.js:13:1)
-    at file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/index.js:9:1
-    at Function.__nccwpck_require__.a (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/webpack/runtime/async module:49:1)
-    at Object.9722 (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/dist/index.js:45875:21)
-    at __nccwpck_require__ (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/webpack/bootstrap:21:1)
-    at file:///home/runner/work/_actions/slackapi/slack-github-action/v2/webpack/startup:4:1
-    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
-    at ModuleLoader.import (node:internal/modules/esm/loader:606:24)
-file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/config.js:193
-        throw new SlackError(
-^
-SlackError: Missing input! Either a method or webhook is required to take action.
-    at Config.validate (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/config.js:193:1)
-    at new Config (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/config.js:124:1)
-    at send (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/send.js:13:1)
-    at file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/index.js:9:1
-    at Function.__nccwpck_require__.a (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/webpack/runtime/async module:49:1)
-    at Object.9722 (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/dist/index.js:45875:21)
-    at __nccwpck_require__ (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/webpack/bootstrap:21:1)
-    at file:///home/runner/work/_actions/slackapi/slack-github-action/v2/webpack/startup:4:1
-    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
-    at ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+     NameError:
+       undefined local variable or method `automation' for #<RSpec::ExampleGroups::ScheduledAutomation::PATCHReactivate:0x00007f5675558638>
+     # ./spec/models/scheduled_automation_spec.rb:396:in `block (3 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
 
+  2) ScheduledAutomation PATCH #reactivate schedules the next run time
+     Failure/Error: automation.update!(state: "failed", next_run_at: nil)
 
+     NameError:
+       undefined local variable or method `automation' for #<RSpec::ExampleGroups::ScheduledAutomation::PATCHReactivate:0x00007f56767543f0>
+     # ./spec/models/scheduled_automation_spec.rb:406:in `block (3 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
 
-Run kubectl logs job/careerpolitics-migrate -n production
-  kubectl logs job/careerpolitics-migrate -n production
-  shell: /usr/bin/bash -e {0}
-  env:
-    IMAGE_NAME: muraridevv/careerpolitics-platform
-    KUBE_NAMESPACE: production
+  3) ScheduledAutomation PATCH #reactivate redirects to index with success flash
+     Failure/Error: automation.update!(state: "failed")
 
-E0507 12:01:51.291185    2521 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=32s\": dial tcp [::1]:8080: connect: connection refused"
-E0507 12:01:51.291602    2521 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=32s\": dial tcp [::1]:8080: connect: connection refused"
-E0507 12:01:51.293075    2521 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=32s\": dial tcp [::1]:8080: connect: connection refused"
-E0507 12:01:51.293440    2521 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=32s\": dial tcp [::1]:8080: connect: connection refused"
-The connection to the server localhost:8080 was refused - did you specify the right host or port?
+     NameError:
+       undefined local variable or method `automation' for #<RSpec::ExampleGroups::ScheduledAutomation::PATCHReactivate:0x00007f56770e3358>
+     # ./spec/models/scheduled_automation_spec.rb:415:in `block (3 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
+
+  4) ScheduledAutomation PATCH #reactivate rejects reactivation of non-failed automations
+     Failure/Error: automation.update!(state: "active")
+
+     NameError:
+       undefined local variable or method `automation' for #<RSpec::ExampleGroups::ScheduledAutomation::PATCHReactivate:0x00007f56771492e8>
+     # ./spec/models/scheduled_automation_spec.rb:424:in `block (3 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
+
+  5) ScheduledAutomation PATCH #reactivate works for top-level community bot route
+     Failure/Error: automation.update!(state: "failed")
+
+     NameError:
+       undefined local variable or method `automation' for #<RSpec::ExampleGroups::ScheduledAutomation::PATCHReactivate:0x00007f567723e2e8>
+     # ./spec/models/scheduled_automation_spec.rb:433:in `block (3 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:199:in `block (3 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:199:in `block (2 levels) in <top (required)>'
+     # ./spec/rails_helper.rb:136:in `block (2 levels) in <top (required)>'
+
+Finished in 13 minutes 3 seconds (files took 9.83 seconds to load)
+3037 examples, 5 failures, 26 pending
+
+Failed examples:
+
+rspec ./spec/models/scheduled_automation_spec.rb:395 # ScheduledAutomation PATCH #reactivate reactivates a failed automation
+rspec ./spec/models/scheduled_automation_spec.rb:405 # ScheduledAutomation PATCH #reactivate schedules the next run time
+rspec ./spec/models/scheduled_automation_spec.rb:414 # ScheduledAutomation PATCH #reactivate redirects to index with success flash
+rspec ./spec/models/scheduled_automation_spec.rb:423 # ScheduledAutomation PATCH #reactivate rejects reactivation of non-failed automations
+rspec ./spec/models/scheduled_automation_spec.rb:432 # ScheduledAutomation PATCH #reactivate works for top-level community bot route
+
+[TEST PROF INFO] Time spent in factories: 05:42.816 (43.62% of total time)
+Stopped processing SimpleCov as a previous error not related to SimpleCov has been detected
+JSON Coverage report generated for rspec_ci_node_0 to /home/runner/work/careerpolitics-platform/careerpolitics-platform/coverage/simplecov.         18008 / 39486 LOC (45.61%) covered.
 Error: Process completed with exit code 1.
-
-
-Run slackapi/slack-github-action@v2
-
-Error: Missing input! Either a method or webhook is required to take action.
-SlackError: Missing input! Either a method or webhook is required to take action.
-    at Config.validate (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/config.js:193:1)
-    at new Config (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/config.js:124:1)
-    at send (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/send.js:13:1)
-    at file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/index.js:9:1
-    at Function.__nccwpck_require__.a (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/webpack/runtime/async module:49:1)
-    at Object.9722 (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/dist/index.js:45875:21)
-    at __nccwpck_require__ (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/webpack/bootstrap:21:1)
-    at file:///home/runner/work/_actions/slackapi/slack-github-action/v2/webpack/startup:4:1
-    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
-    at ModuleLoader.import (node:internal/modules/esm/loader:606:24)
-file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/config.js:193
-        throw new SlackError(
-^
-SlackError: Missing input! Either a method or webhook is required to take action.
-    at Config.validate (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/config.js:193:1)
-    at new Config (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/config.js:124:1)
-    at send (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/send.js:13:1)
-    at file:///home/runner/work/_actions/slackapi/slack-github-action/v2/src/index.js:9:1
-    at Function.__nccwpck_require__.a (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/webpack/runtime/async module:49:1)
-    at Object.9722 (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/dist/index.js:45875:21)
-    at __nccwpck_require__ (file:///home/runner/work/_actions/slackapi/slack-github-action/v2/webpack/bootstrap:21:1)
-    at file:///home/runner/work/_actions/slackapi/slack-github-action/v2/webpack/startup:4:1
-    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
-    at ModuleLoader.import (node:internal/modules/esm/loader:606:24)
