@@ -3,7 +3,7 @@ module Admin
     layout "admin"
 
     before_action :set_bot
-    before_action :set_automation, only: %i[show edit update destroy toggle_enabled]
+    before_action :set_automation, only: %i[show edit update destroy toggle_enabled reactivate]
     before_action :authorize_bot
 
     def index
