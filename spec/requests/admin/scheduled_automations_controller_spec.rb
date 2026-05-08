@@ -313,4 +313,52 @@ RSpec.describe Admin::ScheduledAutomationsController do
       expect(response).to redirect_to(admin_community_bot_scheduled_automations_path(bot))
     end
   end
+
+  describe "PATCH #reactivate" do
+    it "reactivates a failed automation" do
+      automation.update!(state: "failed")
+
+      patch reactivate_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
+
+      automation.reload
+      expect(automation.state).to eq("active")
+      expect(automation.next_run_at).to be_present
+    end
+
+    it "schedules the next run time" do
+      automation.update!(state: "failed", next_run_at: nil)
+
+      patch reactivate_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
+
+      automation.reload
+      expect(automation.next_run_at).to be > Time.current
+    end
+
+    it "redirects to index with success flash" do
+      automation.update!(state: "failed")
+
+      patch reactivate_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
+
+      expect(response).to redirect_to(admin_subforem_community_bot_scheduled_automations_path(subforem, bot))
+      expect(flash[:success]).to include("reactivated successfully")
+    end
+
+    it "rejects reactivation of non-failed automations" do
+      automation.update!(state: "active")
+
+      patch reactivate_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
+
+      expect(flash[:error]).to eq("Only failed automations can be reactivated")
+      expect(automation.reload.state).to eq("active")
+    end
+
+    it "works for top-level community bot route" do
+      automation.update!(state: "failed")
+
+      patch reactivate_admin_community_bot_scheduled_automation_path(bot, automation)
+
+      expect(response).to redirect_to(admin_community_bot_scheduled_automations_path(bot))
+      expect(automation.reload.state).to eq("active")
+    end
+  end
 end

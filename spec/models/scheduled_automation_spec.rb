@@ -21,7 +21,7 @@ RSpec.describe ScheduledAutomation, type: :model do
 
     context "when user is not a community bot or admin" do
       let(:regular_user) { create(:user, type_of: :member) }
-      
+
       it "is invalid" do
         automation = build(:scheduled_automation, user: regular_user)
         expect(automation).not_to be_valid
@@ -31,7 +31,7 @@ RSpec.describe ScheduledAutomation, type: :model do
 
     context "when user is an admin" do
       let(:admin_user) { create(:user, :super_admin) }
-      
+
       it "is valid" do
         automation = build(:scheduled_automation, user: admin_user)
         expect(automation).to be_valid
@@ -91,26 +91,26 @@ RSpec.describe ScheduledAutomation, type: :model do
   describe "frequency_config validations" do
     context "with hourly frequency" do
       it "is valid with correct minute" do
-        automation = build(:scheduled_automation, 
-                          user: bot, 
-                          frequency: "hourly", 
+        automation = build(:scheduled_automation,
+                          user: bot,
+                          frequency: "hourly",
                           frequency_config: { "minute" => 30 })
         expect(automation).to be_valid
       end
 
       it "is invalid without minute" do
-        automation = build(:scheduled_automation, 
-                          user: bot, 
-                          frequency: "hourly", 
+        automation = build(:scheduled_automation,
+                          user: bot,
+                          frequency: "hourly",
                           frequency_config: {})
         expect(automation).not_to be_valid
         expect(automation.errors[:frequency_config]).to include("must include 'minute' for hourly frequency")
       end
 
       it "is invalid with minute out of range" do
-        automation = build(:scheduled_automation, 
-                          user: bot, 
-                          frequency: "hourly", 
+        automation = build(:scheduled_automation,
+                          user: bot,
+                          frequency: "hourly",
                           frequency_config: { "minute" => 60 })
         expect(automation).not_to be_valid
         expect(automation.errors[:frequency_config]).to include("minute must be an integer between 0 and 59")
@@ -119,26 +119,26 @@ RSpec.describe ScheduledAutomation, type: :model do
 
     context "with daily frequency" do
       it "is valid with correct hour and minute" do
-        automation = build(:scheduled_automation, 
-                          user: bot, 
-                          frequency: "daily", 
+        automation = build(:scheduled_automation,
+                          user: bot,
+                          frequency: "daily",
                           frequency_config: { "hour" => 9, "minute" => 30 })
         expect(automation).to be_valid
       end
 
       it "is invalid without hour" do
-        automation = build(:scheduled_automation, 
-                          user: bot, 
-                          frequency: "daily", 
+        automation = build(:scheduled_automation,
+                          user: bot,
+                          frequency: "daily",
                           frequency_config: { "minute" => 30 })
         expect(automation).not_to be_valid
         expect(automation.errors[:frequency_config]).to include("must include 'hour' for daily frequency")
       end
 
       it "is invalid with hour out of range" do
-        automation = build(:scheduled_automation, 
-                          user: bot, 
-                          frequency: "daily", 
+        automation = build(:scheduled_automation,
+                          user: bot,
+                          frequency: "daily",
                           frequency_config: { "hour" => 24, "minute" => 30 })
         expect(automation).not_to be_valid
         expect(automation.errors[:frequency_config]).to include("hour must be an integer between 0 and 23")
@@ -147,26 +147,26 @@ RSpec.describe ScheduledAutomation, type: :model do
 
     context "with weekly frequency" do
       it "is valid with correct day_of_week, hour, and minute" do
-        automation = build(:scheduled_automation, 
-                          user: bot, 
-                          frequency: "weekly", 
+        automation = build(:scheduled_automation,
+                          user: bot,
+                          frequency: "weekly",
                           frequency_config: { "day_of_week" => 5, "hour" => 9, "minute" => 30 })
         expect(automation).to be_valid
       end
 
       it "is invalid without day_of_week" do
-        automation = build(:scheduled_automation, 
-                          user: bot, 
-                          frequency: "weekly", 
+        automation = build(:scheduled_automation,
+                          user: bot,
+                          frequency: "weekly",
                           frequency_config: { "hour" => 9, "minute" => 30 })
         expect(automation).not_to be_valid
         expect(automation.errors[:frequency_config]).to include("must include 'day_of_week' for weekly frequency")
       end
 
       it "is invalid with day_of_week out of range" do
-        automation = build(:scheduled_automation, 
-                          user: bot, 
-                          frequency: "weekly", 
+        automation = build(:scheduled_automation,
+                          user: bot,
+                          frequency: "weekly",
                           frequency_config: { "day_of_week" => 7, "hour" => 9, "minute" => 30 })
         expect(automation).not_to be_valid
         expect(automation.errors[:frequency_config]).to include("day_of_week must be an integer between 0 (Sunday) and 6 (Saturday)")
@@ -175,26 +175,26 @@ RSpec.describe ScheduledAutomation, type: :model do
 
     context "with custom_interval frequency" do
       it "is valid with correct interval_days, hour, and minute" do
-        automation = build(:scheduled_automation, 
-                          user: bot, 
-                          frequency: "custom_interval", 
+        automation = build(:scheduled_automation,
+                          user: bot,
+                          frequency: "custom_interval",
                           frequency_config: { "interval_days" => 7, "hour" => 9, "minute" => 30 })
         expect(automation).to be_valid
       end
 
       it "is invalid without interval_days" do
-        automation = build(:scheduled_automation, 
-                          user: bot, 
-                          frequency: "custom_interval", 
+        automation = build(:scheduled_automation,
+                          user: bot,
+                          frequency: "custom_interval",
                           frequency_config: { "hour" => 9, "minute" => 30 })
         expect(automation).not_to be_valid
         expect(automation.errors[:frequency_config]).to include("must include 'interval_days' for custom_interval frequency")
       end
 
       it "is invalid with interval_days less than 1" do
-        automation = build(:scheduled_automation, 
-                          user: bot, 
-                          frequency: "custom_interval", 
+        automation = build(:scheduled_automation,
+                          user: bot,
+                          frequency: "custom_interval",
                           frequency_config: { "interval_days" => 0, "hour" => 9, "minute" => 30 })
         expect(automation).not_to be_valid
         expect(automation.errors[:frequency_config]).to include("interval_days must be a positive integer")
@@ -239,9 +239,9 @@ RSpec.describe ScheduledAutomation, type: :model do
 
     context "with hourly frequency" do
       let(:automation) do
-        build(:scheduled_automation, 
-              user: bot, 
-              frequency: "hourly", 
+        build(:scheduled_automation,
+              user: bot,
+              frequency: "hourly",
               frequency_config: { "minute" => 15 })
       end
 
@@ -259,9 +259,9 @@ RSpec.describe ScheduledAutomation, type: :model do
 
     context "with daily frequency" do
       let(:automation) do
-        build(:scheduled_automation, 
-              user: bot, 
-              frequency: "daily", 
+        build(:scheduled_automation,
+              user: bot,
+              frequency: "daily",
               frequency_config: { "hour" => 9, "minute" => 0 })
       end
 
@@ -280,9 +280,9 @@ RSpec.describe ScheduledAutomation, type: :model do
 
     context "with weekly frequency" do
       let(:automation) do
-        build(:scheduled_automation, 
-              user: bot, 
-              frequency: "weekly", 
+        build(:scheduled_automation,
+              user: bot,
+              frequency: "weekly",
               frequency_config: { "day_of_week" => 5, "hour" => 9, "minute" => 0 }) # Friday
       end
 
@@ -305,9 +305,9 @@ RSpec.describe ScheduledAutomation, type: :model do
 
     context "with custom_interval frequency" do
       let(:automation) do
-        build(:scheduled_automation, 
-              user: bot, 
-              frequency: "custom_interval", 
+        build(:scheduled_automation,
+              user: bot,
+              frequency: "custom_interval",
               frequency_config: { "interval_days" => 7, "hour" => 9, "minute" => 0 })
       end
 
@@ -367,9 +367,9 @@ RSpec.describe ScheduledAutomation, type: :model do
 
   describe "#set_next_run_time!" do
     let(:automation) do
-      build(:scheduled_automation, 
-            user: bot, 
-            frequency: "daily", 
+      build(:scheduled_automation,
+            user: bot,
+            frequency: "daily",
             frequency_config: { "hour" => 9, "minute" => 0 },
             next_run_at: nil)
     end
@@ -385,7 +385,7 @@ RSpec.describe ScheduledAutomation, type: :model do
       automation.next_run_at = 1.day.from_now
       automation.save!
       original_time = automation.next_run_at
-      
+
       automation.set_next_run_time!
       expect(automation.next_run_at).to eq(original_time)
     end

@@ -3,7 +3,7 @@ module Admin
     layout "admin"
 
     before_action :set_bot
-    before_action :set_automation, only: %i[show edit update destroy toggle_enabled]
+    before_action :set_automation, only: %i[show edit update destroy toggle_enabled reactivate]
     before_action :authorize_bot
 
     def index
@@ -72,6 +72,20 @@ module Admin
       status = @automation.enabled? ? "enabled" : "disabled"
       flash[:success] = "Automation #{status} successfully!"
 
+      redirect_to scheduled_automations_path
+    end
+
+    def reactivate
+      unless @automation.state == "failed"
+        flash[:error] = "Only failed automations can be reactivated"
+        redirect_to scheduled_automations_path
+        return
+      end
+
+      next_run_time = @automation.calculate_next_run_time
+      @automation.update!(state: "active", next_run_at: next_run_time)
+
+      flash[:success] = "Automation reactivated successfully! Next run scheduled for #{next_run_time.strftime('%b %d, %Y at %I:%M %p %Z')}."
       redirect_to scheduled_automations_path
     end
 
