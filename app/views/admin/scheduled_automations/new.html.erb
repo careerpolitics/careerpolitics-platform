@@ -346,19 +346,21 @@ function updateServiceFields() {
   const mappedServiceName = serviceName === "community_bot_current_affairs_news_post_creator" ? "community_bot_post_creator" : serviceName;
   const normalizedServiceName = mappedServiceName.replace(/_/g, "-");
 
-  // Hide all service-specific fields
+  // Hide all service-specific fields and disable their inputs so they don't submit
   document.querySelectorAll('[id$="-fields"]').forEach(el => {
     if (el.id !== 'frequency-config-fields' && el.id !== 'service-config-fields') {
       el.style.display = 'none';
+      el.querySelectorAll('input, textarea, select').forEach(input=> input.disabled = true)
     }
   });
 
-  // Show the selected service's fields
+  // Show the selected service's fields and reenable their inputs
   if (serviceName) {
     const serviceFields = document.getElementById(`${mappedServiceName}-fields`) ||
       document.getElementById(`${normalizedServiceName}-fields`);
     if (serviceFields) {
       serviceFields.style.display = 'block';
+      el.querySelectorAll('input, textarea, select').forEach(input=> input.disabled = false)
     }
   }
 }
