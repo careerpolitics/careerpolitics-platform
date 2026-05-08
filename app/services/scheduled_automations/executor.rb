@@ -123,6 +123,8 @@ module ScheduledAutomations
         call_community_bot_current_affairs_news_post_creator_service
       when "community_bot_trending_article_creator"
         call_community_bot_trending_article_creator_service
+      when "community_bot_pib_announcement_post_creator"
+        call_community_bot_pib_announcement_post_creator_service
       else
         raise ArgumentError, "Unknown service: #{@automation.service_name}"
       end
@@ -220,6 +222,30 @@ module ScheduledAutomations
         requested_trends: config["requested_trends"]&.split(",")&.map(&:strip)&.reject(&:blank?),
         )
 
+      service.generate
+    end
+
+    def call_community_bot_pib_announcement_post_creator_service
+      config = @automation.action_config
+      ai_context = config["ai_context"]
+
+      unless ai_context.present?
+        raise ArgumentError, "ai_context is required in action_config for community_bot_pib_announcement_post_creator service"
+      end
+
+      Rails.logger.info("ScheduledAutomations::Executor: running community_bot_pib_announcement_post_creator for automation_id=#{@automation.id} with tags=#{config["tags"].inspect} and series=#{config["series"].inspect}")
+
+      params = {
+        ai_context: ai_context,
+        additional_instructions: @automation.additional_instructions,
+        tags: config["tags"],
+        affected_user: @user,
+      }
+      params[:feed_url] = config["feed_url"] if config["feed_url"].present?
+      params[:max_feed_items] = config["max_feed_items"].to_i if config["max_feed_items"].present?
+      params[:max_selected_items] = config["max_selected_items"].to_i if config["max_selected_items"].present?
+
+      service = Ai::CommunityBotPibAnnouncementPostCreator.new(**params)
       service.generate
     end
 
