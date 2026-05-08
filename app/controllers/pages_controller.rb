@@ -27,6 +27,9 @@ class PagesController < ApplicationController
       render json: @page.body_json
     when "css"
       render plain: @page.body_css, content_type: "text/css"
+    when "js"
+      @marked_for_same_origin_verification = false
+      render plain: @page.body_html, content_type: "text/javascript"
     end
   end
 

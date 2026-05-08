@@ -173,6 +173,7 @@ class StoriesController < ApplicationController
     when "css"
       render plain: @page.body_css, content_type: "text/css"
     when "js"
+      @marked_for_same_origin_verification = false
       render plain: @page.body_html, content_type: "text/javascript"
     when "txt"
       render plain: @page.processed_html, content_type: "text/plain"
