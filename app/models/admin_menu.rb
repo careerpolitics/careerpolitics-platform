@@ -26,6 +26,7 @@ class AdminMenu
       item(name: "emails"),
       item(name: "surveys"),
       item(name: "events"),
+      item(name: "mock exams", controller:"mock_exam_templates"),
     ]
 
     scope :customization, "tools-line", [
@@ -37,6 +38,7 @@ class AdminMenu
       item(name: "profile fields"),
       item(name: "subforems"),
       item(name: "org features", controller: "org_features"),
+      item(name: "request redirects", controller: "request_redirects"),
     ]
 
     scope :admin_team, "user-line", [
