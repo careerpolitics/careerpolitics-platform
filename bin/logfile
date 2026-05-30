@@ -1,94 +1,286 @@
-Run # Patch the migration job manifest to use the new image tag
-job.batch/careerpolitics-migrate created
-error: timed out waiting for the condition on jobs/careerpolitics-migrate
-Error: Process completed with exit code 1.
-2s
-Run kubectl logs job/careerpolitics-migrate -n production
+  },
+  {
+    "section_name": "History",
+    "question_type": "knowledge",
+    "question_text": "Which organization was founded by Annie Besant and Bal Gangadhar Tilak independently in 1916?",
+    "options": [
+      {"key": "A", "text": "Indian National Congress"},
+      {"key": "B", "text": "Home Rule League"},
+      {"key": "C", "text": "Swatantra Party"},
+      {"key": "D", "text": "Servants of India Society"}
+    ],
+    "correct_option_key": "B",
+    "explanation": "Tilak and Annie Besant launched two separate Home Rule Leagues in 1916 to campaign for self-government.",
+    "difficulty": "easy",
+    "topic_tags": ["modern india", "freedom movement"]
+  },
+  {
+    "section_name": "History",
+    "question_type": "knowledge",
+    "question_text": "The 'Rajagopalachari Formula' (1944) proposed what?",
+    "options": [
+      {"key": "A", "text": "A compromise between the Congress and the Muslim League"},
+      {"key": "B", "text": "An end to the Non-Cooperation Movement"},
+      {"key": "C", "text": "The abolition of the Zamindari system"},
+      {"key": "D", "text": "A roadmap for the 1946 elections"}
+    ],
+    "correct_option_key": "A",
+    "explanation": "C. Rajagopalachari suggested a basis for cooperation between the Congress and the Muslim League regarding partition, which was eventually rejected by Jinnah.",
+    "difficulty": "hard",
+    "topic_tags": ["modern india", "freedom movement"]
+  },
+  {
+    "section_name": "History",
+    "question_type": "knowledge",
+    "question_text": "Which Governor-General was associated with the policy of 'Ring Fence'?",
+    "options": [
+      {"key": "A", "text": "Warren Hastings"},
+      {"key": "B", "text": "Lord Dalhousie"},
+      {"key": "C", "text": "Lord Wellesley"},
+      {"key": "D", "text": "Lord Curzon"}
+    ],
+    "correct_option_key": "A",
+    "explanation": "The policy of 'Ring Fence' was formulated by Warren Hastings to protect the British territories by defending the territories of their neighbors.",
+    "difficulty": "medium",
+    "topic_tags": ["modern india", "colonial administration"]
+  },
+  {
+    "section_name": "History",
+    "question_type": "knowledge",
+    "question_text": "Who was the Viceroy of India when the Jallianwala Bagh massacre took place?",
+    "options": [
+      {"key": "A", "text": "Lord Hardinge II"},
+      {"key": "B", "text": "Lord Chelmsford"},
+      {"key": "C", "text": "Lord Reading"},
+      {"key": "D", "text": "Lord Minto"}
+    ],
+    "correct_option_key": "B",
+    "explanation": "Lord Chelmsford was the Viceroy of India from 1916 to 1921, covering the period of the 1919 massacre.",
+    "difficulty": "medium",
+    "topic_tags": ["modern india", "freedom movement"]
+  },
+  {
+    "section_name": "History",
+    "question_type": "knowledge",
+    "question_text": "The 'Sarda Act' of 1929 is related to which of the following?",
+    "options": [
+      {"key": "A", "text": "Child marriage restraint"},
+      {"key": "B", "text": "Abolition of Sati"},
+      {"key": "C", "text": "Widow remarriage"},
+      {"key": "D", "text": "Female education"}
+    ],
+    "correct_option_key": "A",
+    "explanation": "The Sarda Act (Child Marriage Restraint Act) raised the marriage age to 18 for boys and 14 for girls.",
+    "difficulty": "easy",
+    "topic_tags": ["modern india", "social reform"]
+  },
+  {
+    "section_name": "History",
+    "question_type": "knowledge",
+    "question_text": "Which leader was associated with the 'Young Bengal Movement'?",
+    "options": [
+      {"key": "A", "text": "Ram Mohan Roy"},
+      {"key": "B", "text": "Henry Vivian Derozio"},
+      {"key": "C", "text": "Ishwar Chandra Vidyasagar"},
+      {"key": "D", "text": "Debendranath Tagore"}
+    ],
+    "correct_option_key": "B",
+    "explanation": "Henry Vivian Derozio, a teacher at Hindu College, inspired his students with radical ideas, known as the Young Bengal Movement.",
+    "difficulty": "medium",
+    "topic_tags": ["modern india", "social reform"]
+  },
+  {
+    "section_name": "History",
+    "question_type": "knowledge",
+    "question_text": "What was the immediate cause of the 1857 Revolt?",
+    "options": [
+      {"key": "A", "text": "Doctrine of Lapse"},
+      {"key": "B", "text": "Introduction of the Enfield rifle"},
+      {"key": "C", "text": "Taxation policies"},
+      {"key": "D", "text": "Religious legislation"}
+    ],
+    "correct_option_key": "B",
+    "explanation": "While there were many underlying causes, the introduction of the Enfield rifle and the rumor that the cartridges were greased with cow and pig fat was the immediate spark.",
+    "difficulty": "easy",
+    "topic_tags": ["modern india", "1857 revolt"]
+  },
+  {
+    "section_name": "History",
+    "question_type": "knowledge",
+    "question_text": "Who founded the 'Ghadar Party' in San Francisco in 1913?",
+    "options": [
+      {"key": "A", "text": "V.D. Savarkar"},
+      {"key": "B", "text": "Lala Hardayal"},
+      {"key": "C", "text": "Ajit Singh"},
+      {"key": "D", "text": "Bhagat Singh"}
+    ],
+    "correct_option_key": "B",
+    "explanation": "Lala Hardayal, along with Sohan Singh Bhakna, founded the Ghadar Party to liberate India from British rule.",
+    "difficulty": "easy",
+    "topic_tags": ["modern india", "freedom movement"]
+  },
+  {
+    "section_name": "History",
+    "question_type": "knowledge",
+    "question_text": "In the context of the 1942 Quit India Movement, where did the 'parallel government' form for the longest duration?",
+    "options": [
+      {"key": "A", "text": "Ballia"},
+      {"key": "B", "text": "Tamluk"},
+      {"key": "C", "text": "Satara"},
+      {"key": "D", "text": "Midnapore"}
+    ],
+    "correct_option_key": "C",
+    "explanation": "Parallel governments were formed in several places during the Quit India Movement; the one in Satara lasted the longest (until 1945).",
+    "difficulty": "hard",
+    "topic_tags": ["modern india", "freedom movement"]
+  }
+]'
+W, [2026-05-30T16:53:07.316780 #1]  WARN -- : Ai::MockExamQuestionGenerator: Retry 1/2 — unexpected token at '],
+    "correct_option_key": "C",
+    "explanation": "The Communal Award extended the system of separate electorates to the Depressed Classes, which led to Gandhi's fast unto death at Yerwada Jail and the subsequent Poona Pact.",
+    "difficulty": "medium",
+    "topic_tags": ["modern india", "freedom movement"]
+  },
+  {
+    "section_name": "History",
+    "question_type": "knowledge",
+    "question_text": "Consider the following statements regarding the 'August Offer' of 1940: 1. It proposed the expansion of the Viceroy's Executive Council. 2. It promised the establishment of a Constituent Assembly after the war. Which of the statements given above is/are correct?",
+    "options": [
+      {"key": "A", "text": "1 only"},
+      {"key": "B", "text": "2 only"},
+      {"key": "C", "text": "Both 1 and 2"},
+      {"key": "D", "text": "Neither 1 nor 2"}
+    ],
+    "correct_option_key": "C",
+    "explanation": "The August Offer of 1940 promised a representative body to frame a constitution after the war and proposed the immediate expansion of the Viceroy's Executive Council to include more Indians.",
+    "difficulty": "hard",
+    "topic_tags": ["modern india", "freedom movement"]
+  },
+  {
+    "section_name": "History",
+    "question_type": "knowledge",
+    "question_text": "The 'Doctrine of Lapse' was primarily used by which Governor-General to annex various Indian princely states?",
+    "options": [
+      {"key": "A", "text": "Lord Wellesley"},
+      {"key": "B", "text": "Lord Dalhousie"},
+      {"key": "C", "text": "Lord William Bentinck"},
+      {"key": "D", "text": "Lord Cornwallis"}
+    ],
+    "correct_option_key": "B",
+    "explanation": "Lord Dalhousie implemented the Doctrine of Lapse, which held that if a ruler of a dependent state died without a natural heir, the state would be annexed by the British East India Company.",
+    "difficulty": "easy",
+    "topic_tags": ["modern india"]
+  }
+]'
+2026-05-30T16:53:11.894Z pid=1 tid=5mat class=MockExams::GeneratePoolWorker jid=e0d4759f5804655538ec18e1 elapsed=50.779 INFO: fail
+2026-05-30T16:53:11.894Z pid=1 tid=5mat WARN: {"context":"Job raised exception","job":{"retry":true,"queue":"low_priority","lock":"until_executing","on_conflict":"replace","args":[1],"class":"MockExams::GeneratePoolWorker","jid":"e0d4759f5804655538ec18e1","created_at":1780159941.0940006,"lock_timeout":0,"lock_ttl":null,"lock_prefix":"uniquejobs","lock_args":[1],"lock_digest":"uniquejobs:029f92de898b27346e724a76f65c99b0","enqueued_at":1780159941.1134105}}
+2026-05-30T16:53:11.894Z pid=1 tid=5mat WARN: NoMethodError: undefined method `finalize' for an instance of ContentRenderer
+2026-05-30T16:53:11.894Z pid=1 tid=5mat WARN: /opt/apps/forem/app/models/mock_exam_question.rb:48:in `render_html_fields'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:400:in `block in make_lambda'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:199:in `block (2 levels) in halting'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:687:in `block (2 levels) in default_terminator'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:686:in `catch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:686:in `block in default_terminator'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:200:in `block in halting'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:595:in `block in invoke_before'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:595:in `each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:595:in `invoke_before'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:116:in `block in run_callbacks'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/autosave_association.rb:370:in `around_save_collection_association'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:127:in `block in run_callbacks'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:138:in `run_callbacks'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/callbacks.rb:929:in `_run_save_callbacks'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/callbacks.rb:455:in `create_or_update'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/timestamp.rb:126:in `create_or_update'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/persistence.rb:648:in `save!'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/validations.rb:53:in `save!'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/transactions.rb:302:in `block in save!'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/transactions.rb:354:in `block in with_transaction_returning_status'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:319:in `block in within_new_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:317:in `within_new_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/database_statements.rb:316:in `transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/transactions.rb:350:in `with_transaction_returning_status'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/transactions.rb:302:in `save!'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/suppressor.rb:54:in `save!'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/persistence.rb:55:in `create!'
+/opt/apps/forem/app/workers/mock_exams/generate_pool_worker.rb:20:in `block in perform'
+/opt/apps/forem/app/workers/mock_exams/generate_pool_worker.rb:19:in `each'
+/opt/apps/forem/app/workers/mock_exams/generate_pool_worker.rb:19:in `each_with_index'
+/opt/apps/forem/app/workers/mock_exams/generate_pool_worker.rb:19:in `perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:202:in `execute_job'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:170:in `block (2 levels) in process'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:177:in `block in invoke'
+/opt/apps/forem/lib/sidekiq/memory_killer.rb:13:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/lib/sidekiq/sidekiq_connection_cleanup.rb:6:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/lock/until_executing.rb:35:in `execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware/server.rb:27:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware.rb:41:in `block in call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:142:in `block in with_logging_context'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/logger.rb:11:in `with'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:157:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:157:in `with_configured_loggers_context'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:141:in `with_logging_context'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware.rb:40:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware/client.rb:37:in `block in lock'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/lock/until_executing.rb:26:in `lock'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware/client.rb:35:in `lock'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware/client.rb:29:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware.rb:41:in `block in call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:142:in `block in with_logging_context'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/logger.rb:11:in `with'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:157:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:157:in `with_configured_loggers_context'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:141:in `with_logging_context'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware.rb:40:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/lib/sidekiq/honeycomb_middleware.rb:16:in `block in call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/client.rb:65:in `start_span'
+/usr/local/lib/ruby/3.3.0/forwardable.rb:240:in `start_span'
+/opt/apps/forem/lib/sidekiq/honeycomb_middleware.rb:8:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/lib/sidekiq/transaction_safe_rescue.rb:13:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/contrib/sidekiq/server_tracer.rb:79:in `block in call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/tracer.rb:529:in `skip_trace'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/tracer.rb:136:in `trace'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing.rb:18:in `trace'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/contrib/sidekiq/server_tracer.rb:40:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-throttled-1.5.2/lib/sidekiq/throttled/middlewares/server.rb:15:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeybadger-4.12.2/lib/honeybadger/plugins/sidekiq.rb:10:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:182:in `invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:169:in `block in process'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:136:in `block (6 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_retry.rb:113:in `local'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:135:in `block (5 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/rails.rb:14:in `block in call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/execution_wrapper.rb:92:in `wrap'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/reloader.rb:72:in `block in wrap'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/execution_wrapper.rb:92:in `wrap'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/reloader.rb:71:in `wrap'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/rails.rb:13:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:131:in `block (4 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:263:in `stats'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:126:in `block (3 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_logger.rb:13:in `call'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:125:in `block (2 levels) in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_retry.rb:80:in `global'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:124:in `block in dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_logger.rb:39:in `prepare'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:123:in `dispatch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:168:in `process'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:78:in `process_one'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:68:in `run'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/component.rb:8:in `watchdog'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/component.rb:17:in `block in safe_thread'
+2026-05-30T16:53:11.894Z pid=1 tid=5mat WARN: `config.options[:key] = value` is deprecated, use `config[:key] = value`: ["/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeybadger-4.12.2/lib/honeybadger/plugins/sidekiq.rb:41:in `block (4 levels) in <module:Sidekiq>'", "/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq.rb:124:in `block in handle_exception'"]
 
-service_name is unknown, will set to unknown_service:rails
-dataset will be ignored, sending data to unknown_service:rails
-I, [2026-05-30T12:13:14.177725 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2026-05-30T12:13:14.223602 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2026-05-30T12:13:14+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
-[strong_migrations] DANGER: No lock timeout set
-[strong_migrations] DANGER: No lock timeout set
-rails aborted!
-StandardError: An error has occurred, this and all later migrations canceled: (StandardError)
-=== Dangerous operation detected #strong_migrations ===
-Adding a foreign key blocks writes on both tables. Instead,
-add the foreign key without validating existing rows,
-then validate them in a separate migration.
-class CreateMockExamAttempts < ActiveRecord::Migration[7.0]
-  def change
-    add_foreign_key :mock_exam_questions, :mock_exam_attempts, validate: false
-  end
-end
-class ValidateCreateMockExamAttempts < ActiveRecord::Migration[7.0]
-  def change
-    validate_foreign_key :mock_exam_questions, :mock_exam_attempts
-  end
-end
-/opt/apps/forem/db/migrate/20260530010002_create_mock_exam_attempts.rb:28:in `change'
-Tasks: TOP => db:migrate
-(See full trace by running task with --trace)
-I, [2026-05-30T12:13:17.773930 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
-W, [2026-05-30T12:13:19.967669 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
-I, [2026-05-30T12:13:21.230881 #1]  INFO -- : CareerPolitics Android consumer app initialized
-I, [2026-05-30T12:13:24.223267 #1]  INFO -- : Migrating to CreateMockExamQuestions (20260530010001)
-== 20260530010001 CreateMockExamQuestions: migrating ==========================
--- create_table(:mock_exam_questions)
-   -> 0.0768s
--- add_index(:mock_exam_questions, [:mock_exam_attempt_id, :position], {:name=>"idx_mock_questions_attempt_position"})
-   -> 0.0385s
--- add_index(:mock_exam_questions, [:mock_exam_template_id, :mock_exam_attempt_id], {:name=>"idx_mock_questions_pool", :where=>"mock_exam_attempt_id IS NULL"})
-   -> 0.0030s
-== 20260530010001 CreateMockExamQuestions: migrated (0.1619s) =================
-I, [2026-05-30T12:13:24.435635 #1]  INFO -- : Migrating to CreateMockExamAttempts (20260530010002)
-== 20260530010002 CreateMockExamAttempts: migrating ===========================
--- create_table(:mock_exam_attempts)
-   -> 0.0409s
--- add_index(:mock_exam_attempts, [:user_id, :mock_exam_template_id], {:name=>"idx_mock_attempts_user_template"})
-   -> 0.0092s
--- add_index(:mock_exam_attempts, :status)
-   -> 0.0029s
-I, [2026-05-30T12:13:24.529230 #1]  INFO -- honeybadger: ** [Honeybadger] Reporting error id=26e0b026-3d4f-4cdb-a946-34dd842ebcf2 level=1 pid=1
-I, [2026-05-30T12:13:25.693176 #1]  INFO -- honeybadger: ** [Honeybadger] Success ⚡ https://app.honeybadger.io/notice/26e0b026-3d4f-4cdb-a946-34dd842ebcf2 id=26e0b026-3d4f-4cdb-a946-34dd842ebcf2 code=201 level=1 pid=1
-0s
-0s
-0s
-0s
-0s
-0s
-0s
-0s
-Post job cleanup.
-/usr/bin/git version
-git version 2.54.0
-Temporarily overriding HOME='/home/runner/work/_temp/d252d4a8-1be4-41c7-aae8-c1fcac2e5b43' before making global git config changes
-Adding repository directory to the temporary git global config as a safe directory
-/usr/bin/git config --global --add safe.directory /home/runner/work/careerpolitics-platform/careerpolitics-platform
-Removing SSH command configuration
-/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
-/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-Removing HTTP extra header
-/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
-/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
-Removing includeIf entries pointing to credentials config files
-/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
-includeif.gitdir:/home/runner/work/careerpolitics-platform/careerpolitics-platform/.git.path
-includeif.gitdir:/home/runner/work/careerpolitics-platform/careerpolitics-platform/.git/worktrees/*.path
-includeif.gitdir:/github/workspace/.git.path
-includeif.gitdir:/github/workspace/.git/worktrees/*.path
-/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/careerpolitics-platform/careerpolitics-platform/.git.path
-/home/runner/work/_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
-/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/careerpolitics-platform/careerpolitics-platform/.git.path /home/runner/work/_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
-/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/careerpolitics-platform/careerpolitics-platform/.git/worktrees/*.path
-/home/runner/work/_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
-/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/careerpolitics-platform/careerpolitics-platform/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
-/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
-/github/runner_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
-/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
-/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
-/github/runner_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
-/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
-/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
-Removing credentials config '/home/runner/work/_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config'
