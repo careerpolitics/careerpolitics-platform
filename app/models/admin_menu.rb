@@ -26,6 +26,7 @@ class AdminMenu
       item(name: "emails"),
       item(name: "surveys"),
       item(name: "events"),
+      item(name: "mock exams", controller:"mock_exam_templates"),
     ]
 
     scope :customization, "tools-line", [

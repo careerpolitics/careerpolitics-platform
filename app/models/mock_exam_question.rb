@@ -45,10 +45,10 @@ class MockExamQuestion < ApplicationRecord
   end
 
   def render_html_fields
-    self.question_html = ContentRenderer.new(question_text).finalize[:processed_html] if question_text_changed?
-    self.explanation_html = ContentRenderer.new(explanation).finalize[:processed_html] if explanation.present? && explanation_changed?
+    self.question_html = ContentRenderer.new(question_text).process.processed_html if question_text_changed?
+    self.explanation_html = ContentRenderer.new(explanation).process.processed_html if explanation.present? && explanation_changed?
     if solution_steps.present? && solution_steps_changed?
-      self.solution_steps_html = ContentRenderer.new(solution_steps).finalize[:processed_html]
+      self.solution_steps_html = ContentRenderer.new(solution_steps).process.processed_html
     end
   end
 end
