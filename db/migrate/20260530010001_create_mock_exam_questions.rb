@@ -2,7 +2,7 @@ class CreateMockExamQuestions < ActiveRecord::Migration[7.0]
   def change
     create_table :mock_exam_questions do |t|
       t.references :mock_exam_template, null: false, foreign_key: true
-      t.references :mock_exam_attempt, null: true, foreign_key: true
+      t.references :mock_exam_attempt, null: true
       t.string :section_name, null: false
       t.integer :position, null: false
       t.integer :question_type, default: 0, null: false
