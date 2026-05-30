@@ -274,6 +274,23 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :mock_exams, only: %i[index show], param: :slug do
+      member do
+        get :leaderboard, defaults: { format: :json }
+        get :stats, defaults: { format: :json }
+      end
+      collection do
+        get :dashboard
+      end
+      resources :mock_exam_attempts, only: %i[create show], as: :attempts, path: "attempts" do
+        member do
+          patch :submit
+          get :results
+        end
+      end
+    end
+    resources :mock_exam_responses, only: %i[create update], defaults: { format: :json }
+
     resources :profile_pins, only: %i[create update]
     # temporary keeping both routes while transitioning (renaming) display_ads => billboards
     resources :display_ad_events, only: [:create], controller: :billboard_events

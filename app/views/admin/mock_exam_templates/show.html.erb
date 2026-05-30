@@ -1,0 +1,162 @@
+<div class="crayons-card p-6">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="crayons-title"><%= @template.title %></h1>
+    <div class="flex gap-2">
+      <%= link_to "Edit", edit_admin_mock_exam_template_path(@template), class: "c-btn c-btn--secondary" %>
+      <%= link_to "Public Page", mock_exam_path(slug: @template.slug), target: "_blank", class: "c-btn c-btn--secondary" %>
+      <%= link_to "Back", admin_mock_exam_templates_path, class: "c-btn c-btn--secondary" %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-6 mb-6">
+    <div class="crayons-card p-4">
+      <h3 class="crayons-subtitle-2 mb-3">Template Details</h3>
+      <dl class="grid grid-cols-2 gap-2">
+        <dt class="fw-bold">Slug:</dt>
+        <dd><code><%= @template.slug %></code></dd>
+        <dt class="fw-bold">Category:</dt>
+        <dd><%= @template.exam_category.titleize %></dd>
+        <dt class="fw-bold">Questions:</dt>
+        <dd><%= @template.total_questions %></dd>
+        <dt class="fw-bold">Duration:</dt>
+        <dd><%= @template.duration_minutes %> minutes</dd>
+        <dt class="fw-bold">Marks/Correct:</dt>
+        <dd>+<%= @template.marks_per_correct %></dd>
+        <dt class="fw-bold">Negative Marks:</dt>
+        <dd>-<%= @template.negative_marks_per_wrong %></dd>
+        <dt class="fw-bold">Difficulty:</dt>
+        <dd><%= @template.difficulty_level.titleize %></dd>
+        <dt class="fw-bold">Display Mode:</dt>
+        <dd><%= @template.question_display_mode.titleize %></dd>
+        <dt class="fw-bold">Calculator:</dt>
+        <dd><%= @template.has_calculator ? "Yes" : "No" %></dd>
+        <dt class="fw-bold">Scratchpad:</dt>
+        <dd><%= @template.has_scratchpad ? "Yes" : "No" %></dd>
+        <dt class="fw-bold">Status:</dt>
+        <dd>
+          <% if @template.active? && @template.published? %>
+            <span class="c-indicator c-indicator--success">Published</span>
+          <% elsif @template.active? %>
+            <span class="c-indicator c-indicator--warning">Draft</span>
+          <% else %>
+            <span class="c-indicator c-indicator--danger">Inactive</span>
+          <% end %>
+        </dd>
+      </dl>
+    </div>
+
+    <div class="crayons-card p-4">
+      <h3 class="crayons-subtitle-2 mb-3">Question Pool</h3>
+      <div class="mb-4">
+        <p class="fs-l fw-bold"><%= @pool_count %> / <%= @template.total_questions * 5 %> target</p>
+        <p class="color-secondary">
+          <% if @template.pool_ready? %>
+            <span class="c-indicator c-indicator--success">Pool Ready</span> — enough questions to serve exams instantly
+          <% else %>
+            <span class="c-indicator c-indicator--warning">Pool Not Ready</span> — exams will fall back to on-demand generation
+          <% end %>
+        </p>
+      </div>
+      <div class="flex gap-2">
+        <%= button_to "Generate Pool", generate_pool_admin_mock_exam_template_path(@template),
+                      method: :post, class: "c-btn c-btn--primary",
+                      data: { confirm: "This will generate ~#{@template.total_questions * 5} questions via AI. Proceed?" } %>
+        <%= button_to "Refresh Pool", refresh_pool_admin_mock_exam_template_path(@template),
+                      method: :post, class: "c-btn c-btn--destructive",
+                      data: { confirm: "This will DELETE all existing pool questions and regenerate. Are you sure?" } %>
+      </div>
+
+      <% if @stats %>
+        <h3 class="crayons-subtitle-2 mt-6 mb-3">Aggregate Stats</h3>
+        <dl class="grid grid-cols-2 gap-2">
+          <dt class="fw-bold">Total Attempts:</dt>
+          <dd><%= @stats.total_attempts %></dd>
+          <dt class="fw-bold">Unique Users:</dt>
+          <dd><%= @stats.unique_users %></dd>
+          <dt class="fw-bold">Average Score:</dt>
+          <dd><%= @stats.average_score %></dd>
+          <dt class="fw-bold">Median Score:</dt>
+          <dd><%= @stats.median_score %></dd>
+          <dt class="fw-bold">Highest / Lowest:</dt>
+          <dd><%= @stats.highest_score %> / <%= @stats.lowest_score %></dd>
+          <dt class="fw-bold">Avg Accuracy:</dt>
+          <dd><%= @stats.average_accuracy %>%</dd>
+          <dt class="fw-bold">Completion Rate:</dt>
+          <dd><%= @stats.completion_rate %>%</dd>
+          <dt class="fw-bold">Last Refreshed:</dt>
+          <dd><%= @stats.last_refreshed_at&.to_fs(:short) || "Never" %></dd>
+        </dl>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @template.sections_config.present? %>
+    <div class="crayons-card p-4 mb-6">
+      <h3 class="crayons-subtitle-2 mb-3">Sections Config</h3>
+      <table class="crayons-table">
+        <thead>
+        <tr>
+          <th>Section</th>
+          <th>Type</th>
+          <th>Count</th>
+          <th>Topics</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% @template.sections_config.each do |section| %>
+          <tr>
+            <td><%= section["name"] %></td>
+            <td><%= section["type"] || "knowledge" %></td>
+            <td><%= section["count"] %></td>
+            <td><%= Array(section["topics"]).join(", ").presence || "—" %></td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <% if @template.ai_prompt_context.present? %>
+    <div class="crayons-card p-4 mb-6">
+      <h3 class="crayons-subtitle-2 mb-3">AI Prompt Context</h3>
+      <pre class="p-3" style="background: var(--card-secondary-bg); border-radius: 6px; white-space: pre-wrap;"><%= @template.ai_prompt_context %></pre>
+    </div>
+  <% end %>
+
+  <% if @recent_attempts.any? %>
+    <div class="crayons-card p-4">
+      <h3 class="crayons-subtitle-2 mb-3">Recent Attempts (last 20)</h3>
+      <table class="crayons-table">
+        <thead>
+        <tr>
+          <th>User</th>
+          <th>Status</th>
+          <th>Source</th>
+          <th>Score</th>
+          <th>Accuracy</th>
+          <th>Started</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% @recent_attempts.each do |attempt| %>
+          <tr>
+            <td><%= attempt.user.username %></td>
+            <td><%= attempt.status.titleize %></td>
+            <td><%= attempt.questions_source %></td>
+            <td><%= attempt.total_score || "—" %> / <%= attempt.max_possible_score || "—" %></td>
+            <td><%= attempt.accuracy_percent ? "#{attempt.accuracy_percent}%" : "—" %></td>
+            <td><%= attempt.started_at.to_fs(:short) %></td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <div class="mt-4">
+    <%= link_to "Delete Template", admin_mock_exam_template_path(@template),
+                method: :delete,
+                data: { confirm: "This will permanently delete this template and ALL associated questions, attempts, and responses. Are you sure?" },
+                class: "c-btn c-btn--destructive" %>
+  </div>
+</div>

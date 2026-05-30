@@ -1,0 +1,130 @@
+<%= form_with model: [:admin, template], local: true do |form| %>
+  <% if template.errors.any? %>
+    <div class="crayons-notice crayons-notice--danger mb-4">
+      <h4><%= pluralize(template.errors.count, "error") %> prohibited this template from being saved:</h4>
+      <ul class="list-disc list-inside mt-2">
+        <% template.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="flex flex-col gap-4">
+    <div class="crayons-field">
+      <%= form.label :title, class: "crayons-field__label" %>
+      <%= form.text_field :title, class: "crayons-textfield", required: true %>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div class="crayons-field">
+        <%= form.label :slug, class: "crayons-field__label" do %>
+          Slug
+          <p class="crayons-field__description">Auto-generated from title if left blank</p>
+        <% end %>
+        <%= form.text_field :slug, class: "crayons-textfield" %>
+      </div>
+
+      <div class="crayons-field">
+        <%= form.label :exam_category, "Exam Category", class: "crayons-field__label" %>
+        <%= form.select :exam_category, MockExamTemplate.exam_categories.keys.map { |k| [k.titleize, k] }, {}, class: "crayons-select" %>
+      </div>
+    </div>
+
+    <div class="crayons-field">
+      <%= form.label :description, class: "crayons-field__label" %>
+      <%= form.text_area :description, class: "crayons-textfield", rows: 3 %>
+    </div>
+
+    <div class="grid grid-cols-3 gap-4">
+      <div class="crayons-field">
+        <%= form.label :total_questions, class: "crayons-field__label" %>
+        <%= form.number_field :total_questions, class: "crayons-textfield", min: 1, required: true %>
+      </div>
+
+      <div class="crayons-field">
+        <%= form.label :duration_minutes, "Duration (minutes)", class: "crayons-field__label" %>
+        <%= form.number_field :duration_minutes, class: "crayons-textfield", min: 1, required: true %>
+      </div>
+
+      <div class="crayons-field">
+        <%= form.label :difficulty_level, class: "crayons-field__label" %>
+        <%= form.select :difficulty_level, MockExamTemplate.difficulty_levels.keys.map { |k| [k.titleize, k] }, {}, class: "crayons-select" %>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div class="crayons-field">
+        <%= form.label :marks_per_correct, "Marks per Correct Answer", class: "crayons-field__label" %>
+        <%= form.number_field :marks_per_correct, class: "crayons-textfield", step: 0.01, min: 0, required: true %>
+      </div>
+
+      <div class="crayons-field">
+        <%= form.label :negative_marks_per_wrong, "Negative Marks per Wrong Answer", class: "crayons-field__label" %>
+        <%= form.number_field :negative_marks_per_wrong, class: "crayons-textfield", step: 0.01, min: 0, required: true %>
+      </div>
+    </div>
+
+    <div class="crayons-field">
+      <%= form.label :question_display_mode, "Question Display Mode", class: "crayons-field__label" %>
+      <%= form.select :question_display_mode, MockExamTemplate.question_display_modes.keys.map { |k| [k.titleize, k] }, {}, class: "crayons-select" %>
+    </div>
+
+    <div class="crayons-field">
+      <%= form.label :ai_prompt_context, "AI Prompt Context", class: "crayons-field__label" do %>
+        AI Prompt Context
+        <p class="crayons-field__description">Additional instructions for AI when generating questions (e.g., syllabus focus, topic priorities)</p>
+      <% end %>
+      <%= form.text_area :ai_prompt_context, class: "crayons-textfield", rows: 5 %>
+    </div>
+
+    <div class="crayons-card p-4">
+      <h3 class="crayons-subtitle-2 mb-3">Sections Configuration</h3>
+      <p class="crayons-field__description mb-3">
+        Define exam sections as JSON. Each section needs: name, count, type (knowledge/maths/reasoning/data_interp/visual_reasoning), and optionally topics.
+      </p>
+      <div class="crayons-field">
+        <%= form.label :sections_config, "Sections Config (JSON)", class: "crayons-field__label" %>
+        <%= form.text_area :sections_config,
+                           value: JSON.pretty_generate(template.sections_config.presence || []),
+                           class: "crayons-textfield",
+                           rows: 10,
+                           style: "font-family: monospace;" %>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div class="crayons-field crayons-field--checkbox">
+        <%= form.check_box :has_calculator, class: "crayons-checkbox" %>
+        <%= form.label :has_calculator, "Enable Calculator", class: "crayons-field__label" %>
+      </div>
+
+      <div class="crayons-field crayons-field--checkbox">
+        <%= form.check_box :has_scratchpad, class: "crayons-checkbox" %>
+        <%= form.label :has_scratchpad, "Enable Scratchpad", class: "crayons-field__label" %>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div class="crayons-field crayons-field--checkbox">
+        <%= form.check_box :active, class: "crayons-checkbox" %>
+        <%= form.label :active, class: "crayons-field__label" do %>
+          Active
+          <p class="crayons-field__description">Inactive templates are hidden from all users</p>
+        <% end %>
+      </div>
+
+      <div class="crayons-field crayons-field--checkbox">
+        <%= form.check_box :published, class: "crayons-checkbox" %>
+        <%= form.label :published, class: "crayons-field__label" do %>
+          Published
+          <p class="crayons-field__description">Published templates are visible to aspirants</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <%= form.submit class: "c-btn c-btn--primary" %>
+    </div>
+  </div>
+<% end %>

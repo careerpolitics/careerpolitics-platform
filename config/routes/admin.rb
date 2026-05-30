@@ -148,6 +148,13 @@ namespace :admin do
     end
   end
 
+  resources :mock_exam_templates do
+    member do
+      post :generate_pool
+      post :refresh_pool
+    end
+  end
+
   scope :customization do
     # We renamed the controller but don't want to change the route (yet)
     resource :config, controller: "settings"

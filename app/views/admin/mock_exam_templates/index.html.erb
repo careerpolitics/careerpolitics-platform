@@ -1,0 +1,57 @@
+<div class="crayons-card p-6">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="crayons-title">Mock Exam Templates</h1>
+    <%= link_to "New Template", new_admin_mock_exam_template_path, class: "c-btn c-btn--primary" %>
+  </div>
+
+  <table class="crayons-table">
+    <thead>
+    <tr>
+      <th>Title</th>
+      <th>Category</th>
+      <th>Questions</th>
+      <th>Duration</th>
+      <th>Pool</th>
+      <th>Attempts</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @templates.each do |template| %>
+      <tr>
+        <td><%= template.title %></td>
+        <td><%= template.exam_category.titleize %></td>
+        <td><%= template.total_questions %></td>
+        <td><%= template.duration_minutes %> min</td>
+        <td>
+          <% pool_count = template.pool_questions.count %>
+          <% if pool_count >= template.total_questions %>
+            <span class="c-indicator c-indicator--success"><%= pool_count %> ready</span>
+          <% elsif pool_count > 0 %>
+            <span class="c-indicator c-indicator--warning"><%= pool_count %> partial</span>
+          <% else %>
+            <span class="c-indicator c-indicator--danger">Empty</span>
+          <% end %>
+        </td>
+        <td><%= template.mock_exam_template_stat&.total_attempts || 0 %></td>
+        <td>
+          <% if template.active? && template.published? %>
+            <span class="c-indicator c-indicator--success">Published</span>
+          <% elsif template.active? %>
+            <span class="c-indicator c-indicator--warning">Draft</span>
+          <% else %>
+            <span class="c-indicator c-indicator--danger">Inactive</span>
+          <% end %>
+        </td>
+        <td>
+          <div class="flex gap-2">
+            <%= link_to "Show", admin_mock_exam_template_path(template), class: "c-btn c-btn--primary btn-sm" %>
+            <%= link_to "Edit", edit_admin_mock_exam_template_path(template), class: "c-btn c-btn--secondary btn-sm" %>
+          </div>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+</div>

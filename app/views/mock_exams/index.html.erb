@@ -1,0 +1,8 @@
+<%= content_for :page_meta do %>
+  <title>Mock Exams — <%= community_name %></title>
+  <meta name="description" content="Practice mock exams for UPSC, SSC, and other competitive exams." />
+<% end %>
+
+<div id="mock-exam-listing"></div>
+
+<%= javascript_include_tag "mockExams", defer: true %>
