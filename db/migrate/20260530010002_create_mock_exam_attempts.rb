@@ -25,6 +25,6 @@ class CreateMockExamAttempts < ActiveRecord::Migration[7.0]
     add_index :mock_exam_attempts, %i[user_id mock_exam_template_id], name: "idx_mock_attempts_user_template"
     add_index :mock_exam_attempts, :status
 
-    add_foreign_key :mock_exam_questions, :mock_exam_attempts
+    safety_assured { add_foreign_key :mock_exam_questions, :mock_exam_attempts }
   end
 end

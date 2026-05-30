@@ -1,201 +1,57 @@
-5m 3s
 Run # Patch the migration job manifest to use the new image tag
-  # Patch the migration job manifest to use the new image tag
-  sed -i 's|^\(\s*image:\s*\).*|\1muraridevv/careerpolitics-platform:383d7b974a3b6441991dc7fa49a074d56e026620|' kube/job-migrate.yaml
-  kubectl apply -f kube/job-migrate.yaml
-  kubectl wait --for=condition=complete --timeout=300s job/careerpolitics-migrate -n production
-  shell: /usr/bin/bash -e {0}
-  env:
-    IMAGE_NAME: muraridevv/careerpolitics-platform
-    KUBE_NAMESPACE: production
 job.batch/careerpolitics-migrate created
 error: timed out waiting for the condition on jobs/careerpolitics-migrate
 Error: Process completed with exit code 1.
-
- kubectl logs job/careerpolitics-migrate -n production
-  shell: /usr/bin/bash -e {0}
-  env:
-    IMAGE_NAME: muraridevv/careerpolitics-platform
-    KUBE_NAMESPACE: production
+2s
+Run kubectl logs job/careerpolitics-migrate -n production
 
 service_name is unknown, will set to unknown_service:rails
 dataset will be ignored, sending data to unknown_service:rails
-I, [2026-05-30T11:41:42.062357 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2026-05-30T11:41:42.089351 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2026-05-30T11:41:42+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+I, [2026-05-30T12:13:14.177725 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2026-05-30T12:13:14.223602 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2026-05-30T12:13:14+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
 [strong_migrations] DANGER: No lock timeout set
 [strong_migrations] DANGER: No lock timeout set
 rails aborted!
 StandardError: An error has occurred, this and all later migrations canceled: (StandardError)
-PG::UndefinedTable: ERROR:  relation "mock_exam_attempts" does not exist
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `exec'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `block (2 levels) in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/share_lock.rb:187:in `yield_shares'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/dependencies/interlock.rb:41:in `permit_concurrent_loads'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:47:in `block in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:752:in `block in log'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/notifications/instrumenter.rb:24:in `instrument'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:743:in `log'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:46:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/schema_statements.rb:326:in `create_table'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:965:in `block in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `block in say_with_time'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `say_with_time'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:954:in `method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/hypershield-0.2.2/lib/hypershield/migration.rb:11:in `method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:17:in `block (2 levels) in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/checker.rb:101:in `perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:16:in `block in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `catch'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:556:in `create_table'
-/opt/apps/forem/db/migrate/20260530010001_create_mock_exam_questions.rb:3:in `change'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:905:in `exec_migration'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:889:in `block (2 levels) in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:888:in `block in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:887:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:5:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1095:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1409:in `block in execute_migration_in_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:319:in `block in within_new_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:317:in `within_new_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/database_statements.rb:316:in `transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/transactions.rb:209:in `transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1460:in `ddl_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migrator.rb:4:in `ddl_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1408:in `execute_migration_in_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `migrate_without_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `block in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1481:in `block in with_advisory_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1496:in `with_advisory_lock_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1477:in `with_advisory_lock'
-I, [2026-05-30T11:41:44.823480 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
-W, [2026-05-30T11:41:45.603446 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
-I, [2026-05-30T11:41:45.940111 #1]  INFO -- : CareerPolitics Android consumer app initialized
-I, [2026-05-30T11:41:46.857817 #1]  INFO -- : Migrating to CreateMockExamTemplates (20260530010000)
-== 20260530010000 CreateMockExamTemplates: migrating ==========================
--- create_table(:mock_exam_templates)
-   -> 0.1041s
--- add_index(:mock_exam_templates, :slug, {:unique=>true})
-   -> 0.0036s
--- add_index(:mock_exam_templates, [:active, :published])
-   -> 0.0031s
-== 20260530010000 CreateMockExamTemplates: migrated (0.1223s) =================
-I, [2026-05-30T11:41:47.002490 #1]  INFO -- : Migrating to CreateMockExamQuestions (20260530010001)
-== 20260530010001 CreateMockExamQuestions: migrating ==========================
--- create_table(:mock_exam_questions)
-I, [2026-05-30T11:41:47.108750 #1]  INFO -- honeybadger: ** [Honeybadger] Reporting error id=c20d612c-2910-4d51-95e1-5a9aa48fa909 level=1 pid=1
-I, [2026-05-30T11:41:48.312616 #1]  INFO -- honeybadger: ** [Honeybadger] Success ⚡ https://app.honeybadger.io/notice/c20d612c-2910-4d51-95e1-5a9aa48fa909 id=c20d612c-2910-4d51-95e1-5a9aa48fa909 code=201 level=1 pid=1
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:188:in `invoke_task'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block (2 levels) in top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block in top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:147:in `run_with_threads'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:132:in `top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block (2 levels) in perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:214:in `standard_exception_handling'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block in perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/rake_module.rb:59:in `with_application'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:18:in `perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command.rb:51:in `invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands.rb:18:in `<main>'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
-Caused by:
-PG::UndefinedTable: ERROR:  relation "mock_exam_attempts" does not exist (PG::UndefinedTable)
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `exec'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `block (2 levels) in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/share_lock.rb:187:in `yield_shares'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/dependencies/interlock.rb:41:in `permit_concurrent_loads'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:47:in `block in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:752:in `block in log'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/notifications/instrumenter.rb:24:in `instrument'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:743:in `log'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:46:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/schema_statements.rb:326:in `create_table'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:965:in `block in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `block in say_with_time'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `say_with_time'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:954:in `method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/hypershield-0.2.2/lib/hypershield/migration.rb:11:in `method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:17:in `block (2 levels) in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/checker.rb:101:in `perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:16:in `block in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `catch'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:556:in `create_table'
-/opt/apps/forem/db/migrate/20260530010001_create_mock_exam_questions.rb:3:in `change'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:905:in `exec_migration'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:889:in `block (2 levels) in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:888:in `block in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:887:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:5:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1095:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1409:in `block in execute_migration_in_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:319:in `block in within_new_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:317:in `within_new_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/database_statements.rb:316:in `transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/transactions.rb:209:in `transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1460:in `ddl_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migrator.rb:4:in `ddl_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1408:in `execute_migration_in_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `migrate_without_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `block in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1481:in `block in with_advisory_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1496:in `with_advisory_lock_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1477:in `with_advisory_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1166:in `up'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1141:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/tasks/database_tasks.rb:262:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/database_tasks.rb:5:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/railties/databases.rake:92:in `block (2 levels) in <main>'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `block in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:21:in `block in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/client.rb:65:in `start_span'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:16:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:219:in `block in invoke_with_call_chain'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `invoke_with_call_chain'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:188:in `invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:188:in `invoke_task'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block (2 levels) in top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block in top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:147:in `run_with_threads'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:132:in `top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block (2 levels) in perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:214:in `standard_exception_handling'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block in perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/rake_module.rb:59:in `with_application'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:18:in `perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command.rb:51:in `invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands.rb:18:in `<main>'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
+=== Dangerous operation detected #strong_migrations ===
+Adding a foreign key blocks writes on both tables. Instead,
+add the foreign key without validating existing rows,
+then validate them in a separate migration.
+class CreateMockExamAttempts < ActiveRecord::Migration[7.0]
+  def change
+    add_foreign_key :mock_exam_questions, :mock_exam_attempts, validate: false
+  end
+end
+class ValidateCreateMockExamAttempts < ActiveRecord::Migration[7.0]
+  def change
+    validate_foreign_key :mock_exam_questions, :mock_exam_attempts
+  end
+end
+/opt/apps/forem/db/migrate/20260530010002_create_mock_exam_attempts.rb:28:in `change'
 Tasks: TOP => db:migrate
 (See full trace by running task with --trace)
+I, [2026-05-30T12:13:17.773930 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
+W, [2026-05-30T12:13:19.967669 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
+I, [2026-05-30T12:13:21.230881 #1]  INFO -- : CareerPolitics Android consumer app initialized
+I, [2026-05-30T12:13:24.223267 #1]  INFO -- : Migrating to CreateMockExamQuestions (20260530010001)
+== 20260530010001 CreateMockExamQuestions: migrating ==========================
+-- create_table(:mock_exam_questions)
+   -> 0.0768s
+-- add_index(:mock_exam_questions, [:mock_exam_attempt_id, :position], {:name=>"idx_mock_questions_attempt_position"})
+   -> 0.0385s
+-- add_index(:mock_exam_questions, [:mock_exam_template_id, :mock_exam_attempt_id], {:name=>"idx_mock_questions_pool", :where=>"mock_exam_attempt_id IS NULL"})
+   -> 0.0030s
+== 20260530010001 CreateMockExamQuestions: migrated (0.1619s) =================
+I, [2026-05-30T12:13:24.435635 #1]  INFO -- : Migrating to CreateMockExamAttempts (20260530010002)
+== 20260530010002 CreateMockExamAttempts: migrating ===========================
+-- create_table(:mock_exam_attempts)
+   -> 0.0409s
+-- add_index(:mock_exam_attempts, [:user_id, :mock_exam_template_id], {:name=>"idx_mock_attempts_user_template"})
+   -> 0.0092s
+-- add_index(:mock_exam_attempts, :status)
+   -> 0.0029s
+I, [2026-05-30T12:13:24.529230 #1]  INFO -- honeybadger: ** [Honeybadger] Reporting error id=26e0b026-3d4f-4cdb-a946-34dd842ebcf2 level=1 pid=1
+I, [2026-05-30T12:13:25.693176 #1]  INFO -- honeybadger: ** [Honeybadger] Success ⚡ https://app.honeybadger.io/notice/26e0b026-3d4f-4cdb-a946-34dd842ebcf2 id=26e0b026-3d4f-4cdb-a946-34dd842ebcf2 code=201 level=1 pid=1
 0s
 0s
 0s
@@ -203,11 +59,11 @@ Tasks: TOP => db:migrate
 0s
 0s
 0s
-1s
+0s
 Post job cleanup.
 /usr/bin/git version
 git version 2.54.0
-Temporarily overriding HOME='/home/runner/work/_temp/d6bd5c9f-8f9b-4b70-9560-cbb6e11cc5ac' before making global git config changes
+Temporarily overriding HOME='/home/runner/work/_temp/d252d4a8-1be4-41c7-aae8-c1fcac2e5b43' before making global git config changes
 Adding repository directory to the temporary git global config as a safe directory
 /usr/bin/git config --global --add safe.directory /home/runner/work/careerpolitics-platform/careerpolitics-platform
 Removing SSH command configuration
@@ -223,17 +79,16 @@ includeif.gitdir:/home/runner/work/careerpolitics-platform/careerpolitics-platfo
 includeif.gitdir:/github/workspace/.git.path
 includeif.gitdir:/github/workspace/.git/worktrees/*.path
 /usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/careerpolitics-platform/careerpolitics-platform/.git.path
-/home/runner/work/_temp/git-credentials-a11ac330-4875-4a5c-8c22-fe1c9ab9c57a.config
-/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/careerpolitics-platform/careerpolitics-platform/.git.path /home/runner/work/_temp/git-credentials-a11ac330-4875-4a5c-8c22-fe1c9ab9c57a.config
+/home/runner/work/_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
+/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/careerpolitics-platform/careerpolitics-platform/.git.path /home/runner/work/_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
 /usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/careerpolitics-platform/careerpolitics-platform/.git/worktrees/*.path
-/home/runner/work/_temp/git-credentials-a11ac330-4875-4a5c-8c22-fe1c9ab9c57a.config
-/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/careerpolitics-platform/careerpolitics-platform/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-a11ac330-4875-4a5c-8c22-fe1c9ab9c57a.config
+/home/runner/work/_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
+/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/careerpolitics-platform/careerpolitics-platform/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
 /usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
-/github/runner_temp/git-credentials-a11ac330-4875-4a5c-8c22-fe1c9ab9c57a.config
-/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-a11ac330-4875-4a5c-8c22-fe1c9ab9c57a.config
+/github/runner_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
+/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
 /usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
-/github/runner_temp/git-credentials-a11ac330-4875-4a5c-8c22-fe1c9ab9c57a.config
-/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-a11ac330-4875-4a5c-8c22-fe1c9ab9c57a.config
+/github/runner_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
+/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config
 /usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
-Removing credentials config '/home/runner/work/_temp/git-credentials-a11ac330-4875-4a5c-8c22-fe1c9ab9c57a.config'
-
+Removing credentials config '/home/runner/work/_temp/git-credentials-bdba6dab-07e1-4214-84f1-34ef3b8fdcb8.config'
