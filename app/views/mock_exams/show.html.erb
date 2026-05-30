@@ -1,0 +1,8 @@
+<%= content_for :page_meta do %>
+  <title><%= @template.title %> — Mock Exam — <%= community_name %></title>
+  <meta name="description" content="<%= truncate(@template.description || '', length: 160) %>" />
+<% end %>
+
+<div id="mock-exam-detail" data-props="<%= { slug: @template.slug }.to_json %>"></div>
+
+<%= javascript_include_tag "mockExams", defer: true %>

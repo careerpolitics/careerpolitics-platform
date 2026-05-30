@@ -1,0 +1,8 @@
+<%= content_for :page_meta do %>
+  <title>Results — <%= @template.title %> — <%= community_name %></title>
+  <meta name="robots" content="noindex" />
+<% end %>
+
+<div id="mock-exam-results" data-props="<%= { slug: @template.slug, attemptId: @attempt.id }.to_json %>"></div>
+
+<%= javascript_include_tag "mockExams", defer: true %>

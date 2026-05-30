@@ -1,0 +1,149 @@
+require "rails_helper"
+
+RSpec.describe "Mock Exams Leaderboard & Stats", type: :request do
+  let(:user) { create(:user) }
+  let(:template) { create(:mock_exam_template) }
+
+  before { sign_in user }
+
+  describe "GET /mock_exams/:slug/leaderboard" do
+    it "returns JSON leaderboard entries" do
+      attempt = create(:mock_exam_attempt,
+                       mock_exam_template: template,
+                       user: user,
+                       status: :submitted,
+                       total_score: 15.0,
+                       max_possible_score: 20.0,
+                       accuracy_percent: 75.0,
+                       submitted_at: 1.hour.ago,
+                       started_at: 2.hours.ago)
+
+      get leaderboard_mock_exam_path(slug: template.slug), headers: { "Accept" => "application/json" }
+
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      expect(json["entries"]).to be_an(Array)
+      expect(json["entries"].first["username"]).to eq(user.username)
+      expect(json["entries"].first["total_score"]).to eq(15.0)
+    end
+
+    it "filters by week" do
+      create(:mock_exam_attempt,
+             mock_exam_template: template,
+             user: user,
+             status: :submitted,
+             total_score: 10.0,
+             submitted_at: 2.days.ago,
+             started_at: 2.days.ago - 1.hour)
+
+      old_attempt = create(:mock_exam_attempt,
+                           mock_exam_template: template,
+                           user: user,
+                           status: :submitted,
+                           total_score: 5.0,
+                           submitted_at: 2.weeks.ago,
+                           started_at: 2.weeks.ago - 1.hour)
+
+      get leaderboard_mock_exam_path(slug: template.slug),
+          params: { filter: "week" },
+          headers: { "Accept" => "application/json" }
+
+      json = JSON.parse(response.body)
+      ids = json["entries"].map { |e| e["attempt_id"] }
+      expect(ids).not_to include(old_attempt.id)
+    end
+
+    it "filters by month" do
+      create(:mock_exam_attempt,
+             mock_exam_template: template,
+             user: user,
+             status: :submitted,
+             total_score: 10.0,
+             submitted_at: 10.days.ago,
+             started_at: 10.days.ago - 1.hour)
+
+      get leaderboard_mock_exam_path(slug: template.slug),
+          params: { filter: "month" },
+          headers: { "Accept" => "application/json" }
+
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      expect(json["entries"]).to be_an(Array)
+    end
+
+    it "limits to 20 entries" do
+      25.times do |i|
+        u = create(:user)
+        create(:mock_exam_attempt,
+               mock_exam_template: template,
+               user: u,
+               status: :submitted,
+               total_score: i,
+               submitted_at: 1.hour.ago,
+               started_at: 2.hours.ago)
+      end
+
+      get leaderboard_mock_exam_path(slug: template.slug),
+          headers: { "Accept" => "application/json" }
+
+      json = JSON.parse(response.body)
+      expect(json["entries"].length).to be <= 20
+    end
+  end
+
+  describe "GET /mock_exams/:slug/stats" do
+    it "returns stats JSON when stats exist" do
+      stat = create(:mock_exam_template_stat,
+                    mock_exam_template: template,
+                    total_attempts: 50,
+                    unique_users: 30)
+
+      get stats_mock_exam_path(slug: template.slug),
+          headers: { "Accept" => "application/json" }
+
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      expect(json["total_attempts"]).to eq(50)
+      expect(json["section_averages"]).to be_present
+      expect(json["difficulty_accuracy"]).to be_present
+    end
+
+    it "returns error when no stats exist" do
+      get stats_mock_exam_path(slug: template.slug),
+          headers: { "Accept" => "application/json" }
+
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      expect(json["error"]).to be_present
+    end
+  end
+
+  describe "GET /mock_exams/dashboard" do
+    it "returns dashboard JSON for authenticated user" do
+      create(:mock_exam_attempt,
+             mock_exam_template: template,
+             user: user,
+             status: :submitted,
+             total_score: 15.0,
+             max_possible_score: 20.0,
+             accuracy_percent: 75.0,
+             submitted_at: 1.hour.ago)
+
+      get dashboard_mock_exams_path, headers: { "Accept" => "application/json" }
+
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      expect(json["total_attempts"]).to be >= 1
+      expect(json["completed_attempts"]).to be >= 1
+      expect(json["attempts"]).to be_an(Array)
+      expect(json["streak_days"]).to be_a(Integer)
+    end
+
+    it "requires authentication" do
+      sign_out user
+      get dashboard_mock_exams_path
+
+      expect(response).to have_http_status(:redirect)
+    end
+  end
+end
