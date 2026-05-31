@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe "Mock Exams Leaderboard & Stats", type: :request do
+RSpec.describe "Mock Exams Leaderboard & Stats" do
   let(:user) { create(:user) }
   let(:template) { create(:mock_exam_template) }
 
@@ -8,23 +8,73 @@ RSpec.describe "Mock Exams Leaderboard & Stats", type: :request do
 
   describe "GET /mock_exams/:slug/leaderboard" do
     it "returns JSON leaderboard entries" do
-      attempt = create(:mock_exam_attempt,
-                       mock_exam_template: template,
-                       user: user,
-                       status: :submitted,
-                       total_score: 15.0,
-                       max_possible_score: 20.0,
-                       accuracy_percent: 75.0,
-                       submitted_at: 1.hour.ago,
-                       started_at: 2.hours.ago)
+      create(:mock_exam_attempt,
+             mock_exam_template: template,
+             user: user,
+             status: :submitted,
+             total_score: 15.0,
+             max_possible_score: 20.0,
+             accuracy_percent: 75.0,
+             submitted_at: 1.hour.ago,
+             started_at: 2.hours.ago)
 
       get leaderboard_mock_exam_path(slug: template.slug), headers: { "Accept" => "application/json" }
 
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json["entries"]).to be_an(Array)
       expect(json["entries"].first["username"]).to eq(user.username)
       expect(json["entries"].first["total_score"]).to eq(15.0)
+    end
+
+    it "ranks the faster attempt higher when scores are equal" do
+      slower = create(:mock_exam_attempt,
+                      mock_exam_template: template,
+                      user: create(:user),
+                      status: :submitted,
+                      total_score: 15.0,
+                      accuracy_percent: 75.0,
+                      started_at: 90.minutes.ago,
+                      submitted_at: 30.minutes.ago) # 60 min
+
+      faster = create(:mock_exam_attempt,
+                      mock_exam_template: template,
+                      user: create(:user),
+                      status: :submitted,
+                      total_score: 15.0,
+                      accuracy_percent: 75.0,
+                      started_at: 50.minutes.ago,
+                      submitted_at: 30.minutes.ago) # 20 min
+
+      get leaderboard_mock_exam_path(slug: template.slug),
+          headers: { "Accept" => "application/json" }
+
+      ids = response.parsed_body["entries"].pluck("attempt_id")
+      expect(ids.index(faster.id)).to be < ids.index(slower.id)
+    end
+
+    it "sorts attempts without a completion time last in a score tie" do
+      timed = create(:mock_exam_attempt,
+                     mock_exam_template: template,
+                     user: create(:user),
+                     status: :submitted,
+                     total_score: 15.0,
+                     started_at: 90.minutes.ago,
+                     submitted_at: 30.minutes.ago)
+
+      no_time = create(:mock_exam_attempt,
+                       mock_exam_template: template,
+                       user: create(:user),
+                       status: :timed_out,
+                       total_score: 15.0,
+                       started_at: 50.minutes.ago,
+                       submitted_at: nil)
+
+      get leaderboard_mock_exam_path(slug: template.slug),
+          headers: { "Accept" => "application/json" }
+
+      ids = response.parsed_body["entries"].pluck("attempt_id")
+      expect(ids.index(timed.id)).to be < ids.index(no_time.id)
     end
 
     it "filters by week" do
@@ -48,8 +98,8 @@ RSpec.describe "Mock Exams Leaderboard & Stats", type: :request do
           params: { filter: "week" },
           headers: { "Accept" => "application/json" }
 
-      json = JSON.parse(response.body)
-      ids = json["entries"].map { |e| e["attempt_id"] }
+      json = response.parsed_body
+      ids = json["entries"].pluck("attempt_id")
       expect(ids).not_to include(old_attempt.id)
     end
 
@@ -67,7 +117,7 @@ RSpec.describe "Mock Exams Leaderboard & Stats", type: :request do
           headers: { "Accept" => "application/json" }
 
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json["entries"]).to be_an(Array)
     end
 
@@ -86,23 +136,23 @@ RSpec.describe "Mock Exams Leaderboard & Stats", type: :request do
       get leaderboard_mock_exam_path(slug: template.slug),
           headers: { "Accept" => "application/json" }
 
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json["entries"].length).to be <= 20
     end
   end
 
   describe "GET /mock_exams/:slug/stats" do
     it "returns stats JSON when stats exist" do
-      stat = create(:mock_exam_template_stat,
-                    mock_exam_template: template,
-                    total_attempts: 50,
-                    unique_users: 30)
+      create(:mock_exam_template_stat,
+             mock_exam_template: template,
+             total_attempts: 50,
+             unique_users: 30)
 
       get stats_mock_exam_path(slug: template.slug),
           headers: { "Accept" => "application/json" }
 
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json["total_attempts"]).to eq(50)
       expect(json["section_averages"]).to be_present
       expect(json["difficulty_accuracy"]).to be_present
@@ -113,7 +163,7 @@ RSpec.describe "Mock Exams Leaderboard & Stats", type: :request do
           headers: { "Accept" => "application/json" }
 
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json["error"]).to be_present
     end
   end
@@ -132,7 +182,7 @@ RSpec.describe "Mock Exams Leaderboard & Stats", type: :request do
       get dashboard_mock_exams_path, headers: { "Accept" => "application/json" }
 
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json["total_attempts"]).to be >= 1
       expect(json["completed_attempts"]).to be >= 1
       expect(json["attempts"]).to be_an(Array)

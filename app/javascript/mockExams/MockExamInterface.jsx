@@ -21,6 +21,10 @@ export function MockExamInterface({ slug, attemptId }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  // Tracks whether the exam was in fullscreen when the submit dialog opened,
+  // so we can restore that state if the user cancels.
+  const wasFullscreenBeforeConfirm = useRef(false);
   const timePerQuestion = useRef({});
   const questionStartTime = useRef(Date.now());
 
@@ -203,13 +207,10 @@ export function MockExamInterface({ slug, attemptId }) {
     [saveResponse],
   );
 
-  const handleSubmit = useCallback(async () => {
+  // Performs the actual submission. Kept separate so it can be triggered both
+  // from the confirmation dialog and automatically when the timer runs out.
+  const performSubmit = useCallback(async () => {
     if (submitting) return;
-
-    const confirmed = window.confirm(
-      'Are you sure you want to submit? You cannot change answers after submission.',
-    );
-    if (!confirmed) return;
 
     setSubmitting(true);
     recordTimeOnQuestion();
@@ -226,13 +227,43 @@ export function MockExamInterface({ slug, attemptId }) {
       window.location.href = data.redirect_to;
     } catch {
       setSubmitting(false);
+      // eslint-disable-next-line no-alert
       alert('Failed to submit. Please try again.');
     }
   }, [slug, attemptId, submitting, recordTimeOnQuestion]);
 
+  // Opens the in-DOM confirmation modal. We use a custom modal rather than
+  // window.confirm() because native dialogs force the browser to exit the
+  // Fullscreen API, leaving the user stuck in windowed mode on cancel.
+  const handleSubmit = useCallback(() => {
+    if (submitting) return;
+    wasFullscreenBeforeConfirm.current = !!document.fullscreenElement;
+    setShowSubmitConfirm(true);
+  }, [submitting]);
+
+  const handleConfirmSubmit = useCallback(() => {
+    setShowSubmitConfirm(false);
+    performSubmit();
+  }, [performSubmit]);
+
+  // Restores the prior fullscreen state on cancel. requestFullscreen() must be
+  // called from within this user-gesture (button click) handler or the browser
+  // will reject it.
+  const handleCancelSubmit = useCallback(() => {
+    setShowSubmitConfirm(false);
+    if (
+      wasFullscreenBeforeConfirm.current &&
+      !document.fullscreenElement &&
+      canFullscreen
+    ) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  }, [canFullscreen]);
+
+  // Auto-submit when the timer runs out — bypasses the confirmation dialog.
   const handleTimeUp = useCallback(() => {
-    handleSubmit();
-  }, [handleSubmit]);
+    performSubmit();
+  }, [performSubmit]);
 
   const handleNavigate = useCallback(
     (index) => {
@@ -524,6 +555,56 @@ export function MockExamInterface({ slug, attemptId }) {
           />
         )}
       </div>
+
+      {/* Submit confirmation modal — custom (not window.confirm) so it does not
+          force the browser out of Fullscreen API mode. */}
+      {showSubmitConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="exam-submit-confirm-title"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 10000,
+            background: 'rgba(0,0,0,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: isMobile ? '12px' : '0',
+          }}
+        >
+          <div
+            class="crayons-card"
+            style={{
+              maxWidth: '420px', width: '100%',
+              padding: isMobile ? '16px' : '24px',
+            }}
+          >
+            <h2 id="exam-submit-confirm-title" class="crayons-title mb-2">
+              Submit exam?
+            </h2>
+            <p class="color-secondary mb-4">
+              Are you sure you want to submit? You cannot change answers after
+              submission.
+            </p>
+            <div class="flex gap-3" style={{ justifyContent: 'flex-end' }}>
+              <button
+                class="c-btn c-btn--secondary"
+                onClick={handleCancelSubmit}
+                disabled={submitting}
+                style={{ minHeight: isMobile ? '44px' : 'auto' }}
+              >
+                Cancel
+              </button>
+              <button
+                class="c-btn c-btn--primary"
+                onClick={handleConfirmSubmit}
+                disabled={submitting}
+                style={{ minHeight: isMobile ? '44px' : 'auto' }}
+              >
+                {submitting ? 'Submitting...' : 'Submit'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating tools */}
       {template.has_calculator && (

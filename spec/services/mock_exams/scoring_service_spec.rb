@@ -82,6 +82,39 @@ RSpec.describe MockExams::ScoringService do
       expect(attempt.rank).to eq(1)
     end
 
+    it "ranks an equal-score attempt behind a faster one" do
+      # attempt under test takes 60 minutes
+      attempt.update!(started_at: 90.minutes.ago, submitted_at: 30.minutes.ago)
+
+      # competitor: same score (3 correct, 1 wrong) but only 20 minutes
+      faster = create(:mock_exam_attempt,
+                      mock_exam_template: template,
+                      user: create(:user),
+                      status: :submitted,
+                      total_score: (3 * 2.0) - (1 * 0.67),
+                      started_at: 50.minutes.ago,
+                      submitted_at: 30.minutes.ago)
+
+      result
+      expect(attempt.rank).to eq(2)
+      expect(faster.reload.total_score).to eq(attempt.total_score)
+    end
+
+    it "ranks an equal-score attempt ahead of a slower one" do
+      attempt.update!(started_at: 50.minutes.ago, submitted_at: 30.minutes.ago) # 20 min
+
+      create(:mock_exam_attempt,
+             mock_exam_template: template,
+             user: create(:user),
+             status: :submitted,
+             total_score: (3 * 2.0) - (1 * 0.67),
+             started_at: 90.minutes.ago,
+             submitted_at: 30.minutes.ago) # 60 min
+
+      result
+      expect(attempt.rank).to eq(1)
+    end
+
     it "computes avg_time_per_question" do
       result
       expect(attempt.avg_time_per_question).to eq(34.0)
