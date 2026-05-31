@@ -65,7 +65,7 @@ export function ExamResults({ slug, attemptId }) {
     const q = filteredQuestions[currentIndex];
 
     return (
-      <div class="crayons-layout__content">
+      <div>
         <div class="flex items-center justify-between mb-4">
           <button class="c-btn c-btn--secondary" onClick={() => setReviewMode(false)}>
             ← Back to Results
@@ -139,7 +139,7 @@ export function ExamResults({ slug, attemptId }) {
   }
 
   return (
-    <div class="crayons-layout__content">
+    <div>
       <h1 class="crayons-title mb-4">Exam Results</h1>
 
       {/* Score Overview */}
