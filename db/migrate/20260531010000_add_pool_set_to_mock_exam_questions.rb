@@ -1,12 +1,15 @@
 class AddPoolSetToMockExamQuestions < ActiveRecord::Migration[7.0]
-  def change
-    add_column :mock_exam_questions, :pool_set, :integer
-    add_column :mock_exam_questions, :set_published, :boolean, default: false, null: false
-    add_column :mock_exam_questions, :source_question_id, :integer
+  def up
+    add_column :mock_exam_questions, :pool_set, :integer unless column_exists?(:mock_exam_questions, :pool_set)
+    unless column_exists?(:mock_exam_questions, :set_published)
+      add_column :mock_exam_questions, :set_published, :boolean, default: false, null: false
+    end
+    add_column :mock_exam_questions, :source_question_id, :integer unless column_exists?(:mock_exam_questions, :source_question_id)
+  end
 
-    add_index :mock_exam_questions,
-              %i[mock_exam_template_id pool_set],
-              name: "idx_mock_questions_template_set",
-              where: "mock_exam_attempt_id IS NULL AND pool_set IS NOT NULL"
+  def down
+    remove_column :mock_exam_questions, :source_question_id if column_exists?(:mock_exam_questions, :source_question_id)
+    remove_column :mock_exam_questions, :set_published if column_exists?(:mock_exam_questions, :set_published)
+    remove_column :mock_exam_questions, :pool_set if column_exists?(:mock_exam_questions, :pool_set)
   end
 end
