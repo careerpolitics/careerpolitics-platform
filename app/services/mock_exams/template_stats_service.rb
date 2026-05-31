@@ -56,9 +56,9 @@ module MockExams
       @attempts.pluck(:section_scores).compact.each do |scores|
         scores.each do |section_name, data|
           section_data[section_name] ||= { scores: [], corrects: [], wrongs: [] }
-          section_data[section_name][:scores] << (data["score"] || 0)
-          section_data[section_name][:corrects] << (data["correct"] || 0)
-          section_data[section_name][:wrongs] << (data["wrong"] || 0)
+          section_data[section_name][:scores] << (data["score"] || 0).to_f
+          section_data[section_name][:corrects] << (data["correct"] || 0).to_i
+          section_data[section_name][:wrongs] << (data["wrong"] || 0).to_i
         end
       end
 

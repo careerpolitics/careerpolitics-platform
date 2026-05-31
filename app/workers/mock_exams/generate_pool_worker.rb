@@ -4,7 +4,7 @@ module MockExams
 
     sidekiq_options queue: :low_priority, lock: :until_executing, on_conflict: :replace
 
-    def perform(template_id, multiplier = 5)
+    def perform(template_id, sets_count = 3)
       return unless Ai::Base::DEFAULT_KEY.present?
 
       template = MockExamTemplate.find_by(id: template_id)
@@ -16,7 +16,7 @@ module MockExams
       total_per_exam = template.total_questions
 
       generator = Ai::MockExamQuestionGenerator.new(template)
-      questions_data = generator.generate_pool(multiplier: multiplier)
+      questions_data = generator.generate_pool(sets_count: sets_count)
 
       created = 0
       questions_data.each_with_index do |q_data, idx|

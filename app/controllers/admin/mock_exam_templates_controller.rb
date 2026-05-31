@@ -100,17 +100,32 @@ module Admin
 
     def generate_pool
       @template = MockExamTemplate.find(params[:id])
-      MockExams::GeneratePoolWorker.perform_async(@template.id)
+      sets = (params[:sets_count].presence || 3).to_i.clamp(1, 20)
+      MockExams::GeneratePoolWorker.perform_async(@template.id, sets)
       redirect_to admin_mock_exam_template_path(@template),
-                  notice: "Pool generation started. Questions will appear in a few minutes."
+                  notice: "Generating #{sets} new sets. Questions will appear in a few minutes."
     end
 
     def refresh_pool
       @template = MockExamTemplate.find(params[:id])
       @template.pool_questions.where(set_published: false).destroy_all
-      MockExams::GeneratePoolWorker.perform_async(@template.id)
+      sets = (params[:sets_count].presence || 3).to_i.clamp(1, 20)
+      MockExams::GeneratePoolWorker.perform_async(@template.id, sets)
       redirect_to admin_mock_exam_template_path(@template),
                   notice: "Unpublished questions cleared and new sets being generated. Published sets are preserved."
+    end
+
+    def translate_pool
+      @template = MockExamTemplate.find(params[:id])
+      untranslated = @template.pool_questions.where(text_hi: nil).count
+      if untranslated.zero?
+        redirect_to admin_mock_exam_template_path(@template),
+                    notice: "All pool questions are already translated to Hindi."
+      else
+        MockExams::TranslatePoolWorker.perform_async(@template.id)
+        redirect_to admin_mock_exam_template_path(@template),
+                    notice: "Translating #{untranslated} questions to Hindi. This may take a few minutes."
+      end
     end
 
     private

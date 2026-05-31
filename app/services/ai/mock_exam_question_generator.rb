@@ -11,11 +11,11 @@ module Ai
         )
     end
 
-    def generate_pool(multiplier: 5)
+    def generate_pool(sets_count: 3)
       questions = []
 
       @template.sections_config.each do |section|
-        section_count = (section["count"] * multiplier).ceil
+        section_count = section["count"] * sets_count
         section_questions = generate_section_questions(
           section_name: section["name"],
           section_type: section["type"] || "knowledge",

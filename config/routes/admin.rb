@@ -155,6 +155,7 @@ namespace :admin do
       member do
         post :generate_pool
         post :refresh_pool
+        post :translate_pool
         get :review_set
         post :publish_set
         post :unpublish_set
