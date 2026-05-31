@@ -1,0 +1,92 @@
+<div class="crayons-card p-6">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="crayons-title"><%= @template.title %> — Set <%= @set_number %></h1>
+    <div class="flex gap-2">
+      <% if @is_published %>
+        <%= button_to "Unpublish Set",
+                      unpublish_set_admin_mock_exam_template_path(@template, set: @set_number),
+                      method: :post, class: "c-btn c-btn--destructive",
+                      data: { confirm: "This will hide Set #{@set_number} from users. Continue?" } %>
+      <% else %>
+        <%= button_to "Publish Set",
+                      publish_set_admin_mock_exam_template_path(@template, set: @set_number),
+                      method: :post, class: "c-btn c-btn--primary",
+                      data: { confirm: "This will make Set #{@set_number} available to users. Continue?" } %>
+      <% end %>
+      <%= link_to "Back", admin_mock_exam_template_path(@template), class: "c-btn c-btn--secondary" %>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <% if @is_published %>
+      <span class="c-indicator c-indicator--success">Published</span>
+    <% else %>
+      <span class="c-indicator c-indicator--warning">Draft — not visible to users</span>
+    <% end %>
+    <span class="color-secondary ml-2"><%= @questions.count %> questions</span>
+  </div>
+
+  <% if @questions.any? %>
+    <% @questions.each_with_index do |q, idx| %>
+      <div class="crayons-card crayons-card--secondary p-4 mb-3">
+        <div class="flex items-start justify-between mb-2">
+          <div>
+            <span class="fw-bold">Q<%= idx + 1 %>.</span>
+            <span class="crayons-tag crayons-tag--monochrome fs-xs"><%= q.section_name %></span>
+            <span class="crayons-tag crayons-tag--monochrome fs-xs"><%= q.difficulty %></span>
+            <span class="crayons-tag crayons-tag--monochrome fs-xs"><%= q.question_type %></span>
+          </div>
+          <div class="flex gap-1">
+            <%= link_to "Edit",
+                        edit_question_admin_mock_exam_template_path(@template, question_id: q.id),
+                        class: "c-btn c-btn--secondary c-btn--s" %>
+            <%= button_to "Delete",
+                          destroy_question_admin_mock_exam_template_path(@template, question_id: q.id),
+                          method: :delete, class: "c-btn c-btn--destructive c-btn--s",
+                          data: { confirm: "Delete this question permanently?" } %>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <% if q.question_html.present? %>
+            <div class="spec__body"><%= q.question_html.html_safe %></div>
+          <% else %>
+            <p><%= q.question_text %></p>
+          <% end %>
+        </div>
+
+        <div class="mb-2">
+          <% q.options.each do |opt| %>
+            <div class="p-2 mb-1 radius-default flex items-center gap-2"
+                 style="background: <%= opt['key'] == q.correct_option_key ?
+                        'var(--accent-success-a10)' : 'var(--card-secondary-bg)' %>;">
+              <span class="fw-bold"
+                    style="<%= opt['key'] == q.correct_option_key ? 'color: var(--accent-success)' : '' %>">
+                <%= opt['key'] %>.
+              </span>
+              <span><%= opt['text'] %></span>
+              <% if opt['key'] == q.correct_option_key %>
+                <span class="fs-xs fw-bold" style="color: var(--accent-success);">✓ Correct</span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <% if q.explanation.present? %>
+          <details class="mt-2">
+            <summary class="fw-bold fs-s cursor-pointer">Explanation</summary>
+            <div class="p-2 mt-1" style="background: var(--card-secondary-bg); border-radius: 6px;">
+              <% if q.explanation_html.present? %>
+                <div class="spec__body"><%= q.explanation_html.html_safe %></div>
+              <% else %>
+                <p><%= q.explanation %></p>
+              <% end %>
+            </div>
+          </details>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="text-center color-secondary p-6">No questions in this set.</div>
+  <% end %>
+</div>

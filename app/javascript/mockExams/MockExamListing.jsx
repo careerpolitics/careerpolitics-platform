@@ -34,7 +34,7 @@ export function MockExamListing() {
   }
 
   return (
-    <div class="crayons-layout__content">
+    <div>
       <h1 class="crayons-title mb-4">Mock Exams</h1>
       <div class="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
         {templates.map((t) => (

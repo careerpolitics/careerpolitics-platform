@@ -8,21 +8,24 @@ const TIME_FILTERS = [
   { key: 'week', label: 'This Week' },
 ];
 
-export function ExamLeaderboard({ slug, currentUserId, currentAttemptId }) {
+export function ExamLeaderboard({ slug, currentUserId, currentAttemptId, sets }) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState('all');
+  const [setFilter, setSetFilter] = useState('');
 
   useEffect(() => {
     setLoading(true);
-    request(`/mock_exams/${slug}/leaderboard.json?filter=${timeFilter}`)
+    let url = `/mock_exams/${slug}/leaderboard.json?filter=${timeFilter}`;
+    if (setFilter) url += `&set=${setFilter}`;
+    request(url)
       .then((res) => res.json())
       .then((data) => {
         setEntries(data.entries || []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [slug, timeFilter]);
+  }, [slug, timeFilter, setFilter]);
 
   if (loading) {
     return (
@@ -32,31 +35,55 @@ export function ExamLeaderboard({ slug, currentUserId, currentAttemptId }) {
     );
   }
 
+  const availableSets = sets || [];
+
   return (
     <div class="crayons-card p-6">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h3 class="crayons-subtitle-2">Leaderboard</h3>
-        <div class="flex gap-1">
-          {TIME_FILTERS.map((f) => (
-            <button
-              key={f.key}
-              class={`c-btn c-btn--s ${timeFilter === f.key ? 'c-btn--primary' : 'c-btn--secondary'}`}
-              onClick={() => setTimeFilter(f.key)}
+        <div class="flex gap-2 flex-wrap">
+          {availableSets.length > 0 && (
+            <select
+              class="crayons-select fs-s"
+              value={setFilter}
+              onChange={(e) => setSetFilter(e.target.value)}
+              style={{ minWidth: '100px' }}
             >
-              {f.label}
-            </button>
-          ))}
+              <option value="">All Sets</option>
+              {availableSets.map((s) => (
+                <option key={s.set_number} value={s.set_number}>
+                  Set {s.set_number}
+                </option>
+              ))}
+            </select>
+          )}
+          <div class="flex gap-1">
+            {TIME_FILTERS.map((f) => (
+              <button
+                key={f.key}
+                class={`c-btn c-btn--s ${
+                  timeFilter === f.key ? 'c-btn--primary' : 'c-btn--secondary'
+                }`}
+                onClick={() => setTimeFilter(f.key)}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {entries.length === 0 ? (
-        <p class="color-secondary text-center">No attempts yet for this period.</p>
+        <p class="color-secondary text-center">
+          No attempts yet for this period.
+        </p>
       ) : (
         <table class="crayons-table" style={{ width: '100%' }}>
           <thead>
           <tr>
             <th style={{ width: '50px' }}>#</th>
-            <th>User</th>
+            <th>Name</th>
+            <th>Set</th>
             <th>Score</th>
             <th>Accuracy</th>
             <th>Time</th>
@@ -65,34 +92,38 @@ export function ExamLeaderboard({ slug, currentUserId, currentAttemptId }) {
           <tbody>
           {entries.map((entry, i) => {
             const isCurrentUser = entry.user_id === currentUserId;
-            const isCurrentAttempt = entry.attempt_id === currentAttemptId;
-
             return (
               <tr
                 key={entry.attempt_id}
                 style={{
-                  background: isCurrentUser ? 'var(--accent-brand-a10)' : 'transparent',
+                  background: isCurrentUser
+                    ? 'var(--accent-brand-a10)' : 'transparent',
                   fontWeight: isCurrentUser ? 'bold' : 'normal',
                 }}
               >
-                <td>
-                  <RankBadge rank={i + 1} />
-                </td>
+                <td><RankBadge rank={i + 1} /></td>
                 <td>
                   <div class="flex items-center gap-2">
                     {entry.profile_image && (
                       <img
                         src={entry.profile_image}
                         alt=""
-                        style={{ width: '24px', height: '24px', borderRadius: '50%' }}
+                        style={{
+                          width: '24px', height: '24px', borderRadius: '50%',
+                        }}
                         loading="lazy"
                       />
                     )}
                     <span>
-                        {entry.username}
-                      {isCurrentUser && <span class="fs-xs color-secondary"> (you)</span>}
-                      </span>
+                      {entry.name || entry.username}
+                      {isCurrentUser && (
+                        <span class="fs-xs color-secondary"> (you)</span>
+                      )}
+                    </span>
                   </div>
+                </td>
+                <td class="fs-s">
+                  {entry.pool_set ? `Set ${entry.pool_set}` : 'Random'}
                 </td>
                 <td>{entry.total_score} / {entry.max_possible_score}</td>
                 <td>{entry.accuracy_percent}%</td>
@@ -109,7 +140,6 @@ export function ExamLeaderboard({ slug, currentUserId, currentAttemptId }) {
 
 function RankBadge({ rank }) {
   const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
-
   if (medals[rank]) {
     return <span style={{ fontSize: '1.2rem' }}>{medals[rank]}</span>;
   }

@@ -33,7 +33,7 @@ export function UserMockExamDashboard() {
   }
 
   return (
-    <div class="crayons-layout__content">
+    <div>
       <h1 class="crayons-title mb-4">My Mock Exams</h1>
 
       {/* Summary Cards */}

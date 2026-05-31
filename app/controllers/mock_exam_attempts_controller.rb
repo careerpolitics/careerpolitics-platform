@@ -6,31 +6,48 @@ class MockExamAttemptsController < ApplicationController
   def create
     authorize MockExamAttempt
 
-    questions = MockExams::AssembleExamService.new(@template, current_user).call
+    selected_set = params[:pool_set].present? ? params[:pool_set].to_i : nil
+    service = MockExams::AssembleExamService.new(@template, current_user, pool_set: selected_set)
+    questions = service.call
+
+    unless questions
+      msg = "No published questions available. Please try a different set or try later."
+      respond_to do |format|
+        format.html { redirect_to mock_exam_path(slug: @template.slug), alert: msg }
+        format.json { render json: { errors: [msg] }, status: :unprocessable_entity }
+      end
+      return
+    end
 
     @attempt = current_user.mock_exam_attempts.build(
       mock_exam_template: @template,
       started_at: Time.current,
       expires_at: Time.current + @template.duration_minutes.minutes,
-      questions_source: questions ? :pool : :generated,
+      pool_set: selected_set,
       )
     authorize @attempt
 
     unless @attempt.save
-      redirect_to mock_exam_path(slug: @template.slug), alert: @attempt.errors.full_messages.first
+      respond_to do |format|
+        format.html { redirect_to mock_exam_path(slug: @template.slug), alert: @attempt.errors.full_messages.first }
+        format.json { render json: { errors: @attempt.errors.full_messages }, status: :unprocessable_entity }
+      end
       return
     end
 
-    if questions
-      questions.each_with_index do |q, idx|
-        q.update!(mock_exam_attempt: @attempt, position: idx + 1)
-        MockExamResponse.create!(mock_exam_attempt: @attempt, mock_exam_question: q)
-      end
-    else
-      MockExams::GenerateQuestionsWorker.perform_async(@attempt.id)
+    questions.each do |q|
+      q.mock_exam_attempt = @attempt
+      q.save!
+      MockExamResponse.create!(mock_exam_attempt: @attempt, mock_exam_question: q)
     end
 
-    redirect_to mock_exam_attempt_path(slug: @template.slug, id: @attempt.id)
+    respond_to do |format|
+      format.html { redirect_to mock_exam_attempt_path(slug: @template.slug, id: @attempt.id) }
+      format.json do
+        render json: { id: @attempt.id,
+                       redirect_to: "/mock_exams/#{@template.slug}/attempts/#{@attempt.id}" }
+      end
+    end
   end
 
   def show
@@ -104,7 +121,6 @@ class MockExamAttemptsController < ApplicationController
       id: attempt.id,
       status: attempt.status,
       time_remaining_seconds: attempt.time_remaining_seconds,
-      questions_source: attempt.questions_source,
       template: {
         title: @template.title,
         total_questions: @template.total_questions,

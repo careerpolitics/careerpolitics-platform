@@ -1,7 +1,7 @@
 class MockExamsController < ApplicationController
   before_action :set_cache_control_headers, only: %i[index show]
   before_action :authenticate_user!, only: %i[dashboard]
-  before_action :set_template_by_slug, only: %i[show leaderboard stats]
+  before_action :set_template_by_slug, only: %i[show leaderboard stats sets]
 
   rescue_from ActiveRecord::RecordNotFound do
     render file: Rails.root.join("public/404.html"), layout: false, status: :not_found
@@ -31,7 +31,6 @@ class MockExamsController < ApplicationController
         render json: template_json(@template).merge(
           stats: @stats ? stats_json(@stats) : nil,
           pool_ready: @template.pool_ready?,
-          user_attempts_today: user_attempts_today_count,
           can_attempt: can_attempt?,
           )
       end
@@ -41,6 +40,22 @@ class MockExamsController < ApplicationController
   def leaderboard
     entries = build_leaderboard_entries
     render json: { entries: entries }
+  end
+
+  def sets
+    sets_data = @template.published_sets.map do |set_number, count|
+      attempts_for_set = @template.mock_exam_attempts.where(pool_set: set_number).count
+      user_attempted = current_user ? current_user.mock_exam_attempts
+                                                  .for_template(@template)
+                                                  .where(pool_set: set_number).exists? : false
+      {
+        set_number: set_number,
+        question_count: count,
+        attempts_count: attempts_for_set,
+        user_attempted: user_attempted,
+      }
+    end
+    render json: { sets: sets_data }
   end
 
   def stats
@@ -92,6 +107,7 @@ class MockExamsController < ApplicationController
       sections_config: template.sections_config,
       has_calculator: template.has_calculator,
       has_scratchpad: template.has_scratchpad,
+      sets_count: template.available_sets.size,
     }
   end
 
@@ -134,6 +150,8 @@ class MockExamsController < ApplicationController
       scope = scope.where("submitted_at >= ?", 1.month.ago)
     end
 
+    scope = scope.where(pool_set: params[:set]) if params[:set].present?
+
     scope
       .order(total_score: :desc, submitted_at: :asc)
       .limit(20)
@@ -143,10 +161,12 @@ class MockExamsController < ApplicationController
         attempt_id: attempt.id,
         user_id: attempt.user_id,
         username: attempt.user.username,
+        name: attempt.user.name.presence || attempt.user.username,
         profile_image: attempt.user.profile_image_90,
         total_score: attempt.total_score,
         max_possible_score: attempt.max_possible_score,
         accuracy_percent: attempt.accuracy_percent,
+        pool_set: attempt.pool_set,
         time_taken_seconds: attempt.submitted_at && attempt.started_at ?
                               (attempt.submitted_at - attempt.started_at).to_i : nil,
       }
@@ -199,18 +219,7 @@ class MockExamsController < ApplicationController
     streak
   end
 
-  def user_attempts_today_count
-    return 0 unless current_user
-
-    current_user.mock_exam_attempts
-                .where(mock_exam_template: @template)
-                .where("created_at >= ?", Time.current.beginning_of_day)
-                .count
-  end
-
   def can_attempt?
-    return false unless current_user
-
-    user_attempts_today_count < MockExamAttempt::MAX_DAILY_ATTEMPTS_PER_TEMPLATE
+    current_user.present?
   end
 end

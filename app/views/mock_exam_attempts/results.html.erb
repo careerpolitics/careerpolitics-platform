@@ -3,6 +3,9 @@
   <meta name="robots" content="noindex" />
 <% end %>
 
-<div id="mock-exam-results" data-props="<%= { slug: @template.slug, attemptId: @attempt.id }.to_json %>"></div>
-
+<div class="crayons-layout crayons-layout--limited-l">
+  <div class="crayons-layout__content">
+    <div id="mock-exam-results" data-props="<%= { slug: @template.slug, attemptId: @attempt.id }.to_json %>"></div>
+  </div>
+</div>
 <%= javascript_include_tag "mockExams", defer: true %>

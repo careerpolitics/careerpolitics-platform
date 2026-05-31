@@ -29,19 +29,6 @@ RSpec.describe MockExamQuestion, type: :model do
     end
   end
 
-  describe "#pool_question?" do
-    it "returns true when mock_exam_attempt_id is nil" do
-      question = build(:mock_exam_question, mock_exam_attempt: nil)
-      expect(question.pool_question?).to be(true)
-    end
-
-    it "returns false when linked to an attempt" do
-      attempt = create(:mock_exam_attempt)
-      question = build(:mock_exam_question, mock_exam_attempt: attempt)
-      expect(question.pool_question?).to be(false)
-    end
-  end
-
   describe "#increment_served!" do
     it "increments times_served by 1" do
       question = create(:mock_exam_question)

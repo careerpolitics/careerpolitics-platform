@@ -3,6 +3,10 @@
   <meta name="description" content="<%= truncate(@template.description || '', length: 160) %>" />
 <% end %>
 
-<div id="mock-exam-detail" data-props="<%= { slug: @template.slug }.to_json %>"></div>
+<div class="crayons-layout crayons-layout--limited-l">
+  <div class="crayons-layout__content">
+    <div id="mock-exam-detail" data-props="<%= { slug: @template.slug }.to_json %>"></div>
+  </div>
+</div>
 
 <%= javascript_include_tag "mockExams", defer: true %>

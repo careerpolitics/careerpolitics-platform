@@ -63,20 +63,6 @@ RSpec.describe Ai::MockExamQuestionGenerator do
     end
   end
 
-  describe "#generate_for_attempt" do
-    let(:attempt) { create(:mock_exam_attempt, mock_exam_template: template) }
-
-    before do
-      allow(ai_client).to receive(:call).and_return(valid_questions_json)
-    end
-
-    it "generates questions for each section" do
-      result = generator.generate_for_attempt(attempt)
-      expect(result).to be_an(Array)
-      expect(result).not_to be_empty
-    end
-  end
-
   describe "maths/reasoning prompt generation" do
     let(:maths_template) do
       create(:mock_exam_template, :with_maths,
