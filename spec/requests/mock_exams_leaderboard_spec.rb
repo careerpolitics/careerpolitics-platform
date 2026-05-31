@@ -24,7 +24,7 @@ RSpec.describe "Mock Exams Leaderboard & Stats" do
       json = response.parsed_body
       expect(json["entries"]).to be_an(Array)
       expect(json["entries"].first["username"]).to eq(user.username)
-      expect(json["entries"].first["total_score"]).to eq(15.0)
+      expect(json["entries"].first["total_score"].to_f).to eq(15.0)
     end
 
     it "ranks the faster attempt higher when scores are equal" do
@@ -146,7 +146,9 @@ RSpec.describe "Mock Exams Leaderboard & Stats" do
       create(:mock_exam_template_stat,
              mock_exam_template: template,
              total_attempts: 50,
-             unique_users: 30)
+             unique_users: 30,
+             section_averages: { "General" => 75.0 },
+             difficulty_accuracy: { "easy" => 82.0, "medium" => 60.0, "hard" => 35.0 })
 
       get stats_mock_exam_path(slug: template.slug),
           headers: { "Accept" => "application/json" }
