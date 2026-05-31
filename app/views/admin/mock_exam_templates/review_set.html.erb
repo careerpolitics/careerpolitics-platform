@@ -82,7 +82,8 @@
                     style="<%= opt['key'] == q.correct_option_key ? 'color: var(--accent-success)' : '' %>">
                 <%= opt['key'] %>.
               </span>
-              <span><%= opt['text'] %></span>
+              <span class="lang-en"><%= opt['text'] %></span>
+              <span class="lang-hi" style="display: none;"><%= opt['text_hi'].presence || opt["text"] %></span>
               <% if opt['key'] == q.correct_option_key %>
                 <span class="fs-xs fw-bold" style="color: var(--accent-success);">✓ Correct</span>
               <% end %>
