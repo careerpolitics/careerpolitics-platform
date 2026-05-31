@@ -18,7 +18,6 @@ class CreateMockExamAttempts < ActiveRecord::Migration[7.0]
       t.integer :rank
       t.decimal :accuracy_percent, precision: 5, scale: 1
       t.decimal :avg_time_per_question, precision: 8, scale: 1
-      t.integer :questions_source, default: 0, null: false
       t.timestamps
     end
 
