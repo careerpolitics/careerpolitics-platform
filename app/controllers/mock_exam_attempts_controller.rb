@@ -42,7 +42,7 @@ class MockExamAttemptsController < ApplicationController
     end
 
     respond_to do |format|
-      format.html { redirect_to mock_exam_attempt_path(slug: @template.slug, id: @attempt.id) }
+      format.html { redirect_to mock_exam_attempt_path(mock_exam_slug: @template.slug, id: @attempt.id) }
       format.json do
         render json: { id: @attempt.id,
                        redirect_to: "/mock_exams/#{@template.slug}/attempts/#{@attempt.id}" }
@@ -56,12 +56,12 @@ class MockExamAttemptsController < ApplicationController
     if @attempt.expired? && @attempt.in_progress?
       @attempt.update!(status: :timed_out, submitted_at: Time.current)
       MockExams::ScoringService.new(@attempt).call
-      redirect_to results_mock_exam_attempt_path(slug: @template.slug, id: @attempt.id)
+      redirect_to results_mock_exam_attempt_path(mock_exam_slug: @template.slug, id: @attempt.id)
       return
     end
 
     unless @attempt.in_progress?
-      redirect_to results_mock_exam_attempt_path(slug: @template.slug, id: @attempt.id)
+      redirect_to results_mock_exam_attempt_path(mock_exam_slug: @template.slug, id: @attempt.id)
       return
     end
 
@@ -77,7 +77,7 @@ class MockExamAttemptsController < ApplicationController
     authorize @attempt
 
     unless @attempt.in_progress?
-      redirect_to results_mock_exam_attempt_path(slug: @template.slug, id: @attempt.id)
+      redirect_to results_mock_exam_attempt_path(mock_exam_slug: @template.slug, id: @attempt.id)
       return
     end
 
@@ -90,8 +90,8 @@ class MockExamAttemptsController < ApplicationController
     MockExams::ScoringService.new(@attempt).call
 
     respond_to do |format|
-      format.html { redirect_to results_mock_exam_attempt_path(slug: @template.slug, id: @attempt.id) }
-      format.json { render json: { redirect_to: results_mock_exam_attempt_path(slug: @template.slug, id: @attempt.id) } }
+      format.html { redirect_to results_mock_exam_attempt_path(mock_exam_slug: @template.slug, id: @attempt.id) }
+      format.json { render json: { redirect_to: results_mock_exam_attempt_path(mock_exam_slug: @template.slug, id: @attempt.id) } }
     end
   end
 
