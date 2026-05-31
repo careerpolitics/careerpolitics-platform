@@ -155,6 +155,12 @@ namespace :admin do
       member do
         post :generate_pool
         post :refresh_pool
+        get :review_set
+        post :publish_set
+        post :unpublish_set
+        get "questions/:question_id/edit", action: :edit_question, as: :edit_question
+        patch "questions/:question_id", action: :update_question, as: :update_question
+        delete "questions/:question_id", action: :destroy_question, as: :destroy_question
       end
     end
   end

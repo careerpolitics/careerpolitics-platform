@@ -290,6 +290,7 @@ Rails.application.routes.draw do
       member do
         get :leaderboard, defaults: { format: :json }
         get :stats, defaults: { format: :json }
+        get :sets, defaults: { format: :json }
       end
       collection do
         get :dashboard
@@ -301,7 +302,6 @@ Rails.application.routes.draw do
         end
       end
     end
-    resources :mock_exam_responses, only: %i[create update], defaults: { format: :json }
 
     resources :profile_pins, only: %i[create update]
     # temporary keeping both routes while transitioning (renaming) display_ads => billboards

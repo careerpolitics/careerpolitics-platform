@@ -1,8 +1,17 @@
 <%= content_for :page_meta do %>
   <title>Exam in Progress — <%= @template.title %> — <%= community_name %></title>
   <meta name="robots" content="noindex" />
+  <style>
+    .top-bar, .crayons-header, #page-content > footer, footer,
+    .side-bar, .crayons-layout__sidebar-left, .stories-sidebar,
+    .broadcast-wrapper, #runtime-banner-container { display: none !important; }
+    #page-content { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+    #page-content-inner { padding: 0 !important; }
+    body { overflow: hidden; }
+  </style>
 <% end %>
 
-<div id="mock-exam-interface" data-props="<%= { slug: @template.slug, attemptId: @attempt.id }.to_json %>"></div>
+<div id="mock-exam-interface"
+     data-props="<%= { slug: @template.slug, attemptId: @attempt.id }.to_json %>"></div>
 
 <%= javascript_include_tag "mockExams", defer: true %>

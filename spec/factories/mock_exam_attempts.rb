@@ -5,7 +5,6 @@ FactoryBot.define do
     status { :in_progress }
     started_at { Time.current }
     expires_at { Time.current + 30.minutes }
-    questions_source { :pool }
 
     trait :submitted do
       status { :submitted }
@@ -27,10 +26,6 @@ FactoryBot.define do
 
     trait :abandoned do
       status { :abandoned }
-    end
-
-    trait :generated do
-      questions_source { :generated }
     end
   end
 end

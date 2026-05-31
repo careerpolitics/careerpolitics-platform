@@ -47,7 +47,34 @@ class MockExamTemplate < ApplicationRecord
   end
 
   def pool_ready?
-    pool_size >= total_questions
+    published_pool_size >= total_questions
+  end
+
+  def published_pool_size
+    mock_exam_questions.published_sets.count
+  end
+
+  def available_sets
+    pool_questions.where.not(pool_set: nil)
+                  .group(:pool_set)
+                  .order(:pool_set)
+                  .count
+  end
+
+  def published_sets
+    pool_questions.where.not(pool_set: nil)
+                  .where(set_published: true)
+                  .group(:pool_set)
+                  .order(:pool_set)
+                  .count
+  end
+
+  def set_questions(set_number)
+    pool_questions.where(pool_set: set_number).order(:position)
+  end
+
+  def set_published?(set_number)
+    pool_questions.where(pool_set: set_number, set_published: true).exists?
   end
 
   private

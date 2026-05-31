@@ -57,7 +57,7 @@
           <% end %>
         </p>
       </div>
-      <div class="flex gap-2">
+      <div class="flex gap-2 mb-4">
         <%= button_to "Generate Pool", generate_pool_admin_mock_exam_template_path(@template),
                       method: :post, class: "c-btn c-btn--primary",
                       data: { confirm: "This will generate ~#{@template.total_questions * 5} questions via AI. Proceed?" } %>
@@ -65,6 +65,41 @@
                       method: :post, class: "c-btn c-btn--destructive",
                       data: { confirm: "This will DELETE all existing pool questions and regenerate. Are you sure?" } %>
       </div>
+
+      <% if @available_sets.any? %>
+        <h3 class="crayons-subtitle-2 mt-4 mb-3">Question Sets</h3>
+        <table class="crayons-table mb-4">
+          <thead>
+          <tr>
+            <th>Set</th>
+            <th>Questions</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <% @available_sets.each do |set_number, count| %>
+            <% published = @template.set_published?(set_number) %>
+            <tr>
+              <td class="fw-bold">Set <%= set_number %></td>
+              <td><%= count %> questions</td>
+              <td>
+                <% if published %>
+                  <span class="c-indicator c-indicator--success">Published</span>
+                <% else %>
+                  <span class="c-indicator c-indicator--warning">Draft</span>
+                <% end %>
+              </td>
+              <td>
+                <%= link_to "Review",
+                            review_set_admin_mock_exam_template_path(@template, set: set_number),
+                            class: "c-btn c-btn--secondary c-btn--s" %>
+              </td>
+            </tr>
+          <% end %>
+          </tbody>
+        </table>
+      <% end %>
 
       <% if @stats %>
         <h3 class="crayons-subtitle-2 mt-6 mb-3">Aggregate Stats</h3>
@@ -131,7 +166,7 @@
         <tr>
           <th>User</th>
           <th>Status</th>
-          <th>Source</th>
+          <th>Set</th>
           <th>Score</th>
           <th>Accuracy</th>
           <th>Started</th>
@@ -142,7 +177,7 @@
           <tr>
             <td><%= attempt.user.username %></td>
             <td><%= attempt.status.titleize %></td>
-            <td><%= attempt.questions_source %></td>
+            <td><%= attempt.pool_set ? "Set #{attempt.pool_set}" : "Random" %></td>
             <td><%= attempt.total_score || "—" %> / <%= attempt.max_possible_score || "—" %></td>
             <td><%= attempt.accuracy_percent ? "#{attempt.accuracy_percent}%" : "—" %></td>
             <td><%= attempt.started_at.to_fs(:short) %></td>

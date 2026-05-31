@@ -27,10 +27,8 @@ class MockExamQuestion < ApplicationRecord
   scope :pool, -> { where(mock_exam_attempt_id: nil) }
   scope :for_section, ->(name) { where(section_name: name) }
   scope :for_difficulty, ->(diff) { where(difficulty: diff) }
-
-  def pool_question?
-    mock_exam_attempt_id.nil?
-  end
+  scope :for_set, ->(set_num) { where(pool_set: set_num) }
+  scope :published_sets, -> { where(set_published: true, mock_exam_attempt_id: nil) }
 
   def increment_served!
     increment!(:times_served) # rubocop:disable Rails/SkipsModelValidations

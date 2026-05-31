@@ -28,22 +28,6 @@ module Ai
       questions
     end
 
-    def generate_for_attempt(attempt)
-      questions = []
-
-      @template.sections_config.each do |section|
-        section_questions = generate_section_questions(
-          section_name: section["name"],
-          section_type: section["type"] || "knowledge",
-          count: section["count"],
-          topics: section["topics"],
-          )
-        questions.concat(section_questions)
-      end
-
-      questions
-    end
-
     private
 
     def generate_section_questions(section_name:, section_type:, count:, topics: nil)

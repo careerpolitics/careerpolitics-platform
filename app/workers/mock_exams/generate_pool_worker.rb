@@ -12,16 +12,22 @@ module MockExams
 
       Rails.logger.info("MockExams::GeneratePoolWorker: Starting pool generation for template #{template_id}")
 
+      next_set = (template.pool_questions.maximum(:pool_set) || 0) + 1
+      total_per_exam = template.total_questions
+
       generator = Ai::MockExamQuestionGenerator.new(template)
       questions_data = generator.generate_pool(multiplier: multiplier)
 
       created = 0
       questions_data.each_with_index do |q_data, idx|
+        set_number = next_set + (idx / total_per_exam)
+
         MockExamQuestion.create!(
           mock_exam_template: template,
           mock_exam_attempt: nil,
+          pool_set: set_number,
           section_name: q_data["section_name"],
-          position: idx + 1,
+          position: (idx % total_per_exam) + 1,
           question_type: q_data["question_type"] || "knowledge",
           question_text: q_data["question_text"],
           question_format: :text,
@@ -35,6 +41,7 @@ module MockExams
             model: Ai::Base::DEFAULT_LITE_MODEL,
             generated_at: Time.current.iso8601,
             pool_generation: true,
+            pool_set: set_number,
           },
           )
         created += 1

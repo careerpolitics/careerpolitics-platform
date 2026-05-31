@@ -202,6 +202,19 @@ export function MockExamInterface({ slug, attemptId }) {
     [recordTimeOnQuestion],
   );
 
+  // Request full-screen on mount
+  useEffect(() => {
+    const el = document.documentElement;
+    if (el.requestFullscreen && !document.fullscreenElement) {
+      el.requestFullscreen().catch(() => {});
+    }
+    return () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    };
+  }, []);
+
   if (loading) {
     return (
       <div class="crayons-card p-6 flex justify-center">
