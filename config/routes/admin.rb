@@ -151,12 +151,11 @@ namespace :admin do
         patch :end_broadcast
       end
     end
-  end
-
-  resources :mock_exam_templates do
-    member do
-      post :generate_pool
-      post :refresh_pool
+    resources :mock_exam_templates do
+      member do
+        post :generate_pool
+        post :refresh_pool
+      end
     end
   end
 

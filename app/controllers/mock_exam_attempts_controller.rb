@@ -92,7 +92,7 @@ class MockExamAttemptsController < ApplicationController
   private
 
   def set_template
-    @template = MockExamTemplate.find_by!(slug: params[:slug], active: true, published: true)
+    @template = MockExamTemplate.find_by!(slug: params[:mock_exam_slug], active: true, published: true)
   end
 
   def set_attempt
