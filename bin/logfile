@@ -1,262 +1,526 @@
-026-05-31T04:40:39.872Z pid=1 tid=5y7p class=MockExams::RefreshTemplateStatsWorker jid=99532be961dd202784512a2e elapsed=0.177 INFO: fail
-2026-05-31T04:40:39.872Z pid=1 tid=5y7p WARN: {"context":"Job raised exception","job":{"retry":true,"queue":"low_priority","lock":"until_executing","on_conflict":"replace","args":[1],"class":"MockExams::RefreshTemplateStatsWorker","jid":"99532be961dd202784512a2e","created_at":1780202439.631298,"lock_timeout":0,"lock_ttl":null,"lock_prefix":"uniquejobs","lock_args":[1],"lock_digest":"uniquejobs:f8efc8ac69fd2d1097908727947a534e","enqueued_at":1780202439.6928766}}
-2026-05-31T04:40:39.872Z pid=1 tid=5y7p WARN: TypeError: no implicit conversion of Integer into String
-2026-05-31T04:40:39.872Z pid=1 tid=5y7p WARN: /opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/core_ext/enumerable.rb:94:in `+'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/core_ext/enumerable.rb:94:in `block in sum'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/core_ext/enumerable.rb:82:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/core_ext/enumerable.rb:82:in `reduce'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/core_ext/enumerable.rb:82:in `sum'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/core_ext/enumerable.rb:320:in `sum'
-/opt/apps/forem/app/services/mock_exams/template_stats_service.rb:68:in `block in build_section_averages'
-/opt/apps/forem/app/services/mock_exams/template_stats_service.rb:65:in `transform_values'
-/opt/apps/forem/app/services/mock_exams/template_stats_service.rb:65:in `build_section_averages'
-/opt/apps/forem/app/services/mock_exams/template_stats_service.rb:21:in `call'
-/opt/apps/forem/app/workers/mock_exams/refresh_template_stats_worker.rb:11:in `perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:202:in `execute_job'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:170:in `block (2 levels) in process'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:177:in `block in invoke'
-/opt/apps/forem/lib/sidekiq/memory_killer.rb:13:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
-/opt/apps/forem/lib/sidekiq/sidekiq_connection_cleanup.rb:6:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/lock/until_executing.rb:35:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware/server.rb:27:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware.rb:41:in `block in call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:142:in `block in with_logging_context'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/logger.rb:11:in `with'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:157:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:157:in `with_configured_loggers_context'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:141:in `with_logging_context'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware.rb:40:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware/client.rb:37:in `block in lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/lock/until_executing.rb:26:in `lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware/client.rb:35:in `lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware/client.rb:29:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware.rb:41:in `block in call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:142:in `block in with_logging_context'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/logger.rb:11:in `with'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:157:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:157:in `with_configured_loggers_context'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/logging.rb:141:in `with_logging_context'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-unique-jobs-7.1.33/lib/sidekiq_unique_jobs/middleware.rb:40:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
-/opt/apps/forem/lib/sidekiq/honeycomb_middleware.rb:16:in `block in call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/client.rb:65:in `start_span'
-/usr/local/lib/ruby/3.3.0/forwardable.rb:240:in `start_span'
-/opt/apps/forem/lib/sidekiq/honeycomb_middleware.rb:8:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
-/opt/apps/forem/lib/sidekiq/transaction_safe_rescue.rb:13:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/contrib/sidekiq/server_tracer.rb:79:in `block in call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/tracer.rb:529:in `skip_trace'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/tracer.rb:136:in `trace'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing.rb:18:in `trace'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/tracing/contrib/sidekiq/server_tracer.rb:40:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-throttled-1.5.2/lib/sidekiq/throttled/middlewares/server.rb:15:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeybadger-4.12.2/lib/honeybadger/plugins/sidekiq.rb:10:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:179:in `block in invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/middleware/chain.rb:182:in `invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:169:in `block in process'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:136:in `block (6 levels) in dispatch'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_retry.rb:113:in `local'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:135:in `block (5 levels) in dispatch'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/rails.rb:14:in `block in call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/execution_wrapper.rb:92:in `wrap'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/reloader.rb:72:in `block in wrap'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/execution_wrapper.rb:92:in `wrap'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/reloader.rb:71:in `wrap'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/rails.rb:13:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:131:in `block (4 levels) in dispatch'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:263:in `stats'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:126:in `block (3 levels) in dispatch'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_logger.rb:13:in `call'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:125:in `block (2 levels) in dispatch'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_retry.rb:80:in `global'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:124:in `block in dispatch'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/job_logger.rb:39:in `prepare'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:123:in `dispatch'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:168:in `process'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:78:in `process_one'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/processor.rb:68:in `run'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/component.rb:8:in `watchdog'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq/component.rb:17:in `block in safe_thread'
-2026-05-31T04:40:39.872Z pid=1 tid=5y7p WARN: `config.options[:key] = value` is deprecated, use `config[:key] = value`: ["/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeybadger-4.12.2/lib/honeybadger/plugins/sidekiq.rb:41:in `block (4 levels) in <module:Sidekiq>'", "/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/sidekiq-6.5.12/lib/sidekiq.rb:124:in `block in handle_exception'"]
-2026-05-31T04:41:04.821Z pid=1 tid=5rqx class=MockExams::RefreshTemplateStatsWorker jid=99532be961dd202784512a2e INFO: start
-2026-05-31T04:41:04.835Z pid=1 tid=5rqx class=MockExams::RefreshTemplateStatsWorker jid=99532be961dd202784512a2e elapsed=0.014 INFO: done
-2026-05-31T04:45:04.852Z pid=1 tid=5rs1 class=GithubRepos::UpdateLatestWorker jid=78c0618e0671740f7db2d826 INFO: start
-2026-05-31T04:45:04.878Z pid=1 tid=5xxp class=CaptureQueryStatsWorker jid=a82c389ff71a02e380b33377 INFO: start
-2026-05-31T04:45:04.894Z pid=1 tid=5rut class=Articles::PublishWorker jid=c9e152f1db5113cef57937de INFO: start
-2026-05-31T04:45:04.940Z pid=1 tid=5z5l class=Events::ManageBroadcastBillboardsWorker jid=ca97edf0ece633681d3065b1 INFO: start
-2026-05-31T04:45:05.077Z pid=1 tid=5xxp class=CaptureQueryStatsWorker jid=a82c389ff71a02e380b33377 elapsed=0.199 INFO: done
-2026-05-31T04:45:05.116Z pid=1 tid=5rs1 class=GithubRepos::UpdateLatestWorker jid=78c0618e0671740f7db2d826 elapsed=0.263 INFO: done
-2026-05-31T04:45:05.127Z pid=1 tid=5rut class=Articles::PublishWorker jid=c9e152f1db5113cef57937de elapsed=0.233 INFO: done
-2026-05-31T04:45:05.145Z pid=1 tid=5z5l class=Events::ManageBroadcastBillboardsWorker jid=ca97edf0ece633681d3065b1 elapsed=0.204 INFO: done
-2026-05-31T04:45:19.537Z pid=1 tid=5rpt uniquejobs=reaper INFO: Nothing to delete; exiting.
-2026-05-31T04:45:19.538Z pid=1 tid=5rpt uniquejobs=reaper INFO: Nothing to delete; exiting.
-2026-05-31T04:46:04.133Z pid=1 tid=5zf1 class=MockExams::GeneratePoolWorker jid=13d8e77e169f145c8cd6daa0 INFO: start
-I, [2026-05-31T04:46:04.148275 #1]  INFO -- : MockExams::GeneratePoolWorker: Starting pool generation for template 2
-2026-05-31T04:50:19.711Z pid=1 tid=608h class=Metrics::RecordBackgroundQueueStatsWorker jid=7817415f5b07acbe180461eb INFO: start
-2026-05-31T04:50:20.073Z pid=1 tid=6091 class=CaptureQueryStatsWorker jid=c5018c56ecf0ec2073924fb0 INFO: start
-2026-05-31T04:50:20.073Z pid=1 tid=609l class=Articles::PublishWorker jid=54aa2a2c74942e61f58d6084 INFO: start
-2026-05-31T04:50:20.075Z pid=1 tid=5s99 class=ScheduledAutomations::ProcessWorker jid=0a191fbacd8ad367898cd2e6 INFO: start
-I, [2026-05-31T04:50:20.091773 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
-2026-05-31T04:50:20.075Z pid=1 tid=5xxp class=Events::ManageBroadcastBillboardsWorker jid=74eb1f22e2d7f3b9a285da4c INFO: start
-2026-05-31T04:50:20.278Z pid=1 tid=6091 class=CaptureQueryStatsWorker jid=c5018c56ecf0ec2073924fb0 elapsed=0.205 INFO: done
-I, [2026-05-31T04:50:20.286165 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
-2026-05-31T04:50:20.290Z pid=1 tid=5s99 class=ScheduledAutomations::ProcessWorker jid=0a191fbacd8ad367898cd2e6 elapsed=0.215 INFO: done
-2026-05-31T04:50:20.303Z pid=1 tid=609l class=Articles::PublishWorker jid=54aa2a2c74942e61f58d6084 elapsed=0.23 INFO: done
-2026-05-31T04:50:20.315Z pid=1 tid=608h class=Metrics::RecordBackgroundQueueStatsWorker jid=7817415f5b07acbe180461eb elapsed=0.604 INFO: done
-2026-05-31T04:50:20.332Z pid=1 tid=5xxp class=Events::ManageBroadcastBillboardsWorker jid=74eb1f22e2d7f3b9a285da4c elapsed=0.257 INFO: done
-W, [2026-05-31T04:50:32.586641 #1]  WARN -- : Ai::MockExamQuestionGenerator: Retry 1/2 — unexpected token at ']
-]'
+Follow Logs:
+Show timestamp:
+Since:
+-1
+Tail:
+-1
+Destination:
+Filter:
+Enter your keywords
+Wrap lines:
+Running command:
+bundle exec rails server -b 0.0.0.0 -p 3000
+=> Booting Puma
+=> Rails 7.0.8.7 application starting in production
+=> Run `bin/rails server --help` for more startup options
+service_name is unknown, will set to unknown_service:rails
+dataset will be ignored, sending data to unknown_service:rails
+/opt/apps/forem/app/services/images/generate_subforem_images.rb:2: warning: already initialized constant Images::TEMPLATE_PATH
+/opt/apps/forem/app/services/images/generate_social_image_magickally.rb:4: warning: previous definition of TEMPLATE_PATH was here
+/opt/apps/forem/app/services/push_notifications/unified_notifier.rb:25: warning: key :payload is duplicated and overwritten on line 28
+/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:44: warning: already initialized constant Net::HTTP::Purge::METHOD
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:166: warning: previous definition of METHOD was here
+/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:45: warning: already initialized constant Net::HTTP::Purge::REQUEST_HAS_BODY
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:167: warning: previous definition of REQUEST_HAS_BODY was here
+/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:46: warning: already initialized constant Net::HTTP::Purge::RESPONSE_HAS_BODY
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:168: warning: previous definition of RESPONSE_HAS_BODY was here
+I, [2026-05-31T06:55:22.106996 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2026-05-31T06:55:22.120133 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2026-05-31T06:55:22+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+I, [2026-05-31T06:55:31.738523 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
+W, [2026-05-31T06:55:33.836293 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
+I, [2026-05-31T06:55:33.931171 #1]  INFO -- : CareerPolitics Android consumer app initialized
+[1] Puma starting in cluster mode...
+[1] * Puma version: 5.6.9 (ruby 3.3.0-p0) ("Birdie's Version")
+[1] *  Min threads: 2
+[1] *  Max threads: 2
+[1] *  Environment: production
+[1] *   Master PID: 1
+[1] *      Workers: 2
+[1] *     Restarts: (✔) hot (✖) phased
+[1] * Preloading application
+[1] * Listening on http://0.0.0.0:3000
+[1] Use Ctrl-C to stop
+[1] ! Promoting existing objects to old generation...
+[1] ! Compacting...
+[1] ! Friendly fork preparation complete.
+[1] - Worker 0 (PID: 63) booted in 0.01s, phase: 0
+[1] - Worker 1 (PID: 69) booted in 0.01s, phase: 0
+E, [2026-05-31T06:56:53.151818 #63] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
+I, [2026-05-31T06:56:53.180011 #63]  INFO -- : [ccaa812857a3840d8c44a12d5095c78a] Started GET "/license.txt" for 165.245.181.156 at 2026-05-31 06:56:53 +0000
+I, [2026-05-31T06:56:53.431126 #63]  INFO -- : [ccaa812857a3840d8c44a12d5095c78a] Processing by PagesController#show as TEXT
+I, [2026-05-31T06:56:53.431455 #63]  INFO -- : [ccaa812857a3840d8c44a12d5095c78a]   Parameters: {"locale"=>nil, "slug"=>"license"}
+I, [2026-05-31T06:56:53.464364 #63]  INFO -- : [ccaa812857a3840d8c44a12d5095c78a] Completed 404 Not Found in 32ms (ActiveRecord: 12.4ms | Allocations: 3743)
+F, [2026-05-31T06:56:53.466771 #63] FATAL -- : [ccaa812857a3840d8c44a12d5095c78a]
+[ccaa812857a3840d8c44a12d5095c78a] ActiveRecord::RecordNotFound (Couldn't find Page with [WHERE "pages"."slug" = $1]):
+[ccaa812857a3840d8c44a12d5095c78a]
+[ccaa812857a3840d8c44a12d5095c78a] app/controllers/pages_controller.rb:148:in `proper_page_by_slug'
+[ccaa812857a3840d8c44a12d5095c78a] app/controllers/pages_controller.rb:7:in `show'
+[ccaa812857a3840d8c44a12d5095c78a] app/controllers/application_controller.rb:175:in `handle_argument_error'
+[ccaa812857a3840d8c44a12d5095c78a] app/lib/middlewares/set_subforem.rb:24:in `call'
+[ccaa812857a3840d8c44a12d5095c78a] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
+[ccaa812857a3840d8c44a12d5095c78a] app/lib/middlewares/restore_original_host.rb:23:in `call'
+I, [2026-05-31T06:56:54.960149 #63]  INFO -- : [e245afd63ee405c0fed7dc20ccd8ed7c] Started GET "/admin/content_manager/mock_exam_templates" for 103.24.87.129 at 2026-05-31 06:56:54 +0000
+I, [2026-05-31T06:56:55.010981 #63]  INFO -- : [e245afd63ee405c0fed7dc20ccd8ed7c] Processing by Admin::MockExamTemplatesController#index as HTML
+I, [2026-05-31T06:56:55.011327 #63]  INFO -- : [e245afd63ee405c0fed7dc20ccd8ed7c]   Parameters: {"locale"=>nil}
+I, [2026-05-31T06:56:55.070493 #63]  INFO -- : [e245afd63ee405c0fed7dc20ccd8ed7c]   Rendered admin/mock_exam_templates/index.html.erb within layouts/admin (Duration: 6.6ms | Allocations: 1195)
+I, [2026-05-31T06:56:55.306437 #63]  INFO -- : [e245afd63ee405c0fed7dc20ccd8ed7c]   Rendered layout layouts/admin.html.erb (Duration: 242.7ms | Allocations: 34576)
+I, [2026-05-31T06:56:55.307960 #63]  INFO -- : [e245afd63ee405c0fed7dc20ccd8ed7c] Completed 200 OK in 296ms (Views: 240.6ms | ActiveRecord: 27.5ms | Allocations: 41554)
+I, [2026-05-31T06:57:03.443996 #63]  INFO -- : [36f1f6652d8e08169640d744594df2da] Started GET "/admin/content_manager/mock_exam_templates/new" for 103.24.87.129 at 2026-05-31 06:57:03 +0000
+I, [2026-05-31T06:57:03.482406 #63]  INFO -- : [36f1f6652d8e08169640d744594df2da] Processing by Admin::MockExamTemplatesController#new as HTML
+I, [2026-05-31T06:57:03.482712 #63]  INFO -- : [36f1f6652d8e08169640d744594df2da]   Parameters: {"locale"=>nil}
+I, [2026-05-31T06:57:03.534862 #63]  INFO -- : [36f1f6652d8e08169640d744594df2da]   Rendered admin/mock_exam_templates/new.html.erb within layouts/admin (Duration: 16.6ms | Allocations: 7539)
+I, [2026-05-31T06:57:03.564219 #63]  INFO -- : [36f1f6652d8e08169640d744594df2da]   Rendered layout layouts/admin.html.erb (Duration: 47.2ms | Allocations: 25379)
+I, [2026-05-31T06:57:03.564908 #63]  INFO -- : [36f1f6652d8e08169640d744594df2da] Completed 200 OK in 82ms (Views: 46.4ms | ActiveRecord: 12.8ms | Allocations: 35123)
+I, [2026-05-31T06:57:45.697462 #63]  INFO -- : [724fdb52ab4eeead052c20bcbe348d68] Started GET "/ravi-prakash_bot_1777170712/neet-ug-2026-exam-analysis-key-dates-and-strategy-guide-f64" for 85.208.96.211 at 2026-05-31 06:57:45 +0000
+I, [2026-05-31T06:57:45.743789 #63]  INFO -- : [724fdb52ab4eeead052c20bcbe348d68] Processing by StoriesController#show as HTML
+I, [2026-05-31T06:57:45.744244 #63]  INFO -- : [724fdb52ab4eeead052c20bcbe348d68]   Parameters: {"locale"=>nil, "username"=>"ravi-prakash_bot_1777170712", "slug"=>"neet-ug-2026-exam-analysis-key-dates-and-strategy-guide-f64"}
+I, [2026-05-31T06:57:46.353954 #63]  INFO -- : [724fdb52ab4eeead052c20bcbe348d68]   Rendered articles/show.html.erb within layouts/application (Duration: 395.9ms | Allocations: 78362)
+I, [2026-05-31T06:57:46.560954 #63]  INFO -- : [724fdb52ab4eeead052c20bcbe348d68]   Rendered layout layouts/application.html.erb (Duration: 603.0ms | Allocations: 136206)
+I, [2026-05-31T06:57:46.561788 #63]  INFO -- : [724fdb52ab4eeead052c20bcbe348d68] Completed 200 OK in 817ms (Views: 524.9ms | ActiveRecord: 145.9ms | Allocations: 188466)
+I, [2026-05-31T06:58:38.542596 #63]  INFO -- : [e4b8179173680637705ede0b4edcebc6] Started GET "/the_cp_team/karnataka-2nd-puc-result-2026-new-passing-marks-policy-expected-release-date-and-how-to-check-1712" for 57.141.14.36 at 2026-05-31 06:58:38 +0000
+I, [2026-05-31T06:58:38.652755 #63]  INFO -- : [e4b8179173680637705ede0b4edcebc6] Processing by StoriesController#show as */*
+I, [2026-05-31T06:58:38.653455 #63]  INFO -- : [e4b8179173680637705ede0b4edcebc6]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"karnataka-2nd-puc-result-2026-new-passing-marks-policy-expected-release-date-and-how-to-check-1712"}
+I, [2026-05-31T06:58:38.904266 #63]  INFO -- : [e4b8179173680637705ede0b4edcebc6]   Rendered articles/show.html.erb within layouts/application (Duration: 143.1ms | Allocations: 41941)
+I, [2026-05-31T06:58:38.938567 #63]  INFO -- : [e4b8179173680637705ede0b4edcebc6]   Rendered layout layouts/application.html.erb (Duration: 177.5ms | Allocations: 58473)
+I, [2026-05-31T06:58:38.939418 #63]  INFO -- : [e4b8179173680637705ede0b4edcebc6] Completed 200 OK in 285ms (Views: 160.4ms | ActiveRecord: 47.8ms | Allocations: 84051)
+I, [2026-05-31T06:58:58.299291 #63]  INFO -- : [562c952b56c8efde2de3b4e30e3bc755] Started GET "/raushan_kumarraman_a15f6" for 57.141.14.108 at 2026-05-31 06:58:58 +0000
+I, [2026-05-31T06:58:58.374502 #63]  INFO -- : [562c952b56c8efde2de3b4e30e3bc755] Processing by StoriesController#index as */*
+I, [2026-05-31T06:58:58.374714 #63]  INFO -- : [562c952b56c8efde2de3b4e30e3bc755]   Parameters: {"locale"=>nil, "username"=>"raushan_kumarraman_a15f6"}
+E, [2026-05-31T06:58:58.559154 #63] ERROR -- : [562c952b56c8efde2de3b4e30e3bc755]   Couldn't find template for digesting: user_comments_sections/user_comments_section
+I, [2026-05-31T06:58:58.598072 #63]  INFO -- : [562c952b56c8efde2de3b4e30e3bc755]   Rendered users/show.html.erb within layouts/application (Duration: 68.9ms | Allocations: 11757)
+I, [2026-05-31T06:58:58.669126 #63]  INFO -- : [562c952b56c8efde2de3b4e30e3bc755]   Rendered layout layouts/application.html.erb (Duration: 143.0ms | Allocations: 24690)
+I, [2026-05-31T06:58:58.674653 #63]  INFO -- : [562c952b56c8efde2de3b4e30e3bc755] Completed 200 OK in 300ms (Views: 147.0ms | ActiveRecord: 83.0ms | Allocations: 40124)
+I, [2026-05-31T06:59:19.239700 #63]  INFO -- : [c8798f12c17c4758240ac57d0d28d686] Started GET "/the_cp_team/ccsu-date-sheet-2025-released-exam-schedule-for-pg-diploma-ba-bcom-ma-and-mcom-24km" for 57.141.14.22 at 2026-05-31 06:59:19 +0000
+I, [2026-05-31T06:59:19.278319 #63]  INFO -- : [c8798f12c17c4758240ac57d0d28d686] Processing by StoriesController#show as */*
+I, [2026-05-31T06:59:19.278687 #63]  INFO -- : [c8798f12c17c4758240ac57d0d28d686]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"ccsu-date-sheet-2025-released-exam-schedule-for-pg-diploma-ba-bcom-ma-and-mcom-24km"}
+I, [2026-05-31T06:59:19.421346 #63]  INFO -- : [c8798f12c17c4758240ac57d0d28d686]   Rendered articles/show.html.erb within layouts/application (Duration: 92.1ms | Allocations: 34147)
+I, [2026-05-31T06:59:19.444210 #63]  INFO -- : [c8798f12c17c4758240ac57d0d28d686]   Rendered layout layouts/application.html.erb (Duration: 115.0ms | Allocations: 47110)
+I, [2026-05-31T06:59:19.445180 #63]  INFO -- : [c8798f12c17c4758240ac57d0d28d686] Completed 200 OK in 166ms (Views: 97.9ms | ActiveRecord: 36.6ms | Allocations: 55562)
+I, [2026-05-31T06:59:31.527638 #63]  INFO -- : [c698a96115d0dd7a886211e155c99c62] Started GET "/the_cp_team/jac-9th-result-2026-declared-check-scores-at-jacresultscom-850" for 57.141.14.98 at 2026-05-31 06:59:31 +0000
+I, [2026-05-31T06:59:31.571154 #63]  INFO -- : [c698a96115d0dd7a886211e155c99c62] Processing by StoriesController#show as */*
+I, [2026-05-31T06:59:31.571668 #63]  INFO -- : [c698a96115d0dd7a886211e155c99c62]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"jac-9th-result-2026-declared-check-scores-at-jacresultscom-850"}
+I, [2026-05-31T06:59:31.707296 #63]  INFO -- : [c698a96115d0dd7a886211e155c99c62]   Rendered articles/show.html.erb within layouts/application (Duration: 86.6ms | Allocations: 30696)
+I, [2026-05-31T06:59:31.739267 #63]  INFO -- : [c698a96115d0dd7a886211e155c99c62]   Rendered layout layouts/application.html.erb (Duration: 118.6ms | Allocations: 43628)
+I, [2026-05-31T06:59:31.740317 #63]  INFO -- : [c698a96115d0dd7a886211e155c99c62] Completed 200 OK in 168ms (Views: 104.5ms | ActiveRecord: 36.2ms | Allocations: 51700)
+I, [2026-05-31T06:59:39.212800 #63]  INFO -- : [fdd9deec635f75a00036192d994c2cf9] Started GET "/aman-tiwari_bot_1777170740/indian-army-agniveer-admit-card-2026-download-link-exam-dates-5bgi" for 185.191.171.3 at 2026-05-31 06:59:39 +0000
+I, [2026-05-31T06:59:39.256082 #63]  INFO -- : [fdd9deec635f75a00036192d994c2cf9] Processing by StoriesController#show as HTML
+I, [2026-05-31T06:59:39.257008 #63]  INFO -- : [fdd9deec635f75a00036192d994c2cf9]   Parameters: {"locale"=>nil, "username"=>"aman-tiwari_bot_1777170740", "slug"=>"indian-army-agniveer-admit-card-2026-download-link-exam-dates-5bgi"}
+I, [2026-05-31T06:59:39.411884 #63]  INFO -- : [fdd9deec635f75a00036192d994c2cf9]   Rendered articles/show.html.erb within layouts/application (Duration: 103.6ms | Allocations: 37019)
+I, [2026-05-31T06:59:39.438710 #63]  INFO -- : [fdd9deec635f75a00036192d994c2cf9]   Rendered layout layouts/application.html.erb (Duration: 130.5ms | Allocations: 49963)
+I, [2026-05-31T06:59:39.439996 #63]  INFO -- : [fdd9deec635f75a00036192d994c2cf9] Completed 200 OK in 182ms (Views: 109.8ms | ActiveRecord: 43.7ms | Allocations: 57620)
+I, [2026-05-31T06:59:43.396539 #63]  INFO -- : [a781e467b61ebc838d74eaf2de10b2a9] Started GET "/robots.txt" for 216.244.66.196 at 2026-05-31 06:59:43 +0000
+I, [2026-05-31T06:59:43.437188 #63]  INFO -- : [a781e467b61ebc838d74eaf2de10b2a9] Processing by PagesController#robots as TEXT
+I, [2026-05-31T06:59:43.437690 #63]  INFO -- : [a781e467b61ebc838d74eaf2de10b2a9]   Parameters: {"locale"=>nil}
+I, [2026-05-31T06:59:43.449166 #63]  INFO -- : [a781e467b61ebc838d74eaf2de10b2a9]   Rendered pages/robots.text.erb (Duration: 1.8ms | Allocations: 402)
+I, [2026-05-31T06:59:43.450827 #63]  INFO -- : [a781e467b61ebc838d74eaf2de10b2a9] Completed 200 OK in 13ms (Views: 7.1ms | ActiveRecord: 0.0ms | Allocations: 2330)
+E, [2026-05-31T07:01:10.786705 #69] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
+I, [2026-05-31T07:01:10.800871 #69]  INFO -- : [934f9665d14f670acc01ac0d4c28aeb0] Started GET "/t/karnataka" for 85.208.96.200 at 2026-05-31 07:01:10 +0000
+I, [2026-05-31T07:01:11.034034 #69]  INFO -- : [934f9665d14f670acc01ac0d4c28aeb0] Processing by Stories::TaggedArticlesController#index as HTML
+I, [2026-05-31T07:01:11.034747 #69]  INFO -- : [934f9665d14f670acc01ac0d4c28aeb0]   Parameters: {"locale"=>nil, "tag"=>"karnataka"}
+I, [2026-05-31T07:01:11.409902 #69]  INFO -- : [934f9665d14f670acc01ac0d4c28aeb0]   Rendered stories/tagged_articles/index.html.erb within layouts/application (Duration: 265.3ms | Allocations: 36269)
+I, [2026-05-31T07:01:11.487627 #69]  INFO -- : [934f9665d14f670acc01ac0d4c28aeb0]   Rendered layout layouts/application.html.erb (Duration: 344.2ms | Allocations: 58577)
+I, [2026-05-31T07:01:11.489051 #69]  INFO -- : [934f9665d14f670acc01ac0d4c28aeb0] Completed 200 OK in 454ms (Views: 335.2ms | ActiveRecord: 61.1ms | Allocations: 70906)
+I, [2026-05-31T07:01:34.343173 #69]  INFO -- : [945961ea2813624fcacd12da2e509b38] Started GET "/the_cp_team/viteee-2026-application-deadline-passed-exam-scheduled-for-april-28-may-3-j61" for 57.141.14.83 at 2026-05-31 07:01:34 +0000
+I, [2026-05-31T07:01:34.405231 #69]  INFO -- : [945961ea2813624fcacd12da2e509b38] Processing by StoriesController#show as */*
+I, [2026-05-31T07:01:34.405679 #69]  INFO -- : [945961ea2813624fcacd12da2e509b38]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"viteee-2026-application-deadline-passed-exam-scheduled-for-april-28-may-3-j61"}
+I, [2026-05-31T07:01:34.758945 #69]  INFO -- : [945961ea2813624fcacd12da2e509b38]   Rendered articles/show.html.erb within layouts/application (Duration: 162.7ms | Allocations: 54189)
+I, [2026-05-31T07:01:34.795741 #69]  INFO -- : [945961ea2813624fcacd12da2e509b38]   Rendered layout layouts/application.html.erb (Duration: 199.5ms | Allocations: 70894)
+I, [2026-05-31T07:01:34.796569 #69]  INFO -- : [945961ea2813624fcacd12da2e509b38] Completed 200 OK in 390ms (Views: 181.5ms | ActiveRecord: 114.7ms | Allocations: 109141)
+I, [2026-05-31T07:01:58.519108 #63]  INFO -- : [8111742ab7cf1158909d2f0fafd91bb5] Started GET "/the_cp_team/jkbose-10th-result-2026-out-check-jk-board-summer-zone-score-at-jkresultsnicin-4kbi" for 47.128.35.141 at 2026-05-31 07:01:58 +0000
+I, [2026-05-31T07:01:58.803280 #63]  INFO -- : [8111742ab7cf1158909d2f0fafd91bb5] Processing by StoriesController#show as HTML
+I, [2026-05-31T07:01:58.803949 #63]  INFO -- : [8111742ab7cf1158909d2f0fafd91bb5]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"jkbose-10th-result-2026-out-check-jk-board-summer-zone-score-at-jkresultsnicin-4kbi"}
+I, [2026-05-31T07:01:59.062342 #63]  INFO -- : [8111742ab7cf1158909d2f0fafd91bb5]   Rendered articles/show.html.erb within layouts/application (Duration: 152.1ms | Allocations: 35344)
+I, [2026-05-31T07:01:59.101363 #63]  INFO -- : [8111742ab7cf1158909d2f0fafd91bb5]   Rendered layout layouts/application.html.erb (Duration: 191.1ms | Allocations: 51361)
+I, [2026-05-31T07:01:59.102366 #63]  INFO -- : [8111742ab7cf1158909d2f0fafd91bb5] Completed 200 OK in 298ms (Views: 173.5ms | ActiveRecord: 57.1ms | Allocations: 59640)
+I, [2026-05-31T07:02:11.199461 #69]  INFO -- : [bdf280dcee078c90f8769d1e0c2c0b5e] Started GET "/the_cp_team/up-board-result-2026-expected-soon-latest-updates-on-date-how-to-check-and-passing-criteria-1lj4" for 57.141.14.94 at 2026-05-31 07:02:11 +0000
+I, [2026-05-31T07:02:11.238224 #69]  INFO -- : [bdf280dcee078c90f8769d1e0c2c0b5e] Processing by StoriesController#show as */*
+I, [2026-05-31T07:02:11.238619 #69]  INFO -- : [bdf280dcee078c90f8769d1e0c2c0b5e]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"up-board-result-2026-expected-soon-latest-updates-on-date-how-to-check-and-passing-criteria-1lj4"}
+I, [2026-05-31T07:02:11.450381 #69]  INFO -- : [bdf280dcee078c90f8769d1e0c2c0b5e]   Rendered articles/show.html.erb within layouts/application (Duration: 160.3ms | Allocations: 34111)
+I, [2026-05-31T07:02:11.479837 #69]  INFO -- : [bdf280dcee078c90f8769d1e0c2c0b5e]   Rendered layout layouts/application.html.erb (Duration: 189.8ms | Allocations: 47056)
+I, [2026-05-31T07:02:11.480800 #69]  INFO -- : [bdf280dcee078c90f8769d1e0c2c0b5e] Completed 200 OK in 242ms (Views: 169.1ms | ActiveRecord: 44.7ms | Allocations: 55120)
+I, [2026-05-31T07:03:36.094894 #69]  INFO -- : [98a3d6e4d7f582103836a44152cbdcf0] Started POST "/admin/content_manager/mock_exam_templates" for 103.24.87.129 at 2026-05-31 07:03:36 +0000
+I, [2026-05-31T07:03:36.237340 #69]  INFO -- : [98a3d6e4d7f582103836a44152cbdcf0] Processing by Admin::MockExamTemplatesController#create as HTML
+I, [2026-05-31T07:03:36.237964 #69]  INFO -- : [98a3d6e4d7f582103836a44152cbdcf0]   Parameters: {"utf8"=>"✓", "authenticity_token"=>"[FILTERED]", "mock_exam_template"=>{"title"=>"CTET Paper 2 Full Length Mock Test", "slug"=>"", "exam_category"=>"custom", "description"=>"Full-length CTET Paper 2 mock test for upper primary teachers (Classes VI-VIII) covering Child Development & Pedagogy, Language I, Language II, and Social Studies.", "total_questions"=>"[FILTERED]", "duration_minutes"=>"150", "difficulty_level"=>"mixed", "marks_per_correct"=>"1.00", "negative_marks_per_wrong"=>"0.00", "question_display_mode"=>"one_at_a_time", "ai_prompt_context"=>"Generate CTET Paper 2 questions based on the latest CTET syllabus for Classes VI-VIII. Focus on Child Development & Pedagogy, Hindi, English, and Social Studies. Include conceptual, pedagogical, classroom-scenario, and NCERT-based questions. Avoid factual trivia. Emphasize inclusive education, learning theories, assessment, geography, history, civics, economics, and teaching methodologies.", "sections_config"=>"[\r\n  {\r\n    \"name\": \"Child Development and Pedagogy\",\r\n    \"count\": 30,\r\n    \"type\": \"knowledge\",\r\n    \"topics\": [\r\n      \"Learning Theories\",\r\n      \"Piaget\",\r\n      \"Vygotsky\",\r\n      \"Inclusive Education\",\r\n      \"Assessment\",\r\n      \"Classroom Management\"\r\n    ]\r\n  },\r\n  {\r\n    \"name\": \"Language I - Hindi\",\r\n    \"count\": 30,\r\n    \"type\": \"knowledge\",\r\n    \"topics\": [\r\n      \"Grammar\",\r\n      \"Comprehension\",\r\n      \"Pedagogy\",\r\n      \"Vocabulary\"\r\n    ]\r\n  },\r\n  {\r\n    \"name\": \"Language II - English\",\r\n    \"count\": 30,\r\n    \"type\": \"knowledge\",\r\n    \"topics\": [\r\n      \"Grammar\",\r\n      \"Reading Comprehension\",\r\n      \"Pedagogy\",\r\n      \"Vocabulary\"\r\n    ]\r\n  },\r\n  {\r\n    \"name\": \"Social Studies\",\r\n    \"count\": 60,\r\n    \"type\": \"knowledge\",\r\n    \"topics\": [\r\n      \"History\",\r\n      \"Geography\",\r\n      \"Political Science\",\r\n      \"Social Studies Pedagogy\"\r\n    ]\r\n  }\r\n]", "has_calculator"=>"[FILTERED]", "has_scratchpad"=>"1", "active"=>"1", "published"=>"1"}, "commit"=>"Create Mock exam template", "locale"=>nil}
+I, [2026-05-31T07:03:36.330714 #69]  INFO -- : [98a3d6e4d7f582103836a44152cbdcf0] Redirected to https://careerpolitics.com/admin/content_manager/mock_exam_templates/3
+I, [2026-05-31T07:03:36.331627 #69]  INFO -- : [98a3d6e4d7f582103836a44152cbdcf0] Completed 302 Found in 93ms (ActiveRecord: 41.1ms | Allocations: 15392)
+I, [2026-05-31T07:03:36.405863 #69]  INFO -- : [1ce10380c57d538d50f04fbfcda26fba] Started GET "/admin/content_manager/mock_exam_templates/3" for 103.24.87.129 at 2026-05-31 07:03:36 +0000
+I, [2026-05-31T07:03:36.444643 #69]  INFO -- : [1ce10380c57d538d50f04fbfcda26fba] Processing by Admin::MockExamTemplatesController#show as HTML
+I, [2026-05-31T07:03:36.444909 #69]  INFO -- : [1ce10380c57d538d50f04fbfcda26fba]   Parameters: {"locale"=>nil, "id"=>"3"}
+I, [2026-05-31T07:03:36.520701 #69]  INFO -- : [1ce10380c57d538d50f04fbfcda26fba]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 19.7ms | Allocations: 4268)
+I, [2026-05-31T07:03:36.567546 #69]  INFO -- : [1ce10380c57d538d50f04fbfcda26fba]   Rendered layout layouts/admin.html.erb (Duration: 66.6ms | Allocations: 27848)
+I, [2026-05-31T07:03:36.568302 #69]  INFO -- : [1ce10380c57d538d50f04fbfcda26fba] Completed 200 OK in 123ms (Views: 60.1ms | ActiveRecord: 29.8ms | Allocations: 37487)
+I, [2026-05-31T07:03:51.337867 #69]  INFO -- : [66b28ee41d9e7fc064f4e659903a6a97] Started POST "/admin/content_manager/mock_exam_templates/3/generate_pool" for 103.24.87.129 at 2026-05-31 07:03:51 +0000
+I, [2026-05-31T07:03:51.384326 #69]  INFO -- : [66b28ee41d9e7fc064f4e659903a6a97] Processing by Admin::MockExamTemplatesController#generate_pool as HTML
+I, [2026-05-31T07:03:51.384818 #69]  INFO -- : [66b28ee41d9e7fc064f4e659903a6a97]   Parameters: {"authenticity_token"=>"[FILTERED]", "sets_count"=>"1", "locale"=>nil, "id"=>"3"}
+I, [2026-05-31T07:03:51.426532 #69]  INFO -- : [66b28ee41d9e7fc064f4e659903a6a97] Redirected to https://careerpolitics.com/admin/content_manager/mock_exam_templates/3
+I, [2026-05-31T07:03:51.427426 #69]  INFO -- : [66b28ee41d9e7fc064f4e659903a6a97] Completed 302 Found in 42ms (ActiveRecord: 8.6ms | Allocations: 9769)
+I, [2026-05-31T07:03:51.513475 #69]  INFO -- : [e0bba738f0f79fc49f15e3a8d56dc3cf] Started GET "/admin/content_manager/mock_exam_templates/3" for 103.24.87.129 at 2026-05-31 07:03:51 +0000
+I, [2026-05-31T07:03:51.556929 #69]  INFO -- : [e0bba738f0f79fc49f15e3a8d56dc3cf] Processing by Admin::MockExamTemplatesController#show as HTML
+I, [2026-05-31T07:03:51.557409 #69]  INFO -- : [e0bba738f0f79fc49f15e3a8d56dc3cf]   Parameters: {"locale"=>nil, "id"=>"3"}
+I, [2026-05-31T07:03:51.616880 #69]  INFO -- : [e0bba738f0f79fc49f15e3a8d56dc3cf]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 15.8ms | Allocations: 2441)
+I, [2026-05-31T07:03:51.663918 #69]  INFO -- : [e0bba738f0f79fc49f15e3a8d56dc3cf]   Rendered layout layouts/admin.html.erb (Duration: 62.7ms | Allocations: 21647)
+I, [2026-05-31T07:03:51.665269 #69]  INFO -- : [e0bba738f0f79fc49f15e3a8d56dc3cf] Completed 200 OK in 107ms (Views: 54.7ms | ActiveRecord: 32.2ms | Allocations: 26320)
+I, [2026-05-31T07:04:00.867760 #69]  INFO -- : [3d4a24e78169e522983de3776071e57a] Started GET "/admin/content_manager/mock_exam_templates/3" for 103.24.87.129 at 2026-05-31 07:04:00 +0000
+I, [2026-05-31T07:04:00.917656 #69]  INFO -- : [3d4a24e78169e522983de3776071e57a] Processing by Admin::MockExamTemplatesController#show as HTML
+I, [2026-05-31T07:04:00.918765 #69]  INFO -- : [3d4a24e78169e522983de3776071e57a]   Parameters: {"locale"=>nil, "id"=>"3"}
+I, [2026-05-31T07:04:00.966093 #69]  INFO -- : [3d4a24e78169e522983de3776071e57a]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 13.9ms | Allocations: 2438)
+I, [2026-05-31T07:04:00.996348 #69]  INFO -- : [3d4a24e78169e522983de3776071e57a]   Rendered layout layouts/admin.html.erb (Duration: 44.2ms | Allocations: 20269)
+I, [2026-05-31T07:04:00.997201 #69]  INFO -- : [3d4a24e78169e522983de3776071e57a] Completed 200 OK in 77ms (Views: 38.7ms | ActiveRecord: 17.5ms | Allocations: 24956)
+I, [2026-05-31T07:04:05.941470 #69]  INFO -- : [046fc4d27f73716ebaf22dd37417d745] Started GET "/admin/content_manager/mock_exam_templates/3" for 103.24.87.129 at 2026-05-31 07:04:05 +0000
+I, [2026-05-31T07:04:05.982057 #69]  INFO -- : [046fc4d27f73716ebaf22dd37417d745] Processing by Admin::MockExamTemplatesController#show as HTML
+I, [2026-05-31T07:04:05.982499 #69]  INFO -- : [046fc4d27f73716ebaf22dd37417d745]   Parameters: {"locale"=>nil, "id"=>"3"}
+I, [2026-05-31T07:04:06.052929 #69]  INFO -- : [046fc4d27f73716ebaf22dd37417d745]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 14.9ms | Allocations: 2438)
+I, [2026-05-31T07:04:06.081142 #69]  INFO -- : [046fc4d27f73716ebaf22dd37417d745]   Rendered layout layouts/admin.html.erb (Duration: 43.2ms | Allocations: 20269)
+I, [2026-05-31T07:04:06.082144 #69]  INFO -- : [046fc4d27f73716ebaf22dd37417d745] Completed 200 OK in 99ms (Views: 37.9ms | ActiveRecord: 39.3ms | Allocations: 24959)
+I, [2026-05-31T07:04:09.345861 #69]  INFO -- : [422a45d6d39386e7485a3ebc0a799da9] Started GET "/admin/content_manager/mock_exam_templates/3" for 103.24.87.129 at 2026-05-31 07:04:09 +0000
+I, [2026-05-31T07:04:09.390518 #69]  INFO -- : [422a45d6d39386e7485a3ebc0a799da9] Processing by Admin::MockExamTemplatesController#show as HTML
+I, [2026-05-31T07:04:09.390952 #69]  INFO -- : [422a45d6d39386e7485a3ebc0a799da9]   Parameters: {"locale"=>nil, "id"=>"3"}
+I, [2026-05-31T07:04:09.433356 #69]  INFO -- : [422a45d6d39386e7485a3ebc0a799da9]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 13.7ms | Allocations: 2438)
+I, [2026-05-31T07:04:09.462654 #69]  INFO -- : [422a45d6d39386e7485a3ebc0a799da9]   Rendered layout layouts/admin.html.erb (Duration: 43.0ms | Allocations: 20316)
+I, [2026-05-31T07:04:09.463564 #69]  INFO -- : [422a45d6d39386e7485a3ebc0a799da9] Completed 200 OK in 72ms (Views: 37.2ms | ActiveRecord: 18.2ms | Allocations: 25033)
+I, [2026-05-31T07:04:13.504447 #69]  INFO -- : [272c0993b27577a0027e1df0478e9c9a] Started GET "/admin/content_manager/mock_exam_templates/3" for 103.24.87.129 at 2026-05-31 07:04:13 +0000
+I, [2026-05-31T07:04:13.545816 #69]  INFO -- : [272c0993b27577a0027e1df0478e9c9a] Processing by Admin::MockExamTemplatesController#show as HTML
+I, [2026-05-31T07:04:13.546358 #69]  INFO -- : [272c0993b27577a0027e1df0478e9c9a]   Parameters: {"locale"=>nil, "id"=>"3"}
+I, [2026-05-31T07:04:13.606464 #69]  INFO -- : [272c0993b27577a0027e1df0478e9c9a]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 14.9ms | Allocations: 2439)
+I, [2026-05-31T07:04:13.643986 #69]  INFO -- : [272c0993b27577a0027e1df0478e9c9a]   Rendered layout layouts/admin.html.erb (Duration: 52.4ms | Allocations: 20307)
+I, [2026-05-31T07:04:13.645008 #69]  INFO -- : [272c0993b27577a0027e1df0478e9c9a] Completed 200 OK in 97ms (Views: 45.7ms | ActiveRecord: 21.2ms | Allocations: 24995)
+I, [2026-05-31T07:04:16.726474 #69]  INFO -- : [ab5ce15cec2c5b0064c7cef6f489cdb8] Started GET "/admin/content_manager/mock_exam_templates/3" for 103.24.87.129 at 2026-05-31 07:04:16 +0000
+I, [2026-05-31T07:04:16.763017 #69]  INFO -- : [ab5ce15cec2c5b0064c7cef6f489cdb8] Processing by Admin::MockExamTemplatesController#show as HTML
+I, [2026-05-31T07:04:16.763276 #69]  INFO -- : [ab5ce15cec2c5b0064c7cef6f489cdb8]   Parameters: {"locale"=>nil, "id"=>"3"}
+I, [2026-05-31T07:04:16.801349 #69]  INFO -- : [ab5ce15cec2c5b0064c7cef6f489cdb8]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 11.1ms | Allocations: 2438)
+I, [2026-05-31T07:04:16.825730 #69]  INFO -- : [ab5ce15cec2c5b0064c7cef6f489cdb8]   Rendered layout layouts/admin.html.erb (Duration: 35.5ms | Allocations: 20279)
+I, [2026-05-31T07:04:16.826534 #69]  INFO -- : [ab5ce15cec2c5b0064c7cef6f489cdb8] Completed 200 OK in 63ms (Views: 29.9ms | ActiveRecord: 16.0ms | Allocations: 24998)
+I, [2026-05-31T07:04:18.864588 #69]  INFO -- : [ab52cffd5273df4719b8204ec7cb25e1] Started GET "/admin/content_manager/mock_exam_templates/3" for 103.24.87.129 at 2026-05-31 07:04:18 +0000
+I, [2026-05-31T07:04:18.907668 #69]  INFO -- : [ab52cffd5273df4719b8204ec7cb25e1] Processing by Admin::MockExamTemplatesController#show as HTML
+I, [2026-05-31T07:04:18.908279 #69]  INFO -- : [ab52cffd5273df4719b8204ec7cb25e1]   Parameters: {"locale"=>nil, "id"=>"3"}
+I, [2026-05-31T07:04:18.951714 #69]  INFO -- : [ab52cffd5273df4719b8204ec7cb25e1]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 13.3ms | Allocations: 2438)
+I, [2026-05-31T07:04:18.982905 #69]  INFO -- : [ab52cffd5273df4719b8204ec7cb25e1]   Rendered layout layouts/admin.html.erb (Duration: 44.5ms | Allocations: 20266)
+I, [2026-05-31T07:04:18.983801 #69]  INFO -- : [ab52cffd5273df4719b8204ec7cb25e1] Completed 200 OK in 75ms (Views: 38.7ms | ActiveRecord: 18.7ms | Allocations: 24947)
+I, [2026-05-31T07:04:30.825110 #69]  INFO -- : [faf85247c9b39327963f92482b0f3696] Started GET "/" for 103.24.87.129 at 2026-05-31 07:04:30 +0000
+I, [2026-05-31T07:04:30.863625 #69]  INFO -- : [faf85247c9b39327963f92482b0f3696] Processing by StoriesController#index as HTML
+I, [2026-05-31T07:04:30.863975 #69]  INFO -- : [faf85247c9b39327963f92482b0f3696]   Parameters: {"locale"=>nil}
+I, [2026-05-31T07:04:31.698276 #69]  INFO -- : [faf85247c9b39327963f92482b0f3696]   Rendered articles/index.html.erb within layouts/application (Duration: 716.7ms | Allocations: 174275)
+I, [2026-05-31T07:04:32.434594 #69]  INFO -- : [faf85247c9b39327963f92482b0f3696]   Rendered layout layouts/application.html.erb (Duration: 1453.1ms | Allocations: 235519)
+I, [2026-05-31T07:04:32.435691 #69]  INFO -- : [faf85247c9b39327963f92482b0f3696] Completed 200 OK in 1571ms (Views: 1369.9ms | ActiveRecord: 172.4ms | Allocations: 244261)
+I, [2026-05-31T07:04:32.567386 #69]  INFO -- : [55b7f76468f2aacf07b938621d50ba85] Started GET "/stories/feed/?page=1&type_of=discover" for 103.24.87.129 at 2026-05-31 07:04:32 +0000
+I, [2026-05-31T07:04:32.572871 #63]  INFO -- : [2bb85c0b0bc84270f7e2a0329ea61316] Started GET "/bb/feed_second" for 103.24.87.129 at 2026-05-31 07:04:32 +0000
+I, [2026-05-31T07:04:32.575038 #63]  INFO -- : [65ecf2f756d9f5bfda7bdb030cb8cd18] Started GET "/bb/feed_third" for 103.24.87.129 at 2026-05-31 07:04:32 +0000
+I, [2026-05-31T07:04:32.577207 #69]  INFO -- : [65830dab51ea2479c5d02babf8100b40] Started GET "/bb/feed_first" for 103.24.87.129 at 2026-05-31 07:04:32 +0000
+I, [2026-05-31T07:04:32.619639 #69]  INFO -- : [55b7f76468f2aacf07b938621d50ba85] Processing by Stories::FeedsController#show as JSON
+I, [2026-05-31T07:04:32.621687 #69]  INFO -- : [55b7f76468f2aacf07b938621d50ba85]   Parameters: {"page"=>"1", "type_of"=>"discover", "locale"=>nil}
+I, [2026-05-31T07:04:32.735985 #63]  INFO -- : [65ecf2f756d9f5bfda7bdb030cb8cd18] Processing by BillboardsController#show as */*
+I, [2026-05-31T07:04:32.736813 #63]  INFO -- : [65ecf2f756d9f5bfda7bdb030cb8cd18]   Parameters: {"locale"=>nil, "placement_area"=>"feed_third"}
+I, [2026-05-31T07:04:32.777110 #63]  INFO -- : [2bb85c0b0bc84270f7e2a0329ea61316] Processing by BillboardsController#show as */*
+I, [2026-05-31T07:04:32.777653 #63]  INFO -- : [2bb85c0b0bc84270f7e2a0329ea61316]   Parameters: {"locale"=>nil, "placement_area"=>"feed_second"}
+I, [2026-05-31T07:04:32.826597 #69]  INFO -- : [65830dab51ea2479c5d02babf8100b40] Processing by BillboardsController#show as */*
+I, [2026-05-31T07:04:32.829146 #69]  INFO -- : [65830dab51ea2479c5d02babf8100b40]   Parameters: {"locale"=>nil, "placement_area"=>"feed_first"}
+I, [2026-05-31T07:04:32.833123 #63]  INFO -- : [65ecf2f756d9f5bfda7bdb030cb8cd18]   Rendered billboards/show.html.erb (Duration: 3.4ms | Allocations: 901)
+I, [2026-05-31T07:04:32.834651 #63]  INFO -- : [65ecf2f756d9f5bfda7bdb030cb8cd18] Completed 200 OK in 97ms (Views: 7.8ms | ActiveRecord: 46.3ms | Allocations: 19534)
+I, [2026-05-31T07:04:32.898638 #63]  INFO -- : [2bb85c0b0bc84270f7e2a0329ea61316]   Rendered billboards/show.html.erb (Duration: 4.9ms | Allocations: 1152)
+I, [2026-05-31T07:04:32.899802 #63]  INFO -- : [2bb85c0b0bc84270f7e2a0329ea61316] Completed 200 OK in 119ms (Views: 6.3ms | ActiveRecord: 48.8ms | Allocations: 30324)
+I, [2026-05-31T07:04:32.970556 #69]  INFO -- : [65830dab51ea2479c5d02babf8100b40]   Rendered billboards/show.html.erb (Duration: 0.9ms | Allocations: 185)
+I, [2026-05-31T07:04:32.971731 #69]  INFO -- : [65830dab51ea2479c5d02babf8100b40] Completed 200 OK in 142ms (Views: 4.1ms | ActiveRecord: 90.5ms | Allocations: 51124)
+I, [2026-05-31T07:04:33.048251 #63]  INFO -- : [42953ba1b1eaca48495a0b78c26bae9a] Started GET "/sidebars/home" for 103.24.87.129 at 2026-05-31 07:04:33 +0000
+I, [2026-05-31T07:04:33.121637 #63]  INFO -- : [be8a1a8e5c0f513f2ec09741ba62925a] Started GET "/notifications/counts" for 103.24.87.129 at 2026-05-31 07:04:33 +0000
+I, [2026-05-31T07:04:33.168174 #69]  INFO -- : [b615f42fd6b692cefcbcb1d646ed30f5] Started GET "/search/feed_content?per_page=15&page=0&sort_by=hotness_score&sort_direction=desc&approved=&class_name=Article" for 103.24.87.129 at 2026-05-31 07:04:33 +0000
+I, [2026-05-31T07:04:33.243135 #69]  INFO -- : [55b7f76468f2aacf07b938621d50ba85]   Rendered stories/feeds/show.json.jbuilder (Duration: 525.7ms | Allocations: 141680)
+I, [2026-05-31T07:04:33.244211 #69]  INFO -- : [55b7f76468f2aacf07b938621d50ba85] Completed 200 OK in 622ms (Views: 507.8ms | ActiveRecord: 72.0ms | Allocations: 155381)
+I, [2026-05-31T07:04:33.260440 #63]  INFO -- : [42953ba1b1eaca48495a0b78c26bae9a] Processing by SidebarsController#show as */*
+I, [2026-05-31T07:04:33.262869 #63]  INFO -- : [42953ba1b1eaca48495a0b78c26bae9a]   Parameters: {"locale"=>nil, "id"=>"home"}
+I, [2026-05-31T07:04:33.291580 #69]  INFO -- : [b615f42fd6b692cefcbcb1d646ed30f5] Processing by SearchController#feed_content as JSON
+I, [2026-05-31T07:04:33.291978 #69]  INFO -- : [b615f42fd6b692cefcbcb1d646ed30f5]   Parameters: {"per_page"=>"15", "page"=>"0", "sort_by"=>"hotness_score", "sort_direction"=>"desc", "approved"=>"", "class_name"=>"Article", "locale"=>nil}
+I, [2026-05-31T07:04:33.329455 #63]  INFO -- : [be8a1a8e5c0f513f2ec09741ba62925a] Processing by Notifications::CountsController#index as */*
+I, [2026-05-31T07:04:33.331494 #63]  INFO -- : [be8a1a8e5c0f513f2ec09741ba62925a]   Parameters: {"locale"=>nil}
+I, [2026-05-31T07:04:33.385989 #63]  INFO -- : [be8a1a8e5c0f513f2ec09741ba62925a]   Rendered text template (Duration: 0.1ms | Allocations: 33)
+I, [2026-05-31T07:04:33.387239 #63]  INFO -- : [be8a1a8e5c0f513f2ec09741ba62925a] Completed 200 OK in 53ms (Views: 3.3ms | ActiveRecord: 35.1ms | Allocations: 10744)
+I, [2026-05-31T07:04:33.400659 #69]  INFO -- : [b615f42fd6b692cefcbcb1d646ed30f5] Completed 200 OK in 108ms (Views: 4.9ms | ActiveRecord: 23.1ms | Allocations: 23323)
+I, [2026-05-31T07:04:33.447570 #69]  INFO -- : [ec77dd9384dd8e3a13122d91e1a88626] Started GET "/videos?i=i" for 103.24.87.129 at 2026-05-31 07:04:33 +0000
+I, [2026-05-31T07:04:33.454666 #63]  INFO -- : [fa673e01cbdb97d33f071e324928c84a] Started GET "/mock_exams?i=i" for 103.24.87.129 at 2026-05-31 07:04:33 +0000
+I, [2026-05-31T07:04:33.479652 #69]  INFO -- : [ec77dd9384dd8e3a13122d91e1a88626] Processing by VideosController#index as */*
+I, [2026-05-31T07:04:33.481140 #69]  INFO -- : [ec77dd9384dd8e3a13122d91e1a88626]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-31T07:04:33.486234 #69]  INFO -- : [39bd7b8ee0887a0b4bc6a941cc497a8b] Started GET "/async_info/base_data" for 103.24.87.129 at 2026-05-31 07:04:33 +0000
+I, [2026-05-31T07:04:33.550973 #63]  INFO -- : [fa673e01cbdb97d33f071e324928c84a] Processing by MockExamsController#index as */*
+I, [2026-05-31T07:04:33.558618 #63]  INFO -- : [fa673e01cbdb97d33f071e324928c84a]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-31T07:04:33.573954 #69]  INFO -- : [ec77dd9384dd8e3a13122d91e1a88626]   Rendered videos/index.html.erb within layouts/application (Duration: 52.7ms | Allocations: 9633)
+I, [2026-05-31T07:04:33.581210 #69]  INFO -- : [ec77dd9384dd8e3a13122d91e1a88626]   Rendered layout layouts/application.html.erb (Duration: 60.2ms | Allocations: 11381)
+I, [2026-05-31T07:04:33.584906 #69]  INFO -- : [ec77dd9384dd8e3a13122d91e1a88626] Completed 200 OK in 103ms (Views: 58.8ms | ActiveRecord: 30.6ms | Allocations: 18483)
+I, [2026-05-31T07:04:33.596052 #69]  INFO -- : [39bd7b8ee0887a0b4bc6a941cc497a8b] Processing by AsyncInfoController#base_data as JSON
+I, [2026-05-31T07:04:33.597782 #69]  INFO -- : [39bd7b8ee0887a0b4bc6a941cc497a8b]   Parameters: {"locale"=>nil}
+I, [2026-05-31T07:04:33.602891 #69]  INFO -- : [0b44903b5a310b0bd356bdd985f3263b] Started GET "/trending?i=i" for 103.24.87.129 at 2026-05-31 07:04:33 +0000
+I, [2026-05-31T07:04:33.655826 #63]  INFO -- : [fa673e01cbdb97d33f071e324928c84a]   Rendered mock_exams/index.html.erb within layouts/application (Duration: 17.4ms | Allocations: 1262)
+I, [2026-05-31T07:04:33.661899 #63]  INFO -- : [fa673e01cbdb97d33f071e324928c84a]   Rendered layout layouts/application.html.erb (Duration: 23.4ms | Allocations: 2369)
+I, [2026-05-31T07:04:33.666599 #63]  INFO -- : [fa673e01cbdb97d33f071e324928c84a] Completed 200 OK in 107ms (Views: 55.4ms | ActiveRecord: 12.7ms | Allocations: 8471)
+I, [2026-05-31T07:04:33.686937 #63]  INFO -- : [ea09ee88a01a1375b25de38328715237] Started GET "/search/feed_content?per_page=15&page=1&sort_by=hotness_score&sort_direction=desc&approved=&class_name=Article" for 103.24.87.129 at 2026-05-31 07:04:33 +0000
+I, [2026-05-31T07:04:33.743655 #69]  INFO -- : [0b44903b5a310b0bd356bdd985f3263b] Processing by TrendsController#index as */*
+I, [2026-05-31T07:04:33.747236 #69]  INFO -- : [0b44903b5a310b0bd356bdd985f3263b]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-05-31T07:04:33.750182 #63]  INFO -- : [ea09ee88a01a1375b25de38328715237] Processing by SearchController#feed_content as JSON
+I, [2026-05-31T07:04:33.753058 #63]  INFO -- : [ea09ee88a01a1375b25de38328715237]   Parameters: {"per_page"=>"15", "page"=>"1", "sort_by"=>"hotness_score", "sort_direction"=>"desc", "approved"=>"", "class_name"=>"Article", "locale"=>nil}
+I, [2026-05-31T07:04:33.798984 #69]  INFO -- : [0b44903b5a310b0bd356bdd985f3263b]   Rendered trends/index.html.erb within layouts/application (Duration: 7.4ms | Allocations: 2611)
+I, [2026-05-31T07:04:33.803893 #69]  INFO -- : [0b44903b5a310b0bd356bdd985f3263b]   Rendered layout layouts/application.html.erb (Duration: 12.5ms | Allocations: 7457)
+I, [2026-05-31T07:04:33.806738 #69]  INFO -- : [0b44903b5a310b0bd356bdd985f3263b] Completed 200 OK in 59ms (Views: 19.7ms | ActiveRecord: 17.9ms | Allocations: 16044)
+I, [2026-05-31T07:04:33.815791 #69]  INFO -- : [39bd7b8ee0887a0b4bc6a941cc497a8b] Completed 200 OK in 218ms (Views: 0.4ms | ActiveRecord: 78.7ms | Allocations: 47048)
 
 
 
-E, [2026-05-31T04:46:54.069263 #70] ERROR -- : [56eda4a413efa9095d5d9d938c61b1a2]   Couldn't find template for digesting: user_comments_sections/user_comments_section
-I, [2026-05-31T04:46:55.076527 #70]  INFO -- : [56eda4a413efa9095d5d9d938c61b1a2]   Rendered users/show.html.erb within layouts/application (Duration: 1033.3ms | Allocations: 348141)
-I, [2026-05-31T04:46:55.098560 #70]  INFO -- : [56eda4a413efa9095d5d9d938c61b1a2]   Rendered layout layouts/application.html.erb (Duration: 1055.3ms | Allocations: 361069)
-I, [2026-05-31T04:46:55.099628 #70]  INFO -- : [56eda4a413efa9095d5d9d938c61b1a2] Completed 200 OK in 1250ms (Views: 916.2ms | ActiveRecord: 234.3ms | Allocations: 385677)
-I, [2026-05-31T04:46:56.511556 #70]  INFO -- : [7acdd39946365cc25d088453e5a627c1] Started GET "/notifications/counts" for 103.24.87.129 at 2026-05-31 04:46:56 +0000
-I, [2026-05-31T04:46:56.519651 #63]  INFO -- : [664692e3051da58342fd32c4dea3e49a] Started GET "/async_info/base_data" for 103.24.87.129 at 2026-05-31 04:46:56 +0000
-I, [2026-05-31T04:46:56.548311 #70]  INFO -- : [7acdd39946365cc25d088453e5a627c1] Processing by Notifications::CountsController#index as */*
-I, [2026-05-31T04:46:56.548786 #70]  INFO -- : [7acdd39946365cc25d088453e5a627c1]   Parameters: {"locale"=>nil}
-I, [2026-05-31T04:46:56.554144 #63]  INFO -- : [664692e3051da58342fd32c4dea3e49a] Processing by AsyncInfoController#base_data as JSON
-I, [2026-05-31T04:46:56.554487 #63]  INFO -- : [664692e3051da58342fd32c4dea3e49a]   Parameters: {"locale"=>nil}
-I, [2026-05-31T04:46:56.567733 #70]  INFO -- : [7acdd39946365cc25d088453e5a627c1]   Rendered text template (Duration: 0.1ms | Allocations: 31)
-I, [2026-05-31T04:46:56.568858 #70]  INFO -- : [7acdd39946365cc25d088453e5a627c1] Completed 200 OK in 19ms (Views: 1.3ms | ActiveRecord: 5.5ms | Allocations: 2550)
-I, [2026-05-31T04:46:56.580029 #63]  INFO -- : [664692e3051da58342fd32c4dea3e49a] Completed 200 OK in 24ms (Views: 0.5ms | ActiveRecord: 6.5ms | Allocations: 3858)
-I, [2026-05-31T04:46:56.787566 #63]  INFO -- : [c7863367d56d75993ae1f51da05ca6c0] Started GET "/mock_exams/ctet-paper-1-full-length-mock-test-01-c977f6da.json" for 103.24.87.129 at 2026-05-31 04:46:56 +0000
-I, [2026-05-31T04:46:56.787714 #70]  INFO -- : [9c5e43254f9dbd7491a5439d0cbbb36f] Started GET "/mock_exams/ctet-paper-1-full-length-mock-test-01-c977f6da/sets.json" for 103.24.87.129 at 2026-05-31 04:46:56 +0000
-I, [2026-05-31T04:46:56.818912 #63]  INFO -- : [c7863367d56d75993ae1f51da05ca6c0] Processing by MockExamsController#show as JSON
-I, [2026-05-31T04:46:56.820211 #63]  INFO -- : [c7863367d56d75993ae1f51da05ca6c0]   Parameters: {"locale"=>nil, "slug"=>"ctet-paper-1-full-length-mock-test-01-c977f6da"}
-I, [2026-05-31T04:46:56.820721 #70]  INFO -- : [9c5e43254f9dbd7491a5439d0cbbb36f] Processing by MockExamsController#sets as JSON
-I, [2026-05-31T04:46:56.821024 #70]  INFO -- : [9c5e43254f9dbd7491a5439d0cbbb36f]   Parameters: {"locale"=>nil, "slug"=>"ctet-paper-1-full-length-mock-test-01-c977f6da"}
-I, [2026-05-31T04:46:56.837552 #70]  INFO -- : [9c5e43254f9dbd7491a5439d0cbbb36f] Completed 200 OK in 16ms (Views: 0.3ms | ActiveRecord: 4.3ms | Allocations: 2909)
-I, [2026-05-31T04:46:56.845326 #63]  INFO -- : [c7863367d56d75993ae1f51da05ca6c0] Completed 200 OK in 24ms (Views: 0.6ms | ActiveRecord: 9.7ms | Allocations: 4464)
-I, [2026-05-31T04:46:57.200065 #63]  INFO -- : [c30bde8d54a3c624623bc8f9317999f2] Started GET "/mock_exams/ctet-paper-1-full-length-mock-test-01-c977f6da/leaderboard.json?filter=all" for 103.24.87.129 at 2026-05-31 04:46:57 +0000
-I, [2026-05-31T04:46:57.235389 #63]  INFO -- : [c30bde8d54a3c624623bc8f9317999f2] Processing by MockExamsController#leaderboard as JSON
-I, [2026-05-31T04:46:57.236866 #63]  INFO -- : [c30bde8d54a3c624623bc8f9317999f2]   Parameters: {"filter"=>"all", "locale"=>nil, "slug"=>"ctet-paper-1-full-length-mock-test-01-c977f6da"}
-I, [2026-05-31T04:46:57.261181 #63]  INFO -- : [c30bde8d54a3c624623bc8f9317999f2] Completed 200 OK in 24ms (Views: 0.2ms | ActiveRecord: 7.2ms | Allocations: 2830)
-I, [2026-05-31T04:47:02.661494 #63]  INFO -- : [87c20c8be8e8fea431b9bc195e471388] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:47:02 +0000
-I, [2026-05-31T04:47:02.714849 #63]  INFO -- : [87c20c8be8e8fea431b9bc195e471388] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:47:02.715800 #63]  INFO -- : [87c20c8be8e8fea431b9bc195e471388]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:47:02.765607 #63]  INFO -- : [87c20c8be8e8fea431b9bc195e471388]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 10.4ms | Allocations: 1751)
-I, [2026-05-31T04:47:02.802164 #63]  INFO -- : [87c20c8be8e8fea431b9bc195e471388]   Rendered layout layouts/admin.html.erb (Duration: 47.0ms | Allocations: 19624)
-I, [2026-05-31T04:47:02.802936 #63]  INFO -- : [87c20c8be8e8fea431b9bc195e471388] Completed 200 OK in 86ms (Views: 43.6ms | ActiveRecord: 21.1ms | Allocations: 24323)
-I, [2026-05-31T04:47:06.091315 #63]  INFO -- : [6bac7e24889dc6d3a780c57c9afe7c39] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:47:06 +0000
-I, [2026-05-31T04:47:06.144047 #63]  INFO -- : [6bac7e24889dc6d3a780c57c9afe7c39] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:47:06.144450 #63]  INFO -- : [6bac7e24889dc6d3a780c57c9afe7c39]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:47:06.186119 #63]  INFO -- : [6bac7e24889dc6d3a780c57c9afe7c39]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 10.0ms | Allocations: 1749)
-I, [2026-05-31T04:47:06.217480 #63]  INFO -- : [6bac7e24889dc6d3a780c57c9afe7c39]   Rendered layout layouts/admin.html.erb (Duration: 41.4ms | Allocations: 19580)
-I, [2026-05-31T04:47:06.218362 #63]  INFO -- : [6bac7e24889dc6d3a780c57c9afe7c39] Completed 200 OK in 73ms (Views: 37.4ms | ActiveRecord: 15.2ms | Allocations: 24267)
-I, [2026-05-31T04:47:10.170044 #63]  INFO -- : [878ce295113433a42c4e0514510ea81d] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:47:10 +0000
-I, [2026-05-31T04:47:10.261106 #63]  INFO -- : [878ce295113433a42c4e0514510ea81d] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:47:10.262828 #63]  INFO -- : [878ce295113433a42c4e0514510ea81d]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:47:10.335922 #63]  INFO -- : [878ce295113433a42c4e0514510ea81d]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 23.1ms | Allocations: 1749)
-I, [2026-05-31T04:47:10.456775 #63]  INFO -- : [878ce295113433a42c4e0514510ea81d]   Rendered layout layouts/admin.html.erb (Duration: 144.0ms | Allocations: 19627)
-I, [2026-05-31T04:47:10.458256 #63]  INFO -- : [878ce295113433a42c4e0514510ea81d] Completed 200 OK in 194ms (Views: 134.4ms | ActiveRecord: 26.4ms | Allocations: 24343)
-I, [2026-05-31T04:47:15.398760 #63]  INFO -- : [b1b57230263cee651eaeb6170bfcf23b] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:47:15 +0000
-I, [2026-05-31T04:47:15.527498 #63]  INFO -- : [b1b57230263cee651eaeb6170bfcf23b] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:47:15.527945 #63]  INFO -- : [b1b57230263cee651eaeb6170bfcf23b]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:47:15.571971 #63]  INFO -- : [b1b57230263cee651eaeb6170bfcf23b]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 10.3ms | Allocations: 1749)
-I, [2026-05-31T04:47:15.611466 #63]  INFO -- : [b1b57230263cee651eaeb6170bfcf23b]   Rendered layout layouts/admin.html.erb (Duration: 49.8ms | Allocations: 19620)
-I, [2026-05-31T04:47:15.612431 #63]  INFO -- : [b1b57230263cee651eaeb6170bfcf23b] Completed 200 OK in 84ms (Views: 46.1ms | ActiveRecord: 15.7ms | Allocations: 24317)
-I, [2026-05-31T04:47:20.294728 #63]  INFO -- : [be39c27500ac8f2e6288b92f9cd0770b] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:47:20 +0000
-I, [2026-05-31T04:47:20.337442 #63]  INFO -- : [be39c27500ac8f2e6288b92f9cd0770b] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:47:20.337924 #63]  INFO -- : [be39c27500ac8f2e6288b92f9cd0770b]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:47:20.392002 #63]  INFO -- : [be39c27500ac8f2e6288b92f9cd0770b]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 9.2ms | Allocations: 1749)
-I, [2026-05-31T04:47:20.421626 #63]  INFO -- : [be39c27500ac8f2e6288b92f9cd0770b]   Rendered layout layouts/admin.html.erb (Duration: 39.0ms | Allocations: 19580)
-I, [2026-05-31T04:47:20.422758 #63]  INFO -- : [be39c27500ac8f2e6288b92f9cd0770b] Completed 200 OK in 84ms (Views: 35.8ms | ActiveRecord: 24.6ms | Allocations: 24263)
-I, [2026-05-31T04:47:23.388677 #63]  INFO -- : [5a7ae0d860a2fba3f1e3975e78cc439a] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:47:23 +0000
-I, [2026-05-31T04:47:23.421933 #63]  INFO -- : [5a7ae0d860a2fba3f1e3975e78cc439a] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:47:23.422215 #63]  INFO -- : [5a7ae0d860a2fba3f1e3975e78cc439a]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:47:23.460722 #63]  INFO -- : [5a7ae0d860a2fba3f1e3975e78cc439a]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 8.4ms | Allocations: 1749)
-I, [2026-05-31T04:47:23.494883 #63]  INFO -- : [5a7ae0d860a2fba3f1e3975e78cc439a]   Rendered layout layouts/admin.html.erb (Duration: 42.6ms | Allocations: 19577)
-I, [2026-05-31T04:47:23.495553 #63]  INFO -- : [5a7ae0d860a2fba3f1e3975e78cc439a] Completed 200 OK in 73ms (Views: 39.0ms | ActiveRecord: 14.6ms | Allocations: 24258)
-I, [2026-05-31T04:47:27.331385 #63]  INFO -- : [1992cd6435b5df52f5a95a3b2d88dd3a] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:47:27 +0000
-I, [2026-05-31T04:47:27.365340 #63]  INFO -- : [1992cd6435b5df52f5a95a3b2d88dd3a] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:47:27.366790 #63]  INFO -- : [1992cd6435b5df52f5a95a3b2d88dd3a]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:47:27.402352 #63]  INFO -- : [1992cd6435b5df52f5a95a3b2d88dd3a]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 8.3ms | Allocations: 1749)
-I, [2026-05-31T04:47:27.428252 #63]  INFO -- : [1992cd6435b5df52f5a95a3b2d88dd3a]   Rendered layout layouts/admin.html.erb (Duration: 34.2ms | Allocations: 19575)
-I, [2026-05-31T04:47:27.428930 #63]  INFO -- : [1992cd6435b5df52f5a95a3b2d88dd3a] Completed 200 OK in 61ms (Views: 30.8ms | ActiveRecord: 14.2ms | Allocations: 24265)
-I, [2026-05-31T04:47:30.969456 #63]  INFO -- : [f9905c60ef5314d0d416a4666b12f32f] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:47:30 +0000
-I, [2026-05-31T04:47:31.021084 #63]  INFO -- : [f9905c60ef5314d0d416a4666b12f32f] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:47:31.021371 #63]  INFO -- : [f9905c60ef5314d0d416a4666b12f32f]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:47:31.063410 #63]  INFO -- : [f9905c60ef5314d0d416a4666b12f32f]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 10.9ms | Allocations: 1749)
-I, [2026-05-31T04:47:31.097773 #63]  INFO -- : [f9905c60ef5314d0d416a4666b12f32f]   Rendered layout layouts/admin.html.erb (Duration: 45.2ms | Allocations: 19582)
-I, [2026-05-31T04:47:31.098721 #63]  INFO -- : [f9905c60ef5314d0d416a4666b12f32f] Completed 200 OK in 77ms (Views: 41.5ms | ActiveRecord: 16.2ms | Allocations: 24277)
-I, [2026-05-31T04:47:35.680510 #63]  INFO -- : [3fa04c7e50cbd98cd0760b495f09fc5f] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:47:35 +0000
-I, [2026-05-31T04:47:35.724540 #63]  INFO -- : [3fa04c7e50cbd98cd0760b495f09fc5f] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:47:35.724868 #63]  INFO -- : [3fa04c7e50cbd98cd0760b495f09fc5f]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:47:35.768513 #63]  INFO -- : [3fa04c7e50cbd98cd0760b495f09fc5f]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 11.4ms | Allocations: 1749)
-I, [2026-05-31T04:47:35.795708 #63]  INFO -- : [3fa04c7e50cbd98cd0760b495f09fc5f]   Rendered layout layouts/admin.html.erb (Duration: 38.7ms | Allocations: 19580)
-I, [2026-05-31T04:47:35.796360 #63]  INFO -- : [3fa04c7e50cbd98cd0760b495f09fc5f] Completed 200 OK in 71ms (Views: 33.4ms | ActiveRecord: 17.9ms | Allocations: 24268)
-I, [2026-05-31T04:47:40.033446 #63]  INFO -- : [54970eddded845f40aa8587fddb5fca1] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:47:40 +0000
-I, [2026-05-31T04:47:40.077686 #63]  INFO -- : [54970eddded845f40aa8587fddb5fca1] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:47:40.077933 #63]  INFO -- : [54970eddded845f40aa8587fddb5fca1]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:47:40.128496 #63]  INFO -- : [54970eddded845f40aa8587fddb5fca1]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 10.7ms | Allocations: 1749)
-I, [2026-05-31T04:47:40.157702 #63]  INFO -- : [54970eddded845f40aa8587fddb5fca1]   Rendered layout layouts/admin.html.erb (Duration: 40.0ms | Allocations: 19577)
-I, [2026-05-31T04:47:40.158900 #63]  INFO -- : [54970eddded845f40aa8587fddb5fca1] Completed 200 OK in 81ms (Views: 35.4ms | ActiveRecord: 25.3ms | Allocations: 24264)
-I, [2026-05-31T04:47:44.167272 #63]  INFO -- : [b585cc91fa33044e3d8aec66a679b87a] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:47:44 +0000
-I, [2026-05-31T04:47:44.204222 #63]  INFO -- : [b585cc91fa33044e3d8aec66a679b87a] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:47:44.204586 #63]  INFO -- : [b585cc91fa33044e3d8aec66a679b87a]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:47:44.246093 #63]  INFO -- : [b585cc91fa33044e3d8aec66a679b87a]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 7.6ms | Allocations: 1749)
-I, [2026-05-31T04:47:44.277400 #63]  INFO -- : [b585cc91fa33044e3d8aec66a679b87a]   Rendered layout layouts/admin.html.erb (Duration: 39.0ms | Allocations: 19634)
-I, [2026-05-31T04:47:44.278439 #63]  INFO -- : [b585cc91fa33044e3d8aec66a679b87a] Completed 200 OK in 73ms (Views: 35.6ms | ActiveRecord: 20.9ms | Allocations: 24330)
-I, [2026-05-31T04:47:46.678646 #63]  INFO -- : [7fa0a85e6e1d677cae914e2af81a32a2] Started GET "/new/aibe" for 198.244.240.91 at 2026-05-31 04:47:46 +0000
-I, [2026-05-31T04:47:46.714071 #63]  INFO -- : [7fa0a85e6e1d677cae914e2af81a32a2] Processing by ArticlesController#new as */*
-I, [2026-05-31T04:47:46.714431 #63]  INFO -- : [7fa0a85e6e1d677cae914e2af81a32a2]   Parameters: {"locale"=>nil, "template"=>"aibe"}
-I, [2026-05-31T04:47:46.764245 #63]  INFO -- : [7fa0a85e6e1d677cae914e2af81a32a2]   Rendered articles/new.html.erb within layouts/application (Duration: 30.1ms | Allocations: 9595)
-I, [2026-05-31T04:47:46.793160 #63]  INFO -- : [7fa0a85e6e1d677cae914e2af81a32a2]   Rendered layout layouts/application.html.erb (Duration: 59.0ms | Allocations: 24071)
-I, [2026-05-31T04:47:46.794125 #63]  INFO -- : [7fa0a85e6e1d677cae914e2af81a32a2] Completed 200 OK in 79ms (Views: 61.8ms | ActiveRecord: 4.7ms | Allocations: 26513)
-I, [2026-05-31T04:47:47.989390 #63]  INFO -- : [d937f154a4d3085e9c61a09c15ffe909] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:47:47 +0000
-I, [2026-05-31T04:47:48.116224 #63]  INFO -- : [d937f154a4d3085e9c61a09c15ffe909] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:47:48.116733 #63]  INFO -- : [d937f154a4d3085e9c61a09c15ffe909]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:47:48.155853 #63]  INFO -- : [d937f154a4d3085e9c61a09c15ffe909]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 9.0ms | Allocations: 1749)
-I, [2026-05-31T04:47:48.228412 #63]  INFO -- : [d937f154a4d3085e9c61a09c15ffe909]   Rendered layout layouts/admin.html.erb (Duration: 81.6ms | Allocations: 19623)
-I, [2026-05-31T04:47:48.229196 #63]  INFO -- : [d937f154a4d3085e9c61a09c15ffe909] Completed 200 OK in 112ms (Views: 78.0ms | ActiveRecord: 15.0ms | Allocations: 24319)
-I, [2026-05-31T04:47:51.900968 #63]  INFO -- : [17836d2773686294bbb845b8fcc4bcb6] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:47:51 +0000
-I, [2026-05-31T04:47:51.932073 #63]  INFO -- : [17836d2773686294bbb845b8fcc4bcb6] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:47:51.932535 #63]  INFO -- : [17836d2773686294bbb845b8fcc4bcb6]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:47:51.972663 #63]  INFO -- : [17836d2773686294bbb845b8fcc4bcb6]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 9.4ms | Allocations: 1749)
-I, [2026-05-31T04:47:51.998561 #63]  INFO -- : [17836d2773686294bbb845b8fcc4bcb6]   Rendered layout layouts/admin.html.erb (Duration: 35.3ms | Allocations: 19581)
-I, [2026-05-31T04:47:51.999365 #63]  INFO -- : [17836d2773686294bbb845b8fcc4bcb6] Completed 200 OK in 66ms (Views: 30.8ms | ActiveRecord: 17.2ms | Allocations: 24262)
-I, [2026-05-31T04:48:13.380033 #70]  INFO -- : [c6d1343dd40d0d08722a26027d5519fe] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:48:13 +0000
-I, [2026-05-31T04:48:13.497812 #70]  INFO -- : [c6d1343dd40d0d08722a26027d5519fe] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:48:13.498046 #70]  INFO -- : [c6d1343dd40d0d08722a26027d5519fe]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:48:13.550756 #70]  INFO -- : [c6d1343dd40d0d08722a26027d5519fe]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 10.8ms | Allocations: 1749)
-I, [2026-05-31T04:48:13.589836 #70]  INFO -- : [c6d1343dd40d0d08722a26027d5519fe]   Rendered layout layouts/admin.html.erb (Duration: 49.9ms | Allocations: 19623)
-I, [2026-05-31T04:48:13.591038 #70]  INFO -- : [c6d1343dd40d0d08722a26027d5519fe] Completed 200 OK in 92ms (Views: 45.6ms | ActiveRecord: 23.3ms | Allocations: 24634)
-I, [2026-05-31T04:48:38.205841 #63]  INFO -- : [e7a2b8c0e9ad5cf0f1186e20404baecc] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:48:38 +0000
-I, [2026-05-31T04:48:38.252971 #63]  INFO -- : [e7a2b8c0e9ad5cf0f1186e20404baecc] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:48:38.253444 #63]  INFO -- : [e7a2b8c0e9ad5cf0f1186e20404baecc]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:48:38.298017 #63]  INFO -- : [e7a2b8c0e9ad5cf0f1186e20404baecc]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 9.8ms | Allocations: 1749)
-I, [2026-05-31T04:48:38.331105 #63]  INFO -- : [e7a2b8c0e9ad5cf0f1186e20404baecc]   Rendered layout layouts/admin.html.erb (Duration: 42.9ms | Allocations: 19580)
-I, [2026-05-31T04:48:38.331902 #63]  INFO -- : [e7a2b8c0e9ad5cf0f1186e20404baecc] Completed 200 OK in 78ms (Views: 38.6ms | ActiveRecord: 16.7ms | Allocations: 24278)
-I, [2026-05-31T04:48:40.880010 #63]  INFO -- : [aaa39b6b215e73aa5dddead4ab59a5dd] Started GET "/admin/content_manager/mock_exam_templates/2" for 103.24.87.129 at 2026-05-31 04:48:40 +0000
-I, [2026-05-31T04:48:40.967562 #63]  INFO -- : [aaa39b6b215e73aa5dddead4ab59a5dd] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:48:40.968182 #63]  INFO -- : [aaa39b6b215e73aa5dddead4ab59a5dd]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:48:41.037861 #63]  INFO -- : [aaa39b6b215e73aa5dddead4ab59a5dd]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 19.0ms | Allocations: 1749)
-I, [2026-05-31T04:48:41.120582 #63]  INFO -- : [aaa39b6b215e73aa5dddead4ab59a5dd]   Rendered layout layouts/admin.html.erb (Duration: 101.7ms | Allocations: 19579)
-I, [2026-05-31T04:48:41.121501 #63]  INFO -- : [aaa39b6b215e73aa5dddead4ab59a5dd] Completed 200 OK in 151ms (Views: 94.4ms | ActiveRecord: 21.1ms | Allocations: 24262)
-I, [2026-05-31T04:48:56.914112 #63]  INFO -- : [f3f5968f1b57e0ffed22acd5a6cd6f26] Started GET "/the_cp_team/bengal-partition-swadeshi-when-india-learned-to-boycott-fe4" for 185.191.171.8 at 2026-05-31 04:48:56 +0000
-I, [2026-05-31T04:48:56.962396 #63]  INFO -- : [f3f5968f1b57e0ffed22acd5a6cd6f26] Processing by StoriesController#show as HTML
-I, [2026-05-31T04:48:56.962572 #63]  INFO -- : [f3f5968f1b57e0ffed22acd5a6cd6f26]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"bengal-partition-swadeshi-when-india-learned-to-boycott-fe4"}
-I, [2026-05-31T04:48:57.403240 #63]  INFO -- : [f3f5968f1b57e0ffed22acd5a6cd6f26]   Rendered articles/show.html.erb within layouts/application (Duration: 321.8ms | Allocations: 57763)
-I, [2026-05-31T04:48:57.428141 #63]  INFO -- : [f3f5968f1b57e0ffed22acd5a6cd6f26]   Rendered layout layouts/application.html.erb (Duration: 346.8ms | Allocations: 70734)
-I, [2026-05-31T04:48:57.429516 #63]  INFO -- : [f3f5968f1b57e0ffed22acd5a6cd6f26] Completed 200 OK in 466ms (Views: 315.7ms | ActiveRecord: 81.1ms | Allocations: 83263)
-I, [2026-05-31T04:49:34.768224 #63]  INFO -- : [c21a7592e486070af79fb55a4aafb083] Started GET "/squirrel/20-april-2026-current-affairs-quiz-govt-job-prep-1llm" for 57.141.14.94 at 2026-05-31 04:49:34 +0000
-I, [2026-05-31T04:49:34.799707 #63]  INFO -- : [c21a7592e486070af79fb55a4aafb083] Processing by StoriesController#show as */*
-I, [2026-05-31T04:49:34.800181 #63]  INFO -- : [c21a7592e486070af79fb55a4aafb083]   Parameters: {"locale"=>nil, "username"=>"squirrel", "slug"=>"20-april-2026-current-affairs-quiz-govt-job-prep-1llm"}
-I, [2026-05-31T04:49:34.960062 #63]  INFO -- : [c21a7592e486070af79fb55a4aafb083]   Rendered articles/show.html.erb within layouts/application (Duration: 108.0ms | Allocations: 37181)
-I, [2026-05-31T04:49:34.983106 #63]  INFO -- : [c21a7592e486070af79fb55a4aafb083]   Rendered layout layouts/application.html.erb (Duration: 131.0ms | Allocations: 50139)
-I, [2026-05-31T04:49:34.983998 #63]  INFO -- : [c21a7592e486070af79fb55a4aafb083] Completed 200 OK in 183ms (Views: 100.9ms | ActiveRecord: 55.5ms | Allocations: 57701)
-I, [2026-05-31T04:50:15.038177 #63]  INFO -- : [039e1931d094748382ad157dffebac5b] Started GET "/admin/content_manager/mock_exam_templates/2" for 47.31.114.133 at 2026-05-31 04:50:15 +0000
-I, [2026-05-31T04:50:15.078320 #63]  INFO -- : [039e1931d094748382ad157dffebac5b] Processing by Admin::MockExamTemplatesController#show as HTML
-I, [2026-05-31T04:50:15.078850 #63]  INFO -- : [039e1931d094748382ad157dffebac5b]   Parameters: {"locale"=>nil, "id"=>"2"}
-I, [2026-05-31T04:50:15.123282 #63]  INFO -- : [039e1931d094748382ad157dffebac5b]   Rendered admin/mock_exam_templates/show.html.erb within layouts/admin (Duration: 12.0ms | Allocations: 1749)
-I, [2026-05-31T04:50:15.152809 #63]  INFO -- : [039e1931d094748382ad157dffebac5b]   Rendered layout layouts/admin.html.erb (Duration: 41.6ms | Allocations: 19614)
-I, [2026-05-31T04:50:15.153583 #63
+
+Follow Logs:
+Show timestamp:
+Since:
+-1
+Tail:
+-1
+Destination:
+Filter:
+Enter your keywords
+Wrap lines:
+I, [2026-05-31T06:55:22.107007 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2026-05-31T06:55:22.120610 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2026-05-31T06:55:22+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"sidekiq","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+service_name is unknown, will set to unknown_service:sidekiq
+dataset will be ignored, sending data to unknown_service:sidekiq
+2026-05-31T06:55:22.511Z pid=1 tid=l6t INFO: Booting Sidekiq 6.5.12 with Sidekiq::RedisConnection::RedisAdapter options {:url=>"redis://:REDACTED@careerpolitics-redis-master.redis.svc.cluster.local:6379"}
+2026-05-31T06:55:22.527Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: mock_exams_refresh_all_pools
+/opt/apps/forem/app/services/images/generate_subforem_images.rb:2: warning: already initialized constant Images::TEMPLATE_PATH
+/opt/apps/forem/app/services/images/generate_social_image_magickally.rb:4: warning: previous definition of TEMPLATE_PATH was here
+/opt/apps/forem/app/services/push_notifications/unified_notifier.rb:25: warning: key :payload is duplicated and overwritten on line 28
+/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:44: warning: already initialized constant Net::HTTP::Purge::METHOD
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:166: warning: previous definition of METHOD was here
+/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:45: warning: already initialized constant Net::HTTP::Purge::REQUEST_HAS_BODY
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:167: warning: previous definition of REQUEST_HAS_BODY was here
+/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:46: warning: already initialized constant Net::HTTP::Purge::RESPONSE_HAS_BODY
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:168: warning: previous definition of RESPONSE_HAS_BODY was here
+I, [2026-05-31T06:55:31.750051 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
+W, [2026-05-31T06:55:33.816797 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
+I, [2026-05-31T06:55:33.912410 #1]  INFO -- : CareerPolitics Android consumer app initialized
+2026-05-31T06:55:34.844Z pid=1 tid=l6t INFO: Booted Rails 7.0.8.7 application in production environment
+2026-05-31T06:55:34.846Z pid=1 tid=l6t INFO: Running in ruby 3.3.0 (2023-12-25 revision 5124f9ac75) [x86_64-linux]
+2026-05-31T06:55:34.847Z pid=1 tid=l6t INFO: See LICENSE and the LGPL-3.0 for licensing details.
+2026-05-31T06:55:34.849Z pid=1 tid=l6t INFO: Upgrade to Sidekiq Pro for more features and support: https://sidekiq.org
+2026-05-31T06:55:34.892Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: feeds_import
+2026-05-31T06:55:34.899Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: log_worker_queue_stats
+2026-05-31T06:55:34.904Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: record_daily_usage
+2026-05-31T06:55:34.910Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: record_daily_notifications
+2026-05-31T06:55:34.918Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: record_data_counts
+2026-05-31T06:55:34.932Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: check_data_update_script_statuses
+2026-05-31T06:55:34.952Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_yearly_club_badges
+2026-05-31T06:55:34.960Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_beloved_comment_badges
+2026-05-31T06:55:34.966Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_four_week_streak_badge
+2026-05-31T06:55:34.972Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_eight_week_streak_badge
+2026-05-31T06:55:34.979Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_sixteen_week_streak_badge
+2026-05-31T06:55:34.986Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_weekly_tag_badges
+2026-05-31T06:55:34.991Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_contributor_badges_from_github
+2026-05-31T06:55:34.995Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_community_wellness_badges
+2026-05-31T06:55:34.999Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_thumbs_up_badges
+2026-05-31T06:55:35.004Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_first_post_badges
+2026-05-31T06:55:35.009Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: resave_supported_tags
+2026-05-31T06:55:35.014Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: send_welcome_notifications
+2026-05-31T06:55:35.018Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: hourly_feed_cache_bust
+2026-05-31T06:55:35.030Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: daily_home_cache_bust
+2026-05-31T06:55:35.035Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: send_email_digest
+2026-05-31T06:55:35.039Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: remove_old_notifications
+2026-05-31T06:55:35.044Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: trim_old_ai_audits
+2026-05-31T06:55:35.048Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: remove_old_emails
+2026-05-31T06:55:35.053Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: sync_credits_counter_cache
+2026-05-31T06:55:35.114Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: get_podcast_episodes
+2026-05-31T06:55:35.120Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: update_latest_github_repos
+2026-05-31T06:55:35.126Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: push_notifications_cleanup
+2026-05-31T06:55:35.132Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: capture_query_stats
+2026-05-31T06:55:35.138Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: notify_about_published_articles
+2026-05-31T06:55:35.143Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: billboard_event_rollup
+2026-05-31T06:55:35.149Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: audience_segment_refresh
+2026-05-31T06:55:35.153Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: drip_email_worker
+2026-05-31T06:55:35.158Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: article_quality_reactions
+2026-05-31T06:55:35.163Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: article_label_cleanup
+2026-05-31T06:55:35.168Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: scheduled_automations_process
+2026-05-31T06:55:35.173Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: track_promotional_billboard_impressions
+2026-05-31T06:55:35.177Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: feed_import_log_cleanup
+2026-05-31T06:55:35.182Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: survey_daily_email
+2026-05-31T06:55:35.186Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: agent_session_raw_file_cleanup
+2026-05-31T06:55:35.191Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: reverify_organizations
+2026-05-31T06:55:35.196Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: events_manage_broadcast_billboards
+2026-05-31T06:55:35.200Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: identify_trends
+I, [2026-05-31T06:55:35.204279 #1]  INFO -- : Sidekiq DB Pool re-established with size: 16
+2026-05-31T06:55:35.211Z pid=1 tid=l6t uniquejobs=upgrade_locks INFO: Already upgraded to 7.1.33
+2026-05-31T06:55:35.213Z pid=1 tid=l6t uniquejobs=reaper INFO: Starting Reaper
+2026-05-31T06:55:35.332Z pid=1 tid=5se9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-31T06:55:35.423Z pid=1 tid=5se9 uniquejobs=reaper INFO: Nothing to delete; exiting.
+2026-05-31T06:55:45.512Z pid=1 tid=5sfd class=CaptureQueryStatsWorker jid=cfaab28c399dac6302d3fd74 INFO: start
+2026-05-31T06:55:45.517Z pid=1 tid=5sgh class=Articles::PublishWorker jid=3a009ebc5fb0ad03343c2140 INFO: start
+2026-05-31T06:55:45.600Z pid=1 tid=5sip class=Events::ManageBroadcastBillboardsWorker jid=7fcab1bc80f54d0d4f7435ea INFO: start
+2026-05-31T06:55:45.704Z pid=1 tid=5sfd class=CaptureQueryStatsWorker jid=cfaab28c399dac6302d3fd74 elapsed=0.192 INFO: done
+2026-05-31T06:55:45.793Z pid=1 tid=5sgh class=Articles::PublishWorker jid=3a009ebc5fb0ad03343c2140 elapsed=0.276 INFO: done
+2026-05-31T06:55:45.805Z pid=1 tid=5sip class=Events::ManageBroadcastBillboardsWorker jid=7fcab1bc80f54d0d4f7435ea elapsed=0.205 INFO: done
+2026-05-31T07:00:10.880Z pid=1 tid=5syt class=Metrics::RecordBackgroundQueueStatsWorker jid=ccdcfe51e625364e9a789a30 INFO: start
+2026-05-31T07:00:10.918Z pid=1 tid=5sip class=BustCachePathWorker jid=4005c1fe1eac1f3fa6fcd529 INFO: start
+2026-05-31T07:00:10.943Z pid=1 tid=5szd class=CaptureQueryStatsWorker jid=c0150be7f0ff70037061f967 INFO: start
+2026-05-31T07:00:10.971Z pid=1 tid=5szx class=Articles::PublishWorker jid=b2e00e03f9e24fcf3b23b945 INFO: start
+2026-05-31T07:00:10.999Z pid=1 tid=5t0h class=ScheduledAutomations::ProcessWorker jid=af942d54f959507f2421cb8d INFO: start
+I, [2026-05-31T07:00:11.010415 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
+2026-05-31T07:00:11.027Z pid=1 tid=5t11 class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=bfef588817d039b2009a1178 INFO: start
+2026-05-31T07:00:11.052Z pid=1 tid=5t1l class=Events::ManageBroadcastBillboardsWorker jid=4804ea3b84a4f65aa9aacefe INFO: start
+2026-05-31T07:00:11.191Z pid=1 tid=5sip class=BustCachePathWorker jid=4005c1fe1eac1f3fa6fcd529 elapsed=0.273 INFO: done
+2026-05-31T07:00:11.202Z pid=1 tid=5szd class=CaptureQueryStatsWorker jid=c0150be7f0ff70037061f967 elapsed=0.259 INFO: done
+2026-05-31T07:00:11.205Z pid=1 tid=5syt class=Metrics::RecordBackgroundQueueStatsWorker jid=ccdcfe51e625364e9a789a30 elapsed=0.325 INFO: done
+2026-05-31T07:00:11.233Z pid=1 tid=5szx class=Articles::PublishWorker jid=b2e00e03f9e24fcf3b23b945 elapsed=0.262 INFO: done
+I, [2026-05-31T07:00:11.253303 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
+2026-05-31T07:00:11.257Z pid=1 tid=5t0h class=ScheduledAutomations::ProcessWorker jid=af942d54f959507f2421cb8d elapsed=0.258 INFO: done
+2026-05-31T07:00:11.271Z pid=1 tid=5t1l class=Events::ManageBroadcastBillboardsWorker jid=4804ea3b84a4f65aa9aacefe elapsed=0.219 INFO: done
+2026-05-31T07:00:11.313Z pid=1 tid=5t11 class=Organizations::TrackPromotionalBillboardImpressionsWorker jid=bfef588817d039b2009a1178 elapsed=0.286 INFO: done
+2026-05-31T07:03:51.425Z pid=1 tid=5t0h class=MockExams::GeneratePoolWorker jid=36bfb4be80b38f3a8cc5a486 INFO: start
+I, [2026-05-31T07:03:51.613106 #1]  INFO -- : MockExams::GeneratePoolWorker: Starting pool generation for template 3
+W, [2026-05-31T07:04:04.578756 #1]  WARN -- : Ai::MockExamQuestionGenerator: Retry 1/2 — unexpected token at '],
+    "correct_option_key": "C",
+    "explanation": "Constructivist approaches like role-play and source analysis encourage critical thinking and empathy regarding historical contexts.",
+    "difficulty": "hard",
+    "topic_tags": ["History", "Teaching Methodologies"]
+  },
+  {
+    "section_name": "Social Studies",
+    "question_type": "knowledge",
+    "question_text": "Which factor most influences the climate of a region in Geography?",
+    "options": [
+      {"key": "A", "text": "The language spoken by the people."},
+      {"key": "B", "text": "Latitude, altitude, and distance from the sea."},
+      {"key": "C", "text": "The type of political government."},
+      {"key": "D", "text": "The variety of crops grown in the region."}
+    ],
+    "correct_option_key": "B",
+    "explanation": "Climate is scientifically influenced by physical factors such as latitude, elevation, and proximity to large bodies of water (maritime effect).",
+    "difficulty": "medium",
+    "topic_tags": ["Geography"]
+  },
+  {
+    "section_name": "Social Studies",
+    "question_type": "knowledge",
+    "question_text": "Which of the following best defines a 'Secular State' in the context of the Indian Constitution?",
+    "options": [
+      {"key": "A", "text": "The state promotes one specific religion."},
+      {"key": "B", "text": "The state maintains a neutral stance towards all religions."},
+      {"key": "C", "text": "The state prohibits the practice of religion in public."},
+      {"key": "D", "text": "The state is controlled by religious leaders."}
+    ],
+    "correct_option_key": "B",
+    "explanation": "The Indian concept of secularism implies that the state remains neutral and does not favor any particular religion, ensuring freedom for all to practice their faith.",
+    "difficulty": "medium",
+    "topic_tags": ["Civics"]
+  },
+  {
+    "section_name": "English",
+    "question_type": "knowledge",
+    "question_text": "What is the primary focus of the 'Communicative Language Teaching' (CLT) approach?",
+    "options": [
+      {"key": "A", "text": "Perfect grammar through rote drills."},
+      {"key": "B", "text": "Translating literature into the mother tongue."},
+      {"key": "C", "text": "Developing the ability to interact and convey meaning effectively."},
+      {"key": "D", "text": "Focusing exclusively on written composition."}
+    ],
+    "correct_option_key": "C",
+    "explanation": "CLT emphasizes interaction as both the means and the ultimate goal of learning a language.",
+    "difficulty": "medium",
+    "topic_tags": ["English", "Teaching Methodologies"]
+  },
+  {
+    "section_name": "Hindi",
+    "question_type": "knowledge",
+    "question_text": "भाषा-शिक्षण में 'बहुभाषिकता' (Multilingualism) को किस रूप में देखा जाना चाहिए?",
+    "options": [
+      {"key": "A", "text": "एक समस्या"},
+      {"key": "B", "text": "एक बाधा"},
+      {"key": "C", "text": "एक संसाधन"},
+      {"key": "D", "text": "एक चुनौती"}
+    ],
+    "correct_option_key": "C",
+    "explanation": "NCF 2005 के अनुसार, बहुभाषिकता को शिक्षण में एक संसाधन के रूप में देखा जाना चाहिए जो कक्षा को समृद्ध बनाता है।",
+    "difficulty": "easy",
+    "topic_tags": ["Hindi", "Inclusive Education"]
+  },
+  {
+    "section_name": "Child Development and Pedagogy",
+    "question_type": "knowledge",
+    "question_text": "According to Howard Gardner's Theory of Multiple Intelligences, which type of intelligence relates to the ability to understand oneself?",
+    "options": [
+      {"key": "A", "text": "Interpersonal"},
+      {"key": "B", "text": "Intrapersonal"},
+      {"key": "C", "text": "Logical-Mathematical"},
+      {"key": "D", "text": "Naturalistic"}
+    ],
+    "correct_option_key": "B",
+    "explanation": "Intrapersonal intelligence is the capacity to understand one's own emotions, motivations, and inner states.",
+    "difficulty": "medium",
+    "topic_tags": ["Learning Theories"]
+  },
+  {
+    "section_name": "Social Studies",
+    "question_type": "knowledge",
+    "question_text": "What does 'Gross Domestic Product' (GDP) measure in economics?",
+    "options": [
+      {"key": "A", "text": "The total wealth of a country's citizens living abroad."},
+      {"key": "B", "text": "The total market value of goods and services produced within a country in a year."},
+      {"key": "C", "text": "The average income of the citizens of a country."},
+      {"key": "D", "text": "The total amount of money printed by the Central Bank."}
+    ],
+    "correct_option_key": "B",
+    "explanation": "GDP is the monetary value of all finished goods and services made within a country's borders during a specific period.",
+    "difficulty": "medium",
+    "topic_tags": ["Economics"]
+  },
+  {
+    "section_name": "Classroom Management",
+    "question_type": "knowledge",
+    "question_text": "Which strategy is most effective for managing disruptive behavior in a secondary classroom?",
+    "options": [
+      {"key": "A", "text": "Publicly reprimanding the student."},
+      {"key": "B", "text": "Establishing clear, collaborative classroom norms."},
+      {"key": "C", "text": "Ignoring the behavior entirely."},
+      {"key": "D", "text": "Giving the student excessive homework as punishment."}
+    ],
+    "correct_option_key": "B",
+    "explanation": "Collaborative norm-setting fosters mutual respect and shared responsibility, which is more effective than punitive measures.",
+    "difficulty": "medium",
+    "topic_tags": ["Classroom Management"]
+  },
+  {
+    "section_name": "Child Development and Pedagogy",
+    "question_type": "knowledge",
+    "question_text": "What is the primary role of a 'Learning Portfolio' in continuous assessment?",
+    "options": [
+      {"key": "A", "text": "To store grades and examination scores only."},
+      {"key": "B", "text": "To provide evidence of learning growth and reflection over time."},
+      {"key": "C", "text": "To strictly track student attendance."},
+      {"key": "D", "text": "To replace all forms of standard testing."}
+    ],
+    "correct_option_key": "B",
+    "explanation": "Portfolios are collections of student work that show growth, effort, and achievement, encouraging self-reflection.",
+    "difficulty": "medium",
+    "topic_tags": ["Assessment"]
+  },
+  {
+    "section_name": "Social Studies",
+    "question_type": "knowledge",
+    "question_text": "How did the introduction of the 'Permanent Settlement' (1793) affect Indian farmers?",
+    "options": [
+      {"key": "A", "text": "It gave farmers ownership of their land."},
+      {"key": "B", "text": "It fixed the revenue demand, reducing the burden on farmers."},
+      {"key": "C", "text": "It turned farmers into tenants and increased exploitation by zamindars."},
+      {"key": "D", "text": "It completely abolished the taxation system."}
+    ],
+    "correct_option_key": "C",
+    "explanation": "The Permanent Settlement made zamindars the owners of the land, leading to high taxation and the loss of traditional rights for farmers.",
+    "difficulty": "hard",
+    "topic_tags": ["History"]
+  },
+  {
+    "section_name": "English",
+    "question_type": "knowledge",
+    "question_text": "Which of the following is a 'Top-Down' approach to reading?",
+    "options": [
+      {"key": "A", "text": "Focusing on phonics and decoding words."},
+      {"key": "B", "text": "Focusing on individual letters and syllables."},
+      {"key": "C", "text": "Using prior knowledge and context to predict meaning."},
+      {"key": "D", "text": "Memorizing grammatical rules of the text."}
+    ],
+    "correct_option_key": "C",
+    "explanation": "Top-down processing uses the reader's background knowledge and the context of the whole passage to interpret individual parts.",
+    "difficulty": "hard",
+    "topic_tags": ["English", "Teaching Methodologies"]
+  },
+  {
