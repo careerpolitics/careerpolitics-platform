@@ -25,7 +25,7 @@ export function QuestionDisplay({
 
       {/* Question text */}
       <div class="mb-4 fs-l" style={{ lineHeight: '1.6' }}>
-        {q.question_html && !hasMath(q.question_text) ? (
+        {!useHindi && q.question_html && !hasMath(q.question_text) ? (
           <div dangerouslySetInnerHTML={{ __html: q.question_html }} />
         ) : (
           <KatexText text={questionText} />
@@ -72,6 +72,7 @@ export function QuestionDisplay({
                 background: bgColor,
                 cursor: isReview ? 'default' : 'pointer',
                 width: '100%',
+                minHeight: '48px',
               }}
               onClick={() => !isReview && onSelectOption(opt.key)}
               disabled={isReview}
@@ -125,7 +126,7 @@ export function QuestionDisplay({
           style={{ background: 'var(--card-secondary-bg)' }}
         >
           <h4 class="fw-bold mb-2">Explanation</h4>
-          {q.explanation_html && !hasMath(explanation) ? (
+          {!useHindi && q.explanation_html && !hasMath(explanation) ? (
             <div dangerouslySetInnerHTML={{ __html: q.explanation_html }} />
           ) : (
             <KatexText text={explanation} />

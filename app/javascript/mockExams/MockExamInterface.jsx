@@ -19,8 +19,20 @@ export function MockExamInterface({ slug, attemptId }) {
   const [showScratchpad, setShowScratchpad] = useState(false);
   const [language, setLanguage] = useState('en');
   const [examStarted, setExamStarted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showPalette, setShowPalette] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const timePerQuestion = useRef({});
   const questionStartTime = useRef(Date.now());
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mq.matches);
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   // Load exam data
   useEffect(() => {
@@ -28,12 +40,10 @@ export function MockExamInterface({ slug, attemptId }) {
       .then((res) => res.json())
       .then((data) => {
         setExamData(data);
-        // Initialize responses from server + localStorage
         const serverResponses = data.responses || {};
         const storedStr = localStorage.getItem(`${STORAGE_KEY_PREFIX}${attemptId}`);
         const storedResponses = storedStr ? JSON.parse(storedStr) : {};
         const merged = { ...storedResponses };
-        // Server responses take priority for persisted data
         Object.entries(serverResponses).forEach(([qId, resp]) => {
           merged[qId] = { ...merged[qId], ...resp };
         });
@@ -58,6 +68,28 @@ export function MockExamInterface({ slug, attemptId }) {
   useEffect(() => {
     questionStartTime.current = Date.now();
   }, [currentIndex]);
+
+  // Track fullscreen state changes
+  useEffect(() => {
+    const handleFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    };
+  }, []);
+
+  const canFullscreen = typeof document.documentElement.requestFullscreen === 'function';
+
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  }, []);
 
   const recordTimeOnQuestion = useCallback(() => {
     if (!examData) return;
@@ -181,7 +213,6 @@ export function MockExamInterface({ slug, attemptId }) {
         headers: { 'Content-Type': 'application/json' },
       });
       const data = await res.json();
-      // Clean up localStorage
       localStorage.removeItem(`${STORAGE_KEY_PREFIX}${attemptId}`);
       localStorage.removeItem(`mock_exam_scratchpad_${attemptId}`);
       window.location.href = data.redirect_to;
@@ -203,43 +234,120 @@ export function MockExamInterface({ slug, attemptId }) {
     [recordTimeOnQuestion],
   );
 
-// Exit full-screen on unmount
-  useEffect(() => {
-    return () => {
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-      }
-    };
-  }, []);
-
   if (loading) {
     return (
-      <div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--body-bg)'}}>
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--body-bg)' }}>
         <div class="crayons-loading" aria-label="Loading exam..." />
       </div>
     );
   }
 
   if (!examStarted) {
-    const enterExam = () => {
-      const el = document.documentElement;
-      if (el.requestFullscreen && !document.fullscreenElement) {
-        el.requestFullscreen().catch(() => {});
+    const template = examData?.template;
+    const qCount = examData?.questions?.length || 0;
+
+    const enterExam = (goFullscreen) => {
+      if (goFullscreen) {
+        const el = document.documentElement;
+        if (el.requestFullscreen && !document.fullscreenElement) {
+          el.requestFullscreen().catch(() => {});
+        }
       }
       setExamStarted(true);
     };
 
     return (
-      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--body-bg)' }}>
-        <div class="crayons-card p-8 text-center" style={{ maxWidth: '480px' }}>
-          <h2 class="crayons-title mb-2">{examData?.template?.title || 'Mock Exam'}</h2>
-          <p class="color-secondary mb-1">{examData?.questions?.length || '—'} questions</p>
-          <p class="color-secondary mb-4 fs-s">
-            The exam will open in full-screen mode. Press <strong>Esc</strong> to exit full-screen at any time.
-          </p>
-          <button class="c-btn c-btn--primary" onClick={enterExam} style={{ fontSize: '1.1rem', padding: '12px 32px' }}>
-            Begin Exam
-          </button>
+      <div>
+        {/* Modal overlay */}
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: isMobile ? '12px' : '0',
+          }}
+        >
+          <div
+            class="crayons-card"
+            style={{
+              maxWidth: '560px', width: '100%',
+              maxHeight: isMobile ? '95dvh' : '90vh',
+              overflowY: 'auto',
+              padding: isMobile ? '16px' : '24px',
+            }}
+          >
+            <h2 class={isMobile ? 'fw-bold fs-xl mb-3' : 'crayons-title mb-4'}>
+              {template?.title || 'Mock Exam'}
+            </h2>
+
+            {/* Exam info grid */}
+            <div
+              class="grid gap-2 mb-4"
+              style={{ gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr' }}
+            >
+              <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
+                <div class="fs-xs color-secondary">Questions</div>
+                <div class="fw-bold fs-l">{qCount}</div>
+              </div>
+              <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
+                <div class="fs-xs color-secondary">Duration</div>
+                <div class="fw-bold fs-l">{template?.duration_minutes || '—'} min</div>
+              </div>
+              <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
+                <div class="fs-xs color-secondary">Marks/Correct</div>
+                <div class="fw-bold fs-l">+{template?.marks_per_correct || '—'}</div>
+              </div>
+              <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
+                <div class="fs-xs color-secondary">Negative</div>
+                <div class="fw-bold fs-l">-{template?.negative_marks_per_wrong || '0'}</div>
+              </div>
+            </div>
+
+            {/* Instructions */}
+            <div class="mb-4 p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
+              <h4 class="fw-bold mb-2">Instructions</h4>
+              <ul style={{ paddingLeft: '18px', lineHeight: '1.7', fontSize: isMobile ? '0.85rem' : 'inherit' }}>
+                <li>This exam has <strong>{qCount} questions</strong> to be completed in <strong>{template?.duration_minutes} minutes</strong>.</li>
+                <li>Each correct answer carries <strong>+{template?.marks_per_correct}</strong> marks.
+                  {template?.negative_marks_per_wrong > 0 && (
+                    <span> Each wrong answer deducts <strong>{template?.negative_marks_per_wrong}</strong> marks.</span>
+                  )}
+                </li>
+                <li>Navigate between questions using the question palette.</li>
+                <li>Mark questions for review and come back later.</li>
+                <li>Use <strong>Clear</strong> to unselect an answer.</li>
+                {template?.has_calculator && <li>On-screen calculator available.</li>}
+                {template?.has_scratchpad && <li>Scratchpad available for rough work.</li>}
+                <li>Switch between <strong>English</strong> and <strong>Hindi</strong> anytime.</li>
+                <li>The exam auto-submits when the timer runs out.</li>
+              </ul>
+            </div>
+
+            <div class="flex gap-3" style={{ flexDirection: isMobile && !canFullscreen ? 'column' : 'row' }}>
+              {canFullscreen && (
+                <button
+                  class="c-btn c-btn--primary"
+                  onClick={() => enterExam(true)}
+                  style={{ flex: 1, padding: '12px 16px', minHeight: '48px' }}
+                >
+                  Full Screen Mode
+                </button>
+              )}
+              <button
+                class={canFullscreen ? 'c-btn c-btn--secondary' : 'c-btn c-btn--primary'}
+                onClick={() => enterExam(false)}
+                style={{ flex: 1, padding: '12px 16px', minHeight: '48px' }}
+              >
+                {canFullscreen ? 'Window Mode' : 'Start Exam'}
+              </button>
+            </div>
+
+            {canFullscreen && (
+              <p class="color-secondary fs-xs mt-3 text-center">
+                You can switch between modes anytime during the exam.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -268,120 +376,262 @@ export function MockExamInterface({ slug, attemptId }) {
     (q) => responses[q.id]?.selected_option_key,
   ).length;
 
+  const viewHeight = isMobile ? '100dvh' : '100vh';
+
   return (
-    <div class="flex gap-4" style={{ minHeight: '80vh' }}>
-      {/* Main content */}
-      <div style={{ flex: 1 }}>
-        {/* Top bar */}
-        <div class="crayons-card p-3 mb-4 flex items-center justify-between">
-          <div class="fw-bold">{template.title}</div>
-          <div class="flex items-center gap-4">
-            <ExamTimer
-              timeRemainingSeconds={examData.time_remaining_seconds}
-              onTimeUp={handleTimeUp}
-            />
-            <div class="flex gap-2">
-              {template.has_calculator && (
-                <button
-                  class={`c-btn c-btn--s ${showCalculator ? 'c-btn--primary' : 'c-btn--secondary'}`}
-                  onClick={() => setShowCalculator(!showCalculator)}
-                  title="Calculator"
-                >
-                  🖩
-                </button>
-              )}
-              {template.has_scratchpad && (
-                <button
-                  class={`c-btn c-btn--s ${showScratchpad ? 'c-btn--primary' : 'c-btn--secondary'}`}
-                  onClick={() => setShowScratchpad(!showScratchpad)}
-                  title="Scratchpad"
-                >
-                  📝
-                </button>
-              )}
+    <div style={{ display: 'flex', flexDirection: 'column', height: viewHeight, overflow: 'hidden' }}>
+      {/* Top bar — stacks on mobile */}
+      <div
+        style={{
+          display: 'flex', flexWrap: 'wrap', alignItems: 'center',
+          justifyContent: 'space-between', gap: isMobile ? '4px' : '0',
+          padding: isMobile ? '6px 10px' : '6px 16px',
+          background: 'var(--card-bg)',
+          borderBottom: '1px solid var(--card-border)',
+          flexShrink: 0,
+        }}
+      >
+        {/* Row 1: title + timer */}
+        <div class="fw-bold" style={{
+          fontSize: isMobile ? '0.8rem' : '0.9rem',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          maxWidth: isMobile ? '55%' : '300px',
+        }}>
+          {template.title}
+        </div>
+        <div class="flex items-center gap-2">
+          <ExamTimer
+            timeRemainingSeconds={examData.time_remaining_seconds}
+            onTimeUp={handleTimeUp}
+          />
+          <span class="fs-xs color-secondary">{answeredCount}/{questions.length}</span>
+        </div>
+
+        {/* Row 2 on mobile: toolbar buttons */}
+        {isMobile && (
+          <div class="flex items-center gap-1" style={{ width: '100%', justifyContent: 'flex-end' }}>
+            {template.has_calculator && (
+              <button
+                class={`c-btn c-btn--s ${showCalculator ? 'c-btn--primary' : 'c-btn--secondary'}`}
+                onClick={() => setShowCalculator(!showCalculator)}
+                style={{ padding: '4px 8px', minHeight: '32px' }}
+              >
+                🖩
+              </button>
+            )}
+            {template.has_scratchpad && (
+              <button
+                class={`c-btn c-btn--s ${showScratchpad ? 'c-btn--primary' : 'c-btn--secondary'}`}
+                onClick={() => setShowScratchpad(!showScratchpad)}
+                style={{ padding: '4px 8px', minHeight: '32px' }}
+              >
+                📝
+              </button>
+            )}
+            <button
+              class="c-btn c-btn--s c-btn--secondary"
+              onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
+              style={{ padding: '4px 8px', minHeight: '32px' }}
+            >
+              {language === 'en' ? 'हि' : 'EN'}
+            </button>
+            <button
+              class={`c-btn c-btn--s ${showPalette ? 'c-btn--primary' : 'c-btn--secondary'}`}
+              onClick={() => setShowPalette(!showPalette)}
+              style={{ padding: '4px 8px', minHeight: '32px' }}
+            >
+              ≡ Q
+            </button>
+          </div>
+        )}
+
+        {/* Desktop toolbar — inline */}
+        {!isMobile && (
+          <div class="flex gap-1" style={{ marginLeft: '8px' }}>
+            {template.has_calculator && (
+              <button
+                class={`c-btn c-btn--s ${showCalculator ? 'c-btn--primary' : 'c-btn--secondary'}`}
+                onClick={() => setShowCalculator(!showCalculator)}
+                title="Calculator"
+                style={{ padding: '4px 8px' }}
+              >
+                🖩
+              </button>
+            )}
+            {template.has_scratchpad && (
+              <button
+                class={`c-btn c-btn--s ${showScratchpad ? 'c-btn--primary' : 'c-btn--secondary'}`}
+                onClick={() => setShowScratchpad(!showScratchpad)}
+                title="Scratchpad"
+                style={{ padding: '4px 8px' }}
+              >
+                📝
+              </button>
+            )}
+            <button
+              class="c-btn c-btn--s c-btn--secondary"
+              onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
+              style={{ padding: '4px 8px' }}
+            >
+              {language === 'en' ? 'हिंदी' : 'EN'}
+            </button>
+            {canFullscreen && (
               <button
                 class="c-btn c-btn--s c-btn--secondary"
-                onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
+                onClick={toggleFullscreen}
+                title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                style={{ padding: '4px 8px' }}
               >
-                {language === 'en' ? 'हिंदी' : 'EN'}
+                {isFullscreen ? '⊡' : '⊞'}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Main content area */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
+        {/* Question area — scrollable */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '16px', WebkitOverflowScrolling: 'touch' }}>
+          <QuestionDisplay
+            question={currentQuestion}
+            selectedOption={currentResponse.selected_option_key}
+            onSelectOption={(key) => handleSelectOption(currentQuestion.id, key)}
+            isReview={false}
+            language={language}
+          />
+
+          {/* Question actions */}
+          <div
+            class="flex items-center justify-between mt-4"
+            style={{ flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '8px' }}
+          >
+            <div class="flex gap-2">
+              <button
+                class="c-btn c-btn--secondary"
+                onClick={() => handleNavigate(Math.max(0, currentIndex - 1))}
+                disabled={currentIndex === 0}
+                style={{ minHeight: isMobile ? '44px' : 'auto' }}
+              >
+                ← Prev
+              </button>
+              <button
+                class="c-btn c-btn--secondary"
+                onClick={() =>
+                  handleNavigate(Math.min(questions.length - 1, currentIndex + 1))
+                }
+                disabled={currentIndex >= questions.length - 1}
+                style={{ minHeight: isMobile ? '44px' : 'auto' }}
+              >
+                Next →
+              </button>
+            </div>
+
+            <div class="flex gap-2">
+              <button
+                class="c-btn c-btn--secondary c-btn--s"
+                onClick={() => handleClearResponse(currentQuestion.id)}
+                style={{ minHeight: isMobile ? '44px' : 'auto' }}
+              >
+                Clear
+              </button>
+              <button
+                class={`c-btn c-btn--s ${
+                  currentResponse.marked_for_review
+                    ? 'c-btn--primary'
+                    : 'c-btn--secondary'
+                }`}
+                onClick={() => handleMarkForReview(currentQuestion.id)}
+                style={{ minHeight: isMobile ? '44px' : 'auto' }}
+              >
+                {currentResponse.marked_for_review ? '★ Marked' : '☆ Review'}
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Question */}
-        <QuestionDisplay
-          question={currentQuestion}
-          selectedOption={currentResponse.selected_option_key}
-          onSelectOption={(key) => handleSelectOption(currentQuestion.id, key)}
-          isReview={false}
-          language={language}
-        />
-
-        {/* Question actions */}
-        <div class="flex items-center justify-between mt-4">
-          <div class="flex gap-2">
+          {/* Submit */}
+          <div class="mt-4 mb-4 flex justify-between items-center">
+            <span class="color-secondary fs-s">
+              {answeredCount} / {questions.length} answered
+            </span>
             <button
-              class="c-btn c-btn--secondary"
-              onClick={() => handleNavigate(Math.max(0, currentIndex - 1))}
-              disabled={currentIndex === 0}
+              class="c-btn c-btn--primary"
+              onClick={handleSubmit}
+              disabled={submitting}
+              style={{ minHeight: isMobile ? '44px' : 'auto' }}
             >
-              ← Previous
-            </button>
-            <button
-              class="c-btn c-btn--secondary"
-              onClick={() =>
-                handleNavigate(Math.min(questions.length - 1, currentIndex + 1))
-              }
-              disabled={currentIndex >= questions.length - 1}
-            >
-              Next →
-            </button>
-          </div>
-
-          <div class="flex gap-2">
-            <button
-              class="c-btn c-btn--secondary c-btn--s"
-              onClick={() => handleClearResponse(currentQuestion.id)}
-            >
-              Clear
-            </button>
-            <button
-              class={`c-btn c-btn--s ${
-                currentResponse.marked_for_review
-                  ? 'c-btn--primary'
-                  : 'c-btn--secondary'
-              }`}
-              onClick={() => handleMarkForReview(currentQuestion.id)}
-            >
-              {currentResponse.marked_for_review ? '★ Marked' : '☆ Mark for Review'}
+              {submitting ? 'Submitting...' : 'Submit Exam'}
             </button>
           </div>
         </div>
 
-        {/* Submit */}
-        <div class="mt-6 flex justify-between items-center">
-          <span class="color-secondary fs-s">
-            {answeredCount} / {questions.length} answered
-          </span>
-          <button
-            class="c-btn c-btn--primary"
-            onClick={handleSubmit}
-            disabled={submitting}
+        {/* Desktop Sidebar — hidden on mobile */}
+        {!isMobile && (
+          <div
+            style={{
+              width: '220px',
+              flexShrink: 0,
+              borderLeft: '1px solid var(--card-border)',
+              overflowY: 'auto',
+              padding: '12px',
+              background: 'var(--card-bg)',
+            }}
           >
-            {submitting ? 'Submitting...' : 'Submit Exam'}
-          </button>
-        </div>
-      </div>
+            <QuestionPalette
+              questions={questions}
+              responses={responses}
+              currentIndex={currentIndex}
+              onNavigate={handleNavigate}
+            />
+          </div>
+        )}
 
-      {/* Sidebar — Question Palette */}
-      <div style={{ width: '240px', flexShrink: 0 }}>
-        <QuestionPalette
-          questions={questions}
-          responses={responses}
-          currentIndex={currentIndex}
-          onNavigate={handleNavigate}
-        />
+        {/* Mobile bottom-sheet palette */}
+        {isMobile && showPalette && (
+          <div
+            style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0,
+              maxHeight: '60dvh',
+              background: 'var(--card-bg)',
+              borderTop: '2px solid var(--card-border)',
+              borderRadius: '16px 16px 0 0',
+              overflowY: 'auto',
+              padding: '16px',
+              zIndex: 100,
+              boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="fw-bold fs-s">Question Palette</h4>
+              <button
+                class="c-btn c-btn--s c-btn--secondary"
+                onClick={() => setShowPalette(false)}
+                style={{ minHeight: '36px' }}
+              >
+                Close
+              </button>
+            </div>
+            <QuestionPalette
+              questions={questions}
+              responses={responses}
+              currentIndex={currentIndex}
+              onNavigate={(i) => { handleNavigate(i); setShowPalette(false); }}
+            />
+          </div>
+        )}
+
+        {/* Overlay behind bottom-sheet */}
+        {isMobile && showPalette && (
+          <div
+            onClick={() => setShowPalette(false)}
+            style={{
+              position: 'absolute', inset: 0,
+              background: 'rgba(0,0,0,0.3)',
+              zIndex: 99,
+            }}
+          />
+        )}
       </div>
 
       {/* Floating tools */}

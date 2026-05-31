@@ -1,7 +1,11 @@
+<% translated_count = @questions.count(&:text_hi?) %>
 <div class="crayons-card p-6">
   <div class="flex items-center justify-between mb-4">
     <h1 class="crayons-title"><%= @template.title %> — Set <%= @set_number %></h1>
     <div class="flex gap-2">
+      <button class="c-btn c-btn--secondary c-btn--s" id="lang-toggle-btn" onclick="toggleLang()">
+        Show Hindi
+      </button>
       <% if @is_published %>
         <%= button_to "Unpublish Set",
                       unpublish_set_admin_mock_exam_template_path(@template, set: @set_number),
@@ -24,6 +28,10 @@
       <span class="c-indicator c-indicator--warning">Draft — not visible to users</span>
     <% end %>
     <span class="color-secondary ml-2"><%= @questions.count %> questions</span>
+    <span class="color-secondary ml-2">|</span>
+    <span class="color-secondary ml-2">
+      Hindi: <%= translated_count %>/<%= @questions.count %> translated
+    </span>
   </div>
 
   <% if @questions.any? %>
@@ -35,6 +43,9 @@
             <span class="crayons-tag crayons-tag--monochrome fs-xs"><%= q.section_name %></span>
             <span class="crayons-tag crayons-tag--monochrome fs-xs"><%= q.difficulty %></span>
             <span class="crayons-tag crayons-tag--monochrome fs-xs"><%= q.question_type %></span>
+            <% unless q.text_hi.present? %>
+              <span class="crayons-tag fs-xs" style="background: var(--accent-warning-a10); color: var(--accent-warning);">No Hindi</span>
+            <% end %>
           </div>
           <div class="flex gap-1">
             <%= link_to "Edit",
@@ -47,11 +58,18 @@
           </div>
         </div>
 
-        <div class="mb-2">
+        <div class="mb-2 lang-en">
           <% if q.question_html.present? %>
             <div class="spec__body"><%= q.question_html.html_safe %></div>
           <% else %>
             <p><%= q.question_text %></p>
+          <% end %>
+        </div>
+        <div class="mb-2 lang-hi" style="display:none;">
+          <% if q.text_hi.present? %>
+            <p><%= q.text_hi %></p>
+          <% else %>
+            <p class="color-secondary fs-italic">Hindi translation not available</p>
           <% end %>
         </div>
 
@@ -76,11 +94,20 @@
           <details class="mt-2">
             <summary class="fw-bold fs-s cursor-pointer">Explanation</summary>
             <div class="p-2 mt-1" style="background: var(--card-secondary-bg); border-radius: 6px;">
-              <% if q.explanation_html.present? %>
-                <div class="spec__body"><%= q.explanation_html.html_safe %></div>
-              <% else %>
-                <p><%= q.explanation %></p>
-              <% end %>
+              <div class="lang-en">
+                <% if q.explanation_html.present? %>
+                  <div class="spec__body"><%= q.explanation_html.html_safe %></div>
+                <% else %>
+                  <p><%= q.explanation %></p>
+                <% end %>
+              </div>
+              <div class="lang-hi" style="display:none;">
+                <% if q.explanation_hi.present? %>
+                  <p><%= q.explanation_hi %></p>
+                <% else %>
+                  <p class="color-secondary fs-italic">Hindi translation not available</p>
+                <% end %>
+              </div>
             </div>
           </details>
         <% end %>
@@ -90,3 +117,13 @@
     <div class="text-center color-secondary p-6">No questions in this set.</div>
   <% end %>
 </div>
+
+<script>
+  var showingHindi = false;
+  function toggleLang() {
+    showingHindi = !showingHindi;
+    document.querySelectorAll('.lang-en').forEach(function(el) { el.style.display = showingHindi ? 'none' : ''; });
+    document.querySelectorAll('.lang-hi').forEach(function(el) { el.style.display = showingHindi ? '' : 'none'; });
+    document.getElementById('lang-toggle-btn').textContent = showingHindi ? 'Show English' : 'Show Hindi';
+  }
+</script>
