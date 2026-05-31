@@ -1,14 +1,37 @@
-I, [2026-05-31T00:30:32.908596 #70]  INFO -- : [7898bfad41350fd062f523f8d756f813]   Parameters: {"locale"=>nil, "slug"=>"upsc_prelims"}
-I, [2026-05-31T00:30:32.949559 #70]  INFO -- : [7898bfad41350fd062f523f8d756f813] Completed 200 OK in 40ms (Views: 1.0ms | ActiveRecord: 12.9ms | Allocations: 4773)
-I, [2026-05-31T00:30:45.211261 #70]  INFO -- : [bd2244cdbeaa9661ad6678b558b85296] Started POST "/mock_exams/upsc_prelims/attempts" for 103.24.87.129 at 2026-05-31 00:30:45 +0000
-I, [2026-05-31T00:30:45.250074 #70]  INFO -- : [bd2244cdbeaa9661ad6678b558b85296] Processing by MockExamAttemptsController#create as JSON
-I, [2026-05-31T00:30:45.250656 #70]  INFO -- : [bd2244cdbeaa9661ad6678b558b85296]   Parameters: {"locale"=>nil, "mock_exam_slug"=>"upsc_prelims"}
-I, [2026-05-31T00:30:45.266236 #70]  INFO -- : [bd2244cdbeaa9661ad6678b558b85296] Completed 404 Not Found in 15ms (ActiveRecord: 4.3ms | Allocations: 2897)
-F, [2026-05-31T00:30:45.267607 #70] FATAL -- : [bd2244cdbeaa9661ad6678b558b85296]
-[bd2244cdbeaa9661ad6678b558b85296] ActiveRecord::RecordNotFound (Couldn't find MockExamTemplate with [WHERE "mock_exam_templates"."slug" IS NULL AND "mock_exam_templates"."active" = $1 AND "mock_exam_templates"."published" = $2]):
-[bd2244cdbeaa9661ad6678b558b85296]
-[bd2244cdbeaa9661ad6678b558b85296] app/controllers/mock_exam_attempts_controller.rb:95:in `set_template'
-[bd2244cdbeaa9661ad6678b558b85296] app/controllers/application_controller.rb:175:in `handle_argument_error'
-[bd2244cdbeaa9661ad6678b558b85296] app/lib/middlewares/set_subforem.rb:24:in `call'
-[bd2244cdbeaa9661ad6678b558b85296] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
-[bd2244cdbeaa9661ad6678b558b85296] app/lib/middlewares/restore_original_host.rb:23:in `call'
+Run kubectl logs job/careerpolitics-migrate -n production
+service_name is unknown, will set to unknown_service:rails
+dataset will be ignored, sending data to unknown_service:rails
+I, [2026-05-31T03:56:30.853372 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2026-05-31T03:56:30.867166 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2026-05-31T03:56:30+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+[strong_migrations] DANGER: No lock timeout set
+rails aborted!
+StandardError: An error has occurred, this and all later migrations canceled: (StandardError)
+
+=== Dangerous operation detected #strong_migrations ===
+
+Adding an index non-concurrently blocks writes. Instead, use:
+
+class AddPoolSetToMockExamQuestions < ActiveRecord::Migration[7.0]
+  disable_ddl_transaction!
+
+  def change
+    add_index :mock_exam_questions, [:mock_exam_template_id, :pool_set], name: "idx_mock_questions_template_set", where: "mock_exam_attempt_id IS NULL AND pool_set IS NOT NULL", algorithm: :concurrently
+  end
+end
+
+/opt/apps/forem/db/migrate/20260531010000_add_pool_set_to_mock_exam_questions.rb:7:in `change'
+Tasks: TOP => db:migrate
+(See full trace by running task with --trace)
+I, [2026-05-31T03:56:32.516134 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
+W, [2026-05-31T03:56:33.459840 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
+I, [2026-05-31T03:56:33.590992 #1]  INFO -- : CareerPolitics Android consumer app initialized
+I, [2026-05-31T03:56:34.123950 #1]  INFO -- : Migrating to AddPoolSetToMockExamQuestions (20260531010000)
+== 20260531010000 AddPoolSetToMockExamQuestions: migrating ====================
+-- add_column(:mock_exam_questions, :pool_set, :integer)
+   -> 0.0089s
+-- add_column(:mock_exam_questions, :set_published, :boolean, {:default=>false, :null=>false})
+   -> 0.0376s
+-- add_column(:mock_exam_questions, :source_question_id, :integer)
+   -> 0.0029s
+I, [2026-05-31T03:56:34.202023 #1]  INFO -- honeybadger: ** [Honeybadger] Reporting error id=c748f3bb-757d-49db-899c-84c03877e5d7 level=1 pid=1
+I, [2026-05-31T03:56:35.162496 #1]  INFO -- honeybadger: ** [Honeybadger] Success ⚡ https://app.honeybadger.io/notice/c748f3bb-757d-49db-899c-84c03877e5d7 id=c748f3bb-757d-49db-899c-84c03877e5d7 code=201 level=1 pid=1
