@@ -44,6 +44,7 @@ export function QuestionDisplay({
       {/* Options */}
       <div class="flex flex-col gap-2">
         {(q.options || []).map((opt) => {
+          const optText = useHindi && opt.text_hi ? opt.text_hi : opt.text;
           const isSelected = selectedOption === opt.key;
           const isCorrect = isReview && opt.key === q.correct_option_key;
           const isWrong = isReview && isSelected && !isCorrect;
@@ -100,12 +101,12 @@ export function QuestionDisplay({
                       dangerouslySetInnerHTML={{ __html: opt.svg }}
                       style={{ maxWidth: '100px', maxHeight: '100px' }}
                     />
-                    {opt.text && <KatexText text={opt.text} />}
+                    {optText && <KatexText text={optText} />}
                   </div>
-                ) : hasMath(opt.text) ? (
-                  <KatexText text={opt.text} />
+                ) : hasMath(optText) ? (
+                  <KatexText text={optText} />
                 ) : (
-                  <span>{opt.text}</span>
+                  <span>{optText}</span>
                 )}
               </div>
               {isReview && isCorrect && (
