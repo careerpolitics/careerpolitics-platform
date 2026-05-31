@@ -53,7 +53,7 @@
           <% if @template.pool_ready? %>
             <span class="c-indicator c-indicator--success">Pool Ready</span> — enough questions to serve exams instantly
           <% else %>
-            <span class="c-indicator c-indicator--warning">Pool Not Ready</span> — exams will fall back to on-demand generation
+            <span class="c-indicator c-indicator--warning">Pool Not Ready</span> — publish atleast one set to allow exams
           <% end %>
         </p>
       </div>
@@ -63,7 +63,7 @@
                       data: { confirm: "This will generate ~#{@template.total_questions * 5} questions via AI. Proceed?" } %>
         <%= button_to "Refresh Pool", refresh_pool_admin_mock_exam_template_path(@template),
                       method: :post, class: "c-btn c-btn--destructive",
-                      data: { confirm: "This will DELETE all existing pool questions and regenerate. Are you sure?" } %>
+                      data: { confirm: "This will delete unpublished pool questions and regenerate new sets. Published sets are preserved. Continue?" } %>
       </div>
 
       <% if @available_sets.any? %>
