@@ -195,7 +195,7 @@
   <% if @template.ai_prompt_context.present? %>
     <div class="crayons-card p-4 mb-6">
       <h3 class="crayons-subtitle-2 mb-3">AI Prompt Context</h3>
-      <pre class="p-3" style="background: var(--card-secondary-bg); border-radius: 6px; white-space: pre-wrap;"><%= @template.ai_prompt_context %></pre>
+      <pre class="p-3" style="background: var(--card-secondary-bg); border-radius: 6px; white-space: pre-wrap; color: var(--body-color);"><%= @template.ai_prompt_context %></pre>
     </div>
   <% end %>
 
@@ -217,7 +217,13 @@
         <% @recent_attempts.each do |attempt| %>
           <tr>
             <td><%= attempt.user.username %></td>
-            <td><%= attempt.status.titleize %></td>
+            <td>
+              <% if attempt.in_progress? && attempt.expired? %>
+                <span style="color: var(--accent-warning);">Expired (not submitted)</span>
+              <% else %>
+                <%= attempt.status.titleize %>
+              <% end %>
+            </td>
             <td><%= attempt.pool_set ? "Set #{attempt.pool_set}" : "Random" %></td>
             <td><%= attempt.total_score || "—" %> / <%= attempt.max_possible_score || "—" %></td>
             <td><%= attempt.accuracy_percent ? "#{attempt.accuracy_percent}%" : "—" %></td>

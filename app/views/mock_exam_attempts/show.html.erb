@@ -1,6 +1,7 @@
 <%= content_for :page_meta do %>
   <title>Exam in Progress — <%= @template.title %> — <%= community_name %></title>
   <meta name="robots" content="noindex" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <style>
     .top-bar, .crayons-header, #page-content > footer, footer,
     .side-bar, .crayons-layout__sidebar-left, .stories-sidebar,
@@ -8,6 +9,9 @@
     #page-content { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
     #page-content-inner { padding: 0 !important; }
     body { overflow: hidden; }
+    @media (max-width: 768px) {
+      body { overflow: auto; -webkit-overflow-scrolling: touch; }
+    }
   </style>
 <% end %>
 

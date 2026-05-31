@@ -241,7 +241,7 @@ RSpec.describe Ai::MockExamQuestionGenerator do
 
       allow(ai_client).to receive(:call).and_return(malicious_json)
 
-      result = visual_generator.generate_pool(mulsets_counttiplier: 1)
+      result = visual_generator.generate_pool(sets_count: 1)
       expect(result.first["question_svg"]).not_to include("<script")
       expect(result.first["options"].first["svg"]).not_to include("onclick")
     end

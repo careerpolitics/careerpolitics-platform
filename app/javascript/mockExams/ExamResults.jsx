@@ -61,16 +61,23 @@ export function ExamResults({ slug, attemptId }) {
 
   const sections = [...new Set((r.questions || []).map((q) => q.section_name))];
 
+  const QUESTIONS_PER_PAGE = 5;
+
   if (reviewMode) {
-    const q = filteredQuestions[currentIndex];
+    const totalPages = Math.ceil(filteredQuestions.length / QUESTIONS_PER_PAGE);
+    const currentPage = Math.min(currentIndex, totalPages - 1);
+    const pageQuestions = filteredQuestions.slice(
+      currentPage * QUESTIONS_PER_PAGE,
+      (currentPage + 1) * QUESTIONS_PER_PAGE,
+    );
 
     return (
       <div>
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
           <button class="c-btn c-btn--secondary" onClick={() => setReviewMode(false)}>
             ← Back to Results
           </button>
-          <div class="flex gap-2">
+          <div class="flex gap-2 flex-wrap">
             <select
               class="crayons-select fs-s"
               value={filterSection}
@@ -100,33 +107,81 @@ export function ExamResults({ slug, attemptId }) {
           </div>
         </div>
 
-        {q ? (
+        {pageQuestions.length > 0 ? (
           <div>
-            <QuestionDisplay
-              question={q}
-              selectedOption={q.selected_option_key}
-              onSelectOption={() => {}}
-              isReview={true}
-              language={language}
-            />
-            <div class="flex items-center justify-between mt-4">
+            {pageQuestions.map((q, i) => (
+              <div key={q.id} class="mb-6">
+                <QuestionDisplay
+                  question={q}
+                  selectedOption={q.selected_option_key}
+                  onSelectOption={() => {}}
+                  isReview={true}
+                  language={language}
+                />
+              </div>
+            ))}
+
+            {/* Pagination controls */}
+            <div class="flex items-center justify-center gap-2 mt-4 mb-4">
               <button
-                class="c-btn c-btn--secondary"
-                onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-                disabled={currentIndex === 0}
+                class="c-btn c-btn--secondary c-btn--s"
+                onClick={() => setCurrentIndex(0)}
+                disabled={currentPage === 0}
               >
-                ← Previous
+                First
               </button>
-              <span class="color-secondary fs-s">
-                {currentIndex + 1} / {filteredQuestions.length}
-              </span>
               <button
-                class="c-btn c-btn--secondary"
-                onClick={() => setCurrentIndex((i) => Math.min(filteredQuestions.length - 1, i + 1))}
-                disabled={currentIndex >= filteredQuestions.length - 1}
+                class="c-btn c-btn--secondary c-btn--s"
+                onClick={() => setCurrentIndex((p) => Math.max(0, p - 1))}
+                disabled={currentPage === 0}
+              >
+                ← Prev
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => {
+                if (
+                  totalPages <= 7 ||
+                  i === 0 ||
+                  i === totalPages - 1 ||
+                  Math.abs(i - currentPage) <= 1
+                ) {
+                  return (
+                    <button
+                      key={i}
+                      class={`c-btn c-btn--s ${i === currentPage ? 'c-btn--primary' : 'c-btn--secondary'}`}
+                      onClick={() => setCurrentIndex(i)}
+                    >
+                      {i + 1}
+                    </button>
+                  );
+                }
+                if (i === 1 && currentPage > 2) {
+                  return <span key={i} class="color-secondary">...</span>;
+                }
+                if (i === totalPages - 2 && currentPage < totalPages - 3) {
+                  return <span key={i} class="color-secondary">...</span>;
+                }
+                return null;
+              })}
+
+              <button
+                class="c-btn c-btn--secondary c-btn--s"
+                onClick={() => setCurrentIndex((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={currentPage >= totalPages - 1}
               >
                 Next →
               </button>
+              <button
+                class="c-btn c-btn--secondary c-btn--s"
+                onClick={() => setCurrentIndex(totalPages - 1)}
+                disabled={currentPage >= totalPages - 1}
+              >
+                Last
+              </button>
+            </div>
+
+            <div class="text-center color-secondary fs-s">
+              Page {currentPage + 1} of {totalPages} ({filteredQuestions.length} questions)
             </div>
           </div>
         ) : (
@@ -164,28 +219,30 @@ export function ExamResults({ slug, attemptId }) {
       {r.section_scores && Object.keys(r.section_scores).length > 0 && (
         <div class="crayons-card p-6 mb-4">
           <h3 class="crayons-subtitle-2 mb-3">Section Breakdown</h3>
-          <table class="crayons-table">
-            <thead>
-            <tr>
-              <th>Section</th>
-              <th>Correct</th>
-              <th>Incorrect</th>
-              <th>Unanswered</th>
-              <th>Score</th>
-            </tr>
-            </thead>
-            <tbody>
-            {Object.entries(r.section_scores).map(([name, data]) => (
-              <tr key={name}>
-                <td class="fw-bold">{name}</td>
-                <td style={{ color: 'var(--accent-success)' }}>{data.correct}</td>
-                <td style={{ color: 'var(--accent-danger)' }}>{data.incorrect}</td>
-                <td>{data.unanswered}</td>
-                <td class="fw-bold">{data.score}</td>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <table class="crayons-table">
+              <thead>
+              <tr>
+                <th>Section</th>
+                <th>Correct</th>
+                <th>Incorrect</th>
+                <th>Unanswered</th>
+                <th>Score</th>
               </tr>
-            ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+              {Object.entries(r.section_scores).map(([name, data]) => (
+                <tr key={name}>
+                  <td class="fw-bold">{name}</td>
+                  <td style={{ color: 'var(--accent-success)' }}>{data.correct}</td>
+                  <td style={{ color: 'var(--accent-danger)' }}>{data.incorrect}</td>
+                  <td>{data.unanswered}</td>
+                  <td class="fw-bold">{data.score}</td>
+                </tr>
+              ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -198,14 +255,17 @@ export function ExamResults({ slug, attemptId }) {
       </div>
 
       {/* Actions */}
-      <div class="flex gap-4">
-        <button class="c-btn c-btn--primary" onClick={() => setReviewMode(true)}>
+      <div class="flex gap-3 flex-wrap">
+        <button class="c-btn c-btn--primary" onClick={() => setReviewMode(true)}
+                style={{ minHeight: '44px' }}>
           Review All Questions
         </button>
-        <a href={`/mock_exams/${slug}`} class="c-btn c-btn--secondary">
+        <a href={`/mock_exams/${slug}`} class="c-btn c-btn--secondary"
+           style={{ minHeight: '44px' }}>
           Back to Exam
         </a>
-        <a href="/mock_exams" class="c-btn c-btn--secondary">
+        <a href="/mock_exams" class="c-btn c-btn--secondary"
+           style={{ minHeight: '44px' }}>
           All Exams
         </a>
       </div>

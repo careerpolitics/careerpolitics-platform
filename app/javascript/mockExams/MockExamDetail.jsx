@@ -76,8 +76,8 @@ export function MockExamDetail({ slug }) {
         <h1 class="crayons-title mb-2">{t.title}</h1>
         {t.description && <p class="color-secondary mb-4">{t.description}</p>}
 
-        <div class="grid gap-4 mb-6"
-             style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+        <div class="grid gap-3 mb-6"
+             style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}>
           <InfoItem label="Questions" value={t.total_questions} />
           <InfoItem label="Duration" value={`${t.duration_minutes} minutes`} />
           <InfoItem label="Marks/Correct" value={`+${t.marks_per_correct}`} />
@@ -120,7 +120,7 @@ export function MockExamDetail({ slug }) {
           <h3 class="crayons-subtitle-2 mb-1">Choose a Question Set</h3>
           <p class="color-secondary fs-s mb-4">Select a set below to start your exam.</p>
           <div class="grid gap-3"
-               style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+               style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
             {sets.map((s) => {
               const isSelected = selectedSet === s.set_number;
               return (
@@ -178,9 +178,12 @@ export function MockExamDetail({ slug }) {
                       </span>
                       <span class="fw-bold">Set {s.set_number}</span>
                     </div>
-                    <span class="fs-s color-secondary">
-                      {s.question_count} questions
-                    </span>
+                    <div class="flex items-center gap-2">
+                      <DifficultyBadge difficulty={s.difficulty} />
+                      <span class="fs-s color-secondary">
+                        {s.question_count}q
+                      </span>
+                    </div>
                   </div>
                   <div class="flex items-center justify-between"
                        style={{ paddingLeft: '28px' }}>
@@ -272,5 +275,29 @@ function StatsCard({ stats, maxScore }) {
                   value={`${stats.completion_rate}%`} />
       </div>
     </div>
+  );
+}
+
+function DifficultyBadge({ difficulty }) {
+  const colors = {
+    easy: { bg: 'rgba(0,128,0,0.1)', color: 'var(--accent-success)' },
+    medium: { bg: 'rgba(255,165,0,0.1)', color: 'var(--accent-warning)' },
+    hard: { bg: 'rgba(255,0,0,0.1)', color: 'var(--accent-danger)' },
+    mixed: { bg: 'var(--card-secondary-bg)', color: 'var(--body-color)' },
+  };
+  const c = colors[difficulty] || colors.mixed;
+  return (
+    <span
+      class="fs-xs fw-bold"
+      style={{
+        padding: '2px 8px',
+        borderRadius: '4px',
+        background: c.bg,
+        color: c.color,
+        textTransform: 'capitalize',
+      }}
+    >
+      {difficulty}
+    </span>
   );
 }

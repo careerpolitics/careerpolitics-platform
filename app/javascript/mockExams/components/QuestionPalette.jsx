@@ -33,7 +33,7 @@ export function QuestionPalette({ questions, responses, currentIndex, onNavigate
   });
 
   return (
-    <div class="crayons-card p-4" style={{ position: 'sticky', top: '16px' }}>
+    <div>
       <h4 class="fw-bold mb-3 fs-s">Question Palette</h4>
 
       <div
@@ -49,8 +49,9 @@ export function QuestionPalette({ questions, responses, currentIndex, onNavigate
               key={q.id}
               onClick={() => onNavigate(i)}
               style={{
-                width: '36px',
-                height: '36px',
+                width: '100%',
+                minWidth: '36px',
+                height: '40px',
                 borderRadius: '6px',
                 border: isCurrent ? '2px solid var(--body-color)' : '1px solid transparent',
                 background: statusColors[status],

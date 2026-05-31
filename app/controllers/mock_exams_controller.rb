@@ -48,11 +48,15 @@ class MockExamsController < ApplicationController
       user_attempted = current_user ? current_user.mock_exam_attempts
                                                   .for_template(@template)
                                                   .where(pool_set: set_number).exists? : false
+      difficulties = @template.set_questions(set_number).group(:difficulty).count
+      primary_difficulty = difficulties.max_by { |_, v| v }&.first || "mixed"
       {
         set_number: set_number,
         question_count: count,
         attempts_count: attempts_for_set,
         user_attempted: user_attempted,
+        difficulty: primary_difficulty,
+        difficulty_breakdown: difficulties,
       }
     end
     render json: { sets: sets_data }
