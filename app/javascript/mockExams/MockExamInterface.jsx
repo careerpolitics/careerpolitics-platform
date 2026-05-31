@@ -18,6 +18,7 @@ export function MockExamInterface({ slug, attemptId }) {
   const [showCalculator, setShowCalculator] = useState(false);
   const [showScratchpad, setShowScratchpad] = useState(false);
   const [language, setLanguage] = useState('en');
+  const [examStarted, setExamStarted] = useState(false);
   const timePerQuestion = useRef({});
   const questionStartTime = useRef(Date.now());
 
@@ -202,12 +203,8 @@ export function MockExamInterface({ slug, attemptId }) {
     [recordTimeOnQuestion],
   );
 
-  // Request full-screen on mount
+// Exit full-screen on unmount
   useEffect(() => {
-    const el = document.documentElement;
-    if (el.requestFullscreen && !document.fullscreenElement) {
-      el.requestFullscreen().catch(() => {});
-    }
     return () => {
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
@@ -219,6 +216,31 @@ export function MockExamInterface({ slug, attemptId }) {
     return (
       <div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--body-bg)'}}>
         <div class="crayons-loading" aria-label="Loading exam..." />
+      </div>
+    );
+  }
+
+  if (!examStarted) {
+    const enterExam = () => {
+      const el = document.documentElement;
+      if (el.requestFullscreen && !document.fullscreenElement) {
+        el.requestFullscreen().catch(() => {});
+      }
+      setExamStarted(true);
+    };
+
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--body-bg)' }}>
+        <div class="crayons-card p-8 text-center" style={{ maxWidth: '480px' }}>
+          <h2 class="crayons-title mb-2">{examData?.template?.title || 'Mock Exam'}</h2>
+          <p class="color-secondary mb-1">{examData?.questions?.length || '—'} questions</p>
+          <p class="color-secondary mb-4 fs-s">
+            The exam will open in full-screen mode. Press <strong>Esc</strong> to exit full-screen at any time.
+          </p>
+          <button class="c-btn c-btn--primary" onClick={enterExam} style={{ fontSize: '1.1rem', padding: '12px 32px' }}>
+            Begin Exam
+          </button>
+        </div>
       </div>
     );
   }

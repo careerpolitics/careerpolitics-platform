@@ -303,6 +303,7 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :mock_exam_responses, only: %i[create update]
     resources :profile_pins, only: %i[create update]
     # temporary keeping both routes while transitioning (renaming) display_ads => billboards
     resources :display_ad_events, only: [:create], controller: :billboard_events

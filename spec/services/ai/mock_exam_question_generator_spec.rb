@@ -42,21 +42,21 @@ RSpec.describe Ai::MockExamQuestionGenerator do
       allow(ai_client).to receive(:call).and_return(valid_questions_json)
     end
 
-    it "generates multiplier * total_questions questions" do
-      result = generator.generate_pool(multiplier: 2)
+    it "generates sets_count * total_questions questions" do
+      result = generator.generate_pool(sets_count: 2)
       expect(result).to be_an(Array)
       expect(result).to all(satisfy { |q| q["question_text"].present? })
     end
 
     it "calls the AI client with English-only prompt" do
-      generator.generate_pool(multiplier: 1)
+      generator.generate_pool(sets_count: 1)
       expect(ai_client).to have_received(:call).at_least(:once) do |prompt, **_opts|
         expect(prompt).to include("ENGLISH ONLY")
       end
     end
 
     it "uses JSON response_mime_type" do
-      generator.generate_pool(multiplier: 1)
+      generator.generate_pool(sets_count: 1)
       expect(ai_client).to have_received(:call)
                              .with(anything, response_mime_type: "application/json")
                              .at_least(:once)
@@ -101,7 +101,7 @@ RSpec.describe Ai::MockExamQuestionGenerator do
     end
 
     it "uses maths-specific prompt with LaTeX instructions" do
-      maths_generator.generate_pool(multiplier: 1)
+      maths_generator.generate_pool(sets_count: 1)
       expect(ai_client).to have_received(:call).at_least(:once) do |prompt, **_opts|
         expect(prompt).to include("$ delimiters")
         expect(prompt).to include("solution_steps")
@@ -109,7 +109,7 @@ RSpec.describe Ai::MockExamQuestionGenerator do
     end
 
     it "includes section subtypes for maths" do
-      maths_generator.generate_pool(multiplier: 1)
+      maths_generator.generate_pool(sets_count: 1)
       expect(ai_client).to have_received(:call).at_least(:once) do |prompt, **_opts|
         if prompt.include?("maths")
           expect(prompt).to include("Arithmetic")
@@ -119,7 +119,7 @@ RSpec.describe Ai::MockExamQuestionGenerator do
     end
 
     it "includes section subtypes for reasoning" do
-      maths_generator.generate_pool(multiplier: 1)
+      maths_generator.generate_pool(sets_count: 1)
       expect(ai_client).to have_received(:call).at_least(:once) do |prompt, **_opts|
         if prompt.include?("reasoning")
           expect(prompt).to include("Analogies")
@@ -129,7 +129,7 @@ RSpec.describe Ai::MockExamQuestionGenerator do
     end
 
     it "generates solution_steps for maths questions" do
-      result = maths_generator.generate_pool(multiplier: 1)
+      result = maths_generator.generate_pool(sets_count: 1)
       maths_qs = result.select { |q| q["question_type"] == "maths" }
       expect(maths_qs).to all(satisfy { |q| q["solution_steps"].present? })
     end
@@ -196,7 +196,7 @@ RSpec.describe Ai::MockExamQuestionGenerator do
     end
 
     it "uses visual reasoning prompt with SVG instructions" do
-      visual_generator.generate_pool(multiplier: 1)
+      visual_generator.generate_pool(sets_count: 1)
       expect(ai_client).to have_received(:call).at_least(:once) do |prompt, **_opts|
         expect(prompt).to include("visual reasoning")
         expect(prompt).to include("SVG")
@@ -208,14 +208,14 @@ RSpec.describe Ai::MockExamQuestionGenerator do
       allow(MockExams::SvgSanitizer).to receive(:sanitize).and_call_original
       allow(MockExams::SvgSanitizer).to receive(:sanitize_options).and_call_original
 
-      visual_generator.generate_pool(multiplier: 1)
+      visual_generator.generate_pool(sets_count: 1)
 
       expect(MockExams::SvgSanitizer).to have_received(:sanitize).at_least(:once)
       expect(MockExams::SvgSanitizer).to have_received(:sanitize_options).at_least(:once)
     end
 
     it "sets question_format to svg for visual reasoning questions" do
-      result = visual_generator.generate_pool(multiplier: 1)
+      result = visual_generator.generate_pool(sets_count: 1)
       expect(result).to all(include("question_format" => "svg"))
     end
 
@@ -241,7 +241,7 @@ RSpec.describe Ai::MockExamQuestionGenerator do
 
       allow(ai_client).to receive(:call).and_return(malicious_json)
 
-      result = visual_generator.generate_pool(multiplier: 1)
+      result = visual_generator.generate_pool(mulsets_counttiplier: 1)
       expect(result.first["question_svg"]).not_to include("<script")
       expect(result.first["options"].first["svg"]).not_to include("onclick")
     end
@@ -259,14 +259,14 @@ RSpec.describe Ai::MockExamQuestionGenerator do
         end
       end
 
-      result = generator.generate_pool(multiplier: 1)
+      result = generator.generate_pool(sets_count: 1)
       expect(result).to be_an(Array)
     end
 
     it "returns nil after exhausting retries" do
       allow(ai_client).to receive(:call).and_raise(StandardError.new("API down"))
 
-      result = generator.generate_pool(multiplier: 1)
+      result = generator.generate_pool(sets_count: 1)
       expect(result).to eq([])
     end
   end
