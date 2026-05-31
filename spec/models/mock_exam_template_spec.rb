@@ -6,7 +6,14 @@ RSpec.describe MockExamTemplate, type: :model do
   describe "validations" do
     it { is_expected.to validate_presence_of(:title) }
     it { is_expected.to validate_presence_of(:slug) }
-    it { is_expected.to validate_uniqueness_of(:slug) }
+
+    it "validates uniqueness of slug" do
+      create(:mock_exam_template, slug: "duplicate-slug")
+      duplicate = build(:mock_exam_template, slug: "duplicate-slug")
+      expect(duplicate).not_to be_valid
+      expect(duplicate.errors[:slug]).to include("has already been taken")
+    end
+
     it { is_expected.to validate_presence_of(:total_questions) }
     it { is_expected.to validate_presence_of(:duration_minutes) }
     it { is_expected.to validate_presence_of(:marks_per_correct) }
@@ -55,7 +62,8 @@ RSpec.describe MockExamTemplate, type: :model do
   describe "#pool_ready?" do
     it "returns true when pool has enough questions" do
       template.total_questions.times do |i|
-        create(:mock_exam_question, mock_exam_template: template, position: i + 1)
+        create(:mock_exam_question, mock_exam_template: template, position: i + 1,
+                                    set_published: true)
       end
       expect(template.pool_ready?).to be(true)
     end

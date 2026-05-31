@@ -81,6 +81,7 @@ class MockExamsController < ApplicationController
     render json: stat ? full_stats_json(stat) : { error: "No stats available" }
   end
 
+  
   def dashboard
     attempts = current_user.mock_exam_attempts
       .submitted_or_timed_out
