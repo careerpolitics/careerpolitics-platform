@@ -7,6 +7,8 @@ export function QuestionDisplay({
                                   onSelectOption,
                                   isReview,
                                   language,
+                                  questionNumber,
+                                  totalQuestions,
                                 }) {
   const q = question;
   const useHindi = language === 'hi' && q.text_hi;
@@ -15,12 +17,28 @@ export function QuestionDisplay({
 
   return (
     <div class="crayons-card p-6">
-      {/* Section badge */}
+      {/* Question header */}
       <div class="flex items-center justify-between mb-3">
-        <span class="crayons-tag crayons-tag--monochrome fs-xs">
-          {q.section_name}
-        </span>
-        <span class="color-secondary fs-xs">Q{q.position}</span>
+        <div class="flex items-center gap-2">
+          <span class="fw-bold" style={{
+            background: 'var(--accent-brand)', color: '#fff',
+            padding: '3px 12px', borderRadius: '6px',
+            fontSize: '0.8rem', letterSpacing: '0.02em',
+          }}>
+            Q. {questionNumber || q.position}
+          </span>
+          <span class="crayons-tag crayons-tag--monochrome fs-xs">
+            {q.section_name}
+          </span>
+        </div>
+        {totalQuestions > 0 && (
+          <span class="fs-xs color-secondary" style={{
+            background: 'var(--card-secondary-bg)',
+            padding: '2px 8px', borderRadius: '4px',
+          }}>
+            {questionNumber || q.position} of {totalQuestions}
+          </span>
+        )}
       </div>
 
       {/* Question text */}
@@ -74,7 +92,11 @@ export function QuestionDisplay({
                 cursor: isReview ? 'default' : 'pointer',
                 width: '100%',
                 minHeight: '48px',
+                transition: 'all 0.15s ease',
+                position: 'relative',
               }}
+              onMouseEnter={(e) => { if (!isReview) e.currentTarget.style.transform = 'translateX(2px)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; }}
               onClick={() => !isReview && onSelectOption(opt.key)}
               disabled={isReview}
             >
@@ -109,6 +131,15 @@ export function QuestionDisplay({
                   <span>{optText}</span>
                 )}
               </div>
+              {!isReview && (
+                <span style={{
+                  fontSize: '0.65rem', color: 'var(--body-color)',
+                  opacity: 0.4, fontFamily: 'monospace',
+                  flexShrink: 0,
+                }} class="hide-mobile">
+                  Press {opt.key}
+                </span>
+              )}
               {isReview && isCorrect && (
                 <span style={{ color: 'var(--accent-success)', fontSize: '1.2rem' }}>✓</span>
               )}

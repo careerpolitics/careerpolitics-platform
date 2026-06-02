@@ -1,94 +1,128 @@
 import { h } from 'preact';
 
+const STATUS_COLORS = {
+  not_visited: 'var(--card-secondary-bg)',
+  not_answered: 'var(--accent-danger)',
+  answered: 'var(--accent-success)',
+  review: '#7c3aed',
+  answered_review: '#9b59b6',
+};
+
+const STATUS_LABELS = {
+  answered: 'Answered',
+  review: 'For Review',
+  not_answered: 'Not Answered',
+  not_visited: 'Not Visited',
+  answered_review: 'Answered & Marked',
+};
+
+function getStatus(question, responses) {
+  const resp = responses[question.id];
+  if (!resp) return 'not_visited';
+  if (resp.marked_for_review && resp.selected_option_key) return 'answered_review';
+  if (resp.marked_for_review) return 'review';
+  if (resp.selected_option_key) return 'answered';
+  return 'not_answered';
+}
+
 export function QuestionPalette({ questions, responses, currentIndex, onNavigate }) {
-  const getStatus = (question) => {
-    const resp = responses[question.id];
-    if (!resp) return 'not_visited';
-    if (resp.marked_for_review && resp.selected_option_key) return 'answered_review';
-    if (resp.marked_for_review) return 'review';
-    if (resp.selected_option_key) return 'answered';
-    return 'not_answered';
-  };
-
-  const statusColors = {
-    not_visited: 'var(--card-secondary-bg)',
-    not_answered: 'var(--accent-danger)',
-    answered: 'var(--accent-success)',
-    review: 'var(--accent-warning)',
-    answered_review: '#9b59b6',
-  };
-
-  const statusLabels = {
-    not_visited: 'Not Visited',
-    not_answered: 'Not Answered',
-    answered: 'Answered',
-    review: 'Marked for Review',
-    answered_review: 'Answered & Marked',
-  };
-
   const counts = {};
   questions.forEach((q) => {
-    const s = getStatus(q);
+    const s = getStatus(q, responses);
     counts[s] = (counts[s] || 0) + 1;
+  });
+
+  // Group questions by section
+  const sections = [];
+  const sectionMap = new Map();
+  questions.forEach((q, i) => {
+    const name = q.section_name || 'Questions';
+    if (!sectionMap.has(name)) {
+      const entry = { name, items: [] };
+      sectionMap.set(name, entry);
+      sections.push(entry);
+    }
+    sectionMap.get(name).items.push({ question: q, index: i });
   });
 
   return (
     <div>
       <h4 class="fw-bold mb-3 fs-s">Question Palette</h4>
 
-      <div
-        class="grid gap-1 mb-4"
-        style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}
-      >
-        {questions.map((q, i) => {
-          const status = getStatus(q);
-          const isCurrent = i === currentIndex;
+      {/* Section-grouped dots */}
+      {sections.map((sec) => {
+        const answered = sec.items.filter(
+          (it) => getStatus(it.question, responses) === 'answered' || getStatus(it.question, responses) === 'answered_review',
+        ).length;
 
-          return (
-            <button
-              key={q.id}
-              onClick={() => onNavigate(i)}
-              style={{
-                width: '100%',
-                minWidth: '36px',
-                height: '40px',
-                borderRadius: '6px',
-                border: isCurrent ? '2px solid var(--body-color)' : '1px solid transparent',
-                background: statusColors[status],
-                color: status === 'not_visited' ? 'inherit' : 'white',
-                cursor: 'pointer',
-                fontSize: '0.75rem',
-                fontWeight: isCurrent ? 'bold' : 'normal',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              title={`Q${i + 1}: ${statusLabels[status]}`}
-            >
-              {i + 1}
-            </button>
-          );
-        })}
-      </div>
+        return (
+          <div key={sec.name} style={{ marginBottom: '12px' }}>
+            <div class="flex items-center justify-between" style={{ marginBottom: '4px' }}>
+              <span class="fs-xs fw-bold">{sec.name}</span>
+              <span class="fs-xs color-secondary">{answered}/{sec.items.length}</span>
+            </div>
+            <div class="flex flex-wrap" style={{ gap: 0 }}>
+              {sec.items.map(({ question: q, index: i }) => {
+                const status = getStatus(q, responses);
+                const isCurrent = i === currentIndex;
+                return (
+                  <button
+                    key={q.id}
+                    onClick={() => onNavigate(i)}
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '6px',
+                      border: isCurrent
+                        ? '2px solid var(--accent-brand)'
+                        : `1px solid ${status === 'not_visited' ? 'var(--card-border)' : 'transparent'}`,
+                      boxShadow: isCurrent ? '0 0 0 2px var(--accent-brand-a10)' : 'none',
+                      background: STATUS_COLORS[status],
+                      color: status === 'not_visited' ? 'inherit' : 'white',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                      fontWeight: isCurrent ? 'bold' : '600',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '2px',
+                      transition: 'transform 0.1s',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.12)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                    title={`Q${i + 1}: ${STATUS_LABELS[status]}`}
+                  >
+                    {i + 1}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
 
       {/* Legend */}
-      <div class="flex flex-col gap-1">
-        {Object.entries(statusLabels).map(([key, label]) => (
-          <div key={key} class="flex items-center gap-2 fs-xs">
-            <div
-              style={{
-                width: '12px',
-                height: '12px',
-                borderRadius: '3px',
-                background: statusColors[key],
-                flexShrink: 0,
-              }}
-            />
-            <span>
-              {label} ({counts[key] || 0})
-            </span>
-          </div>
-        ))}
+      <div style={{ borderTop: '1px solid var(--card-border)', paddingTop: '8px', marginTop: '4px' }}>
+        <div class="fs-xs color-secondary" style={{ marginBottom: '6px' }}>Legend:</div>
+        <div class="flex flex-col gap-1">
+          {Object.entries(STATUS_LABELS).map(([key, label]) => (
+            <div key={key} class="flex items-center gap-2 fs-xs">
+              <div
+                style={{
+                  width: '14px',
+                  height: '14px',
+                  borderRadius: '3px',
+                  background: STATUS_COLORS[key],
+                  border: key === 'not_visited' ? '1px solid var(--card-border)' : 'none',
+                  flexShrink: 0,
+                }}
+              />
+              <span>
+                {label} ({counts[key] || 0})
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

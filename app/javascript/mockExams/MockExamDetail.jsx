@@ -10,6 +10,9 @@ export function MockExamDetail({ slug }) {
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState(null);
   const [selectedSet, setSelectedSet] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [diffFilter, setDiffFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
 
   useEffect(() => {
     Promise.all([
@@ -30,12 +33,10 @@ export function MockExamDetail({ slug }) {
     setError(null);
 
     try {
-      const body = poolSet ? JSON.stringify({ pool_set: poolSet }) : undefined;
-      const headers = poolSet ? { 'Content-Type': 'application/json' } : {};
+      const payload = poolSet ? { pool_set: poolSet } : {};
       const res = await request(`/mock_exams/${slug}/attempts`, {
         method: 'POST',
-        body,
-        headers,
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
@@ -83,7 +84,6 @@ export function MockExamDetail({ slug }) {
           <InfoItem label="Marks/Correct" value={`+${t.marks_per_correct}`} />
           <InfoItem label="Negative Marks" value={`-${t.negative_marks_per_wrong}`} />
           <InfoItem label="Category" value={t.exam_category?.replace(/_/g, ' ')} />
-          <InfoItem label="Difficulty" value={t.difficulty_level} />
         </div>
 
         {t.sections_config?.length > 0 && (
@@ -115,46 +115,112 @@ export function MockExamDetail({ slug }) {
       </div>
 
       {/* Question Sets — select and attempt */}
-      {sets.length > 0 && (
-        <div class="crayons-card p-6 mb-4">
-          <h3 class="crayons-subtitle-2 mb-1">Choose a Question Set</h3>
-          <p class="color-secondary fs-s mb-4">Select a set below to start your exam.</p>
-          <div class="grid gap-3"
-               style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
-            {sets.map((s) => {
-              const isSelected = selectedSet === s.set_number;
-              return (
-                <div
-                  key={s.set_number}
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={isSelected}
-                  class="crayons-card crayons-card--secondary p-4"
-                  style={{
-                    cursor: t.can_attempt ? 'pointer' : 'default',
-                    borderColor: isSelected
-                      ? 'var(--accent-brand)' : 'var(--card-border)',
-                    borderWidth: isSelected ? '2px' : '1px',
-                    borderStyle: 'solid',
-                    background: isSelected
-                      ? 'var(--accent-brand-a10)' : 'var(--card-secondary-bg)',
-                    transition: 'all 0.15s ease',
-                    opacity: t.can_attempt ? 1 : 0.6,
-                  }}
-                  onClick={() =>
-                    t.can_attempt &&
-                    setSelectedSet(isSelected ? null : s.set_number)
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      t.can_attempt &&
-                      setSelectedSet(isSelected ? null : s.set_number);
-                    }
-                  }}
+      {sets.length > 0 && (() => {
+        const filtered = sets
+          .filter(s => {
+            if (statusFilter === 'new') return !s.user_attempted;
+            if (statusFilter === 'attempted') return s.user_attempted;
+            return true;
+          })
+          .filter(s => {
+            if (diffFilter === 'all') return true;
+            return s.difficulty === diffFilter;
+          })
+          .sort((a, b) => {
+            if (sortBy === 'oldest') return a.set_number - b.set_number;
+            if (sortBy === 'popular') return b.attempts_count - a.attempts_count;
+            return b.set_number - a.set_number;
+          });
+
+        return (
+          <div class="crayons-card p-6 mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="crayons-subtitle-2">Choose a Question Set</h3>
+              {sets.length > 1 && t.can_attempt && (
+                <button
+                  class="c-btn c-btn--secondary c-btn--s"
+                  onClick={() => handleStart(null)}
+                  disabled={starting}
+                  title="Pick a random set"
+                  style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', gap: '4px', display: 'inline-flex', alignItems: 'center' }}
                 >
-                  <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+                  {starting ? '...' : 'Random'}
+                </button>
+              )}
+            </div>
+
+            {/* Filter / Sort bar */}
+            <div class="flex flex-wrap items-center gap-3 mb-4 mt-2" style={{ fontSize: '0.8rem' }}>
+              <FilterGroup label="Status" value={statusFilter} onChange={setStatusFilter}
+                           options={[['all','All'],['new','New'],['attempted','Attempted']]} />
+              <FilterGroup label="Difficulty" value={diffFilter} onChange={setDiffFilter}
+                           options={[['all','All'],['easy','Easy'],['medium','Medium'],['hard','Hard']]} />
+              <div class="flex items-center gap-1" style={{ marginLeft: 'auto' }}>
+                <span class="color-secondary fw-medium" style={{ fontSize: '0.75rem' }}>Sort:</span>
+                {[['newest','Newest'],['oldest','Oldest'],['popular','Popular']].map(([val,lbl]) => (
+                  <button key={val}
+                          class={`c-btn c-btn--s ${sortBy === val ? 'c-btn--primary' : 'c-btn--secondary'}`}
+                          onClick={() => setSortBy(val)}
+                          style={{ padding: '2px 8px', minHeight: '26px', fontSize: '0.75rem', borderRadius: '12px' }}
+                  >{lbl}</button>
+                ))}
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 mb-3">
+              <span class="fs-s color-secondary">{filtered.length} of {sets.length} sets</span>
+              {(statusFilter !== 'all' || diffFilter !== 'all') && (
+                <button class="c-btn c-btn--s c-btn--secondary" style={{ padding: '1px 8px', fontSize: '0.7rem', minHeight: '22px' }}
+                        onClick={() => { setStatusFilter('all'); setDiffFilter('all'); }}>
+                  Clear filters
+                </button>
+              )}
+            </div>
+
+            {filtered.length === 0 ? (
+              <div class="p-4 text-center color-secondary fs-s">
+                No sets match your filters. Try adjusting the filters above.
+              </div>
+            ) : (
+              <div class="grid gap-3"
+                   style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
+                {filtered.map((s) => {
+                  const isSelected = selectedSet === s.set_number;
+                  const ua = s.user_attempt_data;
+                  const accColor = ua ? (ua.accuracy_percent >= 70 ? 'var(--accent-success)' : ua.accuracy_percent >= 40 ? 'var(--accent-warning)' : 'var(--accent-danger)') : null;
+                  return (
+                    <div
+                      key={s.set_number}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={isSelected}
+                      class="crayons-card crayons-card--secondary p-4"
+                      style={{
+                        cursor: t.can_attempt ? 'pointer' : 'default',
+                        borderColor: isSelected
+                          ? 'var(--accent-brand)' : 'var(--card-border)',
+                        borderWidth: isSelected ? '2px' : '1px',
+                        borderStyle: 'solid',
+                        background: isSelected
+                          ? 'var(--accent-brand-a10)' : 'var(--card-secondary-bg)',
+                        transition: 'all 0.15s ease',
+                        opacity: t.can_attempt ? 1 : 0.6,
+                      }}
+                      onClick={() =>
+                        t.can_attempt &&
+                        setSelectedSet(isSelected ? null : s.set_number)
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          t.can_attempt &&
+                          setSelectedSet(isSelected ? null : s.set_number);
+                        }
+                      }}
+                    >
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
                       <span
                         style={{
                           width: '20px',
@@ -176,55 +242,76 @@ export function MockExamDetail({ slug }) {
                       >
                         {isSelected ? '✓' : ''}
                       </span>
-                      <span class="fw-bold">Set {s.set_number}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <DifficultyBadge difficulty={s.difficulty} />
-                      <span class="fs-s color-secondary">
+                          <span class="fw-bold">{s.label}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <DifficultyBadge difficulty={s.difficulty} />
+                          <span class="fs-s color-secondary">
                         {s.question_count}q
                       </span>
-                    </div>
-                  </div>
-                  <div class="flex items-center justify-between"
-                       style={{ paddingLeft: '28px' }}>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between"
+                           style={{ paddingLeft: '28px' }}>
                     <span class="fs-s color-secondary">
                       {s.attempts_count} total attempts
                     </span>
-                    {s.user_attempted && (
-                      <span class="crayons-tag crayons-tag--monochrome fs-xs">
+                        {s.user_attempted && (
+                          <span class="crayons-tag crayons-tag--monochrome fs-xs">
                         You attempted
                       </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                        )}
+                      </div>
 
-          <div class="flex items-center gap-3 mt-4">
-            <button
-              class="c-btn c-btn--primary"
-              onClick={() => handleStart(selectedSet)}
-              disabled={starting || !t.can_attempt || !selectedSet}
-            >
-              {starting
-                ? 'Starting...'
-                : selectedSet
-                  ? `Start Set ${selectedSet}`
-                  : 'Select a set to begin'}
-            </button>
-            {sets.length > 1 && t.can_attempt && (
-              <button
-                class="c-btn c-btn--secondary"
-                onClick={() => handleStart(null)}
-                disabled={starting}
-              >
-                {starting ? 'Starting...' : 'Random Set'}
-              </button>
+                      {/* Attempted: show score + Review/Retake */}
+                      {ua && (
+                        <div style={{ paddingLeft: '28px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--card-border)' }}>
+                          <div class="flex items-center justify-between flex-wrap gap-2">
+                            <div class="flex items-center gap-3 fs-xs color-secondary">
+                              <span>Score: <strong style={{ color: accColor }}>{ua.total_score}/{ua.max_possible_score}</strong></span>
+                              <span>Accuracy: <strong style={{ color: accColor }}>{ua.accuracy_percent}%</strong></span>
+                              <span>Percentile: <strong>{ua.percentile || 0}%</strong></span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action buttons */}
+                      {ua ? (
+                        <div class="flex gap-2" style={{ marginTop: '10px' }}
+                             onClick={(e) => e.stopPropagation()}>
+                          <a href={`/mock_exams/${slug}/attempts/${ua.attempt_id}/results`}
+                             class="c-btn c-btn--secondary"
+                             style={{ flex: 1, fontSize: '0.8rem', padding: '6px 0', borderRadius: '6px', textAlign: 'center', textDecoration: 'none' }}>
+                            📝 Review
+                          </a>
+                          <button
+                            class="c-btn c-btn--primary"
+                            onClick={(e) => { e.stopPropagation(); handleStart(s.set_number); }}
+                            disabled={starting || !t.can_attempt}
+                            style={{ flex: 1, fontSize: '0.8rem', padding: '6px 0', borderRadius: '6px' }}
+                          >
+                            {starting ? '...' : '↻ Retake'}
+                          </button>
+                        </div>
+                      ) : t.can_attempt && (
+                        <button
+                          class="c-btn c-btn--primary"
+                          onClick={(e) => { e.stopPropagation(); handleStart(s.set_number); }}
+                          disabled={starting}
+                          style={{ width: '100%', marginTop: '10px', fontSize: '0.85rem', padding: '7px 0', borderRadius: '6px' }}
+                        >
+                          {starting ? 'Starting...' : '▶ Start Exam'}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Fallback when no sets are published yet */}
       {sets.length === 0 && t.can_attempt && (
@@ -299,5 +386,28 @@ function DifficultyBadge({ difficulty }) {
     >
       {difficulty}
     </span>
+  );
+}
+
+function FilterGroup({ label, value, onChange, options }) {
+  return (
+    <div class="flex items-center gap-1">
+      <span class="color-secondary fw-medium" style={{ fontSize: '0.75rem' }}>{label}:</span>
+      {options.map(([val, lbl]) => (
+        <button
+          key={val}
+          class={`c-btn c-btn--s ${value === val ? 'c-btn--primary' : 'c-btn--secondary'}`}
+          onClick={() => onChange(val)}
+          style={{
+            padding: '2px 8px',
+            minHeight: '26px',
+            fontSize: '0.75rem',
+            borderRadius: '12px',
+          }}
+        >
+          {lbl}
+        </button>
+      ))}
+    </div>
   );
 }

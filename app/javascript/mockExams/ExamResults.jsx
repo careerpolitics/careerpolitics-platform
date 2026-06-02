@@ -193,55 +193,99 @@ export function ExamResults({ slug, attemptId }) {
     );
   }
 
+  const accPct = r.accuracy_percent || 0;
+  const scorePct = r.max_possible_score > 0 ? Math.round((r.total_score / r.max_possible_score) * 100) : 0;
+
   return (
     <div>
-      <h1 class="crayons-title mb-4">Exam Results</h1>
-
-      {/* Score Overview */}
-      <div class="crayons-card p-6 mb-4">
-        <div class="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}>
-          <ScoreItem
-            label="Score"
-            value={`${r.total_score} / ${r.max_possible_score}`}
-            accent={true}
-          />
-          <ScoreItem label="Accuracy" value={`${r.accuracy_percent}%`} />
-          <ScoreItem label="Correct" value={r.correct_count} color="var(--accent-success)" />
-          <ScoreItem label="Incorrect" value={r.incorrect_count} color="var(--accent-danger)" />
-          <ScoreItem label="Unanswered" value={r.unanswered_count} />
-          <ScoreItem label="Percentile" value={`${r.percentile || 0}%`} />
-          <ScoreItem label="Rank" value={`#${r.rank || '—'}`} />
-          <ScoreItem label="Avg Time/Q" value={`${r.avg_time_per_question || 0}s`} />
+      {/* Header with actions */}
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h1 class="crayons-title">Exam Results</h1>
+        <div class="flex gap-2">
+          <button class="c-btn c-btn--primary" onClick={() => setReviewMode(true)}
+                  style={{ minHeight: '36px' }}>
+            Review All Questions
+          </button>
+          <a href={`/mock_exams/${slug}`} class="c-btn c-btn--secondary"
+             style={{ minHeight: '36px' }}>
+            Back to Exam
+          </a>
         </div>
       </div>
 
-      {/* Section Breakdown */}
+      {/* Score Hero — ring + key stats */}
+      <div class="crayons-card p-6 mb-4">
+        <div class="flex flex-wrap gap-6 items-center justify-center">
+          {/* Score Ring */}
+          <div style={{ position: 'relative', width: '140px', height: '140px', flexShrink: 0 }}>
+            <svg viewBox="0 0 120 120" width="140" height="140">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="var(--card-border)" stroke-width="10" />
+              <circle cx="60" cy="60" r="52" fill="none"
+                      stroke={scorePct >= 70 ? 'var(--accent-success)' : scorePct >= 40 ? 'var(--accent-warning)' : 'var(--accent-danger)'}
+                      stroke-width="10" stroke-linecap="round"
+                      stroke-dasharray={`${(scorePct / 100) * 327} 327`}
+                      transform="rotate(-90 60 60)"
+                      style={{ transition: 'stroke-dasharray 0.8s ease' }}
+              />
+            </svg>
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span class="fw-bold" style={{ fontSize: '1.6rem', lineHeight: 1 }}>{scorePct}%</span>
+              <span class="fs-xs color-secondary">{r.total_score}/{r.max_possible_score}</span>
+            </div>
+          </div>
+
+          {/* Key stats grid */}
+          <div class="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', flex: '1 1 300px' }}>
+            <ScoreItem label="Accuracy" value={`${accPct}%`} />
+            <ScoreItem label="Correct" value={r.correct_count} color="var(--accent-success)" />
+            <ScoreItem label="Incorrect" value={r.incorrect_count} color="var(--accent-danger)" />
+            <ScoreItem label="Unanswered" value={r.unanswered_count} />
+            <ScoreItem label="Percentile" value={`${r.percentile || 0}%`}
+                       color={r.percentile >= 75 ? 'var(--accent-success)' : r.percentile >= 50 ? 'var(--accent-brand)' : 'var(--accent-warning)'} />
+            <ScoreItem label="Rank" value={`#${r.rank || '—'}`} />
+            <ScoreItem label="Avg Time/Q" value={`${r.avg_time_per_question || 0}s`} />
+            <ScoreItem label="Questions" value={r.total_questions} />
+          </div>
+        </div>
+      </div>
+
+      {/* Section Breakdown — progress bars */}
       {r.section_scores && Object.keys(r.section_scores).length > 0 && (
         <div class="crayons-card p-6 mb-4">
           <h3 class="crayons-subtitle-2 mb-3">Section Breakdown</h3>
-          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-            <table class="crayons-table">
-              <thead>
-              <tr>
-                <th>Section</th>
-                <th>Correct</th>
-                <th>Incorrect</th>
-                <th>Unanswered</th>
-                <th>Score</th>
-              </tr>
-              </thead>
-              <tbody>
-              {Object.entries(r.section_scores).map(([name, data]) => (
-                <tr key={name}>
-                  <td class="fw-bold">{name}</td>
-                  <td style={{ color: 'var(--accent-success)' }}>{data.correct}</td>
-                  <td style={{ color: 'var(--accent-danger)' }}>{data.incorrect}</td>
-                  <td>{data.unanswered}</td>
-                  <td class="fw-bold">{data.score}</td>
-                </tr>
-              ))}
-              </tbody>
-            </table>
+          <div class="flex flex-col gap-4">
+            {Object.entries(r.section_scores).map(([name, data]) => {
+              const total = (data.correct || 0) + (data.incorrect || 0) + (data.unanswered || 0);
+              const pct = total > 0 ? Math.round((data.correct / total) * 100) : 0;
+              return (
+                <div key={name}>
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="fw-bold fs-s">{name}</span>
+                    <div class="flex gap-3 fs-xs color-secondary">
+                      <span style={{ color: 'var(--accent-success)' }}>✓ {data.correct}</span>
+                      <span style={{ color: 'var(--accent-danger)' }}>✗ {data.incorrect}</span>
+                      <span>— {data.unanswered}</span>
+                      <span class="fw-bold" style={{ color: 'inherit' }}>{data.score} pts</span>
+                    </div>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: 'var(--card-secondary-bg)', borderRadius: '4px', overflow: 'hidden', display: 'flex' }}>
+                    <div style={{
+                      width: `${total > 0 ? (data.correct / total) * 100 : 0}%`,
+                      height: '100%', background: 'var(--accent-success)',
+                      transition: 'width 0.5s ease',
+                    }} />
+                    <div style={{
+                      width: `${total > 0 ? (data.incorrect / total) * 100 : 0}%`,
+                      height: '100%', background: 'var(--accent-danger)',
+                      transition: 'width 0.5s ease',
+                    }} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -255,17 +299,8 @@ export function ExamResults({ slug, attemptId }) {
       </div>
 
       {/* Actions */}
-      <div class="flex gap-3 flex-wrap">
-        <button class="c-btn c-btn--primary" onClick={() => setReviewMode(true)}
-                style={{ minHeight: '44px' }}>
-          Review All Questions
-        </button>
-        <a href={`/mock_exams/${slug}`} class="c-btn c-btn--secondary"
-           style={{ minHeight: '44px' }}>
-          Back to Exam
-        </a>
-        <a href="/mock_exams" class="c-btn c-btn--secondary"
-           style={{ minHeight: '44px' }}>
+      <div class="flex gap-3 flex-wrap mb-4">
+        <a href="/mock_exams" class="c-btn c-btn--secondary" style={{ minHeight: '36px' }}>
           All Exams
         </a>
       </div>
