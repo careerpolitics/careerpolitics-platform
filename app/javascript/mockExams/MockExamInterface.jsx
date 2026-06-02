@@ -18,7 +18,6 @@ export function MockExamInterface({ slug, attemptId }) {
   const [showCalculator, setShowCalculator] = useState(false);
   const [showScratchpad, setShowScratchpad] = useState(false);
   const [language, setLanguage] = useState('en');
-  const [examStarted, setExamStarted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -34,7 +33,7 @@ export function MockExamInterface({ slug, attemptId }) {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  // Load exam data
+  // Load exam data + auto-fullscreen from URL param
   useEffect(() => {
     request(`/mock_exams/${slug}/attempts/${attemptId}.json`)
       .then((res) => res.json())
@@ -49,6 +48,15 @@ export function MockExamInterface({ slug, attemptId }) {
         });
         setResponses(merged);
         setLoading(false);
+
+        // Auto-enter fullscreen if requested from detail page
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('mode') === 'fullscreen') {
+          const el = document.documentElement;
+          if (el.requestFullscreen && !document.fullscreenElement) {
+            el.requestFullscreen().catch(() => {});
+          }
+        }
       })
       .catch(() => setLoading(false));
   }, [slug, attemptId]);
@@ -234,9 +242,9 @@ export function MockExamInterface({ slug, attemptId }) {
     [recordTimeOnQuestion],
   );
 
-  // Keyboard shortcuts: A/B/C/D to select options, ←/→ to navigate
+  // Keyboard shortcuts: A/B/C/D to select options, arrow keys to navigate
   useEffect(() => {
-    if (!examStarted || !examData?.questions?.length) return;
+    if (!examData?.questions?.length) return;
     const handler = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       const key = e.key.toUpperCase();
@@ -256,126 +264,13 @@ export function MockExamInterface({ slug, attemptId }) {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [examStarted, examData, currentIndex, handleSelectOption, handleNavigate]);
+  }, [examData, currentIndex, handleSelectOption, handleNavigate]);
 
-  if (!examStarted) {
-    const template = examData?.template;
-    const qCount = examData?.questions?.length || 0;
-    const dataReady = !loading && examData?.questions?.length > 0;
-
-    const enterExam = (goFullscreen) => {
-      if (goFullscreen) {
-        const el = document.documentElement;
-        if (el.requestFullscreen && !document.fullscreenElement) {
-          el.requestFullscreen().catch(() => {});
-        }
-      }
-      setExamStarted(true);
-    };
-
+  if (loading || !examData || !examData.questions?.length) {
     return (
-      <div>
-        {/* Modal overlay — shows immediately, buttons enable when data ready */}
-        <div
-          style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
-            background: 'rgba(0,0,0,0.6)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: isMobile ? '12px' : '0',
-          }}
-        >
-          <div
-            class="crayons-card"
-            style={{
-              maxWidth: '560px', width: '100%',
-              maxHeight: isMobile ? '95dvh' : '90vh',
-              overflowY: 'auto',
-              padding: isMobile ? '16px' : '24px',
-            }}
-          >
-            <h2 class={isMobile ? 'fw-bold fs-xl mb-3' : 'crayons-title mb-4'}>
-              {template?.title || 'Mock Exam'}
-            </h2>
-
-            {/* Exam info grid */}
-            <div
-              class="grid gap-2 mb-4"
-              style={{ gridTemplateColumns: '1fr 1fr' }}
-            >
-              <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
-                <div class="fs-xs color-secondary">Questions</div>
-                <div class="fw-bold fs-l">{loading ? '...' : qCount}</div>
-              </div>
-              <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
-                <div class="fs-xs color-secondary">Duration</div>
-                <div class="fw-bold fs-l">{template?.duration_minutes || '...'} min</div>
-              </div>
-              <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
-                <div class="fs-xs color-secondary">Marks/Correct</div>
-                <div class="fw-bold fs-l">{template ? `+${template.marks_per_correct}` : '...'}</div>
-              </div>
-              <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
-                <div class="fs-xs color-secondary">Negative</div>
-                <div class="fw-bold fs-l">{template ? `-${template.negative_marks_per_wrong}` : '...'}</div>
-              </div>
-            </div>
-
-            {/* Instructions */}
-            <div class="mb-4 p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
-              <h4 class="fw-bold mb-2">Instructions</h4>
-              <ul style={{ paddingLeft: '18px', lineHeight: '1.7', fontSize: isMobile ? '0.85rem' : 'inherit' }}>
-                <li>Complete all questions within the time limit.</li>
-                <li>Each correct answer earns marks. Wrong answers may deduct marks.</li>
-                <li>Navigate between questions using the question palette.</li>
-                <li>Mark questions for review and come back later.</li>
-                <li>Use <strong>Clear</strong> to unselect an answer.</li>
-                <li>Switch between <strong>English</strong> and <strong>Hindi</strong> anytime.</li>
-                <li>The exam auto-submits when the timer runs out.</li>
-              </ul>
-            </div>
-
-            <div class="flex gap-3" style={{ flexDirection: isMobile && !canFullscreen ? 'column' : 'row' }}>
-              {canFullscreen && (
-                <button
-                  class="c-btn c-btn--primary"
-                  onClick={() => enterExam(true)}
-                  disabled={!dataReady}
-                  style={{ flex: 1, padding: '12px 16px', minHeight: '48px' }}
-                >
-                  {dataReady ? 'Full Screen Mode' : 'Loading...'}
-                </button>
-              )}
-              <button
-                class={canFullscreen ? 'c-btn c-btn--secondary' : 'c-btn c-btn--primary'}
-                onClick={() => enterExam(false)}
-                disabled={!dataReady}
-                style={{ flex: 1, padding: '12px 16px', minHeight: '48px' }}
-              >
-                {!dataReady ? 'Loading...' : canFullscreen ? 'Window Mode' : 'Start Exam'}
-              </button>
-            </div>
-
-            {canFullscreen && (
-              <p class="color-secondary fs-xs mt-3 text-center">
-                You can switch between modes anytime during the exam.
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!examData || !examData.questions?.length) {
-    return (
-      <div class="crayons-card p-6">
-        <h2 class="crayons-title mb-2">Preparing Your Exam</h2>
-        <p class="color-secondary">
-          Questions are being generated. Please refresh in a moment...
-        </p>
-        <button class="c-btn c-btn--secondary mt-4" onClick={() => window.location.reload()}>
-          Refresh
-        </button>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: '16px' }}>
+        <div class="crayons-loading" style={{ width: '48px', height: '48px' }} aria-label="Loading exam..." />
+        <p class="color-secondary fs-l">Loading your exam...</p>
       </div>
     );
   }
@@ -393,7 +288,7 @@ export function MockExamInterface({ slug, attemptId }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: viewHeight, overflow: 'hidden', margin: 0, padding: 0 }}>
-      {/* Top bar — compact, flush to top */}
+      {/* Top bar */}
       <div
         style={{
           display: 'flex', flexWrap: 'wrap', alignItems: 'center',
@@ -405,7 +300,6 @@ export function MockExamInterface({ slug, attemptId }) {
           margin: 0,
         }}
       >
-        {/* Row 1: title + timer + progress */}
         <div class="fw-bold" style={{
           fontSize: isMobile ? '0.75rem' : '0.85rem',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -435,7 +329,7 @@ export function MockExamInterface({ slug, attemptId }) {
           </div>
         </div>
 
-        {/* Row 2: toolbar buttons — both mobile and desktop */}
+        {/* Toolbar buttons */}
         <div class="flex items-center gap-1" style={{ width: isMobile ? '100%' : 'auto', justifyContent: 'flex-end' }}>
           {template.has_calculator && (
             <button
@@ -494,20 +388,9 @@ export function MockExamInterface({ slug, attemptId }) {
         </div>
       </div>
 
-      {/* Progress strip */}
-      <div style={{ height: '3px', background: 'var(--card-secondary-bg)', width: '100%', flexShrink: 0 }}>
-        <div style={{
-          height: '100%',
-          background: 'var(--accent-brand)',
-          width: `${questions.length > 0 ? Math.round((answeredCount / questions.length) * 100) : 0}%`,
-          transition: 'width 0.4s ease',
-          borderRadius: '0 2px 2px 0',
-        }} />
-      </div>
-
       {/* Main content area */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {/* Question area — scrollable */}
+        {/* Question area */}
         <div style={{
           flex: 1, overflowY: 'auto',
           padding: isMobile ? '10px' : '16px',
@@ -573,7 +456,7 @@ export function MockExamInterface({ slug, attemptId }) {
 
         </div>
 
-        {/* Desktop Sidebar — hidden on mobile */}
+        {/* Desktop Sidebar */}
         {!isMobile && (
           <div
             style={{

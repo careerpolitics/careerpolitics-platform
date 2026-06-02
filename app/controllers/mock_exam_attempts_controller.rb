@@ -113,7 +113,9 @@ class MockExamAttemptsController < ApplicationController
   end
 
   def set_attempt
-    @attempt = current_user.mock_exam_attempts.find(params[:id])
+    @attempt = current_user.mock_exam_attempts
+                           .includes(:mock_exam_questions, :mock_exam_responses)
+                           .find(params[:id])
   end
 
   def attempt_json(attempt)
@@ -130,7 +132,7 @@ class MockExamAttemptsController < ApplicationController
         has_calculator: @template.has_calculator,
         has_scratchpad: @template.has_scratchpad,
       },
-      questions: attempt.mock_exam_questions.order(:position).map { |q| question_json(q) },
+      questions: attempt.mock_exam_questions.sort_by(&:position).map { |q| question_json(q) },
       responses: attempt.mock_exam_responses.index_by(&:mock_exam_question_id).transform_values { |r|
         {
           id: r.id,
@@ -174,21 +176,24 @@ class MockExamAttemptsController < ApplicationController
       avg_time_per_question: attempt.avg_time_per_question,
       section_scores: attempt.section_scores,
       time_per_question: attempt.time_per_question,
-      questions: attempt.mock_exam_questions.order(:position).map { |q|
-        response = attempt.mock_exam_responses.find_by(mock_exam_question: q)
-        question_json(q).merge(
-          correct_option_key: q.correct_option_key,
-          explanation: q.explanation,
-          explanation_html: q.explanation_html,
-          explanation_hi: q.explanation_hi,
-          solution_steps: q.solution_steps,
-          solution_steps_html: q.solution_steps_html,
-          difficulty: q.difficulty,
-          selected_option_key: response&.selected_option_key,
-          is_correct: response&.is_correct,
-          time_spent_seconds: response&.time_spent_seconds,
-          )
-      },
+      questions: begin
+                   responses_by_qid = attempt.mock_exam_responses.index_by(&:mock_exam_question_id)
+                   attempt.mock_exam_questions.sort_by(&:position).map { |q|
+                     response = responses_by_qid[q.id]
+                     question_json(q).merge(
+                       correct_option_key: q.correct_option_key,
+                       explanation: q.explanation,
+                       explanation_html: q.explanation_html,
+                       explanation_hi: q.explanation_hi,
+                       solution_steps: q.solution_steps,
+                       solution_steps_html: q.solution_steps_html,
+                       difficulty: q.difficulty,
+                       selected_option_key: response&.selected_option_key,
+                       is_correct: response&.is_correct,
+                       time_spent_seconds: response&.time_spent_seconds,
+                       )
+                   }
+                 end,
     }
   end
 end

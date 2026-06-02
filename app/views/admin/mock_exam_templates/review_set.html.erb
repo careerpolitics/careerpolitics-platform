@@ -1,7 +1,7 @@
 <% translated_count = @questions.count(&:text_hi?) %>
 <div class="crayons-card p-6">
   <div class="flex items-center justify-between mb-4">
-    <h1 class="crayons-title"><%= @template.title %> — Set <%= @set_number %></h1>
+    <h1 class="crayons-title"><%= @template.title %> — <%= @template.set_label(@set_number) %></h1>
     <div class="flex gap-2">
       <button class="c-btn c-btn--secondary c-btn--s" id="lang-toggle-btn" onclick="toggleLang()">
         Show Hindi

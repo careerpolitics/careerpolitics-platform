@@ -158,9 +158,9 @@ function FeaturedCard({ template: t, followedNames, onToggleTag }) {
         {(t.tag_list || []).map((tag) => (
           <TagChip key={tag.name} tag={tag} isFollowed={followedNames.includes(tag.name)} onToggle={onToggleTag} />
         ))}
-        {t.sets_count > 0 && (
+        {t.published_sets_count > 0 && (
           <span class="crayons-tag crayons-tag--monochrome">
-            {t.sets_count} sets
+            {t.published_sets_count} sets
           </span>
         )}
       </div>
@@ -199,8 +199,8 @@ function CompactRow({ template: t, followedNames, onToggleTag }) {
           ))}
           <span class="fs-xs color-secondary">📋 {t.total_questions}q</span>
           <span class="fs-xs color-secondary">⏱ {t.duration_minutes}m</span>
-          {t.sets_count > 0 && (
-            <span class="fs-xs color-secondary">{t.sets_count} sets</span>
+          {t.published_sets_count > 0 && (
+            <span class="fs-xs color-secondary">{t.published_sets_count} sets</span>
           )}
         </div>
       </div>

@@ -7,7 +7,7 @@ module Admin
     end
 
     def show
-      @template = MockExamTemplate.find(params[:id])
+      @template = MockExamTemplate.includes(:tag).find(params[:id])
       @pool_count = @template.pool_questions.count
       @available_sets = @template.available_sets
       @stats = @template.mock_exam_template_stat
@@ -38,6 +38,15 @@ module Admin
       @template.set_questions(set_number).update_all(set_published: false)
       redirect_to review_set_admin_mock_exam_template_path(@template, set: set_number),
                   notice: "Set #{set_number} unpublished."
+    end
+
+    def destroy_set
+      @template = MockExamTemplate.find(params[:id])
+      set_number = params[:set].to_i
+      label = @template.set_label(set_number)
+      @template.set_questions(set_number).destroy_all
+      redirect_to admin_mock_exam_template_path(@template),
+                  notice: "Set #{label} (#{set_number}) deleted."
     end
 
     def edit_question
@@ -154,6 +163,12 @@ module Admin
 
       if permitted[:sections_config].is_a?(String)
         permitted[:sections_config] = JSON.parse(permitted[:sections_config])
+      end
+
+      tag_name = params[:mock_exam_template][:tag_name].presence
+      if tag_name
+        tag = Tag.find_by(name: tag_name.strip.downcase)
+        permitted[:tag_id] = tag&.id
       end
 
       permitted

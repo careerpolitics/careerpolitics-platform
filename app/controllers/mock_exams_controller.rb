@@ -11,7 +11,7 @@ class MockExamsController < ApplicationController
     @mock_exam_templates = MockExamTemplate
                              .active_published
                              .for_subforem(RequestStore.store[:subforem])
-                             .includes(:mock_exam_template_stat)
+                             .includes(:mock_exam_template_stat, :tag)
                              .order(created_at: :desc)
 
     respond_to do |format|
@@ -53,29 +53,51 @@ class MockExamsController < ApplicationController
   end
 
   def sets
-    sets_data = @template.published_sets.map do |set_number, count|
-      attempts_for_set = @template.mock_exam_attempts.where(pool_set: set_number).count
-      user_attempt = current_user ? current_user.mock_exam_attempts
-                                                .for_template(@template)
-                                                .where(pool_set: set_number)
-                                                .submitted_or_timed_out
-                                                .order(submitted_at: :desc)
-                                                .first : nil
-      difficulties = @template.set_questions(set_number).reorder(nil).group(:difficulty).count
-      primary_difficulty = difficulties.max_by { |_, v| v }&.first || "mixed"
-      set_date = @template.set_questions(set_number).minimum(:created_at)
-      label = if set_date
-                "#{set_date.strftime("%d-%m")}-#{Digest::MD5.hexdigest("#{@template.id}-#{set_number}")[0, 3]}"
-              else
-                "Set #{set_number}"
-              end
+    published = @template.published_sets
+    set_numbers = published.keys
+
+    # Batch: attempt counts per set (1 query)
+    attempts_by_set = @template.mock_exam_attempts
+                               .where(pool_set: set_numbers)
+                               .group(:pool_set).count
+
+    # Batch: user's latest attempt per set (1 query)
+    user_attempts_by_set = {}
+    if current_user
+      current_user.mock_exam_attempts
+                  .for_template(@template)
+                  .where(pool_set: set_numbers)
+                  .submitted_or_timed_out
+                  .order(submitted_at: :desc)
+                  .each { |a| user_attempts_by_set[a.pool_set] ||= a }
+    end
+
+    # Batch: difficulties per set (1 query)
+    diff_rows = @template.pool_questions
+                         .where(pool_set: set_numbers, set_published: true)
+                         .group(:pool_set, :difficulty).count
+    difficulties_by_set = diff_rows.each_with_object({}) do |((ps, diff), cnt), h|
+      (h[ps] ||= {})[diff] = cnt
+    end
+
+    # Batch: set labels (1 query for min created_at)
+    min_dates = @template.pool_questions
+                         .where(pool_set: set_numbers)
+                         .group(:pool_set).minimum(:created_at)
+
+    sets_data = published.map do |set_number, count|
+      user_attempt = user_attempts_by_set[set_number]
+      diffs = difficulties_by_set[set_number] || {}
+      primary_difficulty = diffs.max_by { |_, v| v }&.first || "mixed"
+      set_date = min_dates[set_number]
+      label = set_date ? "#{set_date.strftime("%d-%m")}-#{Digest::MD5.hexdigest("#{@template.id}-#{set_number}")[0, 3]}" : "Set #{set_number}"
       {
         set_number: set_number,
         question_count: count,
-        attempts_count: attempts_for_set,
+        attempts_count: attempts_by_set[set_number] || 0,
         user_attempted: user_attempt.present?,
         difficulty: primary_difficulty,
-        difficulty_breakdown: difficulties,
+        difficulty_breakdown: diffs,
         label: label,
         user_attempt_data: user_attempt ? {
           attempt_id: user_attempt.id,
@@ -138,13 +160,13 @@ class MockExamsController < ApplicationController
       sections_config: template.sections_config,
       has_calculator: template.has_calculator,
       has_scratchpad: template.has_scratchpad,
-      sets_count: template.available_sets.size,
-      tag_list: template.exam_category ? [{ name: template.exam_category, id: Tag.find_by(name: template.exam_category)&.id }].select { |t| t[:id] } : [],
+      published_sets_count: template.published_set_count,
+      tag_list: template.tag ? [{ name: template.tag.name, id: template.tag.id }] : [],
     }
   end
 
   def set_template_by_slug
-    @template = MockExamTemplate.find_by!(slug: params[:slug], active: true, published: true)
+    @template = MockExamTemplate.includes(:tag).find_by!(slug: params[:slug], active: true, published: true)
   end
 
   def stats_json(stats)

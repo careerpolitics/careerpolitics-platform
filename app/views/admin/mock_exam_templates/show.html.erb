@@ -14,6 +14,8 @@
       <dl class="grid grid-cols-2 gap-2">
         <dt class="fw-bold">Slug:</dt>
         <dd><code><%= @template.slug %></code></dd>
+        <dt class="fw-bold">Tag:</dt>
+        <dd><%= @template.tag ? link_to(@template.tag.name, "/t/#{@template.tag.name}", target: "_blank") : "None" %></dd>
         <dt class="fw-bold">Category:</dt>
         <dd><%= @template.exam_category.titleize %></dd>
         <dt class="fw-bold">Questions:</dt>
@@ -122,7 +124,7 @@
           <% @available_sets.each do |set_number, count| %>
             <% published = @template.set_published?(set_number) %>
             <tr>
-              <td class="fw-bold">Set <%= set_number %></td>
+              <td class="fw-bold"><%= @template.set_label(set_number) %></td>
               <td><%= count %> questions</td>
               <td>
                 <% if published %>
@@ -131,10 +133,14 @@
                   <span class="c-indicator c-indicator--warning">Draft</span>
                 <% end %>
               </td>
-              <td>
+              <td class="flex gap-1">
                 <%= link_to "Review",
                             review_set_admin_mock_exam_template_path(@template, set: set_number),
                             class: "c-btn c-btn--secondary c-btn--s" %>
+                <%= button_to "Delete",
+                              destroy_set_admin_mock_exam_template_path(@template, set: set_number),
+                              method: :delete, class: "c-btn c-btn--destructive c-btn--s",
+                              data: { confirm: "Delete all #{count} questions in set #{@template.set_label(set_number)}? This cannot be undone." } %>
               </td>
             </tr>
           <% end %>
@@ -224,7 +230,7 @@
                 <%= attempt.status.titleize %>
               <% end %>
             </td>
-            <td><%= attempt.pool_set ? "Set #{attempt.pool_set}" : "Random" %></td>
+            <td><%= attempt.pool_set ? @template.set_label(attempt.pool_set) : "Random" %></td>
             <td><%= attempt.total_score || "—" %> / <%= attempt.max_possible_score || "—" %></td>
             <td><%= attempt.accuracy_percent ? "#{attempt.accuracy_percent}%" : "—" %></td>
             <td><%= attempt.started_at.to_fs(:short) %></td>

@@ -1,10 +1,9 @@
 class MockExamAttempt < ApplicationRecord
-
   belongs_to :mock_exam_template
   belongs_to :user
 
   has_many :mock_exam_responses, dependent: :destroy
-  has_many :mock_exam_questions, dependent: :destroy
+  has_many :mock_exam_questions, dependent: :nullify
 
   enum status: { in_progress: 0, submitted: 1, timed_out: 2, abandoned: 3 }
 
@@ -26,4 +25,5 @@ class MockExamAttempt < ApplicationRecord
   def total_questions
     mock_exam_template.total_questions
   end
+
 end

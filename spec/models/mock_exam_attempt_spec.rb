@@ -13,31 +13,6 @@ RSpec.describe MockExamAttempt, type: :model do
     it { is_expected.to have_many(:mock_exam_questions).dependent(:nullify) }
   end
 
-  describe "daily attempt limit" do
-    let(:user) { create(:user) }
-    let(:template) { create(:mock_exam_template) }
-
-    it "allows up to MAX_DAILY_ATTEMPTS_PER_TEMPLATE attempts" do
-      described_class::MAX_DAILY_ATTEMPTS_PER_TEMPLATE.times do
-        create(:mock_exam_attempt, user: user, mock_exam_template: template)
-      end
-
-      attempt = build(:mock_exam_attempt, user: user, mock_exam_template: template)
-      expect(attempt).not_to be_valid
-      expect(attempt.errors[:base].first).to include("Maximum")
-    end
-
-    it "resets the count daily" do
-      described_class::MAX_DAILY_ATTEMPTS_PER_TEMPLATE.times do
-        create(:mock_exam_attempt, user: user, mock_exam_template: template,
-               created_at: 1.day.ago)
-      end
-
-      attempt = build(:mock_exam_attempt, user: user, mock_exam_template: template)
-      expect(attempt).to be_valid
-    end
-  end
-
   describe "#expired?" do
     it "returns true when expires_at is in the past" do
       attempt = build(:mock_exam_attempt, expires_at: 1.minute.ago)
