@@ -5,7 +5,7 @@ class MockExamAttempt < ApplicationRecord
   belongs_to :user
 
   has_many :mock_exam_responses, dependent: :destroy
-  has_many :mock_exam_questions, dependent: :nullify
+  has_many :mock_exam_questions, dependent: :destroy
 
   enum status: { in_progress: 0, submitted: 1, timed_out: 2, abandoned: 3 }
 

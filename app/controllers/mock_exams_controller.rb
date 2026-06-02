@@ -67,8 +67,8 @@ class MockExamsController < ApplicationController
       {
         set_number: set_number,
         question_count: count,
-        attempts_count: attempts_by_set[set_number] || 0,
-        user_attempted: user_attempt.present?,
+        attempts_count: attempts_for_set,
+        user_attempted: user_attempted,
         difficulty: primary_difficulty,
         difficulty_breakdown: difficulties
       }
@@ -81,7 +81,6 @@ class MockExamsController < ApplicationController
     render json: stat ? full_stats_json(stat) : { error: "No stats available" }
   end
 
-  
   def dashboard
     attempts = current_user.mock_exam_attempts
       .submitted_or_timed_out

@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { render, waitFor, fireEvent } from '@testing-library/preact';
+import { render, waitFor, fireEvent, within } from '@testing-library/preact';
 import { MockExamInterface } from '../MockExamInterface';
 import '@testing-library/jest-dom';
 
@@ -36,11 +36,10 @@ const examPayload = {
   ],
 };
 
-const startExam = async (getByText) => {
-  // The intro screen renders "Window Mode" when fullscreen is supported.
-  const startButton = getByText('Window Mode');
-  fireEvent.click(startButton);
-  await waitFor(() => getByText('Submit Exam'));
+// The exam interface renders straight into the toolbar once data loads; there is
+// no intro screen. The toolbar "Submit" button opens the confirmation modal.
+const openSubmitModal = (getByText) => {
+  fireEvent.click(getByText('Submit'));
 };
 
 describe('<MockExamInterface />', () => {
@@ -79,9 +78,8 @@ describe('<MockExamInterface />', () => {
       <MockExamInterface slug="sample" attemptId={42} />,
     );
     await waitFor(() => getByText('Sample Exam'));
-    await startExam(getByText);
 
-    fireEvent.click(getByText('Submit Exam'));
+    openSubmitModal(getByText);
 
     // Native confirm must NOT be used (it forces fullscreen exit).
     expect(window.confirm).not.toHaveBeenCalled();
@@ -95,22 +93,19 @@ describe('<MockExamInterface />', () => {
     );
     await waitFor(() => getByText('Sample Exam'));
 
-    // Enter the exam in fullscreen mode.
-    fireEvent.click(getByText('Full Screen Mode'));
-    await waitFor(() => getByText('Submit Exam'));
+    // Enter fullscreen before opening the dialog so the prior state is captured.
     document.fullscreenElement = document.documentElement;
-    requestFullscreenMock.mockClear();
+    openSubmitModal(getByText);
 
-    // Open the confirm modal (the native dialog would have exited fullscreen,
-    // which we simulate by clearing fullscreenElement).
-    fireEvent.click(getByText('Submit Exam'));
+    // The native dialog would have exited fullscreen; simulate that.
     document.fullscreenElement = null;
+    requestFullscreenMock.mockClear();
 
     fireEvent.click(getByText('Cancel'));
 
     // Cancel must restore fullscreen from within the click handler.
     expect(requestFullscreenMock).toHaveBeenCalledTimes(1);
-    expect(getByText('Submit Exam')).toBeInTheDocument();
+    expect(getByText('Submit')).toBeInTheDocument();
   });
 
   it('does not request fullscreen on cancel when the exam was windowed', async () => {
@@ -118,10 +113,11 @@ describe('<MockExamInterface />', () => {
       <MockExamInterface slug="sample" attemptId={42} />,
     );
     await waitFor(() => getByText('Sample Exam'));
-    await startExam(getByText);
+
+    // Windowed: fullscreenElement stays null when the dialog opens.
+    openSubmitModal(getByText);
     requestFullscreenMock.mockClear();
 
-    fireEvent.click(getByText('Submit Exam'));
     fireEvent.click(getByText('Cancel'));
 
     expect(requestFullscreenMock).not.toHaveBeenCalled();
@@ -135,14 +131,15 @@ describe('<MockExamInterface />', () => {
       json: async () => ({ redirect_to: '/results/42' }),
     });
 
-    const { getByText } = render(
+    const { getByText, getByRole } = render(
       <MockExamInterface slug="sample" attemptId={42} />,
     );
     await waitFor(() => getByText('Sample Exam'));
-    await startExam(getByText);
 
-    fireEvent.click(getByText('Submit Exam'));
-    fireEvent.click(getByText('Submit'));
+    openSubmitModal(getByText);
+    // Both the toolbar and the modal expose a "Submit" control; click the one
+    // inside the confirmation dialog.
+    fireEvent.click(within(getByRole('dialog')).getByText('Submit'));
 
     await waitFor(() =>
       expect(request).toHaveBeenCalledWith(

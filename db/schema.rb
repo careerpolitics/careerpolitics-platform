@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_05_31_010002) do
+ActiveRecord::Schema[7.0].define(version: 2026_06_02_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "ltree"
@@ -1187,6 +1187,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_05_31_010002) do
     t.jsonb "sections_config", default: [], null: false
     t.string "slug", null: false
     t.bigint "subforem_id"
+    t.bigint "tag_id"
     t.string "title", null: false
     t.integer "total_questions", null: false
     t.datetime "updated_at", null: false
@@ -1194,6 +1195,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_05_31_010002) do
     t.index ["created_by_id"], name: "index_mock_exam_templates_on_created_by_id"
     t.index ["slug"], name: "index_mock_exam_templates_on_slug", unique: true
     t.index ["subforem_id"], name: "index_mock_exam_templates_on_subforem_id"
+    t.index ["tag_id"], name: "index_mock_exam_templates_on_tag_id"
   end
 
   create_table "navigation_links", force: :cascade do |t|

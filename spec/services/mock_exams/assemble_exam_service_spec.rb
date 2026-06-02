@@ -14,8 +14,10 @@ RSpec.describe MockExams::AssembleExamService do
   describe "#call" do
     context "when pool has enough unseen questions" do
       before do
-        3.times { |i| create(:mock_exam_question, mock_exam_template: template, section_name: "Polity", position: i + 1, set_published: true) }
-        3.times { |i| create(:mock_exam_question, mock_exam_template: template, section_name: "History", position: i + 4, set_published: true) }
+        # A published set must carry a pool_set number and exactly the
+        # section_config counts (2 Polity + 2 History == total_questions of 4).
+        2.times { |i| create(:mock_exam_question, mock_exam_template: template, section_name: "Polity", position: i + 1, pool_set: 1, set_published: true) }
+        2.times { |i| create(:mock_exam_question, mock_exam_template: template, section_name: "History", position: i + 3, pool_set: 1, set_published: true) }
       end
 
       it "returns questions from pool" do
