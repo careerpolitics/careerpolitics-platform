@@ -51,39 +51,9 @@ module MockExams
       select_from_set
     end
 
-    def previously_seen_source_ids
-      @user.mock_exam_attempts
-           .for_template(@template)
-           .joins(:mock_exam_questions)
-           .where.not(mock_exam_questions: { source_question_id: nil })
-           .pluck("mock_exam_questions.source_question_id")
-           .uniq
-    end
-
-    def can_serve_from_pool?(available)
-      return false unless @template.pool_ready?
-      section_counts.all? do |section_name, count|
-        available.for_section(section_name).count >= count
-      end
-    end
-
-    def pick_from_pool(available)
-      selected = []
-      section_counts.each do |section_name, count|
-        section_qs = available
-                       .for_section(section_name)
-                       .order(Arel.sql("RANDOM()"))
-                       .limit(count)
-                       .to_a
-        selected.concat(section_qs)
-      end
-      selected.shuffle!
-      selected.each(&:increment_served!)
-      selected
-    end
-
     def copy_questions_for_attempt(source_questions)
-      source_questions.map.with_index(1) do |src, idx|
+      ordered = order_by_section(source_questions)
+      ordered.map.with_index(1) do |src, idx|
         attrs = src.attributes.slice(*COPY_ATTRS)
         MockExamQuestion.new(attrs.merge(
           source_question_id: src.id,
@@ -91,6 +61,13 @@ module MockExams
           position: idx,
           mock_exam_attempt_id: nil,
           ))
+      end
+    end
+
+    def order_by_section(questions)
+      section_order = @template.sections_config.map { |s| s["name"] }
+      questions.sort_by do |q|
+        [section_order.index(q.section_name) || 999, q.position || 0]
       end
     end
 

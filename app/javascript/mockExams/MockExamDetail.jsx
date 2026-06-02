@@ -13,6 +13,8 @@ export function MockExamDetail({ slug }) {
   const [statusFilter, setStatusFilter] = useState('all');
   const [diffFilter, setDiffFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [pendingPoolSet, setPendingPoolSet] = useState(undefined);
 
   useEffect(() => {
     Promise.all([
@@ -28,12 +30,18 @@ export function MockExamDetail({ slug }) {
     });
   }, [slug]);
 
-  const handleStart = async (poolSet) => {
+  const openInstructions = (poolSet) => {
+    setPendingPoolSet(poolSet);
+    setShowInstructions(true);
+    setError(null);
+  };
+
+  const handleConfirmStart = async (goFullscreen) => {
     setStarting(true);
     setError(null);
 
     try {
-      const payload = poolSet ? { pool_set: poolSet } : {};
+      const payload = pendingPoolSet ? { pool_set: pendingPoolSet } : {};
       const res = await request(`/mock_exams/${slug}/attempts`, {
         method: 'POST',
         body: JSON.stringify(payload),
@@ -41,7 +49,8 @@ export function MockExamDetail({ slug }) {
 
       if (res.ok) {
         const data = await res.json();
-        window.location.href = data.redirect_to || `/mock_exams/${slug}/attempts/${data.id}`;
+        const url = data.redirect_to || `/mock_exams/${slug}/attempts/${data.id}`;
+        window.location.href = goFullscreen ? `${url}?mode=fullscreen` : url;
       } else {
         const errData = await res.json();
         setError(errData.errors?.[0] || errData.error || 'Failed to start exam');
@@ -83,7 +92,7 @@ export function MockExamDetail({ slug }) {
           <InfoItem label="Duration" value={`${t.duration_minutes} minutes`} />
           <InfoItem label="Marks/Correct" value={`+${t.marks_per_correct}`} />
           <InfoItem label="Negative Marks" value={`-${t.negative_marks_per_wrong}`} />
-          <InfoItem label="Category" value={t.exam_category?.replace(/_/g, ' ')} />
+          <InfoItem label="Tag" value={t.tag_list?.[0]?.name?.replace(/_/g, ' ') || '—'} />
         </div>
 
         {t.sections_config?.length > 0 && (
@@ -114,7 +123,108 @@ export function MockExamDetail({ slug }) {
 
       </div>
 
-      {/* Question Sets — select and attempt */}
+      {/* Instruction Modal */}
+      {showInstructions && template && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '12px',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget && !starting) setShowInstructions(false); }}
+        >
+          <div
+            class="crayons-card"
+            style={{
+              maxWidth: '560px', width: '100%',
+              maxHeight: '90vh', overflowY: 'auto',
+              padding: '24px',
+            }}
+          >
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="crayons-title">{template.title}</h2>
+              {!starting && (
+                <button
+                  class="c-btn c-btn--s c-btn--icon-alone c-btn--secondary"
+                  onClick={() => setShowInstructions(false)}
+                  aria-label="Close"
+                  style={{ minHeight: '32px', minWidth: '32px' }}
+                >✕</button>
+              )}
+            </div>
+
+            <div class="grid gap-2 mb-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
+              <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
+                <div class="fs-xs color-secondary">Questions</div>
+                <div class="fw-bold fs-l">{template.total_questions}</div>
+              </div>
+              <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
+                <div class="fs-xs color-secondary">Duration</div>
+                <div class="fw-bold fs-l">{template.duration_minutes} min</div>
+              </div>
+              <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
+                <div class="fs-xs color-secondary">Marks/Correct</div>
+                <div class="fw-bold fs-l">+{template.marks_per_correct}</div>
+              </div>
+              <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
+                <div class="fs-xs color-secondary">Negative</div>
+                <div class="fw-bold fs-l">-{template.negative_marks_per_wrong}</div>
+              </div>
+            </div>
+
+            <div class="mb-4 p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
+              <h4 class="fw-bold mb-2">Instructions</h4>
+              <ul style={{ paddingLeft: '18px', lineHeight: '1.7' }}>
+                <li>Complete all questions within the time limit.</li>
+                <li>Each correct answer earns marks. Wrong answers may deduct marks.</li>
+                <li>Navigate between questions using the question palette.</li>
+                <li>Mark questions for review and come back later.</li>
+                <li>Use <strong>Clear</strong> to unselect an answer.</li>
+                <li>Switch between <strong>English</strong> and <strong>Hindi</strong> anytime.</li>
+                <li>The exam auto-submits when the timer runs out.</li>
+              </ul>
+            </div>
+
+            {error && (
+              <div class="crayons-notice crayons-notice--danger mb-4">{error}</div>
+            )}
+
+            {starting ? (
+              <div class="flex flex-col items-center gap-3 p-4">
+                <div class="crayons-loading" aria-label="Preparing exam..." />
+                <p class="color-secondary fs-s">Preparing your exam...</p>
+              </div>
+            ) : (
+              <div class="flex gap-3">
+                {typeof document.documentElement.requestFullscreen === 'function' && (
+                  <button
+                    class="c-btn c-btn--primary"
+                    onClick={() => handleConfirmStart(true)}
+                    style={{ flex: 1, padding: '12px 16px', minHeight: '48px' }}
+                  >
+                    Full Screen Mode
+                  </button>
+                )}
+                <button
+                  class={typeof document.documentElement.requestFullscreen === 'function' ? 'c-btn c-btn--secondary' : 'c-btn c-btn--primary'}
+                  onClick={() => handleConfirmStart(false)}
+                  style={{ flex: 1, padding: '12px 16px', minHeight: '48px' }}
+                >
+                  {typeof document.documentElement.requestFullscreen === 'function' ? 'Window Mode' : 'Start Exam'}
+                </button>
+              </div>
+            )}
+
+            {typeof document.documentElement.requestFullscreen === 'function' && !starting && (
+              <p class="color-secondary fs-xs mt-3 text-center">
+                You can switch between modes anytime during the exam.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {sets.length > 0 && (() => {
         const filtered = sets
           .filter(s => {
@@ -139,7 +249,7 @@ export function MockExamDetail({ slug }) {
               {sets.length > 1 && t.can_attempt && (
                 <button
                   class="c-btn c-btn--secondary c-btn--s"
-                  onClick={() => handleStart(null)}
+                  onClick={() => openInstructions(null)}
                   disabled={starting}
                   title="Pick a random set"
                   style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', gap: '4px', display: 'inline-flex', alignItems: 'center' }}
@@ -287,7 +397,7 @@ export function MockExamDetail({ slug }) {
                           </a>
                           <button
                             class="c-btn c-btn--primary"
-                            onClick={(e) => { e.stopPropagation(); handleStart(s.set_number); }}
+                            onClick={(e) => { e.stopPropagation(); openInstructions(s.set_number); }}
                             disabled={starting || !t.can_attempt}
                             style={{ flex: 1, fontSize: '0.8rem', padding: '6px 0', borderRadius: '6px' }}
                           >
@@ -297,7 +407,7 @@ export function MockExamDetail({ slug }) {
                       ) : t.can_attempt && (
                         <button
                           class="c-btn c-btn--primary"
-                          onClick={(e) => { e.stopPropagation(); handleStart(s.set_number); }}
+                          onClick={(e) => { e.stopPropagation(); openInstructions(s.set_number); }}
                           disabled={starting}
                           style={{ width: '100%', marginTop: '10px', fontSize: '0.85rem', padding: '7px 0', borderRadius: '6px' }}
                         >

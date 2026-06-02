@@ -26,8 +26,14 @@
       </div>
 
       <div class="crayons-field">
-        <%= form.label :exam_category, "Exam Category", class: "crayons-field__label" %>
-        <%= form.select :exam_category, MockExamTemplate.exam_categories.keys.map { |k| [k.titleize, k] }, {}, class: "crayons-select" %>
+        <%= form.label :tag_name, "Tag", class: "crayons-field__label" do %>
+          Tag
+          <p class="crayons-field__description">Enter an existing tag name. Users following this tag will see the exam in their listing.</p>
+        <% end %>
+        <%= form.text_field :tag_name,
+                            value: template.tag&.name,
+                            class: "crayons-textfield",
+                            placeholder: "e.g. upsc, ssc, banking" %>
       </div>
     </div>
 

@@ -1,6 +1,7 @@
 class MockExamTemplate < ApplicationRecord
   belongs_to :subforem, optional: true
   belongs_to :created_by, class_name: "User", optional: true
+  belongs_to :tag, optional: true
 
   has_many :mock_exam_questions, dependent: :destroy
   has_many :mock_exam_attempts, dependent: :destroy
@@ -75,6 +76,19 @@ class MockExamTemplate < ApplicationRecord
 
   def set_published?(set_number)
     pool_questions.where(pool_set: set_number, set_published: true).exists?
+  end
+
+  def set_label(set_number)
+    set_date = set_questions(set_number).minimum(:created_at)
+    if set_date
+      "#{set_date.strftime("%d-%m")}-#{Digest::MD5.hexdigest("#{id}-#{set_number}")[0, 3]}"
+    else
+      "Set #{set_number}"
+    end
+  end
+
+  def published_set_count
+    published_sets.size
   end
 
   private
