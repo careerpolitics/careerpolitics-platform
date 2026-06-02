@@ -234,17 +234,34 @@ export function MockExamInterface({ slug, attemptId }) {
     [recordTimeOnQuestion],
   );
 
-  if (loading) {
-    return (
-      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--body-bg)' }}>
-        <div class="crayons-loading" aria-label="Loading exam..." />
-      </div>
-    );
-  }
+  // Keyboard shortcuts: A/B/C/D to select options, ←/→ to navigate
+  useEffect(() => {
+    if (!examStarted || !examData?.questions?.length) return;
+    const handler = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      const key = e.key.toUpperCase();
+      const q = examData.questions[currentIndex];
+      if (!q) return;
+      const optionKeys = (q.options || []).map((o) => o.key);
+      if (optionKeys.includes(key)) {
+        e.preventDefault();
+        handleSelectOption(q.id, key);
+      } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        e.preventDefault();
+        handleNavigate(currentIndex - 1);
+      } else if (e.key === 'ArrowRight' && currentIndex < examData.questions.length - 1) {
+        e.preventDefault();
+        handleNavigate(currentIndex + 1);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [examStarted, examData, currentIndex, handleSelectOption, handleNavigate]);
 
   if (!examStarted) {
     const template = examData?.template;
     const qCount = examData?.questions?.length || 0;
+    const dataReady = !loading && examData?.questions?.length > 0;
 
     const enterExam = (goFullscreen) => {
       if (goFullscreen) {
@@ -258,7 +275,7 @@ export function MockExamInterface({ slug, attemptId }) {
 
     return (
       <div>
-        {/* Modal overlay */}
+        {/* Modal overlay — shows immediately, buttons enable when data ready */}
         <div
           style={{
             position: 'fixed', inset: 0, zIndex: 9999,
@@ -283,23 +300,23 @@ export function MockExamInterface({ slug, attemptId }) {
             {/* Exam info grid */}
             <div
               class="grid gap-2 mb-4"
-              style={{ gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr' }}
+              style={{ gridTemplateColumns: '1fr 1fr' }}
             >
               <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
                 <div class="fs-xs color-secondary">Questions</div>
-                <div class="fw-bold fs-l">{qCount}</div>
+                <div class="fw-bold fs-l">{loading ? '...' : qCount}</div>
               </div>
               <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
                 <div class="fs-xs color-secondary">Duration</div>
-                <div class="fw-bold fs-l">{template?.duration_minutes || '—'} min</div>
+                <div class="fw-bold fs-l">{template?.duration_minutes || '...'} min</div>
               </div>
               <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
                 <div class="fs-xs color-secondary">Marks/Correct</div>
-                <div class="fw-bold fs-l">+{template?.marks_per_correct || '—'}</div>
+                <div class="fw-bold fs-l">{template ? `+${template.marks_per_correct}` : '...'}</div>
               </div>
               <div class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
                 <div class="fs-xs color-secondary">Negative</div>
-                <div class="fw-bold fs-l">-{template?.negative_marks_per_wrong || '0'}</div>
+                <div class="fw-bold fs-l">{template ? `-${template.negative_marks_per_wrong}` : '...'}</div>
               </div>
             </div>
 
@@ -307,17 +324,11 @@ export function MockExamInterface({ slug, attemptId }) {
             <div class="mb-4 p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
               <h4 class="fw-bold mb-2">Instructions</h4>
               <ul style={{ paddingLeft: '18px', lineHeight: '1.7', fontSize: isMobile ? '0.85rem' : 'inherit' }}>
-                <li>This exam has <strong>{qCount} questions</strong> to be completed in <strong>{template?.duration_minutes} minutes</strong>.</li>
-                <li>Each correct answer carries <strong>+{template?.marks_per_correct}</strong> marks.
-                  {template?.negative_marks_per_wrong > 0 && (
-                    <span> Each wrong answer deducts <strong>{template?.negative_marks_per_wrong}</strong> marks.</span>
-                  )}
-                </li>
+                <li>Complete all questions within the time limit.</li>
+                <li>Each correct answer earns marks. Wrong answers may deduct marks.</li>
                 <li>Navigate between questions using the question palette.</li>
                 <li>Mark questions for review and come back later.</li>
                 <li>Use <strong>Clear</strong> to unselect an answer.</li>
-                {template?.has_calculator && <li>On-screen calculator available.</li>}
-                {template?.has_scratchpad && <li>Scratchpad available for rough work.</li>}
                 <li>Switch between <strong>English</strong> and <strong>Hindi</strong> anytime.</li>
                 <li>The exam auto-submits when the timer runs out.</li>
               </ul>
@@ -328,17 +339,19 @@ export function MockExamInterface({ slug, attemptId }) {
                 <button
                   class="c-btn c-btn--primary"
                   onClick={() => enterExam(true)}
+                  disabled={!dataReady}
                   style={{ flex: 1, padding: '12px 16px', minHeight: '48px' }}
                 >
-                  Full Screen Mode
+                  {dataReady ? 'Full Screen Mode' : 'Loading...'}
                 </button>
               )}
               <button
                 class={canFullscreen ? 'c-btn c-btn--secondary' : 'c-btn c-btn--primary'}
                 onClick={() => enterExam(false)}
+                disabled={!dataReady}
                 style={{ flex: 1, padding: '12px 16px', minHeight: '48px' }}
               >
-                {canFullscreen ? 'Window Mode' : 'Start Exam'}
+                {!dataReady ? 'Loading...' : canFullscreen ? 'Window Mode' : 'Start Exam'}
               </button>
             </div>
 
@@ -379,139 +392,148 @@ export function MockExamInterface({ slug, attemptId }) {
   const viewHeight = isMobile ? '100dvh' : '100vh';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: viewHeight, overflow: 'hidden' }}>
-      {/* Top bar — stacks on mobile */}
+    <div style={{ display: 'flex', flexDirection: 'column', height: viewHeight, overflow: 'hidden', margin: 0, padding: 0 }}>
+      {/* Top bar — compact, flush to top */}
       <div
         style={{
           display: 'flex', flexWrap: 'wrap', alignItems: 'center',
-          justifyContent: 'space-between', gap: isMobile ? '4px' : '0',
-          padding: isMobile ? '6px 10px' : '6px 16px',
+          justifyContent: 'space-between', gap: '2px',
+          padding: isMobile ? '4px 8px' : '4px 16px',
           background: 'var(--card-bg)',
           borderBottom: '1px solid var(--card-border)',
           flexShrink: 0,
+          margin: 0,
         }}
       >
-        {/* Row 1: title + timer */}
+        {/* Row 1: title + timer + progress */}
         <div class="fw-bold" style={{
-          fontSize: isMobile ? '0.8rem' : '0.9rem',
+          fontSize: isMobile ? '0.75rem' : '0.85rem',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          maxWidth: isMobile ? '55%' : '300px',
+          maxWidth: isMobile ? '45%' : '280px',
         }}>
           {template.title}
         </div>
-        <div class="flex items-center gap-2">
-          <ExamTimer
-            timeRemainingSeconds={examData.time_remaining_seconds}
-            onTimeUp={handleTimeUp}
-          />
-          <span class="fs-xs color-secondary">{answeredCount}/{questions.length}</span>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1" style={{
+            background: 'var(--card-secondary-bg)',
+            padding: '2px 10px', borderRadius: '12px',
+          }}>
+            <span style={{ fontSize: '0.75rem' }}>⏱</span>
+            <ExamTimer
+              timeRemainingSeconds={examData.time_remaining_seconds}
+              onTimeUp={handleTimeUp}
+            />
+          </div>
+          <div class="flex items-center gap-1" style={{
+            background: 'var(--card-secondary-bg)',
+            padding: '2px 10px', borderRadius: '12px',
+          }}>
+            <span class="fs-xs color-secondary">Progress</span>
+            <span class="fw-bold fs-s">
+              {answeredCount}<span class="color-secondary fw-normal">/{questions.length}</span>
+            </span>
+          </div>
         </div>
 
-        {/* Row 2 on mobile: toolbar buttons */}
-        {isMobile && (
-          <div class="flex items-center gap-1" style={{ width: '100%', justifyContent: 'flex-end' }}>
-            {template.has_calculator && (
-              <button
-                class={`c-btn c-btn--s ${showCalculator ? 'c-btn--primary' : 'c-btn--secondary'}`}
-                onClick={() => setShowCalculator(!showCalculator)}
-                style={{ padding: '4px 8px', minHeight: '32px' }}
-              >
-                🖩
-              </button>
-            )}
-            {template.has_scratchpad && (
-              <button
-                class={`c-btn c-btn--s ${showScratchpad ? 'c-btn--primary' : 'c-btn--secondary'}`}
-                onClick={() => setShowScratchpad(!showScratchpad)}
-                style={{ padding: '4px 8px', minHeight: '32px' }}
-              >
-                📝
-              </button>
-            )}
+        {/* Row 2: toolbar buttons — both mobile and desktop */}
+        <div class="flex items-center gap-1" style={{ width: isMobile ? '100%' : 'auto', justifyContent: 'flex-end' }}>
+          {template.has_calculator && (
+            <button
+              class={`c-btn c-btn--s ${showCalculator ? 'c-btn--primary' : 'c-btn--secondary'}`}
+              onClick={() => setShowCalculator(!showCalculator)}
+              title="Calculator"
+              style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
+            >
+              🖩
+            </button>
+          )}
+          {template.has_scratchpad && (
+            <button
+              class={`c-btn c-btn--s ${showScratchpad ? 'c-btn--primary' : 'c-btn--secondary'}`}
+              onClick={() => setShowScratchpad(!showScratchpad)}
+              title="Scratchpad"
+              style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
+            >
+              📝
+            </button>
+          )}
+          <button
+            class="c-btn c-btn--s c-btn--secondary"
+            onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
+            style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
+          >
+            {language === 'en' ? 'हि' : 'EN'}
+          </button>
+          {canFullscreen && (
             <button
               class="c-btn c-btn--s c-btn--secondary"
-              onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-              style={{ padding: '4px 8px', minHeight: '32px' }}
+              onClick={toggleFullscreen}
+              title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
             >
-              {language === 'en' ? 'हि' : 'EN'}
+              {isFullscreen ? '⊡' : '⊞'}
             </button>
+          )}
+          {isMobile && (
             <button
               class={`c-btn c-btn--s ${showPalette ? 'c-btn--primary' : 'c-btn--secondary'}`}
               onClick={() => setShowPalette(!showPalette)}
-              style={{ padding: '4px 8px', minHeight: '32px' }}
+              style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
             >
               ≡ Q
             </button>
-          </div>
-        )}
+          )}
+          <button
+            class="c-btn c-btn--s c-btn--destructive"
+            onClick={handleSubmit}
+            disabled={submitting}
+            style={{ padding: '3px 10px', minHeight: '30px', fontSize: '0.8rem', marginLeft: '4px' }}
+          >
+            {submitting ? '...' : 'Submit'}
+          </button>
+        </div>
+      </div>
 
-        {/* Desktop toolbar — inline */}
-        {!isMobile && (
-          <div class="flex gap-1" style={{ marginLeft: '8px' }}>
-            {template.has_calculator && (
-              <button
-                class={`c-btn c-btn--s ${showCalculator ? 'c-btn--primary' : 'c-btn--secondary'}`}
-                onClick={() => setShowCalculator(!showCalculator)}
-                title="Calculator"
-                style={{ padding: '4px 8px' }}
-              >
-                🖩
-              </button>
-            )}
-            {template.has_scratchpad && (
-              <button
-                class={`c-btn c-btn--s ${showScratchpad ? 'c-btn--primary' : 'c-btn--secondary'}`}
-                onClick={() => setShowScratchpad(!showScratchpad)}
-                title="Scratchpad"
-                style={{ padding: '4px 8px' }}
-              >
-                📝
-              </button>
-            )}
-            <button
-              class="c-btn c-btn--s c-btn--secondary"
-              onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-              style={{ padding: '4px 8px' }}
-            >
-              {language === 'en' ? 'हिंदी' : 'EN'}
-            </button>
-            {canFullscreen && (
-              <button
-                class="c-btn c-btn--s c-btn--secondary"
-                onClick={toggleFullscreen}
-                title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-                style={{ padding: '4px 8px' }}
-              >
-                {isFullscreen ? '⊡' : '⊞'}
-              </button>
-            )}
-          </div>
-        )}
+      {/* Progress strip */}
+      <div style={{ height: '3px', background: 'var(--card-secondary-bg)', width: '100%', flexShrink: 0 }}>
+        <div style={{
+          height: '100%',
+          background: 'var(--accent-brand)',
+          width: `${questions.length > 0 ? Math.round((answeredCount / questions.length) * 100) : 0}%`,
+          transition: 'width 0.4s ease',
+          borderRadius: '0 2px 2px 0',
+        }} />
       </div>
 
       {/* Main content area */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
         {/* Question area — scrollable */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '16px', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{
+          flex: 1, overflowY: 'auto',
+          padding: isMobile ? '10px' : '16px',
+          WebkitOverflowScrolling: 'touch',
+        }}>
           <QuestionDisplay
             question={currentQuestion}
             selectedOption={currentResponse.selected_option_key}
             onSelectOption={(key) => handleSelectOption(currentQuestion.id, key)}
             isReview={false}
             language={language}
+            questionNumber={currentIndex + 1}
+            totalQuestions={questions.length}
           />
 
-          {/* Question actions */}
+          {/* Question navigation */}
           <div
-            class="flex items-center justify-between mt-4"
-            style={{ flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '8px' }}
+            class="flex items-center justify-between mt-3"
+            style={{ gap: '8px', paddingTop: '12px', borderTop: '1px solid var(--card-border)' }}
           >
             <div class="flex gap-2">
               <button
                 class="c-btn c-btn--secondary"
                 onClick={() => handleNavigate(Math.max(0, currentIndex - 1))}
                 disabled={currentIndex === 0}
-                style={{ minHeight: isMobile ? '44px' : 'auto' }}
+                style={{ minHeight: '40px' }}
               >
                 ← Prev
               </button>
@@ -521,7 +543,7 @@ export function MockExamInterface({ slug, attemptId }) {
                   handleNavigate(Math.min(questions.length - 1, currentIndex + 1))
                 }
                 disabled={currentIndex >= questions.length - 1}
-                style={{ minHeight: isMobile ? '44px' : 'auto' }}
+                style={{ minHeight: '40px' }}
               >
                 Next →
               </button>
@@ -531,7 +553,7 @@ export function MockExamInterface({ slug, attemptId }) {
               <button
                 class="c-btn c-btn--secondary c-btn--s"
                 onClick={() => handleClearResponse(currentQuestion.id)}
-                style={{ minHeight: isMobile ? '44px' : 'auto' }}
+                style={{ minHeight: '40px' }}
               >
                 Clear
               </button>
@@ -542,34 +564,20 @@ export function MockExamInterface({ slug, attemptId }) {
                     : 'c-btn--secondary'
                 }`}
                 onClick={() => handleMarkForReview(currentQuestion.id)}
-                style={{ minHeight: isMobile ? '44px' : 'auto' }}
+                style={{ minHeight: '40px' }}
               >
                 {currentResponse.marked_for_review ? '★ Marked' : '☆ Review'}
               </button>
             </div>
           </div>
 
-          {/* Submit */}
-          <div class="mt-4 mb-4 flex justify-between items-center">
-            <span class="color-secondary fs-s">
-              {answeredCount} / {questions.length} answered
-            </span>
-            <button
-              class="c-btn c-btn--primary"
-              onClick={handleSubmit}
-              disabled={submitting}
-              style={{ minHeight: isMobile ? '44px' : 'auto' }}
-            >
-              {submitting ? 'Submitting...' : 'Submit Exam'}
-            </button>
-          </div>
         </div>
 
         {/* Desktop Sidebar — hidden on mobile */}
         {!isMobile && (
           <div
             style={{
-              width: '220px',
+              width: '240px',
               flexShrink: 0,
               borderLeft: '1px solid var(--card-border)',
               overflowY: 'auto',

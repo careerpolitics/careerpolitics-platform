@@ -26,7 +26,6 @@ module MockExams
     end
 
     attr_reader :pool_set
-
     private
 
     def select_from_set
@@ -37,15 +36,19 @@ module MockExams
     end
 
     def select_random
-      seen_source_ids = previously_seen_source_ids
-      pool = @template.pool_questions.where(set_published: true)
-      available = pool.where.not(id: seen_source_ids)
+      published = @template.published_sets.keys
+      return nil if published.empty?
 
-      if can_serve_from_pool?(available)
-        pick_from_pool(available)
-      else
-        nil
-      end
+      # Prefer sets the user hasn't attempted; fall back to any published set
+      attempted_sets = @user.mock_exam_attempts
+                            .for_template(@template)
+                            .where.not(pool_set: nil)
+                            .pluck(:pool_set).uniq
+      unattempted = published - attempted_sets
+      chosen_set = unattempted.any? ? unattempted.sample : published.sample
+
+      @pool_set = chosen_set
+      select_from_set
     end
 
     def previously_seen_source_ids

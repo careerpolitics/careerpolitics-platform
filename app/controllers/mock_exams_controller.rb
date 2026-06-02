@@ -17,7 +17,17 @@ class MockExamsController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
-        render json: @mock_exam_templates.map { |t| template_json(t) }
+        followed = if current_user
+                     current_user.follows.where(followable_type: "Tag")
+                                 .includes(:followable)
+                                 .filter_map { |f| f.followable ? { id: f.followable.id, name: f.followable.name } : nil }
+                   else
+                     []
+                   end
+        render json: {
+          templates: @mock_exam_templates.map { |t| template_json(t) },
+          followed_tags: followed,
+        }
       end
     end
   end
@@ -45,18 +55,35 @@ class MockExamsController < ApplicationController
   def sets
     sets_data = @template.published_sets.map do |set_number, count|
       attempts_for_set = @template.mock_exam_attempts.where(pool_set: set_number).count
-      user_attempted = current_user ? current_user.mock_exam_attempts
-                                                  .for_template(@template)
-                                                  .where(pool_set: set_number).exists? : false
+      user_attempt = current_user ? current_user.mock_exam_attempts
+                                                .for_template(@template)
+                                                .where(pool_set: set_number)
+                                                .submitted_or_timed_out
+                                                .order(submitted_at: :desc)
+                                                .first : nil
       difficulties = @template.set_questions(set_number).reorder(nil).group(:difficulty).count
       primary_difficulty = difficulties.max_by { |_, v| v }&.first || "mixed"
+      set_date = @template.set_questions(set_number).minimum(:created_at)
+      label = if set_date
+                "#{set_date.strftime("%d-%m")}-#{Digest::MD5.hexdigest("#{@template.id}-#{set_number}")[0, 3]}"
+              else
+                "Set #{set_number}"
+              end
       {
         set_number: set_number,
         question_count: count,
         attempts_count: attempts_for_set,
-        user_attempted: user_attempted,
+        user_attempted: user_attempt.present?,
         difficulty: primary_difficulty,
         difficulty_breakdown: difficulties,
+        label: label,
+        user_attempt_data: user_attempt ? {
+          attempt_id: user_attempt.id,
+          total_score: user_attempt.total_score,
+          max_possible_score: user_attempt.max_possible_score,
+          accuracy_percent: user_attempt.accuracy_percent,
+          percentile: user_attempt.percentile,
+        } : nil,
       }
     end
     render json: { sets: sets_data }
@@ -112,6 +139,7 @@ class MockExamsController < ApplicationController
       has_calculator: template.has_calculator,
       has_scratchpad: template.has_scratchpad,
       sets_count: template.available_sets.size,
+      tag_list: template.exam_category ? [{ name: template.exam_category, id: Tag.find_by(name: template.exam_category)&.id }].select { |t| t[:id] } : [],
     }
   end
 

@@ -5,12 +5,15 @@
   <style>
     .top-bar, .crayons-header, #page-content > footer, footer,
     .side-bar, .crayons-layout__sidebar-left, .stories-sidebar,
-    .broadcast-wrapper, #runtime-banner-container { display: none !important; }
-    #page-content { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
-    #page-content-inner { padding: 0 !important; }
-    body { overflow: hidden; }
+    .broadcast-wrapper, #runtime-banner-container,
+    .crayons-layout__content nav { display: none !important; }
+    html, body { margin: 0 !important; padding: 0 !important; overflow: hidden; height: 100%; }
+    #page-content { padding: 0 !important; margin: 0 !important; max-width: 100% !important; height: 100%; }
+    #page-content-inner { padding: 0 !important; margin: 0 !important; height: 100%; }
+    .crayons-layout, .crayons-layout__content { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+    main { padding: 0 !important; margin: 0 !important; }
     @media (max-width: 768px) {
-      body { overflow: auto; -webkit-overflow-scrolling: touch; }
+      body { overflow: hidden; -webkit-overflow-scrolling: touch; }
     }
   </style>
 <% end %>

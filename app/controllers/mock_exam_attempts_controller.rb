@@ -23,7 +23,7 @@ class MockExamAttemptsController < ApplicationController
       mock_exam_template: @template,
       started_at: Time.current,
       expires_at: Time.current + @template.duration_minutes.minutes,
-      pool_set: selected_set,
+      pool_set: service.pool_set || selected_set,
       )
     authorize @attempt
 

@@ -1,10 +1,13 @@
 import { h } from 'preact';
-import { useState, useEffect } from 'preact/hooks';
+import { useState, useEffect, useMemo } from 'preact/hooks';
 import { request } from '@utilities/http';
 
 export function UserMockExamDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
+  const [perfFilter, setPerfFilter] = useState('all');
 
   useEffect(() => {
     request('/mock_exams/dashboard.json')
@@ -15,6 +18,26 @@ export function UserMockExamDashboard() {
       })
       .catch(() => setLoading(false));
   }, []);
+
+  const filteredAttempts = useMemo(() => {
+    if (!data?.attempts) return [];
+    let list = data.attempts;
+
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter((a) => a.template_title?.toLowerCase().includes(q));
+    }
+    if (perfFilter === 'high') list = list.filter((a) => a.accuracy_percent >= 70);
+    if (perfFilter === 'mid') list = list.filter((a) => a.accuracy_percent >= 40 && a.accuracy_percent < 70);
+    if (perfFilter === 'low') list = list.filter((a) => a.accuracy_percent < 40);
+
+    const sorted = [...list];
+    if (sortBy === 'oldest') sorted.reverse();
+    if (sortBy === 'score_high') sorted.sort((a, b) => b.accuracy_percent - a.accuracy_percent);
+    if (sortBy === 'score_low') sorted.sort((a, b) => a.accuracy_percent - b.accuracy_percent);
+    if (sortBy === 'percentile') sorted.sort((a, b) => (b.percentile || 0) - (a.percentile || 0));
+    return sorted;
+  }, [data, search, sortBy, perfFilter]);
 
   if (loading) {
     return (
@@ -32,87 +55,160 @@ export function UserMockExamDashboard() {
     );
   }
 
+  const hasFilters = search || perfFilter !== 'all';
+
   return (
     <div>
-      <h1 class="crayons-title mb-4">My Mock Exams</h1>
-
-      {/* Summary Cards */}
-      <div class="grid gap-4 mb-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
-        <SummaryCard label="Total Attempts" value={data.total_attempts} />
-        <SummaryCard label="Exams Completed" value={data.completed_attempts} />
-        <SummaryCard label="Best Score" value={data.best_score ? `${data.best_score}%` : '—'} accent />
-        <SummaryCard label="Avg Accuracy" value={data.avg_accuracy ? `${data.avg_accuracy}%` : '—'} />
-        <SummaryCard label="Current Streak" value={`${data.streak_days || 0} days`} />
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h1 class="crayons-title">My Mock Exams</h1>
+        <a href="/mock_exams" class="c-btn c-btn--primary c-btn--s">
+          Browse Exams
+        </a>
       </div>
 
-      {/* Performance Trend */}
-      {data.trend && data.trend.length > 1 && (
-        <div class="crayons-card p-6 mb-4">
-          <h3 class="crayons-subtitle-2 mb-3">Performance Trend</h3>
-          <PerformanceTrend trend={data.trend} />
-        </div>
-      )}
+      {/* Summary Cards */}
+      <div class="grid gap-3 mb-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))' }}>
+        <SummaryCard label="Total Attempts" value={data.total_attempts} />
+        <SummaryCard label="Completed" value={data.completed_attempts} />
+        <SummaryCard label="Best Score" value={data.best_score ? `${data.best_score}%` : '—'} accent />
+        <SummaryCard label="Avg Accuracy" value={data.avg_accuracy ? `${data.avg_accuracy}%` : '—'} />
+        <SummaryCard label="Streak" value={`${data.streak_days || 0}d`} />
+      </div>
 
-      {/* Topic Strengths */}
-      {data.section_accuracy && Object.keys(data.section_accuracy).length > 0 && (
-        <div class="crayons-card p-6 mb-4">
-          <h3 class="crayons-subtitle-2 mb-3">Topic Strengths</h3>
-          <TopicRadar sections={data.section_accuracy} />
-        </div>
-      )}
+      {/* Performance Trend + Topic Strengths side by side on desktop */}
+      <div class="grid gap-4 mb-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+        {data.trend && data.trend.length > 1 && (
+          <div class="crayons-card p-6">
+            <h3 class="crayons-subtitle-2 mb-3">Performance Trend</h3>
+            <PerformanceTrend trend={data.trend} />
+          </div>
+        )}
+        {data.section_accuracy && Object.keys(data.section_accuracy).length > 0 && (
+          <div class="crayons-card p-6">
+            <h3 class="crayons-subtitle-2 mb-3">Topic Strengths</h3>
+            <TopicRadar sections={data.section_accuracy} />
+          </div>
+        )}
+      </div>
 
       {/* Attempt History */}
       <div class="crayons-card p-6">
         <h3 class="crayons-subtitle-2 mb-3">Attempt History</h3>
+
+        {data.attempts && data.attempts.length > 0 && (
+          <div class="mb-4">
+            {/* Filter bar */}
+            <div class="flex flex-wrap items-center gap-3 mb-3" style={{ fontSize: '0.8rem' }}>
+              <div style={{ flex: '1 1 180px', maxWidth: '260px' }}>
+                <input type="text" class="crayons-textfield" placeholder="Search by exam name..."
+                       value={search} onInput={(e) => setSearch(e.target.value)}
+                       style={{ height: '32px', fontSize: '0.8rem' }} />
+              </div>
+
+              <DashPillGroup label="Performance" value={perfFilter} onChange={setPerfFilter}
+                             options={[['all', 'All'], ['high', '≥70%'], ['mid', '40-69%'], ['low', '<40%']]} />
+
+              <div class="flex items-center gap-1" style={{ marginLeft: 'auto' }}>
+                <span class="color-secondary fw-medium" style={{ fontSize: '0.75rem' }}>Sort:</span>
+                {[['newest', 'Newest'], ['oldest', 'Oldest'], ['score_high', 'Best'], ['score_low', 'Worst'], ['percentile', 'Percentile']].map(([val, lbl]) => (
+                  <button key={val}
+                          class={`c-btn c-btn--s ${sortBy === val ? 'c-btn--primary' : 'c-btn--secondary'}`}
+                          onClick={() => setSortBy(val)}
+                          style={{ padding: '2px 7px', minHeight: '26px', fontSize: '0.72rem', borderRadius: '12px' }}
+                  >{lbl}</button>
+                ))}
+              </div>
+            </div>
+
+            {hasFilters && (
+              <div class="flex items-center gap-2 mb-3">
+                <span class="fs-s color-secondary">{filteredAttempts.length} of {data.attempts.length} attempts</span>
+                <button class="c-btn c-btn--s c-btn--secondary"
+                        style={{ padding: '1px 8px', fontSize: '0.7rem', minHeight: '22px' }}
+                        onClick={() => { setSearch(''); setPerfFilter('all'); }}>
+                  Clear
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {(!data.attempts || data.attempts.length === 0) ? (
           <p class="color-secondary text-center">
             No attempts yet. <a href="/mock_exams">Start your first exam!</a>
           </p>
+        ) : filteredAttempts.length === 0 ? (
+          <p class="color-secondary text-center">No attempts match your filters.</p>
         ) : (
-          <table class="crayons-table" style={{ width: '100%' }}>
-            <thead>
-            <tr>
-              <th>Exam</th>
-              <th>Score</th>
-              <th>Accuracy</th>
-              <th>Percentile</th>
-              <th>Date</th>
-              <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            {data.attempts.map((a) => (
-              <tr key={a.id}>
-                <td class="fw-bold">{a.template_title}</td>
-                <td>{a.total_score} / {a.max_possible_score}</td>
-                <td>{a.accuracy_percent}%</td>
-                <td>
-                    <span
-                      class="fw-bold"
-                      style={{
-                        color: a.percentile >= 75 ? 'var(--accent-success)'
-                          : a.percentile >= 50 ? 'var(--accent-brand)'
-                            : 'var(--accent-warning)',
-                      }}
-                    >
-                      {a.percentile}%
-                    </span>
-                </td>
-                <td class="fs-s color-secondary">{formatDate(a.submitted_at)}</td>
-                <td>
-                  <a
-                    href={`/mock_exams/${a.template_slug}/attempts/${a.id}/results`}
-                    class="c-btn c-btn--secondary c-btn--s"
-                  >
-                    Review
-                  </a>
-                </td>
-              </tr>
+          <div class="flex flex-col gap-3">
+            {filteredAttempts.map((a) => (
+              <AttemptCard key={a.id} attempt={a} />
             ))}
-            </tbody>
-          </table>
+          </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function AttemptCard({ attempt: a }) {
+  const accColor = a.accuracy_percent >= 70 ? 'var(--accent-success)'
+    : a.accuracy_percent >= 40 ? 'var(--accent-warning)' : 'var(--accent-danger)';
+  const pctColor = a.percentile >= 75 ? 'var(--accent-success)'
+    : a.percentile >= 50 ? 'var(--accent-brand)' : 'var(--accent-warning)';
+
+  return (
+    <div class="crayons-card crayons-card--secondary p-4"
+         style={{ border: '1px solid var(--card-border)' }}>
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div style={{ flex: '1 1 200px' }}>
+          <div class="fw-bold">{a.template_title}</div>
+          <div class="fs-xs color-secondary mt-1">{formatDate(a.submitted_at)}</div>
+        </div>
+
+        <div class="flex items-center gap-4 flex-wrap" style={{ fontSize: '0.85rem' }}>
+          <div class="text-center">
+            <div class="fs-xs color-secondary">Score</div>
+            <div class="fw-bold">{a.total_score}/{a.max_possible_score}</div>
+          </div>
+          <div class="text-center">
+            <div class="fs-xs color-secondary">Accuracy</div>
+            <div class="fw-bold" style={{ color: accColor }}>{a.accuracy_percent}%</div>
+          </div>
+          <div class="text-center">
+            <div class="fs-xs color-secondary">Percentile</div>
+            <div class="fw-bold" style={{ color: pctColor }}>{a.percentile || 0}%</div>
+          </div>
+          <a href={`/mock_exams/${a.template_slug}/attempts/${a.id}/results`}
+             class="c-btn c-btn--secondary c-btn--s" style={{ minHeight: '32px' }}>
+            Review
+          </a>
+        </div>
+      </div>
+
+      {/* Accuracy bar */}
+      <div style={{ width: '100%', height: '4px', background: 'var(--card-secondary-bg)', borderRadius: '2px', overflow: 'hidden', marginTop: '8px' }}>
+        <div style={{
+          width: `${a.accuracy_percent || 0}%`,
+          height: '100%', background: accColor, borderRadius: '2px',
+          transition: 'width 0.5s ease',
+        }} />
+      </div>
+    </div>
+  );
+}
+
+function DashPillGroup({ label, value, onChange, options }) {
+  return (
+    <div class="flex items-center gap-1">
+      <span class="color-secondary fw-medium" style={{ fontSize: '0.75rem' }}>{label}:</span>
+      {options.map(([val, lbl]) => (
+        <button key={val}
+                class={`c-btn c-btn--s ${value === val ? 'c-btn--primary' : 'c-btn--secondary'}`}
+                onClick={() => onChange(val)}
+                style={{ padding: '2px 8px', minHeight: '26px', fontSize: '0.75rem', borderRadius: '12px' }}
+        >{lbl}</button>
+      ))}
     </div>
   );
 }
