@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_05_28_205802) do
+ActiveRecord::Schema[7.0].define(version: 2026_06_02_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "ltree"
@@ -957,39 +957,39 @@ ActiveRecord::Schema[7.0].define(version: 2026_05_28_205802) do
   end
 
   create_table "job_posts", force: :cascade do |t|
-    t.string "title", null: false
-    t.text "description"
+    t.boolean "approved", default: false, null: false
     t.string "category"
-    t.string "post_type"
-    t.string "link"
     t.string "color"
+    t.datetime "created_at", null: false
+    t.datetime "deadline_at"
+    t.text "description"
+    t.string "employment_type"
+    t.boolean "featured", default: false, null: false
+    t.text "important_dates"
+    t.string "link"
+    t.string "location"
+    t.string "organization_name"
+    t.integer "position", default: 0, null: false
+    t.string "post_type"
     t.boolean "published", default: false
     t.datetime "published_at"
-    t.bigint "user_id", null: false
-    t.string "slug"
-    t.boolean "approved", default: false, null: false
-    t.integer "position", default: 0, null: false
-    t.boolean "featured", default: false, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "organization_name"
-    t.string "location"
-    t.datetime "deadline_at"
-    t.string "employment_type"
-    t.string "salary_range"
     t.text "qualification"
-    t.integer "vacancies"
+    t.string "salary_range"
+    t.string "slug"
     t.string "source_name"
     t.string "source_url"
-    t.text "important_dates"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.integer "vacancies"
     t.index ["approved"], name: "index_job_posts_on_approved"
     t.index ["category"], name: "index_job_posts_on_category"
     t.index ["deadline_at"], name: "index_job_posts_on_deadline_at"
     t.index ["employment_type"], name: "index_job_posts_on_employment_type"
     t.index ["featured", "published", "approved", "position", "published_at", "created_at"], name: "index_job_posts_on_featured_query", where: "((published = true) AND (approved = true) AND (featured = true))"
     t.index ["featured"], name: "index_job_posts_on_featured"
-    t.index ["post_type"], name: "index_job_posts_on_post_type"
     t.index ["position"], name: "index_job_posts_on_position"
+    t.index ["post_type"], name: "index_job_posts_on_post_type"
     t.index ["published", "approved", "post_type", "position", "published_at", "created_at"], name: "index_job_posts_on_available_query", where: "((published = true) AND (approved = true))"
     t.index ["published"], name: "index_job_posts_on_published"
     t.index ["published_at"], name: "index_job_posts_on_published_at"
@@ -1072,6 +1072,130 @@ ActiveRecord::Schema[7.0].define(version: 2026_05_28_205802) do
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "user_id"
     t.index ["user_id", "mentionable_id", "mentionable_type"], name: "index_mentions_on_user_id_and_mentionable_id_mentionable_type", unique: true
+  end
+
+  create_table "mock_exam_attempts", force: :cascade do |t|
+    t.decimal "accuracy_percent", precision: 5, scale: 1
+    t.decimal "avg_time_per_question", precision: 8, scale: 1
+    t.integer "correct_count", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "expires_at", null: false
+    t.integer "incorrect_count", default: 0
+    t.decimal "max_possible_score", precision: 8, scale: 2
+    t.bigint "mock_exam_template_id", null: false
+    t.decimal "percentile", precision: 5, scale: 2
+    t.integer "pool_set"
+    t.integer "rank"
+    t.jsonb "section_scores", default: {}
+    t.datetime "started_at", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "submitted_at"
+    t.jsonb "time_per_question", default: {}
+    t.decimal "total_score", precision: 8, scale: 2
+    t.integer "unanswered_count", default: 0
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["mock_exam_template_id"], name: "index_mock_exam_attempts_on_mock_exam_template_id"
+    t.index ["status"], name: "index_mock_exam_attempts_on_status"
+    t.index ["user_id", "mock_exam_template_id"], name: "idx_mock_attempts_user_template"
+    t.index ["user_id"], name: "index_mock_exam_attempts_on_user_id"
+  end
+
+  create_table "mock_exam_questions", force: :cascade do |t|
+    t.jsonb "ai_generation_metadata", default: {}
+    t.string "correct_option_key", null: false
+    t.datetime "created_at", null: false
+    t.integer "difficulty", default: 1, null: false
+    t.text "explanation"
+    t.text "explanation_hi"
+    t.text "explanation_html"
+    t.bigint "mock_exam_attempt_id"
+    t.bigint "mock_exam_template_id", null: false
+    t.jsonb "options", default: [], null: false
+    t.integer "pool_set"
+    t.integer "position", null: false
+    t.integer "question_format", default: 0, null: false
+    t.text "question_html"
+    t.text "question_svg"
+    t.text "question_text", null: false
+    t.integer "question_type", default: 0, null: false
+    t.string "section_name", null: false
+    t.boolean "set_published", default: false, null: false
+    t.text "solution_steps"
+    t.text "solution_steps_html"
+    t.integer "source_question_id"
+    t.text "text_hi"
+    t.integer "times_served", default: 0, null: false
+    t.string "topic_tags", default: [], array: true
+    t.datetime "updated_at", null: false
+    t.index ["mock_exam_attempt_id", "position"], name: "idx_mock_questions_attempt_position"
+    t.index ["mock_exam_attempt_id"], name: "index_mock_exam_questions_on_mock_exam_attempt_id"
+    t.index ["mock_exam_template_id", "mock_exam_attempt_id"], name: "idx_mock_questions_pool", where: "(mock_exam_attempt_id IS NULL)"
+    t.index ["mock_exam_template_id", "pool_set"], name: "idx_mock_questions_template_set", where: "((mock_exam_attempt_id IS NULL) AND (pool_set IS NOT NULL))"
+    t.index ["mock_exam_template_id"], name: "index_mock_exam_questions_on_mock_exam_template_id"
+  end
+
+  create_table "mock_exam_responses", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "is_correct"
+    t.boolean "marked_for_review", default: false, null: false
+    t.bigint "mock_exam_attempt_id", null: false
+    t.bigint "mock_exam_question_id", null: false
+    t.string "selected_option_key"
+    t.integer "time_spent_seconds", default: 0
+    t.datetime "updated_at", null: false
+    t.index ["mock_exam_attempt_id", "mock_exam_question_id"], name: "idx_mock_responses_attempt_question", unique: true
+    t.index ["mock_exam_attempt_id"], name: "index_mock_exam_responses_on_mock_exam_attempt_id"
+    t.index ["mock_exam_question_id"], name: "index_mock_exam_responses_on_mock_exam_question_id"
+  end
+
+  create_table "mock_exam_template_stats", force: :cascade do |t|
+    t.decimal "average_accuracy", precision: 5, scale: 1, default: "0.0"
+    t.decimal "average_score", precision: 8, scale: 2, default: "0.0"
+    t.decimal "average_time_seconds", precision: 10, default: "0"
+    t.decimal "completion_rate", precision: 5, scale: 1, default: "0.0"
+    t.datetime "created_at", null: false
+    t.jsonb "difficulty_accuracy", default: {}
+    t.decimal "highest_score", precision: 8, scale: 2, default: "0.0"
+    t.datetime "last_refreshed_at"
+    t.decimal "lowest_score", precision: 8, scale: 2, default: "0.0"
+    t.decimal "median_score", precision: 8, scale: 2, default: "0.0"
+    t.bigint "mock_exam_template_id", null: false
+    t.jsonb "score_distribution", default: []
+    t.jsonb "section_averages", default: {}
+    t.integer "total_attempts", default: 0
+    t.integer "unique_users", default: 0
+    t.datetime "updated_at", null: false
+    t.index ["mock_exam_template_id"], name: "index_mock_exam_template_stats_on_mock_exam_template_id", unique: true
+  end
+
+  create_table "mock_exam_templates", force: :cascade do |t|
+    t.boolean "active", default: true
+    t.text "ai_prompt_context"
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id"
+    t.text "description"
+    t.integer "difficulty_level", default: 3, null: false
+    t.integer "duration_minutes", null: false
+    t.integer "exam_category", default: 0, null: false
+    t.boolean "has_calculator", default: false
+    t.boolean "has_scratchpad", default: true
+    t.decimal "marks_per_correct", precision: 4, scale: 2, default: "2.0"
+    t.decimal "negative_marks_per_wrong", precision: 4, scale: 2, default: "0.67"
+    t.boolean "published", default: false
+    t.integer "question_display_mode", default: 0, null: false
+    t.jsonb "sections_config", default: [], null: false
+    t.string "slug", null: false
+    t.bigint "subforem_id"
+    t.bigint "tag_id"
+    t.string "title", null: false
+    t.integer "total_questions", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active", "published"], name: "index_mock_exam_templates_on_active_and_published"
+    t.index ["created_by_id"], name: "index_mock_exam_templates_on_created_by_id"
+    t.index ["slug"], name: "index_mock_exam_templates_on_slug", unique: true
+    t.index ["subforem_id"], name: "index_mock_exam_templates_on_subforem_id"
+    t.index ["tag_id"], name: "index_mock_exam_templates_on_tag_id"
   end
 
   create_table "navigation_links", force: :cascade do |t|
@@ -1796,10 +1920,10 @@ ActiveRecord::Schema[7.0].define(version: 2026_05_28_205802) do
   end
 
   create_table "trend_run_histories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "published", default: false, null: false
     t.string "trend", null: false
     t.string "trend_slug", null: false
-    t.boolean "published", default: false, null: false
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["created_at"], name: "index_trend_run_histories_on_created_at"
     t.index ["trend_slug"], name: "index_trend_run_histories_on_trend_slug"
@@ -2081,8 +2205,8 @@ ActiveRecord::Schema[7.0].define(version: 2026_05_28_205802) do
     t.boolean "mobile_badge_notifications", default: true, null: false
     t.boolean "mobile_comment_notifications", default: true, null: false
     t.boolean "mobile_follower_notifications", default: true, null: false
-    t.boolean "mobile_milestone_notifications", default: true, null: false
     t.boolean "mobile_mention_notifications", default: true, null: false
+    t.boolean "mobile_milestone_notifications", default: true, null: false
     t.boolean "mobile_reaction_notifications", default: true, null: false
     t.boolean "mod_roundrobin_notifications", default: true, null: false
     t.boolean "reaction_notifications", default: true, null: false
@@ -2213,6 +2337,15 @@ ActiveRecord::Schema[7.0].define(version: 2026_05_28_205802) do
   add_foreign_key "lead_submissions", "organization_lead_forms", on_delete: :cascade
   add_foreign_key "lead_submissions", "users", on_delete: :cascade
   add_foreign_key "mentions", "users", on_delete: :cascade
+  add_foreign_key "mock_exam_attempts", "mock_exam_templates"
+  add_foreign_key "mock_exam_attempts", "users"
+  add_foreign_key "mock_exam_questions", "mock_exam_attempts"
+  add_foreign_key "mock_exam_questions", "mock_exam_templates"
+  add_foreign_key "mock_exam_responses", "mock_exam_attempts"
+  add_foreign_key "mock_exam_responses", "mock_exam_questions"
+  add_foreign_key "mock_exam_template_stats", "mock_exam_templates"
+  add_foreign_key "mock_exam_templates", "subforems"
+  add_foreign_key "mock_exam_templates", "users", column: "created_by_id"
   add_foreign_key "notes", "users", column: "author_id", on_delete: :nullify
   add_foreign_key "notification_subscriptions", "users", on_delete: :cascade
   add_foreign_key "notifications", "organizations", on_delete: :cascade

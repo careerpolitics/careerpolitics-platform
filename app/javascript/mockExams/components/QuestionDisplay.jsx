@@ -1,5 +1,6 @@
 import { h } from 'preact';
 import { KatexText, KatexHtml, hasMath } from './KatexRenderer';
+import { useQuestionTranslation } from '../useQuestionTranslation';
 
 export function QuestionDisplay({
                                   question,
@@ -11,9 +12,20 @@ export function QuestionDisplay({
                                   totalQuestions,
                                 }) {
   const q = question;
-  const useHindi = language === 'hi' && q.text_hi;
-  const questionText = useHindi ? q.text_hi : q.question_text;
-  const explanation = useHindi && q.explanation_hi ? q.explanation_hi : q.explanation;
+  const wantsHindi = language === 'hi';
+  // Resolves Hindi text from pre-translated columns, then machine translation,
+  // then the original English (with usedFallback set so we can show a notice).
+  const {
+    questionText,
+    options,
+    explanation,
+    usedFallback,
+  } = useQuestionTranslation(q, language, isReview);
+
+  // Raw HTML is only safe for the English source; translated text comes back as
+  // plain strings, so render it through KatexText instead.
+  const showQuestionHtml = !wantsHindi && q.question_html && !hasMath(q.question_text);
+  const showExplanationHtml = !wantsHindi && q.explanation_html && !hasMath(explanation);
 
   return (
     <div class="crayons-card p-6">
@@ -43,12 +55,20 @@ export function QuestionDisplay({
 
       {/* Question text */}
       <div class="mb-4 fs-l" style={{ lineHeight: '1.6' }}>
-        {!useHindi && q.question_html && !hasMath(q.question_text) ? (
+        {showQuestionHtml ? (
           <div dangerouslySetInnerHTML={{ __html: q.question_html }} />
         ) : (
           <KatexText text={questionText} />
         )}
       </div>
+
+      {/* Translation fallback notice — shown when on-demand translation failed
+          and we are displaying the original English instead of a blank. */}
+      {usedFallback && (
+        <p class="fs-xs color-secondary mb-3" role="status">
+          Translation unavailable — showing the original English.
+        </p>
+      )}
 
       {/* Question SVG (visual reasoning) */}
       {q.question_svg && (
@@ -61,8 +81,8 @@ export function QuestionDisplay({
 
       {/* Options */}
       <div class="flex flex-col gap-2">
-        {(q.options || []).map((opt) => {
-          const optText = useHindi && opt.text_hi ? opt.text_hi : opt.text;
+        {(options || []).map((opt) => {
+          const optText = opt.displayText;
           const isSelected = selectedOption === opt.key;
           const isCorrect = isReview && opt.key === q.correct_option_key;
           const isWrong = isReview && isSelected && !isCorrect;
@@ -158,7 +178,7 @@ export function QuestionDisplay({
           style={{ background: 'var(--card-secondary-bg)' }}
         >
           <h4 class="fw-bold mb-2">Explanation</h4>
-          {!useHindi && q.explanation_html && !hasMath(explanation) ? (
+          {showExplanationHtml ? (
             <div dangerouslySetInnerHTML={{ __html: q.explanation_html }} />
           ) : (
             <KatexText text={explanation} />

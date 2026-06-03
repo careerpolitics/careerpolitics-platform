@@ -10,7 +10,7 @@ RSpec.describe MockExamAttempt, type: :model do
     it { is_expected.to belong_to(:mock_exam_template) }
     it { is_expected.to belong_to(:user) }
     it { is_expected.to have_many(:mock_exam_responses).dependent(:destroy) }
-    it { is_expected.to have_many(:mock_exam_questions).dependent(:nullify) }
+    it { is_expected.to have_many(:mock_exam_questions).dependent(:destroy) }
   end
 
   describe "#expired?" do
