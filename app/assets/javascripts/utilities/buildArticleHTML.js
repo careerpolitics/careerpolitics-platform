@@ -28,6 +28,63 @@ function buildArticleHTML(article, currentUserId = null) {
       </article>`;
   }
 
+  if (article && article.class_name === 'JobPost') {
+    var jobMeta = [];
+    if (article.organization_name) jobMeta.push(article.organization_name);
+    if (article.location) jobMeta.push(article.location);
+    if (article.salary_range) jobMeta.push(article.salary_range);
+    var jobMetaHTML = jobMeta.length > 0 ? `<p class="crayons-story__tertiary fs-xs mt-1">${jobMeta.join(' · ')}</p>` : '';
+    var jobBadge = '';
+    if (article.post_type) {
+      var badgeLabels = { new_update: 'New Update', admit_card: 'Admit Card', online_form: 'Online Form' };
+      jobBadge = `<span class="crayons-tag crayons-tag--filled" style="--tag-bg:#e0e7ff;--tag-prefix:#3730a3;font-size:0.7rem">${badgeLabels[article.post_type] || article.post_type}</span>`;
+    }
+    return `<article class="crayons-story">
+      <div class="crayons-story__body flex items-start gap-2">
+        <span class="radius-default p-2 shrink-0" style="background: var(--base-inverted, #f3f4f6); color: var(--body-color)">
+          <svg width="24" height="24" viewBox="0 0 24 24" class="crayons-icon" xmlns="http://www.w3.org/2000/svg"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
+        </span>
+        <div style="flex:1">
+          <div class="flex items-center gap-2">
+            <h3 class="crayons-subtitle-2 lh-tight py-1">
+              <a href="${article.path}" class="c-link">${filterXSS(article.title)}</a>
+            </h3>
+            ${jobBadge}
+          </div>
+          ${jobMetaHTML}
+          ${article.description ? `<div class="truncate-at-3 mt-1 fs-s color-secondary">${article.description}</div>` : ''}
+          ${article.readable_publish_date ? `<span class="fs-xs color-secondary mt-1">${article.readable_publish_date}</span>` : ''}
+        </div>
+      </div>
+    </article>`;
+  }
+
+  if (article && article.class_name === 'MockExamTemplate') {
+    var examMeta = [];
+    examMeta.push(article.total_questions + 'q');
+    examMeta.push(article.duration_minutes + ' min');
+    if (article.difficulty_level) examMeta.push(article.difficulty_level);
+    var examTagHTML = article.tag_name ? `<span class="crayons-tag crayons-tag--monochrome"><span class="crayons-tag__prefix">#</span>${article.tag_name}</span>` : '';
+    return `<article class="crayons-story">
+      <div class="crayons-story__body flex items-start gap-2">
+        <span class="radius-default p-2 shrink-0" style="background: var(--accent-brand-a10, #e0e7ff); color: var(--accent-brand, #3b49df)">
+          <svg width="24" height="24" viewBox="0 0 24 24" class="crayons-icon" xmlns="http://www.w3.org/2000/svg"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        </span>
+        <div style="flex:1">
+          <h3 class="crayons-subtitle-2 lh-tight py-1">
+            <a href="${article.path}" class="c-link">${filterXSS(article.title)}</a>
+          </h3>
+          <div class="flex items-center gap-2 mt-1">
+            ${examTagHTML}
+            <span class="fs-xs color-secondary">${examMeta.join(' · ')}</span>
+          </div>
+          ${article.description ? `<div class="truncate-at-3 mt-1 fs-s color-secondary">${article.description}</div>` : ''}
+          ${article.readable_publish_date ? `<span class="fs-xs color-secondary mt-1">${article.readable_publish_date}</span>` : ''}
+        </div>
+      </div>
+    </article>`;
+  }
+
   if (article && article.class_name === 'PodcastEpisode') {
     return `<article class="crayons-story crayons-podcast-episode mb-2">
         <div class="crayons-story__body flex flex-start">

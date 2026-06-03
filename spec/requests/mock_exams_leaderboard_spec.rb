@@ -121,6 +121,35 @@ RSpec.describe "Mock Exams Leaderboard & Stats" do
       expect(json["entries"]).to be_an(Array)
     end
 
+    it "deduplicates by user+set, allowing one entry per user per set" do
+      # Same user, two different sets — should appear twice
+      create(:mock_exam_attempt,
+             mock_exam_template: template, user: user, pool_set: 1,
+             status: :submitted, total_score: 10.0,
+             submitted_at: 1.hour.ago, started_at: 2.hours.ago)
+      create(:mock_exam_attempt,
+             mock_exam_template: template, user: user, pool_set: 2,
+             status: :submitted, total_score: 12.0,
+             submitted_at: 1.hour.ago, started_at: 2.hours.ago)
+      # Same user, same set (retake) — should NOT produce a duplicate
+      create(:mock_exam_attempt,
+             mock_exam_template: template, user: user, pool_set: 1,
+             status: :submitted, total_score: 8.0,
+             submitted_at: 30.minutes.ago, started_at: 1.hour.ago)
+
+      get leaderboard_mock_exam_path(slug: template.slug),
+          headers: { "Accept" => "application/json" }
+
+      json = JSON.parse(response.body)
+      entries = json["entries"]
+      user_set_pairs = entries.map { |e| [e["user_id"], e["pool_set"]] }
+      expect(user_set_pairs.uniq.length).to eq(user_set_pairs.length)
+      expect(entries.length).to eq(2)
+      # Best score for set 1 should be 10.0, not 8.0
+      set1_entry = entries.find { |e| e["pool_set"] == 1 }
+      expect(set1_entry["total_score"]).to eq(10.0)
+    end
+
     it "limits to 20 entries" do
       25.times do |i|
         u = create(:user)

@@ -198,6 +198,48 @@ RSpec.describe "Search", :proper_status do
         expect(response.parsed_body["result"].first).to include("name" => tag.name)
       end
     end
+
+    context "when searching for job posts" do
+      let!(:job_post) do
+        create(:job_post, title: "Senior Ruby Developer", published: true, approved: true)
+      end
+
+      it "returns results for JobPost class_name" do
+        get search_feed_content_path(class_name: "JobPost", search_fields: "Ruby")
+        expect(response.parsed_body["result"]).to be_present
+      end
+
+      it "returns the correct job post" do
+        get search_feed_content_path(
+              class_name: "JobPost",
+              search_fields: "Ruby",
+              page: 0,
+              per_page: 1,
+              )
+        expect(response.parsed_body["result"].first).to include("title" => job_post.title)
+      end
+    end
+
+    context "when searching for mock exams" do
+      let!(:mock_exam) do
+        create(:mock_exam_template, title: "UPSC Prelims Mock Test", active: true, published: true)
+      end
+
+      it "returns results for MockExamTemplate class_name" do
+        get search_feed_content_path(class_name: "MockExamTemplate", search_fields: "UPSC")
+        expect(response.parsed_body["result"]).to be_present
+      end
+
+      it "returns the correct mock exam" do
+        get search_feed_content_path(
+              class_name: "MockExamTemplate",
+              search_fields: "UPSC",
+              page: 0,
+              per_page: 1,
+              )
+        expect(response.parsed_body["result"].first).to include("title" => mock_exam.title)
+      end
+    end
   end
 
   describe "GET /search/reactions" do

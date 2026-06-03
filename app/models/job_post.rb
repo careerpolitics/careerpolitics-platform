@@ -1,4 +1,5 @@
 class JobPost < ApplicationRecord
+  include PgSearch::Model
   belongs_to :user
 
   validates :title, presence: true
@@ -27,6 +28,10 @@ class JobPost < ApplicationRecord
   scope :recent, -> { order(position: :asc, published_at: :desc, created_at: :desc) }
   scope :featured, -> { available.where(featured: true).recent.limit(8) }
   scope :pending_approval, -> { where(approved: false) }
+
+  pg_search_scope :search_job_posts,
+                  against: %i[title description organization_name category],
+                  using: { tsearch: { prefix: true } }
 
   POST_TYPES = {
     new_update: 'new_update',

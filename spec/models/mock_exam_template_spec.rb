@@ -82,4 +82,30 @@ RSpec.describe MockExamTemplate, type: :model do
       expect(described_class.active_published.count).to eq(1)
     end
   end
+
+  describe ".search_mock_exams" do
+    it "finds templates by title" do
+      template = create(:mock_exam_template, title: "UPSC Civil Services Prelims")
+      results = described_class.search_mock_exams("UPSC")
+      expect(results).to include(template)
+    end
+
+    it "finds templates by description" do
+      template = create(:mock_exam_template, description: "Comprehensive polity assessment")
+      results = described_class.search_mock_exams("polity")
+      expect(results).to include(template)
+    end
+
+    it "supports prefix matching" do
+      template = create(:mock_exam_template, title: "Railway Aptitude Test")
+      results = described_class.search_mock_exams("Rail")
+      expect(results).to include(template)
+    end
+
+    it "does not return non-matching templates" do
+      create(:mock_exam_template, title: "Banking Exam", description: "Finance test")
+      results = described_class.search_mock_exams("cryptocurrency")
+      expect(results).to be_empty
+    end
+  end
 end

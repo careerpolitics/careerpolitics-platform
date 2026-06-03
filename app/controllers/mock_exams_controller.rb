@@ -42,7 +42,8 @@ class MockExamsController < ApplicationController
           stats: @stats ? stats_json(@stats) : nil,
           pool_ready: @template.pool_ready?,
           can_attempt: can_attempt?,
-        )
+          user_signed_in: current_user.present?,
+          )
       end
     end
   end

@@ -21,6 +21,8 @@ fr:
         my_posts: Mes articles uniquement
         organizations: Organisations
         tags: Tags
+        jobs: Emplois
+        mock_exams: Examens blancs
       sort:
         aria_label: Search result sort options
         relevance: Most Relevant
