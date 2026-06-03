@@ -21,6 +21,8 @@ pt:
         my_posts: Apenas meus posts
         organizations: Organizações
         tags: Tags
+        jobs: Empregos
+        mock_exams: Simulados
       sort:
         aria_label: Search result sort options
         relevance: Most Relevant

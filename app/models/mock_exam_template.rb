@@ -1,4 +1,6 @@
 class MockExamTemplate < ApplicationRecord
+  include PgSearch::Model
+
   belongs_to :subforem, optional: true
   belongs_to :created_by, class_name: "User", optional: true
   belongs_to :tag, optional: true
@@ -33,6 +35,9 @@ class MockExamTemplate < ApplicationRecord
   before_validation :generate_slug, on: :create
 
   scope :active_published, -> { where(active: true, published: true) }
+  pg_search_scope :search_mock_exams,
+                  against: %i[title description],
+                  using: { tsearch: { prefix: true } }
   scope :for_subforem, ->(subforem) { where(subforem_id: [subforem&.id, nil]) }
 
   def max_possible_score

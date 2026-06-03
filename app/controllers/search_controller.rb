@@ -61,7 +61,7 @@ class SearchController < ApplicationController
   def listings
     render json: { result: [] }
   end
-  
+
 
   def usernames
     context = commentable_context(params[:context_type])&.find(params[:context_id])
@@ -93,7 +93,7 @@ class SearchController < ApplicationController
                           ApplicationConfig["ALGOLIA_API_KEY"].present?) ||
                          (Settings::General.algolia_application_id.present? &&
                           Settings::General.algolia_api_key.present?)
-    
+
     if algolia_configured && !is_homepage_search
       render json: { result: [] }
       return
@@ -169,6 +169,22 @@ class SearchController < ApplicationController
           page: feed_params[:page],
           per_page: feed_params[:per_page],
         )
+      elsif class_name.JobPost?
+        Search::JobPost.search_documents(
+          page: feed_params[:page],
+          per_page: feed_params[:per_page],
+          sort_by: feed_params[:sort_by],
+          sort_direction: feed_params[:sort_direction],
+          term: feed_params[:search_fields],
+          )
+      elsif class_name.MockExamTemplate?
+        Search::MockExam.search_documents(
+          page: feed_params[:page],
+          per_page: feed_params[:per_page],
+          sort_by: feed_params[:sort_by],
+          sort_direction: feed_params[:sort_direction],
+          term: feed_params[:search_fields],
+          )
       end
     render json: { result: result }
   end

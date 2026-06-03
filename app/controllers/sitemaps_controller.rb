@@ -50,6 +50,11 @@ class SitemapsController < ApplicationController
       @jobs = JobPost.available.recent
         .limit(RESULTS_LIMIT).offset(offset)
         .pluck(:link, :updated_at)
+    when "mockexams"
+      @mock_exams = MockExamTemplate.active_published
+        .order(created_at: :desc)
+        .limit(RESULTS_LIMIT).offset(offset)
+        .pluck(:slug, :updated_at)
     end
     set_surrogate_controls(Time.current)
     @view_template = resource
@@ -85,7 +90,7 @@ class SitemapsController < ApplicationController
   end
 
   def valid_resource_sitemap?
-    %w[posts users tags jobs].include?(resource_string)
+    %w[posts users tags jobs mockexams].include?(resource_string)
   end
 
   def resource_string

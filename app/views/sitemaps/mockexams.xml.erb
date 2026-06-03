@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc><%= app_url("/mock_exams") %></loc>
+    <lastmod><%= Time.current.strftime("%F") %></lastmod>
+    <changefreq>daily</changefreq>
+  </url>
+
+  <% @mock_exams.each do |slug, updated_at| %>
+    <url>
+      <loc><%= app_url("/mock_exams/#{slug}") %></loc>
+      <lastmod><%= updated_at.strftime("%F") %></lastmod>
+      <changefreq>daily</changefreq>
+    </url>
+  <% end %>
+</urlset>
