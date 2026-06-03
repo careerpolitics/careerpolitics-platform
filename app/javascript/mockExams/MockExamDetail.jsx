@@ -2,6 +2,7 @@
 import { h } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
 import { request } from '@utilities/http';
+import {ExamLeaderboard} from './components/ExamLeaderboard';
 
 export function MockExamDetail({ slug }) {
   const [template, setTemplate] = useState(null);
@@ -437,7 +438,7 @@ export function MockExamDetail({ slug }) {
       })()}
 
       {/* Fallback when no sets are published yet */}
-      {sets.length > 1 && (t.can_attempt || !userSignedIn) && (
+      {sets.length === 0 && (t.can_attempt || !userSignedIn) && (
         <div class="crayons-card p-6 mb-4">
           <p class="color-secondary fs-s mb-3">
             No question sets are published yet. Check back soon.

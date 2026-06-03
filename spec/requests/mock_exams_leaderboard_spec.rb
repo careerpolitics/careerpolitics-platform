@@ -140,7 +140,7 @@ RSpec.describe "Mock Exams Leaderboard & Stats" do
       get leaderboard_mock_exam_path(slug: template.slug),
           headers: { "Accept" => "application/json" }
 
-      json = JSON.parse(response.body)
+      json = Jresponse.body
       entries = json["entries"]
       user_set_pairs = entries.map { |e| [e["user_id"], e["pool_set"]] }
       expect(user_set_pairs.uniq.length).to eq(user_set_pairs.length)

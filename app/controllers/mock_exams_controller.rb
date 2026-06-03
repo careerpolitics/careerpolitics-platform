@@ -56,20 +56,38 @@ class MockExamsController < ApplicationController
   def sets
     sets_data = @template.published_sets.map do |set_number, count|
       attempts_for_set = @template.mock_exam_attempts.where(pool_set: set_number).count
-      user_attempted = if current_user
-                         current_user.mock_exam_attempts
-                           .for_template(@template)
-                           .exists?(pool_set: set_number)
-                       else
-                         false
-                       end
+      user_attempted = false
+      user_attempt_data = nil
+
+      if current_user
+        best_attempt = current_user.mock_exam_attempts
+                                   .for_template(@template)
+                                   .submitted_or_timed_out
+                                   .where(pool_set: set_number)
+                                   .order(total_score: :desc, submitted_at: :desc)
+                                   .first
+
+        if best_attempt
+          user_attempted = true
+          user_attempt_data = {
+            attempt_id: best_attempt.id,
+            total_score: best_attempt.total_score,
+            max_possible_score: best_attempt.max_possible_score,
+            accuracy_percent: best_attempt.accuracy_percent,
+            percentile: best_attempt.percentile,
+          }
+        end
+      end
+
       difficulties = @template.set_questions(set_number).reorder(nil).group(:difficulty).count
       primary_difficulty = difficulties.max_by { |_, v| v }&.first || "mixed"
       {
         set_number: set_number,
+        label: @template.set_label(set_number),
         question_count: count,
         attempts_count: attempts_for_set,
         user_attempted: user_attempted,
+        user_attempt_data: user_attempt_data,
         difficulty: primary_difficulty,
         difficulty_breakdown: difficulties
       }
