@@ -21,6 +21,8 @@ en:
         my_posts: My posts only
         organizations: Organizations
         tags: Tags
+        jobs: Jobs
+        mock_exams: Mock Exams
       sort:
         aria_label: Search result sort options
         relevance: Most Relevant

@@ -1,7 +1,8 @@
+/* global showLoginModal */
 import { h } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
 import { request } from '@utilities/http';
-import { ExamLeaderboard } from './components/ExamLeaderboard';
+import {ExamLeaderboard} from './components/ExamLeaderboard';
 
 export function MockExamDetail({ slug }) {
   const [template, setTemplate] = useState(null);
@@ -15,6 +16,7 @@ export function MockExamDetail({ slug }) {
   const [sortBy, setSortBy] = useState('newest');
   const [showInstructions, setShowInstructions] = useState(false);
   const [pendingPoolSet, setPendingPoolSet] = useState(undefined);
+  const [userSignedIn, setUserSignedIn] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -23,6 +25,7 @@ export function MockExamDetail({ slug }) {
     ]).then(([tmpl, setsData]) => {
       setTemplate(tmpl);
       setSets(setsData.sets || []);
+      setUserSignedIn(!!tmpl.user_signed_in)
       setLoading(false);
     }).catch(() => {
       setError('Failed to load exam details');
@@ -31,6 +34,17 @@ export function MockExamDetail({ slug }) {
   }, [slug]);
 
   const openInstructions = (poolSet) => {
+    if (!userSignedIn) {
+      if (typeof showLoginModal === 'function') {
+        showLoginModal({
+          referring_source: 'mock_exams',
+          trigger: 'start_exam',
+        });
+      } else {
+        window.location.href = '/enter?referrer=' + encodeURIComponent(window.location.pathname);
+      }
+      return;
+    }
     setPendingPoolSet(poolSet);
     setShowInstructions(true);
     setError(null);
@@ -246,7 +260,7 @@ export function MockExamDetail({ slug }) {
           <div class="crayons-card p-6 mb-4">
             <div class="flex items-center justify-between mb-2">
               <h3 class="crayons-subtitle-2">Choose a Question Set</h3>
-              {sets.length > 1 && t.can_attempt && (
+              {sets.length > 1 && (t.can_attempt || !userSignedIn) && (
                 <button
                   class="c-btn c-btn--secondary c-btn--s"
                   onClick={() => openInstructions(null)}
@@ -307,7 +321,7 @@ export function MockExamDetail({ slug }) {
                       aria-pressed={isSelected}
                       class="crayons-card crayons-card--secondary p-4"
                       style={{
-                        cursor: t.can_attempt ? 'pointer' : 'default',
+                        cursor: (t.can_attempt || !userSignedIn) ? 'pointer' : 'default',
                         borderColor: isSelected
                           ? 'var(--accent-brand)' : 'var(--card-border)',
                         borderWidth: isSelected ? '2px' : '1px',
@@ -315,16 +329,16 @@ export function MockExamDetail({ slug }) {
                         background: isSelected
                           ? 'var(--accent-brand-a10)' : 'var(--card-secondary-bg)',
                         transition: 'all 0.15s ease',
-                        opacity: t.can_attempt ? 1 : 0.6,
+                        opacity: (t.can_attempt || !userSignedIn) ? 1 : 0.6,
                       }}
                       onClick={() =>
-                        t.can_attempt &&
+                        (t.can_attempt || !userSignedIn) &&
                         setSelectedSet(isSelected ? null : s.set_number)
                       }
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
-                          t.can_attempt &&
+                          (t.can_attempt || !userSignedIn) &&
                           setSelectedSet(isSelected ? null : s.set_number);
                         }
                       }}
@@ -404,14 +418,14 @@ export function MockExamDetail({ slug }) {
                             {starting ? '...' : '↻ Retake'}
                           </button>
                         </div>
-                      ) : t.can_attempt && (
+                      ) : (t.can_attempt || !userSignedIn) && (
                         <button
                           class="c-btn c-btn--primary"
                           onClick={(e) => { e.stopPropagation(); openInstructions(s.set_number); }}
                           disabled={starting}
                           style={{ width: '100%', marginTop: '10px', fontSize: '0.85rem', padding: '7px 0', borderRadius: '6px' }}
                         >
-                          {starting ? 'Starting...' : '▶ Start Exam'}
+                          {!userSignedIn ? '🔒 Sign in to Start' : starting ? 'Starting...' : '▶ Start Exam'}
                         </button>
                       )}
                     </div>
@@ -424,7 +438,7 @@ export function MockExamDetail({ slug }) {
       })()}
 
       {/* Fallback when no sets are published yet */}
-      {sets.length === 0 && t.can_attempt && (
+      {sets.length === 0 && (t.can_attempt || !userSignedIn) && (
         <div class="crayons-card p-6 mb-4">
           <p class="color-secondary fs-s mb-3">
             No question sets are published yet. Check back soon.

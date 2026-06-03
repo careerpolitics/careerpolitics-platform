@@ -14,6 +14,12 @@
   <li><a class="query-filter-button crayons-navigation__item" data-filter="class_name:Comment" href="javascript:;">
     <%= t("views.search.nav.comments") %>
   </a></li>
+  <li><a class="query-filter-button crayons-navigation__item" data-filter="class_name:JobPost" href="javascript:;">
+    <%= t("views.search.nav.jobs") %>
+  </a></li>
+  <li><a class="query-filter-button crayons-navigation__item" data-filter="class_name:MockExamTemplate" href="javascript:;">
+    <%= t("views.search.nav.mock_exams") %>
+  </a></li>
   <% if policy(Article).has_existing_articles_or_can_create_new_ones? %>
   <li><a class="query-filter-button my-posts-query-button crayons-navigation__item" data-filter="MY_POSTS" href="javascript:;">
     <%= t("views.search.nav.my_posts") %>
