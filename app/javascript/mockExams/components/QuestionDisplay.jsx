@@ -151,15 +151,6 @@ export function QuestionDisplay({
                   <span>{optText}</span>
                 )}
               </div>
-              {!isReview && (
-                <span style={{
-                  fontSize: '0.65rem', color: 'var(--body-color)',
-                  opacity: 0.4, fontFamily: 'monospace',
-                  flexShrink: 0,
-                }} class="hide-mobile">
-                  Press {opt.key}
-                </span>
-              )}
               {isReview && isCorrect && (
                 <span style={{ color: 'var(--accent-success)', fontSize: '1.2rem' }}>✓</span>
               )}

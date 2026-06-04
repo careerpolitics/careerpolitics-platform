@@ -4,6 +4,12 @@ import { useState, useEffect, useRef } from 'preact/hooks';
 export function ExamTimer({ timeRemainingSeconds, onTimeUp }) {
   const [remaining, setRemaining] = useState(timeRemainingSeconds);
   const intervalRef = useRef(null);
+  const onTimeUpRef = useRef(onTimeUp);
+
+  // Keep the callback ref current without re-triggering the interval
+  useEffect(() => {
+    onTimeUpRef.current = onTimeUp;
+  }, [onTimeUp]);
 
   useEffect(() => {
     setRemaining(timeRemainingSeconds);
@@ -12,7 +18,7 @@ export function ExamTimer({ timeRemainingSeconds, onTimeUp }) {
       setRemaining((prev) => {
         if (prev <= 1) {
           clearInterval(intervalRef.current);
-          onTimeUp?.();
+          onTimeUpRef.current?.();
           return 0;
         }
         return prev - 1;
@@ -20,7 +26,7 @@ export function ExamTimer({ timeRemainingSeconds, onTimeUp }) {
     }, 1000);
 
     return () => clearInterval(intervalRef.current);
-  }, [timeRemainingSeconds, onTimeUp]);
+  }, [timeRemainingSeconds]);
 
   const hours = Math.floor(remaining / 3600);
   const minutes = Math.floor((remaining % 3600) / 60);

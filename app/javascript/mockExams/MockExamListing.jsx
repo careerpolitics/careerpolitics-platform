@@ -6,6 +6,7 @@ export function MockExamListing() {
   const [templates, setTemplates] = useState([]);
   const [followedTags, setFollowedTags] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userSignedIn, setUserSignedIn] = useState(false);
 
   useEffect(() => {
     request('/mock_exams.json')
@@ -13,6 +14,7 @@ export function MockExamListing() {
       .then((data) => {
         setTemplates(data.templates || []);
         setFollowedTags(data.followed_tags || []);
+        setUserSignedIn(data.user_signed_in || false);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -24,6 +26,10 @@ export function MockExamListing() {
   );
 
   const toggleTag = useCallback((tagObj) => {
+    if (!userSignedIn) {
+      window.location.href = '/enter';
+      return;
+    }
     setFollowedTags((prev) => {
       const isFollowed = prev.some((t) => t.name === tagObj.name);
       const updated = isFollowed
@@ -31,19 +37,14 @@ export function MockExamListing() {
         : [...prev, tagObj];
 
       // Fire-and-forget follow/unfollow via Forem's API
-      request(`/follows`, {
+      request('/follows', {
         method: 'POST',
-        body: JSON.stringify({
-          followable_type: 'Tag',
-          followable_id: tagObj.id,
-          verb: isFollowed ? 'unfollow' : 'follow',
-        }),
-        headers: { 'Content-Type': 'application/json' },
+        body: { followable_type: 'Tag', followable_id: tagObj.id, verb: isFollowed ? 'unfollow' : 'follow' },
       }).catch(() => {});
 
       return updated;
     });
-  }, []);
+  }, [userSignedIn]);
 
   const { following, others } = useMemo(() => {
     const f = [];
@@ -113,24 +114,23 @@ export function MockExamListing() {
 function TagChip({ tag, isFollowed, onToggle }) {
   return (
     <button
-      class="fs-xs"
+      class={`c-btn c-btn--s ${isFollowed ? 'c-btn--primary' : 'c-btn--secondary'}`}
       style={{
-        padding: '4px 8px',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        background: isFollowed ? 'var(--accent-brand-a10)' : 'transparent',
-        color: isFollowed ? 'var(--accent-brand)' : 'var(--secondary-color)',
-        fontWeight: 500,
+        padding: '2px 10px',
+        borderRadius: '20px',
+        fontSize: '0.75rem',
+        minHeight: '28px',
+        gap: '4px',
+        display: 'inline-flex',
+        alignItems: 'center',
         whiteSpace: 'nowrap',
-        border: 'none',
-        fontFamily: 'inherit',
         transition: 'all 0.15s',
       }}
       onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle(tag); }}
-      title={isFollowed ? 'Click to unfollow this tag' : 'Click to follow this tag'}
+      title={isFollowed ? 'Unfollow this tag' : 'Follow this tag'}
     >
-      <span style={{ color: 'var(--accent-brand)', marginRight: '2px' }}>#</span>
-      {tag.name.replace(/_/g, ' ')}
+      <span style={{ fontSize: '0.7rem' }}>{isFollowed ? '✓' : '+'}</span>
+      #{tag.name.replace(/_/g, ' ')}
     </button>
   );
 }
@@ -171,9 +171,9 @@ function FeaturedCard({ template: t, followedNames, onToggleTag }) {
 
       <div style={{ borderTop: '1px solid var(--card-border)', paddingTop: '8px' }}>
         <div class="flex justify-between fs-s color-secondary">
-          <span title="Questions">📋 {t.total_questions}q</span>
-          <span title="Duration">⏱ {t.duration_minutes}m</span>
-          <span title="Marks">+{t.marks_per_correct} / −{t.negative_marks_per_wrong}</span>
+          <span title="Questions">{t.total_questions}q</span>
+          <span title="Duration">{t.duration_minutes}m</span>
+          <span title="Marks">+{t.marks_per_correct} / -{t.negative_marks_per_wrong}</span>
         </div>
       </div>
     </a>
@@ -201,8 +201,8 @@ function CompactRow({ template: t, followedNames, onToggleTag }) {
           {(t.tag_list || []).map((tag) => (
             <TagChip key={tag.name} tag={tag} isFollowed={followedNames.includes(tag.name)} onToggle={onToggleTag} />
           ))}
-          <span class="fs-xs color-secondary">📋 {t.total_questions}q</span>
-          <span class="fs-xs color-secondary">⏱ {t.duration_minutes}m</span>
+          <span class="fs-xs color-secondary">{t.total_questions}q</span>
+          <span class="fs-xs color-secondary">{t.duration_minutes}m</span>
           {t.published_sets_count > 0 && (
             <span class="fs-xs color-secondary">{t.published_sets_count} sets</span>
           )}

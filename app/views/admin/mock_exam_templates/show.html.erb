@@ -69,29 +69,23 @@
                       method: :post, class: "c-btn c-btn--primary",
                       data: { confirm: "Generate new question sets via AI. Proceed?" },
                       form: { id: "generate-pool-form" } %>
-        <%= button_to "Refresh Pool", refresh_pool_admin_mock_exam_template_path(@template),
-                      method: :post, class: "c-btn c-btn--destructive",
-                      data: { confirm: "This will delete unpublished pool questions and regenerate new sets. Published sets are preserved. Continue?" },
-                      form: { id: "refresh-pool-form" } %>
       </div>
       <script>
         document.addEventListener('DOMContentLoaded', function() {
           var setsInput = document.getElementById('sets_count');
-          ['generate-pool-form', 'refresh-pool-form'].forEach(function(formId) {
-            var form = document.getElementById(formId);
-            if (form) {
-              form.addEventListener('submit', function() {
-                var hidden = form.querySelector('input[name="sets_count"]');
-                if (!hidden) {
-                  hidden = document.createElement('input');
-                  hidden.type = 'hidden';
-                  hidden.name = 'sets_count';
-                  form.appendChild(hidden);
-                }
-                hidden.value = setsInput.value;
-              });
-            }
-          });
+          var form = document.getElementById('generate-pool-form');
+          if (form) {
+            form.addEventListener('submit', function() {
+              var hidden = form.querySelector('input[name="sets_count"]');
+              if (!hidden) {
+                hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'sets_count';
+                form.appendChild(hidden);
+              }
+              hidden.value = setsInput.value;
+            });
+          }
         });
       </script>
 
@@ -102,7 +96,7 @@
                       data: { confirm: "Translate #{untranslated_count} untranslated questions to Hindi?" } %>
         <span class="color-secondary fs-s">
           <% if untranslated_count.zero? %>
-            ✅ All questions translated
+            All questions translated
           <% else %>
             <%= untranslated_count %> of <%= @pool_count %> questions need Hindi translation
           <% end %>

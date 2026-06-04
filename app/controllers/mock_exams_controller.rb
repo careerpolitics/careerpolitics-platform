@@ -27,6 +27,7 @@ class MockExamsController < ApplicationController
         render json: {
           templates: @mock_exam_templates.map { |t| template_json(t) },
           followed_tags: followed,
+          user_signed_in: current_user.present?,
         }
       end
     end
@@ -192,7 +193,6 @@ class MockExamsController < ApplicationController
 
     scope = scope.where(pool_set: params[:set]) if params[:set].present?
 
-    # Deduplicate by user+set: keep only the best attempt per user per set
     best_attempt_ids = scope
                          .select("DISTINCT ON (user_id, pool_set) id")
                          .order(Arel.sql("user_id, pool_set, total_score DESC NULLS LAST, " \
@@ -200,14 +200,15 @@ class MockExamsController < ApplicationController
                                            "submitted_at ASC"))
                          .map(&:id)
 
-    MockExamAttempt
-      .where(id: best_attempt_ids)
-      .order(total_score: :desc)
-      .order(Arel.sql("EXTRACT(EPOCH FROM (submitted_at - started_at)) ASC NULLS LAST"))
-      .order(submitted_at: :asc)
-      .limit(20)
-      .includes(:user)
-      .map do |attempt|
+    attempts = MockExamAttempt
+               .where(id: best_attempt_ids)
+               .order(total_score: :desc)
+               .order(Arel.sql("EXTRACT(EPOCH FROM (submitted_at - started_at)) ASC NULLS LAST"))
+               .order(submitted_at: :asc)
+               .limit(20)
+               .includes(:user)
+
+    attempts.map do |attempt|
       {
         attempt_id: attempt.id,
         user_id: attempt.user_id,
@@ -218,6 +219,7 @@ class MockExamsController < ApplicationController
         max_possible_score: attempt.max_possible_score,
         accuracy_percent: attempt.accuracy_percent,
         pool_set: attempt.pool_set,
+        set_label: attempt.pool_set ? @template.set_label(attempt.pool_set) : nil,
         time_taken_seconds: if attempt.submitted_at && attempt.started_at
                               (attempt.submitted_at - attempt.started_at).to_i
                             end
