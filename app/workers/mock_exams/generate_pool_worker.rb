@@ -39,6 +39,12 @@ module MockExams
       sets.each_with_index do |set_questions, set_idx|
         set_number = next_set + set_idx
 
+        if set_questions.size < template.total_questions
+          Rails.logger.warn(
+            "MockExams::GeneratePoolWorker: Set #{set_number} has #{set_questions.size}/#{template.total_questions} questions (shortfall)",
+            )
+        end
+
         set_questions.each_with_index do |q_data, pos|
           MockExamQuestion.create!(
             mock_exam_template: template,

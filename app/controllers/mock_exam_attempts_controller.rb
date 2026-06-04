@@ -132,6 +132,7 @@ class MockExamAttemptsController < ApplicationController
         has_calculator: @template.has_calculator,
         has_scratchpad: @template.has_scratchpad,
         sections_config: @template.sections_config,
+        question_display_mode: @template.question_display_mode,
       },
       questions: attempt.mock_exam_questions.sort_by(&:position).map { |q| question_json(q) },
       responses: attempt.mock_exam_responses.index_by(&:mock_exam_question_id).transform_values { |r|

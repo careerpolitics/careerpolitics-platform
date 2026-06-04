@@ -40,15 +40,6 @@ export function MockExamDetail({ slug }) {
     setStarting(true);
     setError(null);
 
-    // Enter fullscreen immediately within user gesture context
-    if (goFullscreen && typeof document.documentElement.requestFullscreen === 'function') {
-      try {
-        await document.documentElement.requestFullscreen();
-      } catch {
-        // silently ignore if fullscreen fails
-      }
-    }
-
     try {
       const payload = pendingPoolSet ? { pool_set: pendingPoolSet } : {};
       const res = await request(`/mock_exams/${slug}/attempts`, {
@@ -59,18 +50,15 @@ export function MockExamDetail({ slug }) {
       if (res.ok) {
         const data = await res.json();
         const url = data.redirect_to || `/mock_exams/${slug}/attempts/${data.id}`;
-        window.location.href = url;
+        window.location.href = goFullscreen ? `${url}?fs=1` : url;
       } else {
         const errData = await res.json();
         setError(errData.errors?.[0] || errData.error || 'Failed to start exam');
         setStarting(false);
-        // Exit fullscreen on error
-        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
       }
     } catch {
       setError('Network error. Please try again.');
       setStarting(false);
-      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     }
   };
 
@@ -203,35 +191,35 @@ export function MockExamDetail({ slug }) {
                 <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
               </div>
             ) : (
-              <div class="flex gap-3">
-                {typeof document.documentElement.requestFullscreen === 'function' && (
+              <div>
+                <div class="flex gap-3">
+                  {typeof document.documentElement.requestFullscreen === 'function' && (
+                    <button
+                      class="c-btn c-btn--primary"
+                      onClick={() => handleConfirmStart(true)}
+                      style={{ flex: 1, padding: '12px 16px', minHeight: '48px' }}
+                    >
+                      Full Screen Mode
+                    </button>
+                  )}
                   <button
-                    class="c-btn c-btn--primary"
-                    onClick={() => handleConfirmStart(true)}
+                    class={typeof document.documentElement.requestFullscreen === 'function' ? 'c-btn c-btn--secondary' : 'c-btn c-btn--primary'}
+                    onClick={() => handleConfirmStart(false)}
                     style={{ flex: 1, padding: '12px 16px', minHeight: '48px' }}
                   >
-                    Full Screen Mode
+                    {typeof document.documentElement.requestFullscreen === 'function' ? 'Window Mode' : 'Start Exam'}
                   </button>
+                </div>
+                {typeof document.documentElement.requestFullscreen === 'function' && (
+                  <p class="color-secondary fs-xs mt-3 text-center">
+                    You can switch between modes anytime during the exam.
+                  </p>
                 )}
-                <button
-                  class={typeof document.documentElement.requestFullscreen === 'function' ? 'c-btn c-btn--secondary' : 'c-btn c-btn--primary'}
-                  onClick={() => handleConfirmStart(false)}
-                  style={{ flex: 1, padding: '12px 16px', minHeight: '48px' }}
-                >
-                  {typeof document.documentElement.requestFullscreen === 'function' ? 'Window Mode' : 'Start Exam'}
-                </button>
               </div>
-            )}
-
-            {typeof document.documentElement.requestFullscreen === 'function' && !starting && (
-              <p class="color-secondary fs-xs mt-3 text-center">
-                You can switch between modes anytime during the exam.
-              </p>
             )}
           </div>
         </div>
       )}
-
       {sets.length > 0 && (() => {
         const filtered = sets
           .filter(s => {
