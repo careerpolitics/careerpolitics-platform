@@ -58,7 +58,7 @@ module MockExams
           section_data[section_name] ||= { scores: [], corrects: [], wrongs: [] }
           section_data[section_name][:scores] << (data["score"] || 0).to_f
           section_data[section_name][:corrects] << (data["correct"] || 0).to_i
-          section_data[section_name][:wrongs] << (data["wrong"] || 0).to_i
+          section_data[section_name][:wrongs] << (data["incorrect"] || data["wrong"] || 0).to_i
         end
       end
 

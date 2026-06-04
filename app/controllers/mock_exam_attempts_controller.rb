@@ -131,6 +131,7 @@ class MockExamAttemptsController < ApplicationController
         negative_marks_per_wrong: @template.negative_marks_per_wrong,
         has_calculator: @template.has_calculator,
         has_scratchpad: @template.has_scratchpad,
+        sections_config: @template.sections_config,
       },
       questions: attempt.mock_exam_questions.sort_by(&:position).map { |q| question_json(q) },
       responses: attempt.mock_exam_responses.index_by(&:mock_exam_question_id).transform_values { |r|
@@ -175,6 +176,7 @@ class MockExamAttemptsController < ApplicationController
       rank: attempt.rank,
       avg_time_per_question: attempt.avg_time_per_question,
       section_scores: attempt.section_scores,
+      difficulty_breakdown: build_difficulty_breakdown(attempt),
       time_per_question: attempt.time_per_question,
       questions: begin
                    responses_by_qid = attempt.mock_exam_responses.index_by(&:mock_exam_question_id)
@@ -195,5 +197,17 @@ class MockExamAttemptsController < ApplicationController
                    }
                  end,
     }
+  end
+
+  def build_difficulty_breakdown(attempt)
+    responses = attempt.mock_exam_responses.includes(:mock_exam_question).where.not(selected_option_key: nil)
+    result = {}
+    %w[easy medium hard].each do |diff|
+      diff_responses = responses.select { |r| r.mock_exam_question.difficulty == diff }
+      total = diff_responses.size
+      correct = diff_responses.count(&:correct?)
+      result[diff] = total.positive? ? (correct.to_f / total * 100).round(1) : 0
+    end
+    result
   end
 end

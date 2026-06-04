@@ -60,7 +60,7 @@ module MockExams
 
         section_scores[section_name] = {
           correct: correct,
-          wrong: wrong,
+          incorrect: wrong,
           unanswered: responses.count { |r| !r.answered? },
           score: [score, 0].max.round(2)
         }
