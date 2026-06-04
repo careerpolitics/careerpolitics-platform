@@ -3,6 +3,7 @@ module Ai
     VERSION = "1.0"
     MAX_RETRIES = 2
     BATCH_SIZE = 20
+    MAX_SHORTFALL_RETRIES = 3
 
     def initialize(template, ai_client: nil)
       @template = template
@@ -32,22 +33,42 @@ module Ai
 
     def generate_section_questions(section_name:, section_type:, count:, topics: nil)
       all_questions = []
-      batches = (count.to_f / BATCH_SIZE).ceil
+      remaining = count
+      shortfall_retries = 0
 
-      batches.times do |batch_index|
-        batch_count = [BATCH_SIZE, count - (batch_index * BATCH_SIZE)].min
-        prompt = build_prompt(
-          section_name: section_name,
-          section_type: section_type,
-          count: batch_count,
-          topics: topics,
-          )
+      while remaining > 0 && shortfall_retries <= MAX_SHORTFALL_RETRIES
+        batches = (remaining.to_f / BATCH_SIZE).ceil
 
-        parsed = generate_with_retry(prompt)
-        if parsed
-          parsed = sanitize_svg_questions(parsed) if section_type == "visual_reasoning"
-          all_questions.concat(parsed)
+        batches.times do |batch_index|
+          batch_count = [BATCH_SIZE, remaining - (batch_index * BATCH_SIZE)].min
+          prompt = build_prompt(
+            section_name: section_name,
+            section_type: section_type,
+            count: batch_count,
+            topics: topics,
+            )
+
+          parsed = generate_with_retry(prompt)
+          if parsed
+            parsed = sanitize_svg_questions(parsed) if section_type == "visual_reasoning"
+            all_questions.concat(parsed)
+          end
         end
+
+        remaining = count - all_questions.size
+        break if remaining <= 0
+
+        shortfall_retries += 1
+        Rails.logger.warn(
+          "Ai::MockExamQuestionGenerator: Section '#{section_name}' shortfall — got #{all_questions.size}/#{count}, " \
+            "retry #{shortfall_retries}/#{MAX_SHORTFALL_RETRIES} for #{remaining} more",
+          )
+      end
+
+      if all_questions.size < count
+        Rails.logger.error(
+          "Ai::MockExamQuestionGenerator: Section '#{section_name}' incomplete — #{all_questions.size}/#{count} after all retries",
+          )
       end
 
       all_questions

@@ -21,7 +21,7 @@ export function MockExamListing() {
   }, []);
 
   const followedNames = useMemo(
-    () => followedTags.map((t) => t.name),
+    () => new Set(followedTags.map((t) => t.name)),
     [followedTags],
   );
 
@@ -39,27 +39,13 @@ export function MockExamListing() {
       // Fire-and-forget follow/unfollow via Forem's API
       request('/follows', {
         method: 'POST',
-        body: { followable_type: 'Tag', followable_id: tagObj.id, verb: isFollowed ? 'unfollow' : 'follow' },
+        body: JSON.stringify({ followable_type: 'Tag', followable_id: tagObj.id }),
+        headers: { 'Content-Type': 'application/json' },
       }).catch(() => {});
 
       return updated;
     });
   }, [userSignedIn]);
-
-  const { following, others } = useMemo(() => {
-    const f = [];
-    const o = [];
-    templates.forEach((t) => {
-      const tags = t.tag_list || [];
-      const isFollowed = tags.some((tag) => followedNames.includes(tag.name));
-      if (isFollowed) {
-        f.push(t);
-      } else {
-        o.push(t);
-      }
-    });
-    return { following: f, others: o };
-  }, [templates, followedNames]);
 
   if (loading) {
     return (
@@ -84,58 +70,48 @@ export function MockExamListing() {
         <h1 class="crayons-title">Mock Exams</h1>
       </div>
 
-      {/* Following — large featured cards */}
-      {following.length > 0 && (
-        <div class="mb-6">
-          <h2 class="fw-bold mb-3" style={{ fontSize: '1.1rem' }}>Following</h2>
-          <div class="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-            {following.map((t) => (
-              <FeaturedCard key={t.id} template={t} followedNames={followedNames} onToggleTag={toggleTag} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* All Exams — compact rows */}
-      {others.length > 0 && (
-        <div>
-          <h2 class="fw-bold mb-3" style={{ fontSize: '1.1rem' }}>All Exams</h2>
-          <div class="flex flex-col gap-2">
-            {others.map((t) => (
-              <CompactRow key={t.id} template={t} followedNames={followedNames} onToggleTag={toggleTag} />
-            ))}
-          </div>
-        </div>
-      )}
+      <div class="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+        {templates.map((t) => (
+          <ExamCard key={t.id} template={t} followedNames={followedNames} onToggleTag={toggleTag} />
+        ))}
+      </div>
     </div>
   );
 }
 
 function TagChip({ tag, isFollowed, onToggle }) {
   return (
-    <button
-      class={`c-btn c-btn--s ${isFollowed ? 'c-btn--primary' : 'c-btn--secondary'}`}
-      style={{
-        padding: '2px 10px',
-        borderRadius: '20px',
-        fontSize: '0.75rem',
-        minHeight: '28px',
-        gap: '4px',
-        display: 'inline-flex',
-        alignItems: 'center',
-        whiteSpace: 'nowrap',
-        transition: 'all 0.15s',
-      }}
-      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle(tag); }}
-      title={isFollowed ? 'Unfollow this tag' : 'Follow this tag'}
-    >
-      <span style={{ fontSize: '0.7rem' }}>{isFollowed ? '✓' : '+'}</span>
-      #{tag.name.replace(/_/g, ' ')}
-    </button>
+    <span class="flex items-center gap-1" style={{ display: 'inline-flex' }}>
+      <a
+        href={`/t/${tag.name}`}
+        class="crayons-tag"
+        onClick={(e) => e.stopPropagation()}
+        style={{ textDecoration: 'none' }}
+      >
+        <span class="crayons-tag__prefix">#</span>
+        {tag.name}
+      </a>
+      <button
+        class={`c-btn c-btn--s ${isFollowed ? 'c-btn--primary' : 'c-btn--secondary'}`}
+        style={{
+          padding: '1px 6px',
+          fontSize: '0.65rem',
+          minHeight: '22px',
+          borderRadius: '4px',
+        }}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle(tag); }}
+        title={isFollowed ? 'Unfollow this tag' : 'Follow this tag'}
+      >
+        {isFollowed ? 'Following' : 'Follow'}
+      </button>
+    </span>
   );
 }
 
-function FeaturedCard({ template: t, followedNames, onToggleTag }) {
+function ExamCard({ template: t, followedNames, onToggleTag }) {
+  const tags = t.tag_list || [];
+  const isFollowed = tags.some((tag) => followedNames.has(tag.name));
+
   return (
     <a
       href={`/mock_exams/${t.slug}`}
@@ -143,13 +119,16 @@ function FeaturedCard({ template: t, followedNames, onToggleTag }) {
       style={{
         textDecoration: 'none', color: 'inherit',
         transition: 'box-shadow 0.15s ease, transform 0.15s ease',
-        border: '1px solid var(--card-border)',
+        border: isFollowed ? '2px solid var(--accent-brand)' : '1px solid var(--card-border)',
       }}
       onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
     >
       <div class="flex items-start justify-between mb-2">
         <h3 class="fw-bold fs-l" style={{ lineHeight: '1.3' }}>{t.title}</h3>
+        {isFollowed && (
+          <span class="crayons-tag crayons-tag--monochrome fs-xs" style={{ flexShrink: 0 }}>Following</span>
+        )}
       </div>
 
       {t.description && (
@@ -159,8 +138,8 @@ function FeaturedCard({ template: t, followedNames, onToggleTag }) {
       )}
 
       <div class="flex flex-wrap gap-2 mb-3">
-        {(t.tag_list || []).map((tag) => (
-          <TagChip key={tag.name} tag={tag} isFollowed={followedNames.includes(tag.name)} onToggle={onToggleTag} />
+        {tags.map((tag) => (
+          <TagChip key={tag.name} tag={tag} isFollowed={followedNames.has(tag.name)} onToggle={onToggleTag} />
         ))}
         {t.published_sets_count > 0 && (
           <span class="crayons-tag crayons-tag--monochrome">
@@ -177,37 +156,5 @@ function FeaturedCard({ template: t, followedNames, onToggleTag }) {
         </div>
       </div>
     </a>
-  );
-}
-
-function CompactRow({ template: t, followedNames, onToggleTag }) {
-  return (
-    <div
-      class="flex items-center justify-between flex-wrap"
-      style={{
-        padding: '10px 16px',
-        border: '1px solid var(--card-border)',
-        borderRadius: '8px',
-        background: 'var(--card-bg)',
-        gap: '12px',
-      }}
-    >
-      <div style={{ flex: '1 1 auto', minWidth: 0 }}>
-        <a href={`/mock_exams/${t.slug}`} class="fw-bold fs-s"
-           style={{ textDecoration: 'none', color: 'inherit' }}>
-          {t.title}
-        </a>
-        <div class="flex items-center gap-2 mt-1">
-          {(t.tag_list || []).map((tag) => (
-            <TagChip key={tag.name} tag={tag} isFollowed={followedNames.includes(tag.name)} onToggle={onToggleTag} />
-          ))}
-          <span class="fs-xs color-secondary">{t.total_questions}q</span>
-          <span class="fs-xs color-secondary">{t.duration_minutes}m</span>
-          {t.published_sets_count > 0 && (
-            <span class="fs-xs color-secondary">{t.published_sets_count} sets</span>
-          )}
-        </div>
-      </div>
-    </div>
   );
 }

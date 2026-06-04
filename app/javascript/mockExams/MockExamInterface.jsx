@@ -27,6 +27,7 @@ export function MockExamInterface({ slug, attemptId }) {
   const wasFullscreenBeforeConfirm = useRef(false);
   const timePerQuestion = useRef({});
   const questionStartTime = useRef(Date.now());
+  const questionRefs = useRef({});
 
   // Detect mobile viewport
   useEffect(() => {
@@ -52,6 +53,12 @@ export function MockExamInterface({ slug, attemptId }) {
         });
         setResponses(merged);
         setLoading(false);
+
+        // Auto-enter fullscreen if requested via ?fs=1 from the instruction modal
+        if (new URLSearchParams(window.location.search).get('fs') === '1'
+          && typeof document.documentElement.requestFullscreen === 'function') {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
 
       })
       .catch(() => setLoading(false));
@@ -261,6 +268,11 @@ export function MockExamInterface({ slug, attemptId }) {
     (index) => {
       recordTimeOnQuestion();
       setCurrentIndex(index);
+      // In all-at-once mode, scroll the target question into view
+      const el = questionRefs.current[index];
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     },
     [recordTimeOnQuestion],
   );
@@ -302,6 +314,7 @@ export function MockExamInterface({ slug, attemptId }) {
   const currentQuestion = questions[currentIndex];
   const currentResponse = responses[currentQuestion.id] || {};
   const template = examData.template;
+  const isAllAtOnce = template.question_display_mode === 'all_at_once';
 
   const answeredCount = questions.filter(
     (q) => responses[q.id]?.selected_option_key,
@@ -310,12 +323,24 @@ export function MockExamInterface({ slug, attemptId }) {
   const viewHeight = isMobile ? '100dvh' : '100vh';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: viewHeight, overflow: 'hidden', margin: 0, padding: 0 }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: viewHeight,
+        overflow: 'hidden',
+        margin: 0,
+        padding: 0,
+      }}
+    >
       {/* Top bar */}
       <div
         style={{
-          display: 'flex', flexWrap: 'wrap', alignItems: 'center',
-          justifyContent: 'space-between', gap: '2px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '2px',
           padding: isMobile ? '4px 8px' : '4px 16px',
           background: 'var(--card-bg)',
           borderBottom: '1px solid var(--card-border)',
@@ -323,159 +348,275 @@ export function MockExamInterface({ slug, attemptId }) {
           margin: 0,
         }}
       >
-        <div class="fw-bold" style={{
-          fontSize: isMobile ? '0.75rem' : '0.85rem',
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          maxWidth: isMobile ? '45%' : '280px',
-        }}>
+        <div
+          class="fw-bold"
+          style={{
+            fontSize: isMobile ? '0.75rem' : '0.85rem',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: isMobile ? '45%' : '280px',
+          }}
+        >
           {template.title}
         </div>
         <div class="flex items-center gap-3">
-          <div class="flex items-center gap-1" style={{
-            background: 'var(--card-secondary-bg)',
-            padding: '2px 10px', borderRadius: '12px',
-          }}>
+          <div
+            class="flex items-center gap-1"
+            style={{
+              background: 'var(--card-secondary-bg)',
+              padding: '2px 10px',
+              borderRadius: '12px',
+            }}
+          >
             <ExamTimer
               timeRemainingSeconds={examData.time_remaining_seconds}
               onTimeUp={handleTimeUp}
             />
           </div>
-          <div class="flex items-center gap-1" style={{
-            background: 'var(--card-secondary-bg)',
-            padding: '2px 10px', borderRadius: '12px',
-          }}>
+          <div
+            class="flex items-center gap-1"
+            style={{
+              background: 'var(--card-secondary-bg)',
+              padding: '2px 10px',
+              borderRadius: '12px',
+            }}
+          >
             <span class="fs-xs color-secondary">Progress</span>
             <span class="fw-bold fs-s">
-              {answeredCount}<span class="color-secondary fw-normal">/{questions.length}</span>
+              {answeredCount}
+              <span class="color-secondary fw-normal">/{questions.length}</span>
             </span>
           </div>
         </div>
 
         {/* Toolbar buttons */}
-        <div class="flex items-center gap-1" style={{ width: isMobile ? '100%' : 'auto', justifyContent: 'flex-end' }}>
+        <div
+          class="flex items-center gap-1"
+          style={{
+            width: isMobile ? '100%' : 'auto',
+            justifyContent: 'flex-end',
+          }}
+        >
           {template.has_calculator && (
             <button
-              class={`c-btn c-btn--s ${showCalculator ? 'c-btn--primary' : 'c-btn--secondary'}`}
+              className={`c-btn c-btn--s ${showCalculator ? 'c-btn--primary' : 'c-btn--secondary'}`}
               onClick={() => setShowCalculator(!showCalculator)}
               title="Calculator"
-              style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
+              style={{
+                padding: '3px 7px',
+                minHeight: '30px',
+                fontSize: '0.8rem',
+              }}
             >
               Calculator
             </button>
           )}
           {template.has_scratchpad && (
             <button
-              class={`c-btn c-btn--s ${showScratchpad ? 'c-btn--primary' : 'c-btn--secondary'}`}
+              className={`c-btn c-btn--s ${showScratchpad ? 'c-btn--primary' : 'c-btn--secondary'}`}
               onClick={() => setShowScratchpad(!showScratchpad)}
               title="Scratchpad"
-              style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
+              style={{
+                padding: '3px 7px',
+                minHeight: '30px',
+                fontSize: '0.8rem',
+              }}
             >
               Scratchpad
             </button>
           )}
           <button
-            class="c-btn c-btn--s c-btn--secondary"
+            className="c-btn c-btn--s c-btn--secondary"
             onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-            style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
+            style={{
+              padding: '3px 7px',
+              minHeight: '30px',
+              fontSize: '0.8rem',
+            }}
           >
             {language === 'en' ? 'HI' : 'EN'}
           </button>
           {canFullscreen && (
             <button
-              class="c-btn c-btn--s c-btn--secondary"
+              className="c-btn c-btn--s c-btn--secondary"
               onClick={toggleFullscreen}
               title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-              style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
+              style={{
+                padding: '3px 7px',
+                minHeight: '30px',
+                fontSize: '0.8rem',
+              }}
             >
               {isFullscreen ? 'Exit FS' : 'Full FS'}
             </button>
           )}
           {isMobile && (
             <button
-              class={`c-btn c-btn--s ${showPalette ? 'c-btn--primary' : 'c-btn--secondary'}`}
+              className={`c-btn c-btn--s ${showPalette ? 'c-btn--primary' : 'c-btn--secondary'}`}
               onClick={() => setShowPalette(!showPalette)}
-              style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
+              style={{
+                padding: '3px 7px',
+                minHeight: '30px',
+                fontSize: '0.8rem',
+              }}
             >
               Q
             </button>
           )}
           <button
-            class="c-btn c-btn--s c-btn--destructive"
+            className="c-btn c-btn--s c-btn--destructive fw-bold"
             onClick={handleSubmit}
             disabled={submitting}
-            style={{ padding: '3px 10px', minHeight: '30px', fontSize: '0.8rem', marginLeft: '4px' }}
+            style={{
+              padding: '4px 14px',
+              minHeight: '32px',
+              fontSize: '0.85rem',
+              marginLeft: '4px',
+              background: 'var(--accent-danger)',
+              color: '#fff',
+              boxShadow: '0 1px 4px rgba(220,38,38,0.3)',
+            }}
           >
-            {submitting ? '...' : 'Submit'}
+            {submitting ? '...' : 'Submit Exam'}
           </button>
         </div>
       </div>
 
       {/* Main content area */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
+      <div
+        style={{
+          display: 'flex',
+          flex: 1,
+          overflow: 'hidden',
+          position: 'relative',
+        }}
+      >
         {/* Question area */}
-        <div style={{
-          flex: 1, overflowY: 'auto',
-          padding: isMobile ? '10px' : '16px',
-          WebkitOverflowScrolling: 'touch',
-        }}>
-          <QuestionDisplay
-            question={currentQuestion}
-            selectedOption={currentResponse.selected_option_key}
-            onSelectOption={(key) => handleSelectOption(currentQuestion.id, key)}
-            isReview={false}
-            language={language}
-            questionNumber={currentIndex + 1}
-            totalQuestions={questions.length}
-          />
-
-          {/* Question navigation */}
-          <div
-            class="flex items-center justify-between mt-3"
-            style={{ gap: '8px', paddingTop: '12px', borderTop: '1px solid var(--card-border)' }}
-          >
-            <div class="flex gap-2">
-              <button
-                class="c-btn c-btn--secondary c-btn--s"
-                onClick={() => handleClearResponse(currentQuestion.id)}
-                style={{ minHeight: '40px' }}
-              >
-                Clear
-              </button>
-              <button
-                class={`c-btn c-btn--s ${
-                  currentResponse.marked_for_review
-                    ? 'c-btn--primary'
-                    : 'c-btn--secondary'
-                }`}
-                onClick={() => handleMarkForReview(currentQuestion.id)}
-                style={{ minHeight: '40px' }}
-              >
-                {currentResponse.marked_for_review ? 'Marked' : 'Review'}
-              </button>
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: isMobile ? '10px' : '16px',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          {isAllAtOnce ? (
+            /* All-at-once mode: render every question in a scrollable list */
+            <div class="flex flex-col gap-4">
+              {questions.map((q, idx) => {
+                const resp = responses[q.id] || {};
+                return (
+                  <div
+                    key={q.id}
+                    ref={(el) => {
+                      questionRefs.current[idx] = el;
+                    }}
+                  >
+                    <QuestionDisplay
+                      question={q}
+                      selectedOption={resp.selected_option_key}
+                      onSelectOption={(key) => handleSelectOption(q.id, key)}
+                      isReview={false}
+                      language={language}
+                      questionNumber={idx + 1}
+                      totalQuestions={questions.length}
+                    />
+                    <div
+                      class="flex items-center gap-2 mt-2"
+                      style={{ paddingLeft: '4px' }}
+                    >
+                      <button
+                        class="c-btn c-btn--secondary c-btn--s"
+                        onClick={() => handleClearResponse(q.id)}
+                        style={{ minHeight: '36px' }}
+                      >
+                        Clear
+                      </button>
+                      <button
+                        class={`c-btn c-btn--s ${resp.marked_for_review ? 'c-btn--primary' : 'c-btn--secondary'}`}
+                        onClick={() => handleMarkForReview(q.id)}
+                        style={{ minHeight: '36px' }}
+                      >
+                        {resp.marked_for_review ? 'Marked' : 'Review'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-
-            <div class="flex gap-2">
-              <button
-                class="c-btn c-btn--secondary"
-                onClick={() => handleNavigate(Math.max(0, currentIndex - 1))}
-                disabled={currentIndex === 0}
-                style={{ minHeight: '40px' }}
-              >
-                Prev
-              </button>
-              <button
-                class="c-btn c-btn--secondary"
-                onClick={() =>
-                  handleNavigate(Math.min(questions.length - 1, currentIndex + 1))
+          ) : (
+            /* One-at-a-time mode (default) — existing code unchanged */
+            <div>
+              <QuestionDisplay
+                question={currentQuestion}
+                selectedOption={currentResponse.selected_option_key}
+                onSelectOption={(key) =>
+                  handleSelectOption(currentQuestion.id, key)
                 }
-                disabled={currentIndex >= questions.length - 1}
-                style={{ minHeight: '40px' }}
-              >
-                Next
-              </button>
-            </div>
-          </div>
+                isReview={false}
+                language={language}
+                questionNumber={currentIndex + 1}
+                totalQuestions={questions.length}
+              />
 
+              {/* Question navigation */}
+              <div
+                class="flex items-center justify-between mt-3"
+                style={{
+                  gap: '8px',
+                  paddingTop: '12px',
+                  borderTop: '1px solid var(--card-border)',
+                }}
+              >
+                <div class="flex gap-2">
+                  <button
+                    class="c-btn c-btn--secondary c-btn--s"
+                    onClick={() => handleClearResponse(currentQuestion.id)}
+                    style={{ minHeight: '40px' }}
+                  >
+                    Clear
+                  </button>
+                  <button
+                    class={`c-btn c-btn--s ${
+                      currentResponse.marked_for_review
+                        ? 'c-btn--primary'
+                        : 'c-btn--secondary'
+                    }`}
+                    onClick={() => handleMarkForReview(currentQuestion.id)}
+                    style={{ minHeight: '40px' }}
+                  >
+                    {currentResponse.marked_for_review ? 'Marked' : 'Review'}
+                  </button>
+                </div>
+
+                <div class="flex gap-2">
+                  <button
+                    class="c-btn c-btn--secondary"
+                    onClick={() =>
+                      handleNavigate(Math.max(0, currentIndex - 1))
+                    }
+                    disabled={currentIndex === 0}
+                    style={{ minHeight: '40px' }}
+                  >
+                    Prev
+                  </button>
+                  <button
+                    class="c-btn c-btn--secondary"
+                    onClick={() =>
+                      handleNavigate(
+                        Math.min(questions.length - 1, currentIndex + 1),
+                      )
+                    }
+                    disabled={currentIndex >= questions.length - 1}
+                    style={{ minHeight: '40px' }}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Desktop Sidebar */}
@@ -504,7 +645,10 @@ export function MockExamInterface({ slug, attemptId }) {
         {isMobile && showPalette && (
           <div
             style={{
-              position: 'absolute', bottom: 0, left: 0, right: 0,
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
               maxHeight: '60dvh',
               background: 'var(--card-bg)',
               borderTop: '2px solid var(--card-border)',
@@ -530,7 +674,10 @@ export function MockExamInterface({ slug, attemptId }) {
               questions={questions}
               responses={responses}
               currentIndex={currentIndex}
-              onNavigate={(i) => { handleNavigate(i); setShowPalette(false); }}
+              onNavigate={(i) => {
+                handleNavigate(i);
+                setShowPalette(false);
+              }}
               sectionsConfig={template.sections_config}
             />
           </div>
@@ -541,7 +688,8 @@ export function MockExamInterface({ slug, attemptId }) {
           <div
             onClick={() => setShowPalette(false)}
             style={{
-              position: 'absolute', inset: 0,
+              position: 'absolute',
+              inset: 0,
               background: 'rgba(0,0,0,0.3)',
               zIndex: 99,
             }}
@@ -557,16 +705,21 @@ export function MockExamInterface({ slug, attemptId }) {
           aria-modal="true"
           aria-labelledby="exam-submit-confirm-title"
           style={{
-            position: 'fixed', inset: 0, zIndex: 10000,
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10000,
             background: 'rgba(0,0,0,0.6)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             padding: isMobile ? '12px' : '0',
           }}
         >
           <div
             class="crayons-card"
             style={{
-              maxWidth: '420px', width: '100%',
+              maxWidth: '420px',
+              width: '100%',
               padding: isMobile ? '16px' : '24px',
             }}
           >
@@ -574,11 +727,14 @@ export function MockExamInterface({ slug, attemptId }) {
               Submit Exam?
             </h2>
             <p class="color-secondary fs-s mb-2">
-              You have answered <strong>{answeredCount}</strong> out of <strong>{questions.length}</strong> questions.
+              You have answered <strong>{answeredCount}</strong> out of{' '}
+              <strong>{questions.length}</strong> questions.
             </p>
             {questions.length - answeredCount > 0 && (
               <p class="fs-s mb-3" style={{ color: 'var(--accent-warning)' }}>
-                {questions.length - answeredCount} question{questions.length - answeredCount !== 1 ? 's are' : ' is'} still unanswered.
+                {questions.length - answeredCount} question
+                {questions.length - answeredCount !== 1 ? 's are' : ' is'} still
+                unanswered.
               </p>
             )}
             <p class="color-secondary fs-s mb-4">
@@ -608,7 +764,10 @@ export function MockExamInterface({ slug, attemptId }) {
 
       {/* Floating tools */}
       {template.has_calculator && (
-        <ExamCalculator visible={showCalculator} onClose={() => setShowCalculator(false)} />
+        <ExamCalculator
+          visible={showCalculator}
+          onClose={() => setShowCalculator(false)}
+        />
       )}
       {template.has_scratchpad && (
         <ExamScratchpad
