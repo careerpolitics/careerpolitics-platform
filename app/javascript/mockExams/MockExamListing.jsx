@@ -112,22 +112,26 @@ export function MockExamListing() {
 
 function TagChip({ tag, isFollowed, onToggle }) {
   return (
-    <span
-      class="fs-xs fw-bold"
+    <button
+      class="fs-xs"
       style={{
-        padding: '2px 8px',
-        borderRadius: '4px',
+        padding: '4px 8px',
+        borderRadius: '6px',
         cursor: 'pointer',
-        background: isFollowed ? 'var(--accent-brand-a10)' : 'var(--card-secondary-bg)',
-        color: isFollowed ? 'var(--accent-brand)' : 'var(--body-color)',
-        textTransform: 'capitalize',
+        background: isFollowed ? 'var(--accent-brand-a10)' : 'transparent',
+        color: isFollowed ? 'var(--accent-brand)' : 'var(--secondary-color)',
+        fontWeight: 500,
         whiteSpace: 'nowrap',
+        border: 'none',
+        fontFamily: 'inherit',
+        transition: 'all 0.15s',
       }}
       onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle(tag); }}
-      title={isFollowed ? 'Click to unfollow' : 'Click to follow'}
+      title={isFollowed ? 'Click to unfollow this tag' : 'Click to follow this tag'}
     >
-      {isFollowed ? '★' : '☆'} {tag.name.replace(/_/g, ' ')}
-    </span>
+      <span style={{ color: 'var(--accent-brand)', marginRight: '2px' }}>#</span>
+      {tag.name.replace(/_/g, ' ')}
+    </button>
   );
 }
 

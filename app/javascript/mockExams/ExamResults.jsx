@@ -14,6 +14,7 @@ export function ExamResults({ slug, attemptId }) {
   const [filterSection, setFilterSection] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [templateStats, setTemplateStats] = useState(null);
+  const [sets, setSets] = useState([]);
 
   useEffect(() => {
     request(`/mock_exams/${slug}/attempts/${attemptId}/results.json`)
@@ -29,6 +30,11 @@ export function ExamResults({ slug, attemptId }) {
       .then((data) => {
         if (!data.error) setTemplateStats(data);
       })
+      .catch(() => {});
+
+    request(`/mock_exams/${slug}/sets.json`)
+      .then((res) => res.json())
+      .then((data) => setSets(data.sets || []))
       .catch(() => {});
   }, [slug, attemptId]);
 
@@ -61,27 +67,23 @@ export function ExamResults({ slug, attemptId }) {
 
   const sections = [...new Set((r.questions || []).map((q) => q.section_name))];
 
-  const QUESTIONS_PER_PAGE = 5;
-
   if (reviewMode) {
-    const totalPages = Math.ceil(filteredQuestions.length / QUESTIONS_PER_PAGE);
-    const currentPage = Math.min(currentIndex, totalPages - 1);
-    const pageQuestions = filteredQuestions.slice(
-      currentPage * QUESTIONS_PER_PAGE,
-      (currentPage + 1) * QUESTIONS_PER_PAGE,
-    );
-
     return (
       <div>
         <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <button class="c-btn c-btn--secondary" onClick={() => setReviewMode(false)}>
-            ← Back to Results
-          </button>
+          <div class="flex items-center gap-3">
+            <button class="c-btn c-btn--secondary" onClick={() => setReviewMode(false)}>
+              ← Back to Results
+            </button>
+            <span class="color-secondary fs-s">
+              {filteredQuestions.length} of {(r.questions || []).length} questions
+            </span>
+          </div>
           <div class="flex gap-2 flex-wrap">
             <select
               class="crayons-select fs-s"
               value={filterSection}
-              onChange={(e) => { setFilterSection(e.target.value); setCurrentIndex(0); }}
+              onChange={(e) => { setFilterSection(e.target.value); }}
             >
               <option value="all">All Sections</option>
               {sections.map((s) => (
@@ -91,7 +93,7 @@ export function ExamResults({ slug, attemptId }) {
             <select
               class="crayons-select fs-s"
               value={filterStatus}
-              onChange={(e) => { setFilterStatus(e.target.value); setCurrentIndex(0); }}
+              onChange={(e) => { setFilterStatus(e.target.value); }}
             >
               <option value="all">All</option>
               <option value="correct">Correct</option>
@@ -107,82 +109,21 @@ export function ExamResults({ slug, attemptId }) {
           </div>
         </div>
 
-        {pageQuestions.length > 0 ? (
+        {filteredQuestions.length > 0 ? (
           <div>
-            {pageQuestions.map((q, i) => (
-              <div key={q.id} class="mb-6">
+            {filteredQuestions.map((q) => (
+              <div key={q.id} class="mb-4">
                 <QuestionDisplay
                   question={q}
                   selectedOption={q.selected_option_key}
                   onSelectOption={() => {}}
                   isReview={true}
                   language={language}
+                  questionNumber={q.position}
+                  totalQuestions={(r.questions || []).length}
                 />
               </div>
             ))}
-
-            {/* Pagination controls */}
-            <div class="flex items-center justify-center gap-2 mt-4 mb-4">
-              <button
-                class="c-btn c-btn--secondary c-btn--s"
-                onClick={() => setCurrentIndex(0)}
-                disabled={currentPage === 0}
-              >
-                First
-              </button>
-              <button
-                class="c-btn c-btn--secondary c-btn--s"
-                onClick={() => setCurrentIndex((p) => Math.max(0, p - 1))}
-                disabled={currentPage === 0}
-              >
-                ← Prev
-              </button>
-
-              {Array.from({ length: totalPages }, (_, i) => {
-                if (
-                  totalPages <= 7 ||
-                  i === 0 ||
-                  i === totalPages - 1 ||
-                  Math.abs(i - currentPage) <= 1
-                ) {
-                  return (
-                    <button
-                      key={i}
-                      class={`c-btn c-btn--s ${i === currentPage ? 'c-btn--primary' : 'c-btn--secondary'}`}
-                      onClick={() => setCurrentIndex(i)}
-                    >
-                      {i + 1}
-                    </button>
-                  );
-                }
-                if (i === 1 && currentPage > 2) {
-                  return <span key={i} class="color-secondary">...</span>;
-                }
-                if (i === totalPages - 2 && currentPage < totalPages - 3) {
-                  return <span key={i} class="color-secondary">...</span>;
-                }
-                return null;
-              })}
-
-              <button
-                class="c-btn c-btn--secondary c-btn--s"
-                onClick={() => setCurrentIndex((p) => Math.min(totalPages - 1, p + 1))}
-                disabled={currentPage >= totalPages - 1}
-              >
-                Next →
-              </button>
-              <button
-                class="c-btn c-btn--secondary c-btn--s"
-                onClick={() => setCurrentIndex(totalPages - 1)}
-                disabled={currentPage >= totalPages - 1}
-              >
-                Last
-              </button>
-            </div>
-
-            <div class="text-center color-secondary fs-s">
-              Page {currentPage + 1} of {totalPages} ({filteredQuestions.length} questions)
-            </div>
           </div>
         ) : (
           <div class="crayons-card p-6 text-center color-secondary">
@@ -295,7 +236,7 @@ export function ExamResults({ slug, attemptId }) {
 
       {/* Leaderboard */}
       <div class="mt-4 mb-4">
-        <ExamLeaderboard slug={slug} currentUserId={r.user_id} currentAttemptId={r.id} />
+        <ExamLeaderboard slug={slug} currentUserId={r.user_id} currentAttemptId={r.id} sets={sets} />
       </div>
 
       {/* Actions */}

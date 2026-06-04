@@ -1,6 +1,6 @@
 class MockExamsController < ApplicationController
   before_action :set_cache_control_headers, only: %i[index show]
-  before_action :authenticate_user!, only: %i[dashboard]
+  before_action :authenticate_user!, only: %i[dashboard show sets leaderboard stats]
   before_action :set_template_by_slug, only: %i[show leaderboard stats sets]
 
   rescue_from ActiveRecord::RecordNotFound do
@@ -102,10 +102,10 @@ class MockExamsController < ApplicationController
 
   def dashboard
     attempts = current_user.mock_exam_attempts
-      .submitted_or_timed_out
-      .includes(:mock_exam_template)
-      .order(submitted_at: :desc)
-      .limit(50)
+                           .submitted_or_timed_out
+                           .includes(:mock_exam_template)
+                           .order(submitted_at: :desc)
+                           .limit(50)
 
     completed = attempts.count
     scores = attempts.pluck(:accuracy_percent).compact
@@ -120,8 +120,8 @@ class MockExamsController < ApplicationController
           avg_accuracy: scores.any? ? (scores.sum / scores.size).round(1) : nil,
           streak_days: calculate_streak,
           trend: attempts.first(20).reverse.map do |a|
-                   { accuracy_percent: a.accuracy_percent, date: a.submitted_at&.to_date }
-                 end,
+            { accuracy_percent: a.accuracy_percent, date: a.submitted_at&.to_date }
+          end,
           section_accuracy: build_section_accuracy(attempts),
           attempts: attempts.map { |a| dashboard_attempt_json(a) }
         }
@@ -177,7 +177,7 @@ class MockExamsController < ApplicationController
       section_averages: stats.section_averages,
       difficulty_accuracy: stats.difficulty_accuracy,
       last_refreshed_at: stats.last_refreshed_at,
-    )
+      )
   end
 
   def build_leaderboard_entries
@@ -192,7 +192,16 @@ class MockExamsController < ApplicationController
 
     scope = scope.where(pool_set: params[:set]) if params[:set].present?
 
-    scope
+    # Deduplicate by user+set: keep only the best attempt per user per set
+    best_attempt_ids = scope
+                         .select("DISTINCT ON (user_id, pool_set) id")
+                         .order(Arel.sql("user_id, pool_set, total_score DESC NULLS LAST, " \
+                                           "EXTRACT(EPOCH FROM (submitted_at - started_at)) ASC NULLS LAST, " \
+                                           "submitted_at ASC"))
+                         .map(&:id)
+
+    MockExamAttempt
+      .where(id: best_attempt_ids)
       .order(total_score: :desc)
       .order(Arel.sql("EXTRACT(EPOCH FROM (submitted_at - started_at)) ASC NULLS LAST"))
       .order(submitted_at: :asc)
@@ -246,10 +255,10 @@ class MockExamsController < ApplicationController
 
   def calculate_streak
     dates = current_user.mock_exam_attempts
-      .where.not(submitted_at: nil)
-      .order(submitted_at: :desc)
-      .pluck(Arel.sql("DATE(submitted_at)"))
-      .uniq
+                        .where.not(submitted_at: nil)
+                        .order(submitted_at: :desc)
+                        .pluck(Arel.sql("DATE(submitted_at)"))
+                        .uniq
 
     streak = 0
     check_date = Date.current

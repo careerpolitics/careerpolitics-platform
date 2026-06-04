@@ -1,6 +1,7 @@
 module Admin
   class MockExamTemplatesController < Admin::ApplicationController
     layout "admin"
+    before_action :set_tags, only: %i[new create edit update]
 
     def index
       @templates = MockExamTemplate.order(created_at: :desc)
@@ -150,6 +151,10 @@ module Admin
         end
       end
       permitted
+    end
+
+    def set_tags
+      @tags = Tag.order(:name)
     end
 
     def template_params

@@ -28,12 +28,15 @@
       <div class="crayons-field">
         <%= form.label :tag_name, "Tag", class: "crayons-field__label" do %>
           Tag
-          <p class="crayons-field__description">Enter an existing tag name. Users following this tag will see the exam in their listing.</p>
+          <p class="crayons-field__description">Select a tag. Users following this tag will see the exam in their listing.</p>
         <% end %>
-        <%= form.text_field :tag_name,
-                            value: template.tag&.name,
-                            class: "crayons-textfield",
-                            placeholder: "e.g. upsc, ssc, banking" %>
+        <%= form.select :tag_name,
+                        options_for_select(
+                          @tags.map { |t| [t.name, t.name] },
+                          template.tag&.name
+                        ),
+                        { include_blank: "Select a tag..." },
+                        class: "crayons-select" %>
       </div>
     </div>
 

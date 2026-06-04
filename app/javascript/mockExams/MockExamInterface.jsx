@@ -22,6 +22,7 @@ export function MockExamInterface({ slug, attemptId }) {
   const [showPalette, setShowPalette] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const [showFullscreenPrompt, setShowFullscreenPrompt] = useState(false);
   // Tracks whether the exam was in fullscreen when the submit dialog opened,
   // so we can restore that state if the user cancels.
   const wasFullscreenBeforeConfirm = useRef(false);
@@ -53,13 +54,10 @@ export function MockExamInterface({ slug, attemptId }) {
         setResponses(merged);
         setLoading(false);
 
-        // Auto-enter fullscreen if requested from detail page
+        // Show fullscreen prompt if requested from detail page
         const params = new URLSearchParams(window.location.search);
-        if (params.get('mode') === 'fullscreen') {
-          const el = document.documentElement;
-          if (el.requestFullscreen && !document.fullscreenElement) {
-            el.requestFullscreen().catch(() => {});
-          }
+        if (params.get('mode') === 'fullscreen' && typeof document.documentElement.requestFullscreen === 'function') {
+          setShowFullscreenPrompt(true);
         }
       })
       .catch(() => setLoading(false));
@@ -444,27 +442,6 @@ export function MockExamInterface({ slug, attemptId }) {
           >
             <div class="flex gap-2">
               <button
-                class="c-btn c-btn--secondary"
-                onClick={() => handleNavigate(Math.max(0, currentIndex - 1))}
-                disabled={currentIndex === 0}
-                style={{ minHeight: '40px' }}
-              >
-                ← Prev
-              </button>
-              <button
-                class="c-btn c-btn--secondary"
-                onClick={() =>
-                  handleNavigate(Math.min(questions.length - 1, currentIndex + 1))
-                }
-                disabled={currentIndex >= questions.length - 1}
-                style={{ minHeight: '40px' }}
-              >
-                Next →
-              </button>
-            </div>
-
-            <div class="flex gap-2">
-              <button
                 class="c-btn c-btn--secondary c-btn--s"
                 onClick={() => handleClearResponse(currentQuestion.id)}
                 style={{ minHeight: '40px' }}
@@ -481,6 +458,27 @@ export function MockExamInterface({ slug, attemptId }) {
                 style={{ minHeight: '40px' }}
               >
                 {currentResponse.marked_for_review ? '★ Marked' : '☆ Review'}
+              </button>
+            </div>
+
+            <div class="flex gap-2">
+              <button
+                class="c-btn c-btn--secondary"
+                onClick={() => handleNavigate(Math.max(0, currentIndex - 1))}
+                disabled={currentIndex === 0}
+                style={{ minHeight: '40px' }}
+              >
+                ← Prev
+              </button>
+              <button
+                class="c-btn c-btn--secondary"
+                onClick={() =>
+                  handleNavigate(Math.min(questions.length - 1, currentIndex + 1))
+                }
+                disabled={currentIndex >= questions.length - 1}
+                style={{ minHeight: '40px' }}
+              >
+                Next →
               </button>
             </div>
           </div>
@@ -504,6 +502,7 @@ export function MockExamInterface({ slug, attemptId }) {
               responses={responses}
               currentIndex={currentIndex}
               onNavigate={handleNavigate}
+              sectionsConfig={template.sections_config}
             />
           </div>
         )}
@@ -539,6 +538,7 @@ export function MockExamInterface({ slug, attemptId }) {
               responses={responses}
               currentIndex={currentIndex}
               onNavigate={(i) => { handleNavigate(i); setShowPalette(false); }}
+              sectionsConfig={template.sections_config}
             />
           </div>
         )}
@@ -578,11 +578,18 @@ export function MockExamInterface({ slug, attemptId }) {
             }}
           >
             <h2 id="exam-submit-confirm-title" class="crayons-title mb-2">
-              Submit exam?
+              Submit Exam?
             </h2>
-            <p class="color-secondary mb-4">
-              Are you sure you want to submit? You cannot change answers after
-              submission.
+            <p class="color-secondary fs-s mb-2">
+              You have answered <strong>{answeredCount}</strong> out of <strong>{questions.length}</strong> questions.
+            </p>
+            {questions.length - answeredCount > 0 && (
+              <p class="fs-s mb-3" style={{ color: 'var(--accent-warning)' }}>
+                {questions.length - answeredCount} question{questions.length - answeredCount !== 1 ? 's are' : ' is'} still unanswered.
+              </p>
+            )}
+            <p class="color-secondary fs-s mb-4">
+              You cannot change your answers after submission.
             </p>
             <div class="flex gap-3" style={{ justifyContent: 'flex-end' }}>
               <button
@@ -602,6 +609,40 @@ export function MockExamInterface({ slug, attemptId }) {
                 {submitting ? 'Submitting...' : 'Submit'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen prompt — requires a user click to satisfy the Fullscreen API */}
+      {showFullscreenPrompt && !isFullscreen && canFullscreen && (
+        <div
+          role="dialog"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 10001,
+            background: 'rgba(0,0,0,0.85)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+          onClick={() => {
+            document.documentElement.requestFullscreen().catch(() => {});
+            setShowFullscreenPrompt(false);
+          }}
+        >
+          <div style={{ textAlign: 'center', color: 'white' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⊞</div>
+            <p style={{ fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '8px' }}>
+              Click anywhere to enter fullscreen
+            </p>
+            <p style={{ fontSize: '0.85rem', opacity: 0.7, marginBottom: '20px' }}>
+              Press Esc anytime to exit fullscreen
+            </p>
+            <button
+              class="c-btn c-btn--secondary"
+              onClick={(e) => { e.stopPropagation(); setShowFullscreenPrompt(false); }}
+              style={{ opacity: 0.8 }}
+            >
+              Skip
+            </button>
           </div>
         </div>
       )}

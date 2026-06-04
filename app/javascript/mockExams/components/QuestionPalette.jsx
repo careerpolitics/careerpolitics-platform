@@ -25,7 +25,7 @@ function getStatus(question, responses) {
   return 'not_answered';
 }
 
-export function QuestionPalette({ questions, responses, currentIndex, onNavigate }) {
+export function QuestionPalette({ questions, responses, currentIndex, onNavigate, sectionsConfig }) {
   const counts = {};
   questions.forEach((q) => {
     const s = getStatus(q, responses);
@@ -35,30 +35,62 @@ export function QuestionPalette({ questions, responses, currentIndex, onNavigate
   // Group questions by section
   const sections = [];
   const sectionMap = new Map();
-  questions.forEach((q, i) => {
-    const name = q.section_name || 'Questions';
-    if (!sectionMap.has(name)) {
-      const entry = { name, items: [] };
-      sectionMap.set(name, entry);
+
+  if (sectionsConfig && sectionsConfig.length > 0) {
+    // Build lookup: map both section names and topic names → config section name
+    const toSection = new Map();
+    sectionsConfig.forEach((sc) => {
+      toSection.set(sc.name, sc.name);
+      (sc.topics || []).forEach((topic) => toSection.set(topic, sc.name));
+    });
+
+    // Initialise sections from config so order is preserved
+    sectionsConfig.forEach((sc) => {
+      const entry = { name: sc.name, items: [] };
+      sectionMap.set(sc.name, entry);
       sections.push(entry);
-    }
-    sectionMap.get(name).items.push({ question: q, index: i });
-  });
+    });
+
+    // Assign each question to its section
+    questions.forEach((q, i) => {
+      const resolved = toSection.get(q.section_name) || q.section_name;
+      if (!sectionMap.has(resolved)) {
+        const entry = { name: resolved, items: [] };
+        sectionMap.set(resolved, entry);
+        sections.push(entry);
+      }
+      sectionMap.get(resolved).items.push({ question: q, index: i });
+    });
+  } else {
+    // Fallback: group by section_name
+    questions.forEach((q, i) => {
+      const name = q.section_name || 'Questions';
+      if (!sectionMap.has(name)) {
+        const entry = { name, items: [] };
+        sectionMap.set(name, entry);
+        sections.push(entry);
+      }
+      sectionMap.get(name).items.push({ question: q, index: i });
+    });
+  }
+
+  // Filter out empty sections
+  const activeSections = sections.filter((s) => s.items.length > 0);
 
   return (
     <div>
       <h4 class="fw-bold mb-3 fs-s">Question Palette</h4>
 
       {/* Section-grouped dots */}
-      {sections.map((sec) => {
+      {activeSections.map((sec, secIdx) => {
         const answered = sec.items.filter(
           (it) => getStatus(it.question, responses) === 'answered' || getStatus(it.question, responses) === 'answered_review',
         ).length;
 
         return (
           <div key={sec.name} style={{ marginBottom: '12px' }}>
-            <div class="flex items-center justify-between" style={{ marginBottom: '4px' }}>
-              <span class="fs-xs fw-bold">{sec.name}</span>
+            <div class="flex items-center justify-between" style={{ marginBottom: '4px', cursor: 'pointer' }}>
+              <span class="fs-xs fw-bold">Section {secIdx + 1}: {sec.name}</span>
               <span class="fs-xs color-secondary">{answered}/{sec.items.length}</span>
             </div>
             <div class="flex flex-wrap" style={{ gap: 0 }}>

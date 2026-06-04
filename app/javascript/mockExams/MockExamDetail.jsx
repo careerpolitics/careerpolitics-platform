@@ -1,4 +1,3 @@
-/* global showLoginModal */
 import { h } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
 import { request } from '@utilities/http';
@@ -16,7 +15,6 @@ export function MockExamDetail({ slug }) {
   const [sortBy, setSortBy] = useState('newest');
   const [showInstructions, setShowInstructions] = useState(false);
   const [pendingPoolSet, setPendingPoolSet] = useState(undefined);
-  const [userSignedIn, setUserSignedIn] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -25,7 +23,6 @@ export function MockExamDetail({ slug }) {
     ]).then(([tmpl, setsData]) => {
       setTemplate(tmpl);
       setSets(setsData.sets || []);
-      setUserSignedIn(!!tmpl.user_signed_in)
       setLoading(false);
     }).catch(() => {
       setError('Failed to load exam details');
@@ -34,17 +31,6 @@ export function MockExamDetail({ slug }) {
   }, [slug]);
 
   const openInstructions = (poolSet) => {
-    if (!userSignedIn) {
-      if (typeof showLoginModal === 'function') {
-        showLoginModal({
-          referring_source: 'mock_exams',
-          trigger: 'start_exam',
-        });
-      } else {
-        window.location.href = '/enter?referrer=' + encodeURIComponent(window.location.pathname);
-      }
-      return;
-    }
     setPendingPoolSet(poolSet);
     setShowInstructions(true);
     setError(null);
@@ -103,24 +89,11 @@ export function MockExamDetail({ slug }) {
         <div class="grid gap-3 mb-6"
              style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}>
           <InfoItem label="Questions" value={t.total_questions} />
-          <InfoItem label="Duration" value={`${t.duration_minutes} minutes`} />
+          <InfoItem label="Duration" value={`${t.duration_minutes} min`} />
           <InfoItem label="Marks/Correct" value={`+${t.marks_per_correct}`} />
-          <InfoItem label="Negative Marks" value={`-${t.negative_marks_per_wrong}`} />
-          <InfoItem label="Tag" value={t.tag_list?.[0]?.name?.replace(/_/g, ' ') || '—'} />
+          <InfoItem label="Negative" value={`-${t.negative_marks_per_wrong}`} />
+          <InfoItem label="Category" value={t.exam_category || '—'} />
         </div>
-
-        {t.sections_config?.length > 0 && (
-          <div class="mb-6">
-            <h3 class="crayons-subtitle-2 mb-2">Sections</h3>
-            <div class="flex flex-wrap gap-2">
-              {t.sections_config.map((s, i) => (
-                <span key={i} class="crayons-tag">
-                  {s.name} ({s.count}q)
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
 
         {t.has_calculator && (
           <p class="fs-s mb-1">On-screen calculator available</p>
@@ -260,7 +233,7 @@ export function MockExamDetail({ slug }) {
           <div class="crayons-card p-6 mb-4">
             <div class="flex items-center justify-between mb-2">
               <h3 class="crayons-subtitle-2">Choose a Question Set</h3>
-              {sets.length > 1 && (t.can_attempt || !userSignedIn) && (
+              {sets.length > 1 && t.can_attempt && (
                 <button
                   class="c-btn c-btn--secondary c-btn--s"
                   onClick={() => openInstructions(null)}
@@ -321,7 +294,7 @@ export function MockExamDetail({ slug }) {
                       aria-pressed={isSelected}
                       class="crayons-card crayons-card--secondary p-4"
                       style={{
-                        cursor: (t.can_attempt || !userSignedIn) ? 'pointer' : 'default',
+                        cursor: t.can_attempt ? 'pointer' : 'default',
                         borderColor: isSelected
                           ? 'var(--accent-brand)' : 'var(--card-border)',
                         borderWidth: isSelected ? '2px' : '1px',
@@ -329,16 +302,16 @@ export function MockExamDetail({ slug }) {
                         background: isSelected
                           ? 'var(--accent-brand-a10)' : 'var(--card-secondary-bg)',
                         transition: 'all 0.15s ease',
-                        opacity: (t.can_attempt || !userSignedIn) ? 1 : 0.6,
+                        opacity: t.can_attempt ? 1 : 0.6,
                       }}
                       onClick={() =>
-                        (t.can_attempt || !userSignedIn) &&
+                        t.can_attempt &&
                         setSelectedSet(isSelected ? null : s.set_number)
                       }
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
-                          (t.can_attempt || !userSignedIn) &&
+                          t.can_attempt &&
                           setSelectedSet(isSelected ? null : s.set_number);
                         }
                       }}
@@ -418,14 +391,14 @@ export function MockExamDetail({ slug }) {
                             {starting ? '...' : '↻ Retake'}
                           </button>
                         </div>
-                      ) : (t.can_attempt || !userSignedIn) && (
+                      ) : t.can_attempt && (
                         <button
                           class="c-btn c-btn--primary"
                           onClick={(e) => { e.stopPropagation(); openInstructions(s.set_number); }}
                           disabled={starting}
                           style={{ width: '100%', marginTop: '10px', fontSize: '0.85rem', padding: '7px 0', borderRadius: '6px' }}
                         >
-                          {!userSignedIn ? '🔒 Sign in to Start' : starting ? 'Starting...' : '▶ Start Exam'}
+                          {starting ? 'Starting...' : '▶ Start Exam'}
                         </button>
                       )}
                     </div>
@@ -438,11 +411,37 @@ export function MockExamDetail({ slug }) {
       })()}
 
       {/* Fallback when no sets are published yet */}
-      {sets.length === 0 && (t.can_attempt || !userSignedIn) && (
+      {sets.length === 0 && t.can_attempt && (
         <div class="crayons-card p-6 mb-4">
           <p class="color-secondary fs-s mb-3">
             No question sets are published yet. Check back soon.
           </p>
+        </div>
+      )}
+
+      {t.sections_config?.length > 0 && (
+        <div class="crayons-card p-6 mb-4">
+          <h3 class="crayons-subtitle-2 mb-3">Syllabus</h3>
+          <div class="flex flex-col gap-3">
+            {t.sections_config.map((s, i) => (
+              <div key={i} class="p-3 radius-default" style={{ background: 'var(--card-secondary-bg)' }}>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="fw-bold fs-s">{s.name}</span>
+                  <span class="fs-xs color-secondary">{s.count} questions</span>
+                </div>
+                {s.topics?.length > 0 && (
+                  <div class="flex flex-wrap gap-1 mt-1">
+                    {s.topics.map((topic, j) => (
+                      <span key={j} class="crayons-tag crayons-tag--monochrome fs-xs"
+                            style={{ cursor: 'default' }}>
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -461,7 +460,7 @@ export function MockExamDetail({ slug }) {
 
 function InfoItem({ label, value }) {
   return (
-    <div class="p-3 radius-default"
+    <div class="p-3 radius-default text-center"
          style={{ background: 'var(--card-secondary-bg)' }}>
       <div class="fs-xs color-secondary uppercase">{label}</div>
       <div class="fw-bold fs-l">{value}</div>
