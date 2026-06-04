@@ -18,11 +18,10 @@ export function MockExamInterface({ slug, attemptId }) {
   const [showCalculator, setShowCalculator] = useState(false);
   const [showScratchpad, setShowScratchpad] = useState(false);
   const [language, setLanguage] = useState('en');
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
   const [showPalette, setShowPalette] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
-  const [showFullscreenPrompt, setShowFullscreenPrompt] = useState(false);
   // Tracks whether the exam was in fullscreen when the submit dialog opened,
   // so we can restore that state if the user cancels.
   const wasFullscreenBeforeConfirm = useRef(false);
@@ -54,11 +53,6 @@ export function MockExamInterface({ slug, attemptId }) {
         setResponses(merged);
         setLoading(false);
 
-        // Show fullscreen prompt if requested from detail page
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('mode') === 'fullscreen' && typeof document.documentElement.requestFullscreen === 'function') {
-          setShowFullscreenPrompt(true);
-        }
       })
       .catch(() => setLoading(false));
   }, [slug, attemptId]);
@@ -341,7 +335,6 @@ export function MockExamInterface({ slug, attemptId }) {
             background: 'var(--card-secondary-bg)',
             padding: '2px 10px', borderRadius: '12px',
           }}>
-            <span style={{ fontSize: '0.75rem' }}>⏱</span>
             <ExamTimer
               timeRemainingSeconds={examData.time_remaining_seconds}
               onTimeUp={handleTimeUp}
@@ -367,7 +360,7 @@ export function MockExamInterface({ slug, attemptId }) {
               title="Calculator"
               style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
             >
-              🖩
+              Calculator
             </button>
           )}
           {template.has_scratchpad && (
@@ -377,7 +370,7 @@ export function MockExamInterface({ slug, attemptId }) {
               title="Scratchpad"
               style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
             >
-              📝
+              Scratchpad
             </button>
           )}
           <button
@@ -385,7 +378,7 @@ export function MockExamInterface({ slug, attemptId }) {
             onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
             style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
           >
-            {language === 'en' ? 'हि' : 'EN'}
+            {language === 'en' ? 'HI' : 'EN'}
           </button>
           {canFullscreen && (
             <button
@@ -394,7 +387,7 @@ export function MockExamInterface({ slug, attemptId }) {
               title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
               style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
             >
-              {isFullscreen ? '⊡' : '⊞'}
+              {isFullscreen ? 'Exit FS' : 'Full FS'}
             </button>
           )}
           {isMobile && (
@@ -403,7 +396,7 @@ export function MockExamInterface({ slug, attemptId }) {
               onClick={() => setShowPalette(!showPalette)}
               style={{ padding: '3px 7px', minHeight: '30px', fontSize: '0.8rem' }}
             >
-              ≡ Q
+              Q
             </button>
           )}
           <button
@@ -457,7 +450,7 @@ export function MockExamInterface({ slug, attemptId }) {
                 onClick={() => handleMarkForReview(currentQuestion.id)}
                 style={{ minHeight: '40px' }}
               >
-                {currentResponse.marked_for_review ? '★ Marked' : '☆ Review'}
+                {currentResponse.marked_for_review ? 'Marked' : 'Review'}
               </button>
             </div>
 
@@ -468,7 +461,7 @@ export function MockExamInterface({ slug, attemptId }) {
                 disabled={currentIndex === 0}
                 style={{ minHeight: '40px' }}
               >
-                ← Prev
+                Prev
               </button>
               <button
                 class="c-btn c-btn--secondary"
@@ -478,7 +471,7 @@ export function MockExamInterface({ slug, attemptId }) {
                 disabled={currentIndex >= questions.length - 1}
                 style={{ minHeight: '40px' }}
               >
-                Next →
+                Next
               </button>
             </div>
           </div>
@@ -609,40 +602,6 @@ export function MockExamInterface({ slug, attemptId }) {
                 {submitting ? 'Submitting...' : 'Submit'}
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Fullscreen prompt — requires a user click to satisfy the Fullscreen API */}
-      {showFullscreenPrompt && !isFullscreen && canFullscreen && (
-        <div
-          role="dialog"
-          style={{
-            position: 'fixed', inset: 0, zIndex: 10001,
-            background: 'rgba(0,0,0,0.85)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer',
-          }}
-          onClick={() => {
-            document.documentElement.requestFullscreen().catch(() => {});
-            setShowFullscreenPrompt(false);
-          }}
-        >
-          <div style={{ textAlign: 'center', color: 'white' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⊞</div>
-            <p style={{ fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '8px' }}>
-              Click anywhere to enter fullscreen
-            </p>
-            <p style={{ fontSize: '0.85rem', opacity: 0.7, marginBottom: '20px' }}>
-              Press Esc anytime to exit fullscreen
-            </p>
-            <button
-              class="c-btn c-btn--secondary"
-              onClick={(e) => { e.stopPropagation(); setShowFullscreenPrompt(false); }}
-              style={{ opacity: 0.8 }}
-            >
-              Skip
-            </button>
           </div>
         </div>
       )}

@@ -52,7 +52,7 @@ export function ExamLeaderboard({ slug, currentUserId, currentAttemptId, sets })
               <option value="">All Sets</option>
               {availableSets.map((s) => (
                 <option key={s.set_number} value={s.set_number}>
-                  Set {s.set_number}
+                  {s.label || `Set ${s.set_number}`}
                 </option>
               ))}
             </select>
@@ -123,7 +123,7 @@ export function ExamLeaderboard({ slug, currentUserId, currentAttemptId, sets })
                   </div>
                 </td>
                 <td class="fs-s">
-                  {entry.pool_set ? `Set ${entry.pool_set}` : 'Random'}
+                  {entry.set_label || (entry.pool_set ? `Set ${entry.pool_set}` : 'Random')}
                 </td>
                 <td>{entry.total_score} / {entry.max_possible_score}</td>
                 <td>{entry.accuracy_percent}%</td>

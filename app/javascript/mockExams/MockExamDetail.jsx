@@ -40,6 +40,15 @@ export function MockExamDetail({ slug }) {
     setStarting(true);
     setError(null);
 
+    // Enter fullscreen immediately within user gesture context
+    if (goFullscreen && typeof document.documentElement.requestFullscreen === 'function') {
+      try {
+        await document.documentElement.requestFullscreen();
+      } catch {
+        // silently ignore if fullscreen fails
+      }
+    }
+
     try {
       const payload = pendingPoolSet ? { pool_set: pendingPoolSet } : {};
       const res = await request(`/mock_exams/${slug}/attempts`, {
@@ -50,15 +59,18 @@ export function MockExamDetail({ slug }) {
       if (res.ok) {
         const data = await res.json();
         const url = data.redirect_to || `/mock_exams/${slug}/attempts/${data.id}`;
-        window.location.href = goFullscreen ? `${url}?mode=fullscreen` : url;
+        window.location.href = url;
       } else {
         const errData = await res.json();
         setError(errData.errors?.[0] || errData.error || 'Failed to start exam');
         setStarting(false);
+        // Exit fullscreen on error
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
       }
     } catch {
       setError('Network error. Please try again.');
       setStarting(false);
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     }
   };
 
@@ -178,9 +190,17 @@ export function MockExamDetail({ slug }) {
             )}
 
             {starting ? (
-              <div class="flex flex-col items-center gap-3 p-4">
-                <div class="crayons-loading" aria-label="Preparing exam..." />
-                <p class="color-secondary fs-s">Preparing your exam...</p>
+              <div class="flex flex-col items-center gap-4 p-6">
+                <div style={{
+                  width: '48px', height: '48px',
+                  border: '4px solid var(--card-border)',
+                  borderTopColor: 'var(--accent-brand)',
+                  borderRadius: '50%',
+                  animation: 'spin 0.8s linear infinite',
+                }} />
+                <p class="fw-bold fs-l" style={{ color: 'var(--body-color)' }}>Preparing your exam...</p>
+                <p class="color-secondary fs-s">Please wait while we set things up</p>
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
               </div>
             ) : (
               <div class="flex gap-3">
@@ -318,27 +338,6 @@ export function MockExamDetail({ slug }) {
                     >
                       <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2">
-                      <span
-                        style={{
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '50%',
-                          border: isSelected
-                            ? '2px solid var(--accent-brand)'
-                            : '2px solid var(--card-border)',
-                          background: isSelected
-                            ? 'var(--accent-brand)' : 'transparent',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                          color: '#fff',
-                          fontSize: '12px',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {isSelected ? '✓' : ''}
-                      </span>
                           <span class="fw-bold">{s.label}</span>
                         </div>
                         <div class="flex items-center gap-2">
@@ -348,8 +347,7 @@ export function MockExamDetail({ slug }) {
                       </span>
                         </div>
                       </div>
-                      <div class="flex items-center justify-between"
-                           style={{ paddingLeft: '28px' }}>
+                      <div class="flex items-center justify-between">
                     <span class="fs-s color-secondary">
                       {s.attempts_count} total attempts
                     </span>
@@ -362,7 +360,7 @@ export function MockExamDetail({ slug }) {
 
                       {/* Attempted: show score + Review/Retake */}
                       {ua && (
-                        <div style={{ paddingLeft: '28px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--card-border)' }}>
+                        <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--card-border)' }}>
                           <div class="flex items-center justify-between flex-wrap gap-2">
                             <div class="flex items-center gap-3 fs-xs color-secondary">
                               <span>Score: <strong style={{ color: accColor }}>{ua.total_score}/{ua.max_possible_score}</strong></span>
@@ -380,7 +378,7 @@ export function MockExamDetail({ slug }) {
                           <a href={`/mock_exams/${slug}/attempts/${ua.attempt_id}/results`}
                              class="c-btn c-btn--secondary"
                              style={{ flex: 1, fontSize: '0.8rem', padding: '6px 0', borderRadius: '6px', textAlign: 'center', textDecoration: 'none' }}>
-                            📝 Review
+                            Review
                           </a>
                           <button
                             class="c-btn c-btn--primary"
@@ -388,7 +386,7 @@ export function MockExamDetail({ slug }) {
                             disabled={starting || !t.can_attempt}
                             style={{ flex: 1, fontSize: '0.8rem', padding: '6px 0', borderRadius: '6px' }}
                           >
-                            {starting ? '...' : '↻ Retake'}
+                            {starting ? '...' : 'Retake'}
                           </button>
                         </div>
                       ) : t.can_attempt && (
@@ -398,7 +396,7 @@ export function MockExamDetail({ slug }) {
                           disabled={starting}
                           style={{ width: '100%', marginTop: '10px', fontSize: '0.85rem', padding: '7px 0', borderRadius: '6px' }}
                         >
-                          {starting ? 'Starting...' : '▶ Start Exam'}
+                          {starting ? 'Starting...' : 'Start Exam'}
                         </button>
                       )}
                     </div>

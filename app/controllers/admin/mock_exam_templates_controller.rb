@@ -154,7 +154,13 @@ module Admin
     end
 
     def set_tags
-      @tags = Tag.order(:name)
+      subforem = RequestStore.store[:subforem]
+      if subforem
+        supported_ids = subforem.tag_relationships.where(supported: true).pluck(:tag_id)
+        @tags = Tag.where(id: supported_ids).order(:name)
+      else
+        @tags = Tag.where(supported: true).order(:name)
+      end
     end
 
     def template_params
