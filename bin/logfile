@@ -1,128 +1,175 @@
-Follow Logs:
-Show timestamp:
-Since:
--1
-Tail:
--1
-Destination:
-Filter:
-Enter your keywords
-Wrap lines:
-I, [2026-06-05T08:17:19.334031 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2026-06-05T08:17:19.349240 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2026-06-05T08:17:19+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"sidekiq","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
-service_name is unknown, will set to unknown_service:sidekiq
-dataset will be ignored, sending data to unknown_service:sidekiq
-2026-06-05T08:17:19.749Z pid=1 tid=l6t INFO: Booting Sidekiq 6.5.12 with Sidekiq::RedisConnection::RedisAdapter options {:url=>"redis://:REDACTED@careerpolitics-redis-master.redis.svc.cluster.local:6379"}
-2026-06-05T08:17:19.772Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: mock_exams_refresh_all_pools
-/opt/apps/forem/app/services/images/generate_subforem_images.rb:2: warning: already initialized constant Images::TEMPLATE_PATH
-/opt/apps/forem/app/services/images/generate_social_image_magickally.rb:4: warning: previous definition of TEMPLATE_PATH was here
-/opt/apps/forem/app/services/push_notifications/unified_notifier.rb:25: warning: key :payload is duplicated and overwritten on line 28
-/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:44: warning: already initialized constant Net::HTTP::Purge::METHOD
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:166: warning: previous definition of METHOD was here
-/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:45: warning: already initialized constant Net::HTTP::Purge::REQUEST_HAS_BODY
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:167: warning: previous definition of REQUEST_HAS_BODY was here
-/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:46: warning: already initialized constant Net::HTTP::Purge::RESPONSE_HAS_BODY
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:168: warning: previous definition of RESPONSE_HAS_BODY was here
-I, [2026-06-05T08:17:27.868207 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
-W, [2026-06-05T08:17:30.839159 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
-I, [2026-06-05T08:17:31.005525 #1]  INFO -- : CareerPolitics Android consumer app initialized
-2026-06-05T08:17:31.787Z pid=1 tid=l6t INFO: Booted Rails 7.0.8.7 application in production environment
-2026-06-05T08:17:31.788Z pid=1 tid=l6t INFO: Running in ruby 3.3.0 (2023-12-25 revision 5124f9ac75) [x86_64-linux]
-2026-06-05T08:17:31.788Z pid=1 tid=l6t INFO: See LICENSE and the LGPL-3.0 for licensing details.
-2026-06-05T08:17:31.789Z pid=1 tid=l6t INFO: Upgrade to Sidekiq Pro for more features and support: https://sidekiq.org
-2026-06-05T08:17:31.840Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: feeds_import
-2026-06-05T08:17:31.846Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: log_worker_queue_stats
-2026-06-05T08:17:31.852Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: record_daily_usage
-2026-06-05T08:17:31.855Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: record_daily_notifications
-2026-06-05T08:17:31.861Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: record_data_counts
-2026-06-05T08:17:31.867Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: check_data_update_script_statuses
-2026-06-05T08:17:31.872Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_yearly_club_badges
-2026-06-05T08:17:31.876Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_beloved_comment_badges
-2026-06-05T08:17:31.882Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_four_week_streak_badge
-2026-06-05T08:17:31.886Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_eight_week_streak_badge
-2026-06-05T08:17:31.890Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_sixteen_week_streak_badge
-2026-06-05T08:17:31.894Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_weekly_tag_badges
-2026-06-05T08:17:31.898Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_contributor_badges_from_github
-2026-06-05T08:17:31.902Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_community_wellness_badges
-2026-06-05T08:17:31.905Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_thumbs_up_badges
-2026-06-05T08:17:31.909Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: award_first_post_badges
-2026-06-05T08:17:31.913Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: resave_supported_tags
-2026-06-05T08:17:31.917Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: send_welcome_notifications
-2026-06-05T08:17:31.921Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: hourly_feed_cache_bust
-2026-06-05T08:17:31.925Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: daily_home_cache_bust
-2026-06-05T08:17:31.946Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: send_email_digest
-2026-06-05T08:17:31.952Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: remove_old_notifications
-2026-06-05T08:17:31.957Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: trim_old_ai_audits
-2026-06-05T08:17:31.963Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: remove_old_emails
-2026-06-05T08:17:31.971Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: sync_credits_counter_cache
-2026-06-05T08:17:31.980Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: get_podcast_episodes
-2026-06-05T08:17:32.031Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: update_latest_github_repos
-2026-06-05T08:17:32.036Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: push_notifications_cleanup
-2026-06-05T08:17:32.044Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: capture_query_stats
-2026-06-05T08:17:32.058Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: notify_about_published_articles
-2026-06-05T08:17:32.064Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: billboard_event_rollup
-2026-06-05T08:17:32.069Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: audience_segment_refresh
-2026-06-05T08:17:32.074Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: drip_email_worker
-2026-06-05T08:17:32.078Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: article_quality_reactions
-2026-06-05T08:17:32.084Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: article_label_cleanup
-2026-06-05T08:17:32.088Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: scheduled_automations_process
-2026-06-05T08:17:32.094Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: track_promotional_billboard_impressions
-2026-06-05T08:17:32.099Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: feed_import_log_cleanup
-2026-06-05T08:17:32.152Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: survey_daily_email
-2026-06-05T08:17:32.159Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: agent_session_raw_file_cleanup
-2026-06-05T08:17:32.164Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: reverify_organizations
-2026-06-05T08:17:32.170Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: events_manage_broadcast_billboards
-2026-06-05T08:17:32.176Z pid=1 tid=l6t INFO: Cron Jobs - added job with name: identify_trends
-I, [2026-06-05T08:17:32.181142 #1]  INFO -- : Sidekiq DB Pool re-established with size: 16
-2026-06-05T08:17:32.190Z pid=1 tid=l6t uniquejobs=upgrade_locks INFO: Already upgraded to 7.1.33
-2026-06-05T08:17:32.193Z pid=1 tid=l6t uniquejobs=reaper INFO: Starting Reaper
-2026-06-05T08:17:32.301Z pid=1 tid=5sn5 uniquejobs=reaper INFO: Nothing to delete; exiting.
-2026-06-05T08:17:32.302Z pid=1 tid=5sn5 uniquejobs=reaper INFO: Nothing to delete; exiting.
-2026-06-05T08:18:25.599Z pid=1 tid=5so9 class=Emails::RemoveOldEmailsWorker jid=3a8621d7f70cb980c2a14c81 INFO: start
-I, [2026-06-05T08:18:25.857154 #1]  INFO -- : {:tag=>"notification_delete", :statement=>"DELETE FROM ahoy_messages\nWHERE ahoy_messages.id IN (\n  SELECT ahoy_messages.id\n  FROM ahoy_messages\n  WHERE sent_at < '2026-04-05 08:18:25.750374' AND feedback_message_id IS NULL\n  LIMIT 50000\n)\n", :rows_deleted=>0, :duration=>0.01581050455570221}
-2026-06-05T08:18:25.858Z pid=1 tid=5so9 class=Emails::RemoveOldEmailsWorker jid=3a8621d7f70cb980c2a14c81 elapsed=0.259 INFO: done
-2026-06-05T08:20:13.641Z pid=1 tid=5syt class=Feeds::ImportArticlesWorker jid=dfd560ce5882e6c319fa4dd6 INFO: start
-2026-06-05T08:20:13.653Z pid=1 tid=5szd class=Metrics::RecordBackgroundQueueStatsWorker jid=50d0ac4dd4d2b99875f30cd7 INFO: start
-2026-06-05T08:20:13.695Z pid=1 tid=5szx class=BadgeAchievements::BadgeAwardWorker jid=c147d0ecbe7897a517c01d67 INFO: start
-2026-06-05T08:20:13.780Z pid=1 tid=5t0h class=PushNotifications::CleanupWorker jid=ea831720b827ac4eb5e0670b INFO: start
-2026-06-05T08:20:13.786Z pid=1 tid=5t2p class=ScheduledAutomations::ProcessWorker jid=c82cec58e3c96114f35d45f7 INFO: start
-I, [2026-06-05T08:20:13.791953 #1]  INFO -- : ScheduledAutomations::ProcessWorker: Starting execution cycle
-2026-06-05T08:20:13.781Z pid=1 tid=5t1l class=Articles::PublishWorker jid=ee27d61ac44084fb0a8187f6 INFO: start
-2026-06-05T08:20:13.783Z pid=1 tid=5t25 class=Events::ManageBroadcastBillboardsWorker jid=fc0865bf358b31c520074a3f INFO: start
-2026-06-05T08:20:13.781Z pid=1 tid=5t11 class=CaptureQueryStatsWorker jid=fdf0d1fbabb0d9ebdb25b36f INFO: start
-2026-06-05T08:20:14.418Z pid=1 tid=5t11 class=CaptureQueryStatsWorker jid=fdf0d1fbabb0d9ebdb25b36f elapsed=0.637 INFO: done
-2026-06-05T08:20:14.423Z pid=1 tid=5szd class=Metrics::RecordBackgroundQueueStatsWorker jid=50d0ac4dd4d2b99875f30cd7 elapsed=0.769 INFO: done
-2026-06-05T08:20:14.526Z pid=1 tid=5syt class=Feeds::ImportArticlesWorker jid=dfd560ce5882e6c319fa4dd6 elapsed=0.885 INFO: done
-2026-06-05T08:20:14.531Z pid=1 tid=5szx class=BadgeAchievements::BadgeAwardWorker jid=c147d0ecbe7897a517c01d67 elapsed=0.836 INFO: done
-I, [2026-06-05T08:20:14.566581 #1]  INFO -- : ScheduledAutomations::ProcessWorker: No automations due for execution
-2026-06-05T08:20:14.569Z pid=1 tid=5t2p class=ScheduledAutomations::ProcessWorker jid=c82cec58e3c96114f35d45f7 elapsed=0.783 INFO: done
-2026-06-05T08:20:14.591Z pid=1 tid=5t25 class=Events::ManageBroadcastBillboardsWorker jid=fc0865bf358b31c520074a3f elapsed=0.807 INFO: done
-2026-06-05T08:20:14.597Z pid=1 tid=5t1l class=Articles::PublishWorker jid=ee27d61ac44084fb0a8187f6 elapsed=0.815 INFO: done
-2026-06-05T08:20:14.611Z pid=1 tid=5t0h class=PushNotifications::CleanupWorker jid=ea831720b827ac4eb5e0670b elapsed=0.831 INFO: done
-2026-06-05T08:21:17.828Z pid=1 tid=5so9 class=MockExams::RefreshTemplateStatsWorker jid=f0ecf42506b2e75635dcc325 INFO: start
-2026-06-05T08:21:18.197Z pid=1 tid=5so9 class=MockExams::RefreshTemplateStatsWorker jid=f0ecf42506b2e75635dcc325 elapsed=0.369 INFO: done
-2026-06-05T08:23:02.414Z pid=1 tid=5syt class=MockExams::GeneratePoolWorker jid=122938a39f01408f03538702 INFO: start
-I, [2026-06-05T08:23:02.548435 #1]  INFO -- : MockExams::GeneratePoolWorker: Starting pool generation for template 4
-W, [2026-06-05T08:23:56.168659 #1]  WARN -- : Ai::MockExamQuestionGenerator: Retry 1/2 — unexpected token at ']
-]'
-W, [2026-06-05T08:24:07.742679 #1]  WARN -- : MockExams::GeneratePoolWorker: Set 6 has 67/100 questions (shortfall)
-I, [2026-06-05T08:24:09.703381 #1]  INFO -- : MockExams::GeneratePoolWorker: Pool complete — 67 questions created for template 4
-2026-06-05T08:24:09.707Z pid=1 tid=5syt class=MockExams::GeneratePoolWorker jid=122938a39f01408f03538702 elapsed=67.293 INFO: done
-2026-06-05T08:24:09.708Z pid=1 tid=5t25 class=MockExams::TranslatePoolWorker jid=fd06382b4199e646dab21c75 INFO: start
-I, [2026-06-05T08:24:18.048874 #1]  INFO -- : MockExams::TranslatePoolService: 10/87 translated for template 4
-I, [2026-06-05T08:24:26.147576 #1]  INFO -- : MockExams::TranslatePoolService: 20/87 translated for template 4
-I, [2026-06-05T08:24:34.260557 #1]  INFO -- : MockExams::TranslatePoolService: 30/87 translated for template 4
-I, [2026-06-05T08:24:42.376609 #1]  INFO -- : MockExams::TranslatePoolService: 40/87 translated for template 4
-I, [2026-06-05T08:24:50.990082 #1]  INFO -- : MockExams::TranslatePoolService: 50/87 translated for template 4
-I, [2026-06-05T08:24:58.849909 #1]  INFO -- : MockExams::TranslatePoolService: 60/87 translated for template 4
-I, [2026-06-05T08:25:06.490872 #1]  INFO -- : MockExams::TranslatePoolService: 70/87 translated for template 4
-I, [2026-06-05T08:25:15.071200 #1]  INFO -- : MockExams::TranslatePoolService: 80/87 translated for template 4
-I, [2026-06-05T08:25:21.254491 #1]  INFO -- : MockExams::TranslatePoolService: 87/87 translated for template 4
-I, [2026-06-05T08:25:21.255327 #1]  INFO -- : MockExams::TranslatePoolWorker: Translated 87 questions for template 4
-2026-06-05T08:25:21.256Z pid=1 tid=5t25 class=MockExams::TranslatePoolWorker jid=fd06382b4199e646dab21c75 elapsed=71.548 INFO: done
-2026-06-05T08:25:30.941Z pid=1 tid=634x class=CaptureQueryStatsWorker jid=569a1a079ca372ce2799d302 INFO: start
-2026-06-05T08:25:30.981Z pid=1 tid=635h class=Articles::PublishWorker jid=0cf1290bfbd4265974c7f776 INFO: start
-2026-06-05T08:25:30.982Z pid=1 tid=6361 class=Events::ManageBroadcastBillboardsWorker jid=d69bd733cb9606edfeb9ebf8 INFO: start
-2026-06-05T08:25:30.988Z pid=1 tid=634x class=CaptureQueryStatsWorker jid=569a1a079ca372ce2799d302 elapsed=0.047 INFO: done
-2026-06-05T08:25:31.079Z pid=1 tid=6361 class=Events::ManageBroadcastBillboardsWorker jid=d69bd733cb9606edfeb9ebf8 elapsed=0.097 INFO: done
-2026-06-05T08:25:31.152Z pid=1 tid=635h class=Articles::PublishWorker jid=0cf1290bfbd4265974c7f776 elapsed=0.171 INFO: done
+Cache hit for restore-key: setup-ruby-bundler-cache-v6-ubuntu-24.04-x64-ruby-3.3.0-wd-/home/runner/work/careerpolitics-platform/careerpolitics-platform-with--without--only--Gemfile.lock-3d205e3dde1ec30d96e29cc6dfd02d7aad3e02175ec889f70b9d184f950007a4
+Received 62914560 of 152256165 (41.3%), 60.0 MBs/sec
+Received 152256165 of 152256165 (100.0%), 84.3 MBs/sec
+Cache Size: ~145 MB (152256165 B)
+/usr/bin/tar -xf /home/runner/work/_temp/7e6edf47-529c-40c6-b6b4-15f6594dde07/cache.tzst -P -C /home/runner/work/careerpolitics-platform/careerpolitics-platform --use-compress-program unzstd
+Cache restored successfully
+Found cache for key: setup-ruby-bundler-cache-v6-ubuntu-24.04-x64-ruby-3.3.0-wd-/home/runner/work/careerpolitics-platform/careerpolitics-platform-with--without--only--Gemfile.lock-3d205e3dde1ec30d96e29cc6dfd02d7aad3e02175ec889f70b9d184f950007a4
+/opt/hostedtoolcache/Ruby/3.3.0/x64/bin/bundle install --jobs 4
+Could not find net-http2-0.18.4 in cached gems or installed locally
+Error: The process '/opt/hostedtoolcache/Ruby/3.3.0/x64/bin/bundle' failed with exit code 7
+
+
+
+Run docker/build-push-action@v6
+GitHub Actions runtime token ACs
+Docker info
+Proxy configuration
+Buildx version
+Builder info
+/usr/bin/docker buildx build --build-arg VCS_REF=53a548d22b4f959ca626a1d6600550ce99fd9d7a --cache-from type=gha --cache-to type=gha,mode=max --file ./Containerfile --iidfile /home/runner/work/_temp/docker-actions-toolkit-06JiSi/build-iidfile-ccb9dcd36e.txt --attest type=provenance,mode=max,builder-id=https://github.com/careerpolitics/careerpolitics-platform/actions/runs/27005735417/attempts/1 --tag ***/careerpolitics-platform:53a548d22b4f959ca626a1d6600550ce99fd9d7a --tag ***/careerpolitics-platform:latest --target production --metadata-file /home/runner/work/_temp/docker-actions-toolkit-06JiSi/build-metadata-ae9ff9439f.json --push .
+#0 building with "builder-ad25dd1d-dc3e-4c75-99b7-97c29c0296f7" instance using docker-container driver
+
+#1 [internal] load build definition from Containerfile
+#1 transferring dockerfile: 9.79kB done
+#1 WARN: FromAsCasing: 'as' and 'FROM' keywords' casing do not match (line 1)
+#1 WARN: FromAsCasing: 'as' and 'FROM' keywords' casing do not match (line 6)
+#1 WARN: FromAsCasing: 'as' and 'FROM' keywords' casing do not match (line 111)
+#1 DONE 0.0s
+
+#2 [internal] load metadata for ghcr.io/forem/ruby:3.3.0@sha256:9cda49a45931e9253d58f7d561221e43bd0d47676b8e75f55862ce1e9997ab5c
+#2 DONE 3.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 908B done
+#3 DONE 0.0s
+
+#4 [base 1/2] FROM ghcr.io/forem/ruby:3.3.0@sha256:9cda49a45931e9253d58f7d561221e43bd0d47676b8e75f55862ce1e9997ab5c
+#4 resolve ghcr.io/forem/ruby:3.3.0@sha256:9cda49a45931e9253d58f7d561221e43bd0d47676b8e75f55862ce1e9997ab5c done
+#4 DONE 0.0s
+
+#5 importing cache manifest from gha:16505417412413305960
+#5 DONE 0.1s
+
+#6 [internal] load build context
+#6 transferring context: 354.52MB 2.6s done
+#6 DONE 2.6s
+
+#7 [builder  1/14] RUN apt update &&     apt install -y         build-essential         libcurl4-openssl-dev         libffi-dev         libxml2-dev         libxslt-dev         libpcre3-dev         libpq-dev         pkg-config         libpixman-1-dev         libcairo2-dev         libpango1.0-dev         &&     apt clean
+#7 CACHED
+
+#8 [builder  2/14] RUN gem install -N bundler:"2.4.17"
+#8 CACHED
+
+#9 [base 2/2] RUN rm -f /etc/apt/sources.list.d/nodesource.list
+#9 CACHED
+
+#10 [builder  3/14] RUN mkdir -p /opt/apps/forem && chown "1000":"1000" "/opt/apps/forem" &&     groupadd -g "1000" "forem" &&     adduser --uid "1000" --gid "1000" --home "/opt/apps/forem" "forem"
+#10 CACHED
+
+#11 [builder  4/14] RUN curl -fsSLO https://github.com/jwilder/dockerize/releases/download/"v0.7.0"/dockerize-linux-amd64-"v0.7.0".tar.gz     && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-"v0.7.0".tar.gz     && rm dockerize-linux-amd64-"v0.7.0".tar.gz     && chown root:root /usr/local/bin/dockerize
+#11 CACHED
+
+#12 [builder  5/14] WORKDIR /opt/apps/forem
+#12 CACHED
+
+#13 [builder  6/14] COPY --chown=1000:1000 ./.ruby-version /opt/apps/forem/
+#13 CACHED
+
+#13 [builder  6/14] COPY --chown=1000:1000 ./.ruby-version /opt/apps/forem/
+#13 sha256:0fcdd45548775232ba22ee36faa0dd4f0c02cb3180fc6eb5a65c5366037108a8 2.03kB / 2.03kB 0.0s done
+#13 sha256:f68b5e2446f674a27cf3df412591cf570f0d5829e07286c9cd3009f6e3a383b5 193B / 193B 0.0s done
+#13 sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 32B / 32B 0.0s done
+#13 sha256:ea511d22423c22ade1f9ac37c8313e21bf2e70fb99059caa09e8d77891890ae2 182B / 182B 0.1s done
+#13 sha256:ab1fdf37d8d25c12c6d31832dd27e242bd0b081244b00ce6e6e0f3ffbec17165 827.15kB / 827.15kB 0.1s done
+#13 sha256:5957cc78f4c88f34cca0a8f343a869adb724c8427a9e69628c6dfbc2594b9eb9 232B / 232B 0.0s done
+#13 sha256:06d691efbcdc2477ac15ef2b6a9408e8a5bf824f7912bac067aa59c2be823318 5.82MB / 5.82MB 0.2s done
+#13 sha256:9612345fb6fb5f21a0ca4f205bc6f9f5275efd7d4dab6df368c9a1e22ffb274a 142B / 142B 0.0s done
+#13 sha256:d66e99146654b9ccc5fc4bc787c3adb73ddc11687edbfa88f44ce2f772394928 7.34MB / 145.78MB 0.2s
+#13 sha256:f12c4da7834017b6c8a4a389d971a5caec26da39c565bfd65043c903a00b648d 198B / 198B 0.0s done
+#13 sha256:b36c95e9a174a2ac963e837d650d0078204d58fa8adf8e5420ab208516713237 1.05MB / 151.59MB 0.2s
+#13 sha256:d66e99146654b9ccc5fc4bc787c3adb73ddc11687edbfa88f44ce2f772394928 14.68MB / 145.78MB 0.3s
+#13 sha256:828525fb8ed79aeeb2a025af18bf42442f6f5c71bf112c2409583b339dd55204 4.19MB / 36.19MB 0.2s
+#13 sha256:fa35226baf1422dcc2010988c28511cfb143580ebf0826b97cccfcac72b6c191 10.02MB / 10.02MB 0.2s done
+#13 sha256:d66e99146654b9ccc5fc4bc787c3adb73ddc11687edbfa88f44ce2f772394928 28.31MB / 145.78MB 0.5s
+#13 sha256:b36c95e9a174a2ac963e837d650d0078204d58fa8adf8e5420ab208516713237 11.53MB / 151.59MB 0.3s
+#13 sha256:828525fb8ed79aeeb2a025af18bf42442f6f5c71bf112c2409583b339dd55204 15.73MB / 36.19MB 0.3s
+#13 sha256:b36c95e9a174a2ac963e837d650d0078204d58fa8adf8e5420ab208516713237 35.65MB / 151.59MB 0.5s
+#13 sha256:828525fb8ed79aeeb2a025af18bf42442f6f5c71bf112c2409583b339dd55204 29.36MB / 36.19MB 0.5s
+#13 sha256:c0edef2937fa3b888b0cc3f9f5a4db00a1be6f297be5f057a77d738f91e675a0 6.29MB / 31.42MB 0.2s
+#13 sha256:d66e99146654b9ccc5fc4bc787c3adb73ddc11687edbfa88f44ce2f772394928 65.01MB / 145.78MB 0.8s
+#13 sha256:b36c95e9a174a2ac963e837d650d0078204d58fa8adf8e5420ab208516713237 56.62MB / 151.59MB 0.6s
+#13 sha256:828525fb8ed79aeeb2a025af18bf42442f6f5c71bf112c2409583b339dd55204 36.19MB / 36.19MB 0.5s done
+#13 sha256:c0edef2937fa3b888b0cc3f9f5a4db00a1be6f297be5f057a77d738f91e675a0 31.42MB / 31.42MB 0.3s done
+#13 extracting sha256:c0edef2937fa3b888b0cc3f9f5a4db00a1be6f297be5f057a77d738f91e675a0
+#13 sha256:d66e99146654b9ccc5fc4bc787c3adb73ddc11687edbfa88f44ce2f772394928 88.08MB / 145.78MB 0.9s
+#13 sha256:b36c95e9a174a2ac963e837d650d0078204d58fa8adf8e5420ab208516713237 77.59MB / 151.59MB 0.8s
+#13 sha256:d66e99146654b9ccc5fc4bc787c3adb73ddc11687edbfa88f44ce2f772394928 110.10MB / 145.78MB 1.1s
+#13 sha256:b36c95e9a174a2ac963e837d650d0078204d58fa8adf8e5420ab208516713237 90.18MB / 151.59MB 0.9s
+#13 sha256:d66e99146654b9ccc5fc4bc787c3adb73ddc11687edbfa88f44ce2f772394928 130.02MB / 145.78MB 1.2s
+#13 sha256:b36c95e9a174a2ac963e837d650d0078204d58fa8adf8e5420ab208516713237 110.10MB / 151.59MB 1.1s
+#13 sha256:d66e99146654b9ccc5fc4bc787c3adb73ddc11687edbfa88f44ce2f772394928 145.78MB / 145.78MB 1.4s
+#13 sha256:b36c95e9a174a2ac963e837d650d0078204d58fa8adf8e5420ab208516713237 127.93MB / 151.59MB 1.2s
+#13 sha256:d66e99146654b9ccc5fc4bc787c3adb73ddc11687edbfa88f44ce2f772394928 145.78MB / 145.78MB 1.4s done
+#13 sha256:b36c95e9a174a2ac963e837d650d0078204d58fa8adf8e5420ab208516713237 151.59MB / 151.59MB 1.5s
+#13 sha256:b36c95e9a174a2ac963e837d650d0078204d58fa8adf8e5420ab208516713237 151.59MB / 151.59MB 1.7s done
+#13 extracting sha256:c0edef2937fa3b888b0cc3f9f5a4db00a1be6f297be5f057a77d738f91e675a0 1.1s done
+#13 extracting sha256:fa35226baf1422dcc2010988c28511cfb143580ebf0826b97cccfcac72b6c191
+#13 extracting sha256:fa35226baf1422dcc2010988c28511cfb143580ebf0826b97cccfcac72b6c191 0.4s done
+#13 DONE 2.2s
+
+#13 [builder  6/14] COPY --chown=1000:1000 ./.ruby-version /opt/apps/forem/
+#13 extracting sha256:f12c4da7834017b6c8a4a389d971a5caec26da39c565bfd65043c903a00b648d done
+#13 extracting sha256:828525fb8ed79aeeb2a025af18bf42442f6f5c71bf112c2409583b339dd55204
+#13 extracting sha256:828525fb8ed79aeeb2a025af18bf42442f6f5c71bf112c2409583b339dd55204 0.6s done
+#13 DONE 2.8s
+
+#13 [builder  6/14] COPY --chown=1000:1000 ./.ruby-version /opt/apps/forem/
+#13 extracting sha256:9612345fb6fb5f21a0ca4f205bc6f9f5275efd7d4dab6df368c9a1e22ffb274a done
+#13 extracting sha256:b36c95e9a174a2ac963e837d650d0078204d58fa8adf8e5420ab208516713237
+#13 extracting sha256:b36c95e9a174a2ac963e837d650d0078204d58fa8adf8e5420ab208516713237 3.3s done
+#13 DONE 6.2s
+
+#13 [builder  6/14] COPY --chown=1000:1000 ./.ruby-version /opt/apps/forem/
+#13 extracting sha256:5957cc78f4c88f34cca0a8f343a869adb724c8427a9e69628c6dfbc2594b9eb9 done
+#13 extracting sha256:ea511d22423c22ade1f9ac37c8313e21bf2e70fb99059caa09e8d77891890ae2 done
+#13 extracting sha256:d66e99146654b9ccc5fc4bc787c3adb73ddc11687edbfa88f44ce2f772394928
+#13 extracting sha256:d66e99146654b9ccc5fc4bc787c3adb73ddc11687edbfa88f44ce2f772394928 2.5s done
+#13 DONE 8.7s
+
+#13 [builder  6/14] COPY --chown=1000:1000 ./.ruby-version /opt/apps/forem/
+#13 extracting sha256:ab1fdf37d8d25c12c6d31832dd27e242bd0b081244b00ce6e6e0f3ffbec17165 0.1s done
+#13 extracting sha256:0fcdd45548775232ba22ee36faa0dd4f0c02cb3180fc6eb5a65c5366037108a8 done
+#13 extracting sha256:06d691efbcdc2477ac15ef2b6a9408e8a5bf824f7912bac067aa59c2be823318 0.1s done
+#13 DONE 8.8s
+
+#13 [builder  6/14] COPY --chown=1000:1000 ./.ruby-version /opt/apps/forem/
+#13 extracting sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 done
+#13 extracting sha256:f68b5e2446f674a27cf3df412591cf570f0d5829e07286c9cd3009f6e3a383b5 done
+#13 DONE 8.8s
+
+#14 [builder  7/14] COPY --chown=1000:1000 ./Gemfile ./Gemfile.lock /opt/apps/forem/
+#14 DONE 3.0s
+
+#15 [builder  8/14] COPY --chown=1000:1000 ./vendor/cache /opt/apps/forem/vendor/cache
+#15 DONE 0.2s
+
+#16 [builder  9/14] RUN mkdir -p "/opt/apps/forem/.bundle" &&     touch "/opt/apps/forem/.bundle/config" &&     chown -R "1000:1000" "/opt/apps/forem/.bundle" &&     bundle config --local build.sassc --disable-march-tune-native &&     bundle config --local without development:test &&     BUNDLE_FROZEN=true bundle install --deployment --jobs 4 --retry 5 &&     find "/opt/apps/forem"/vendor/bundle -name "*.c" -delete &&     find "/opt/apps/forem"/vendor/bundle -name "*.o" -delete
+#16 3.362 Could not find net-http2-0.18.4 in cached gems or installed locally
+#16 ERROR: process "/bin/sh -c mkdir -p \"${BUNDLE_APP_CONFIG}\" &&     touch \"${BUNDLE_APP_CONFIG}/config\" &&     chown -R \"${APP_UID}:${APP_GID}\" \"${BUNDLE_APP_CONFIG}\" &&     bundle config --local build.sassc --disable-march-tune-native &&     bundle config --local without development:test &&     BUNDLE_FROZEN=true bundle install --deployment --jobs 4 --retry 5 &&     find \"${APP_HOME}\"/vendor/bundle -name \"*.c\" -delete &&     find \"${APP_HOME}\"/vendor/bundle -name \"*.o\" -delete" did not complete successfully: exit code: 7
+------
+ > [builder  9/14] RUN mkdir -p "/opt/apps/forem/.bundle" &&     touch "/opt/apps/forem/.bundle/config" &&     chown -R "1000:1000" "/opt/apps/forem/.bundle" &&     bundle config --local build.sassc --disable-march-tune-native &&     bundle config --local without development:test &&     BUNDLE_FROZEN=true bundle install --deployment --jobs 4 --retry 5 &&     find "/opt/apps/forem"/vendor/bundle -name "*.c" -delete &&     find "/opt/apps/forem"/vendor/bundle -name "*.o" -delete:
+3.362 Could not find net-http2-0.18.4 in cached gems or installed locally
+------
+
+ 3 warnings found (use docker --debug to expand):
+ - FromAsCasing: 'as' and 'FROM' keywords' casing do not match (line 111)
+ - FromAsCasing: 'as' and 'FROM' keywords' casing do not match (line 1)
+ - FromAsCasing: 'as' and 'FROM' keywords' casing do not match (line 6)
+Containerfile:72
+--------------------
+  71 |     ENV BUNDLE_APP_CONFIG="${APP_HOME}/.bundle"
+  72 | >>> RUN mkdir -p "${BUNDLE_APP_CONFIG}" && \
+  73 | >>>     touch "${BUNDLE_APP_CONFIG}/config" && \
+  74 | >>>     chown -R "${APP_UID}:${APP_GID}" "${BUNDLE_APP_CONFIG}" && \
+  75 | >>>     bundle config --local build.sassc --disable-march-tune-native && \
+  76 | >>>     bundle config --local without development:test && \
+  77 | >>>     BUNDLE_FROZEN=true bundle install --deployment --jobs 4 --retry 5 && \
+  78 | >>>     find "${APP_HOME}"/vendor/bundle -name "*.c" -delete && \
+  79 | >>>     find "${APP_HOME}"/vendor/bundle -name "*.o" -delete
+  80 |
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c mkdir -p \"${BUNDLE_APP_CONFIG}\" &&     touch \"${BUNDLE_APP_CONFIG}/config\" &&     chown -R \"${APP_UID}:${APP_GID}\" \"${BUNDLE_APP_CONFIG}\" &&     bundle config --local build.sassc --disable-march-tune-native &&     bundle config --local without development:test &&     BUNDLE_FROZEN=true bundle install --deployment --jobs 4 --retry 5 &&     find \"${APP_HOME}\"/vendor/bundle -name \"*.c\" -delete &&     find \"${APP_HOME}\"/vendor/bundle -name \"*.o\" -delete" did not complete successfully: exit code: 7
+Reference
+Check build summary support
+Error: buildx failed with: ERROR: failed to build: failed to solve: process "/bin/sh -c mkdir -p \"${BUNDLE_APP_CONFIG}\" &&     touch \"${BUNDLE_APP_CONFIG}/config\" &&     chown -R \"${APP_UID}:${APP_GID}\" \"${BUNDLE_APP_CONFIG}\" &&     bundle config --local build.sassc --disable-march-tune-native &&     bundle config --local without development:test &&     BUNDLE_FROZEN=true bundle install --deployment --jobs 4 --retry 5 &&     find \"${APP_HOME}\"/vendor/bundle -name \"*.c\" -delete &&     find \"${APP_HOME}\"/vendor/bundle -name \"*.o\" -delete" did not complete successfully: exit code: 7
