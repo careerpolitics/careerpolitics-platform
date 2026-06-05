@@ -270,4 +270,44 @@ RSpec.describe Ai::MockExamQuestionGenerator do
       expect(result).to eq([])
     end
   end
+
+  describe "#clean_json_response" do
+    subject(:cleaner) { generator }
+
+    let(:valid_array) { [{ "a" => 1 }, { "b" => 2 }] }
+    let(:valid_json) { valid_array.to_json }
+
+    it "passes through valid JSON unchanged" do
+      result = cleaner.send(:clean_json_response, valid_json)
+      expect(JSON.parse(result)).to eq(valid_array)
+    end
+
+    it "fixes doubled closing bracket (production error pattern)" do
+      malformed = "#{valid_json}\n]"
+      result = cleaner.send(:clean_json_response, malformed)
+      expect(JSON.parse(result)).to eq(valid_array)
+    end
+
+    it "strips markdown code fences" do
+      fenced = "```
+
+json\n#{valid_json}\n
+
+```"
+      result = cleaner.send(:clean_json_response, fenced)
+      expect(JSON.parse(result)).to eq(valid_array)
+    end
+
+    it "salvages truncated JSON by recovering complete objects" do
+      truncated = '[{"a":1},{"b":2},{"c":3'
+      result = cleaner.send(:clean_json_response, truncated)
+      parsed = JSON.parse(result)
+      expect(parsed).to eq([{ "a" => 1 }, { "b" => 2 }])
+    end
+
+    it "returns original text when no array is present" do
+      result = cleaner.send(:clean_json_response, "just text")
+      expect(result).to eq("just text")
+    end
+  end
 end
