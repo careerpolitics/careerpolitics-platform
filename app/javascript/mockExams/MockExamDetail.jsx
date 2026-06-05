@@ -40,6 +40,10 @@ export function MockExamDetail({ slug }) {
     setStarting(true);
     setError(null);
 
+    if (goFullscreen) {
+      try { sessionStorage.setItem('mock_exam_fullscreen', '1'); } catch { /* ignore */ }
+    }
+
     try {
       const payload = pendingPoolSet ? { pool_set: pendingPoolSet } : {};
       const res = await request(`/mock_exams/${slug}/attempts`, {
@@ -55,10 +59,13 @@ export function MockExamDetail({ slug }) {
         const errData = await res.json();
         setError(errData.errors?.[0] || errData.error || 'Failed to start exam');
         setStarting(false);
+        try { sessionStorage.removeItem('mock_exam_fullscreen'); } catch { /* ignore */ }
+
       }
     } catch {
       setError('Network error. Please try again.');
       setStarting(false);
+      try { sessionStorage.removeItem('mock_exam_fullscreen'); } catch { /* ignore */ }
     }
   };
 
