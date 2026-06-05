@@ -16,8 +16,14 @@ export function MockExamListing() {
         setFollowedTags(data.followed_tags || []);
         setUserSignedIn(!!data.user_signed_in);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false))
   }, []);
+
+  const followedNames = useMemo(
+    () => new Set(followedTags.map((t)=> t.name)),
+    [followedTags],
+  );
 
   const { following, others } = useMemo(() => {
     const f = [];
