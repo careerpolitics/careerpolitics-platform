@@ -14,38 +14,44 @@ export function MockExamListing() {
       .then((data) => {
         setTemplates(data.templates || []);
         setFollowedTags(data.followed_tags || []);
-        setUserSignedIn(data.user_signed_in || false);
+        setUserSignedIn(!!data.user_signed_in);
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      });
   }, []);
 
-  const followedNames = useMemo(
-    () => new Set(followedTags.map((t) => t.name)),
-    [followedTags],
-  );
+  const { following, others } = useMemo(() => {
+    const f = [];
+    const o = [];
+    templates.forEach((t) => {
+      const tags = t.tag_list || [];
+      if (tags.some((tag) => followedNames.has(tag.name))) {
+        f.push(t);
+      } else {
+        o.push(t);
+      }
+    });
+    return { following: f, others: o };
+  }, [templates, followedNames]);
 
   const toggleTag = useCallback((tagObj) => {
-    if (!userSignedIn) {
-      window.location.href = '/enter';
-      return;
-    }
     setFollowedTags((prev) => {
       const isFollowed = prev.some((t) => t.name === tagObj.name);
       const updated = isFollowed
         ? prev.filter((t) => t.name !== tagObj.name)
         : [...prev, tagObj];
 
-      // Fire-and-forget follow/unfollow via Forem's API
-      request('/follows', {
+      request(`/follows`, {
         method: 'POST',
-        body: JSON.stringify({ followable_type: 'Tag', followable_id: tagObj.id }),
-        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          followable_type: 'Tag',
+          followable_id: tagObj.id,
+          verb: isFollowed ? 'unfollow' : 'follow',
+        }),
       }).catch(() => {});
 
       return updated;
     });
-  }, [userSignedIn]);
+  }, []);
 
   if (loading) {
     return (
@@ -64,41 +70,68 @@ export function MockExamListing() {
     );
   }
 
+  if (!userSignedIn) {
+    return (
+      <div>
+        <h1 class="crayons-title">Mock Exams</h1>
+        <div class="flex flex-col gap-2">
+          {templates.map((t) => (
+            <CompactRow key={t.id} template={t} followedNames={followedNames} onToggleTag={toggleTag} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+// Logged-in: followed → featured cards, rest → compact rows
   return (
     <div>
-      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <h1 class="crayons-title">Mock Exams</h1>
-      </div>
-
-      <div class="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-        {templates.map((t) => (
-          <ExamCard key={t.id} template={t} followedNames={followedNames} onToggleTag={toggleTag} />
-        ))}
-      </div>
+      <h1 class="crayons-title">Mock Exams</h1>
+      {following.length > 0 && (
+        <div class="mb-6">
+          <h2 class="fw-bold mb-3" style={{ fontSize: '1.1rem' }}>Following</h2>
+          <div class="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+            {following.map((t) => (
+              <ExamCard key={t.id} template={t} followedNames={followedNames} onToggleTag={toggleTag} />
+            ))}
+          </div>
+        </div>
+      )}
+      {others.length > 0 && (
+        <div>
+          {following.length > 0 && <h2 class="fw-bold mb-3" style={{ fontSize: '1.1rem' }}>All Exams</h2>}
+          <div class="flex flex-col gap-2">
+            {others.map((t) => (
+              <CompactRow key={t.id} template={t} followedNames={followedNames} onToggleTag={toggleTag} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 function TagChip({ tag, isFollowed, onToggle }) {
+  const color = tag.bg_color_hex || '';
+  const colorFaded = color ? `${color}1a` : undefined;
+  const tagStyle = color
+    ? { '--tag-bg': colorFaded, '--tag-prefix': color, '--tag-bg-hover': colorFaded, '--tag-prefix-hover': color }
+    : {};
+
   return (
     <span class="flex items-center gap-1" style={{ display: 'inline-flex' }}>
       <a
         href={`/t/${tag.name}`}
         class="crayons-tag"
+        style={tagStyle}
         onClick={(e) => e.stopPropagation()}
-        style={{ textDecoration: 'none' }}
       >
         <span class="crayons-tag__prefix">#</span>
         {tag.name}
       </a>
       <button
-        class={`c-btn c-btn--s ${isFollowed ? 'c-btn--primary' : 'c-btn--secondary'}`}
-        style={{
-          padding: '1px 6px',
-          fontSize: '0.65rem',
-          minHeight: '22px',
-          borderRadius: '4px',
-        }}
+        class={`c-btn c-btn--s ${isFollowed ? '' : 'c-btn--primary'}`}
+        style={{ padding: '1px 6px', fontSize: '0.65rem', minHeight: '22px', borderRadius: '4px' }}
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle(tag); }}
         title={isFollowed ? 'Unfollow this tag' : 'Follow this tag'}
       >

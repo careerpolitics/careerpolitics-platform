@@ -42,10 +42,8 @@ module Ai
         batches.times do |batch_index|
           batch_count = [BATCH_SIZE, remaining - (batch_index * BATCH_SIZE)].min
           prompt = build_prompt(
-            section_name: section_name,
-            section_type: section_type,
-            count: batch_count,
-            topics: topics,
+            section_name: section_name, section_type: section_type,
+            count: batch_count, topics: topics,
             )
 
           parsed = generate_with_retry(prompt)
@@ -60,14 +58,16 @@ module Ai
 
         shortfall_retries += 1
         Rails.logger.warn(
-          "Ai::MockExamQuestionGenerator: Section '#{section_name}' shortfall — got #{all_questions.size}/#{count}, " \
-            "retry #{shortfall_retries}/#{MAX_SHORTFALL_RETRIES} for #{remaining} more",
+          "Ai::MockExamQuestionGenerator: Section '#{section_name}' shortfall — " \
+            "got #{all_questions.size}/#{count}, retry #{shortfall_retries}/#{MAX_SHORTFALL_RETRIES} " \
+            "for #{remaining} more",
           )
       end
 
       if all_questions.size < count
         Rails.logger.error(
-          "Ai::MockExamQuestionGenerator: Section '#{section_name}' incomplete — #{all_questions.size}/#{count} after all retries",
+          "Ai::MockExamQuestionGenerator: Section '#{section_name}' incomplete — " \
+            "#{all_questions.size}/#{count} after all retries",
           )
       end
 
@@ -89,11 +89,23 @@ module Ai
         response = @ai_client.call(prompt, response_mime_type: "application/json")
         parsed = JSON.parse(response)
 
-        unless parsed.is_a?(Array) && parsed.all? { |q| valid_question?(q) }
-          raise "Malformed question data"
+        unless parsed.is_a?(Array)
+          raise "Response is not a JSON array"
         end
 
-        parsed
+        # Keep valid questions, filter out malformed ones instead of rejecting the whole batch
+        valid, invalid = parsed.partition { |q| valid_question?(q) }
+
+        if invalid.any?
+          Rails.logger.warn(
+            "Ai::MockExamQuestionGenerator: Filtered #{invalid.length} malformed questions " \
+              "from batch of #{parsed.length}",
+            )
+        end
+
+        raise "No valid questions in response" if valid.empty?
+
+        valid
       rescue StandardError => e
         retries += 1
         if retries <= MAX_RETRIES

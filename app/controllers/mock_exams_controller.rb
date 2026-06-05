@@ -148,7 +148,7 @@ class MockExamsController < ApplicationController
       has_calculator: template.has_calculator,
       has_scratchpad: template.has_scratchpad,
       published_sets_count: template.published_set_count,
-      tag_list: template.tag ? [{ name: template.tag.name, id: template.tag.id }] : []
+      tag_list: template.tag ? [{ name: template.tag.name, id: template.tag.id, bg_color_hex: template.tag.bg_color_hex }] : []
     }
   end
 
