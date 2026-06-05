@@ -588,8 +588,8 @@ GEM
       uri (>= 0.11.1)
     net-http-persistent (4.0.8)
       connection_pool (>= 2.2.4, < 4)
-    net-http2 (0.18.4)
-      http-2 (~> 0.11)
+    net-http2 (0.19.0)
+      http-2 (>= 1.0)
     net-imap (0.4.10)
       date
       net-protocol
@@ -666,8 +666,8 @@ GEM
       rack
     openssl (3.3.2)
     orm_adapter (0.5.0)
-    ostruct (0.6.3)
     os (1.1.4)
+    ostruct (0.6.3)
     parallel (1.24.0)
     parser (3.3.1.0)
       ast (~> 2.4.1)
