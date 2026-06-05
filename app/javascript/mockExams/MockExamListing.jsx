@@ -17,11 +17,11 @@ export function MockExamListing() {
         setUserSignedIn(!!data.user_signed_in);
         setLoading(false);
       })
-      .catch(() => setLoading(false))
+      .catch(() => setLoading(false));
   }, []);
 
   const followedNames = useMemo(
-    () => new Set(followedTags.map((t)=> t.name)),
+    () => new Set(followedTags.map((t) => t.name)),
     [followedTags],
   );
 
@@ -144,6 +144,38 @@ function TagChip({ tag, isFollowed, onToggle }) {
         {isFollowed ? 'Following' : 'Follow'}
       </button>
     </span>
+  );
+}
+
+function CompactRow({ template: t, followedNames, onToggleTag }) {
+  return (
+    <div
+      class="flex items-center justify-between flex-wrap"
+      style={{
+        padding: '10px 16px',
+        border: '1px solid var(--card-border)',
+        borderRadius: '8px',
+        background: 'var(--card-bg)',
+        gap: '12px',
+      }}
+    >
+      <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+        <a href={`/mock_exams/${t.slug}`} class="fw-bold fs-s"
+           style={{ textDecoration: 'none', color: 'inherit' }}>
+          {t.title}
+        </a>
+        <div class="flex items-center gap-2 mt-1">
+          {(t.tag_list || []).map((tag) => (
+            <TagChip key={tag.name} tag={tag} isFollowed={followedNames.has(tag.name)} onToggle={onToggleTag} />
+          ))}
+          <span class="fs-xs color-secondary">{t.total_questions}q</span>
+          <span class="fs-xs color-secondary">{t.duration_minutes}m</span>
+          {t.published_sets_count > 0 && (
+            <span class="fs-xs color-secondary">{t.published_sets_count} sets</span>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
