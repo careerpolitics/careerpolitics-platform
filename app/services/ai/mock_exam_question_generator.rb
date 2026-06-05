@@ -87,7 +87,8 @@ module Ai
       retries = 0
       begin
         response = @ai_client.call(prompt, response_mime_type: "application/json")
-        parsed = JSON.parse(response)
+        cleaned = clean_json_response(response)
+        parsed = JSON.parse(cleaned)
 
         unless parsed.is_a?(Array)
           raise "Response is not a JSON array"
@@ -252,6 +253,55 @@ module Ai
       else
         ""
       end
+    end
+
+    def clean_json_response(response)
+      text = response.to_s.strip
+
+      # Remove markdown code fences if present
+      text = text.gsub(/\A```
+
+(?:json)?\s*\n?/, "").gsub(/\n?
+
+```\s*\z/, "").strip
+
+      return text unless text.include?("[")
+
+      # Fast path: try parsing as-is
+      begin
+        JSON.parse(text)
+        return text
+      rescue JSON::ParserError
+        # Continue with cleaning
+      end
+
+      # Trim from the last ] backwards to find a valid JSON array
+      start_idx = text.index("[")
+      last_bracket = text.rindex("]")
+      while last_bracket && last_bracket > start_idx
+        candidate = text[start_idx..last_bracket]
+        begin
+          JSON.parse(candidate)
+          return candidate
+        rescue JSON::ParserError
+          last_bracket = text.rindex("]", last_bracket - 1)
+        end
+      end
+
+      # No valid closing ] — try to salvage a truncated response
+      truncated = text[start_idx..]
+      last_brace = truncated.rindex("}")
+      if last_brace
+        salvaged = truncated[0..last_brace].sub(/,\s*\z/, "") + "]"
+        begin
+          JSON.parse(salvaged)
+          return salvaged
+        rescue JSON::ParserError
+          # Fall through — will fail in caller and trigger retry
+        end
+      end
+
+      text
     end
 
     def valid_question?(question)
