@@ -23,6 +23,7 @@ class AdminMenu
       item(name: "podcasts"),
       item(name: "job posts", controller: "job_posts"),
       item(name: "tags"),
+      item(name: "concepts", controller: "concepts"),
       item(name: "emails"),
       item(name: "surveys"),
       item(name: "events"),
