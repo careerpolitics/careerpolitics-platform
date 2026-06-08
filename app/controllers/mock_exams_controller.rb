@@ -1,5 +1,5 @@
 class MockExamsController < ApplicationController
-  before_action :set_cache_control_headers, only: %i[index show]
+  before_action :set_cache_control_headers, only: %i[index show], unless: -> { request.format.json? }
   before_action :authenticate_user!, only: %i[dashboard show sets leaderboard stats]
   before_action :set_template_by_slug, only: %i[show leaderboard stats sets]
 
