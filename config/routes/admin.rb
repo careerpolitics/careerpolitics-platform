@@ -161,13 +161,20 @@ namespace :admin do
         post :generate_pool
         post :refresh_pool
         post :translate_pool
+        post :backfill_set
+        post :regenerate_section
         get :review_set
+        get :diagnostics
         post :publish_set
         post :unpublish_set
         delete :destroy_set
+        get :new_question
+        post :create_question
         get "questions/:question_id/edit", action: :edit_question, as: :edit_question
         patch "questions/:question_id", action: :update_question, as: :update_question
         delete "questions/:question_id", action: :destroy_question, as: :destroy_question
+        post "questions/:question_id/retranslate", action: :retranslate_question, as: :retranslate_question
+        post "questions/:question_id/clone_to_set", action: :clone_to_set, as: :clone_to_set
       end
     end
   end

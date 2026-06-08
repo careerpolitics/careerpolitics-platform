@@ -1,0 +1,87 @@
+<div class="crayons-card p-6">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="crayons-title">Add Question to Set <%= @set_number %></h1>
+    <%= link_to "Back to Set",
+                review_set_admin_mock_exam_template_path(@template, set: @set_number),
+                class: "c-btn c-btn--secondary" %>
+  </div>
+
+  <%= form_with model: @question,
+                url: create_question_admin_mock_exam_template_path(@template),
+                method: :post, local: true do |f| %>
+    <% if @question.errors.any? %>
+      <div class="crayons-notice crayons-notice--danger mb-4">
+        <ul>
+          <% @question.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%= hidden_field_tag "mock_exam_question[pool_set]", @set_number %>
+
+    <div class="crayons-field mb-4">
+      <%= f.label :section_name, class: "crayons-field__label" %>
+      <%= f.select :section_name,
+                   @template.sections_config.map { |s| [s["name"], s["name"]] },
+                   {}, class: "crayons-select" %>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div class="crayons-field">
+        <%= f.label :question_type, class: "crayons-field__label" %>
+        <%= f.select :question_type,
+                     MockExamQuestion.question_types.keys.map { |k| [k.titleize, k] },
+                     {}, class: "crayons-select" %>
+      </div>
+      <div class="crayons-field">
+        <%= f.label :difficulty, class: "crayons-field__label" %>
+        <%= f.select :difficulty,
+                     MockExamQuestion.difficulties.keys.map { |k| [k.titleize, k] },
+                     {}, class: "crayons-select" %>
+      </div>
+    </div>
+
+    <div class="crayons-field mb-4">
+      <%= f.label :question_text, class: "crayons-field__label" %>
+      <%= f.text_area :question_text, class: "crayons-textfield", rows: 5 %>
+    </div>
+
+    <div class="crayons-field mb-4">
+      <label class="crayons-field__label">Options</label>
+      <% %w[A B C D].each do |key| %>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="fw-bold" style="min-width: 24px;"><%= key %>.</span>
+          <input type="text" name="mock_exam_question[options][][key]"
+                 value="<%= key %>" class="hidden">
+          <input type="text" name="mock_exam_question[options][][text]"
+                 value="" placeholder="Option <%= key %> text"
+                 class="crayons-textfield" style="flex: 1;" />
+        </div>
+      <% end %>
+    </div>
+
+    <div class="crayons-field mb-4">
+      <%= f.label :correct_option_key, "Correct Answer", class: "crayons-field__label" %>
+      <%= f.select :correct_option_key, %w[A B C D], {}, class: "crayons-select" %>
+    </div>
+
+    <div class="crayons-field mb-4">
+      <%= f.label :explanation, class: "crayons-field__label" %>
+      <%= f.text_area :explanation, class: "crayons-textfield", rows: 4 %>
+    </div>
+
+    <div class="crayons-field mb-4">
+      <%= f.label :solution_steps, class: "crayons-field__label" %>
+      <%= f.text_area :solution_steps, class: "crayons-textfield", rows: 4 %>
+    </div>
+
+    <div class="flex gap-2">
+      <%= f.submit "Add Question", class: "c-btn c-btn--primary" %>
+      <%= link_to "Cancel",
+                  review_set_admin_mock_exam_template_path(@template, set: @set_number),
+                  class: "c-btn c-btn--secondary" %>
+    </div>
+  <% end %>
+</div>

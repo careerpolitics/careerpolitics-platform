@@ -1,0 +1,112 @@
+<div class="crayons-card p-6">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="crayons-title">Diagnostics — <%= @template.title %></h1>
+    <%= link_to "Back to Template",
+                admin_mock_exam_template_path(@template),
+                class: "c-btn c-btn--secondary" %>
+  </div>
+
+  <%# ── Translation Status ── %>
+  <div class="crayons-card crayons-card--secondary p-4 mb-6">
+    <h3 class="crayons-subtitle-2 mb-2">Translation Status</h3>
+    <div class="flex gap-4 items-center">
+      <span><strong><%= @translation_status[:translated] %></strong> / <%= @translation_status[:total] %> translated</span>
+      <% if @translation_status[:pending] > 0 %>
+        <span class="crayons-tag crayons-tag--warning"><%= @translation_status[:pending] %> pending</span>
+        <%= button_to "Translate Now",
+                      translate_pool_admin_mock_exam_template_path(@template),
+                      method: :post, class: "c-btn c-btn--primary c-btn--s" %>
+      <% else %>
+        <span class="crayons-tag crayons-tag--success">All translated</span>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Per-Set Breakdown ── %>
+  <% @set_details.each do |set_detail| %>
+    <div class="crayons-card crayons-card--secondary p-4 mb-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="crayons-subtitle-2">
+          Set <%= set_detail[:set] %>
+          <% if set_detail[:published] %>
+            <span class="crayons-tag crayons-tag--success ml-2">Published</span>
+          <% else %>
+            <span class="crayons-tag crayons-tag--warning ml-2">Unpublished</span>
+          <% end %>
+        </h3>
+        <div class="flex items-center gap-2">
+          <span class="<%= set_detail[:total] >= set_detail[:expected] ? 'color-base-success' : 'color-base-danger' %>">
+            <strong><%= set_detail[:total] %></strong> / <%= set_detail[:expected] %> questions
+          </span>
+          <% if set_detail[:total] < set_detail[:expected] && !set_detail[:published] %>
+            <%= button_to "Backfill",
+                          backfill_set_admin_mock_exam_template_path(@template, set: set_detail[:set]),
+                          method: :post, class: "c-btn c-btn--primary c-btn--s",
+                          data: { confirm: "Generate #{set_detail[:expected] - set_detail[:total]} missing questions?" } %>
+          <% end %>
+          <%= link_to "Review",
+                      review_set_admin_mock_exam_template_path(@template, set: set_detail[:set]),
+                      class: "c-btn c-btn--secondary c-btn--s" %>
+        </div>
+      </div>
+
+      <table class="crayons-card w-100" style="border-collapse: collapse;">
+        <thead>
+        <tr>
+          <th class="p-2" style="text-align: left;">Section</th>
+          <th class="p-2" style="text-align: center;">Expected</th>
+          <th class="p-2" style="text-align: center;">Actual</th>
+          <th class="p-2" style="text-align: center;">Shortfall</th>
+          <th class="p-2" style="text-align: right;">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% set_detail[:sections].each do |section| %>
+          <tr style="border-top: 1px solid var(--card-border, #e2e8f0);">
+            <td class="p-2"><%= section[:name] %></td>
+            <td class="p-2" style="text-align: center;"><%= section[:expected] %></td>
+            <td class="p-2" style="text-align: center;">
+                <span class="<%= section[:actual] >= section[:expected] ? 'color-base-success' : 'color-base-danger' %>">
+                  <%= section[:actual] %>
+                </span>
+            </td>
+            <td class="p-2" style="text-align: center;">
+              <% if section[:shortfall] > 0 %>
+                <span class="color-base-danger fw-bold"><%= section[:shortfall] %></span>
+              <% else %>
+                <span class="color-base-success">0</span>
+              <% end %>
+            </td>
+            <td class="p-2" style="text-align: right;">
+              <% if section[:shortfall] > 0 && !set_detail[:published] %>
+                <%= button_to "Regen Section",
+                              regenerate_section_admin_mock_exam_template_path(@template, section: section[:name]),
+                              method: :post, class: "c-btn c-btn--secondary c-btn--s",
+                              data: { confirm: "Delete unpublished '#{section[:name]}' questions and regenerate?" } %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+
+      <% if !set_detail[:published] %>
+        <div class="flex gap-2 mt-3">
+          <%= link_to "Add Question Manually",
+                      new_question_admin_mock_exam_template_path(@template, set: set_detail[:set]),
+                      class: "c-btn c-btn--secondary c-btn--s" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @set_details.empty? %>
+    <div class="crayons-notice">
+      <p>No question sets generated yet.
+        <%= button_to "Generate Pool",
+                      generate_pool_admin_mock_exam_template_path(@template),
+                      method: :post, class: "c-btn c-btn--primary c-btn--s" %>
+      </p>
+    </div>
+  <% end %>
+</div>
