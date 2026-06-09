@@ -2,6 +2,7 @@
   <div class="flex items-center justify-between mb-4">
     <h1 class="crayons-title"><%= @template.title %></h1>
     <div class="flex gap-2">
+      <%= link_to "Diagnostics", diagnostics_admin_mock_exam_template_path(@template), class: "c-btn c-btn--primary" %>
       <%= link_to "Edit", edit_admin_mock_exam_template_path(@template), class: "c-btn c-btn--secondary" %>
       <%= link_to "Public Page", mock_exam_path(slug: @template.slug), target: "_blank", class: "c-btn c-btn--secondary" %>
       <%= link_to "Back", admin_mock_exam_templates_path, class: "c-btn c-btn--secondary" %>
@@ -131,6 +132,15 @@
                 <%= link_to "Review",
                             review_set_admin_mock_exam_template_path(@template, set: set_number),
                             class: "c-btn c-btn--secondary c-btn--s" %>
+                <% unless published %>
+                  <% shortfall = @template.total_questions - count %>
+                  <% if shortfall > 0 %>
+                    <%= button_to "Backfill (#{shortfall})",
+                                  backfill_set_admin_mock_exam_template_path(@template, set: set_number),
+                                  method: :post, class: "c-btn c-btn--primary c-btn--s",
+                                  data: { confirm: "Generate #{shortfall} missing questions for this set?" } %>
+                  <% end %>
+                <% end %>
                 <%= button_to "Delete",
                               destroy_set_admin_mock_exam_template_path(@template, set: set_number),
                               method: :delete, class: "c-btn c-btn--destructive c-btn--s",

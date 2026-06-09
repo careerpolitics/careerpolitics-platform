@@ -22,6 +22,7 @@ export function MockExamInterface({ slug, attemptId }) {
   const [showPalette, setShowPalette] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const [showFullscreenPrompt, setShowFullscreenPrompt] = useState(false);
   // Tracks whether the exam was in fullscreen when the submit dialog opened,
   // so we can restore that state if the user cancels.
   const wasFullscreenBeforeConfirm = useRef(false);
@@ -54,11 +55,19 @@ export function MockExamInterface({ slug, attemptId }) {
         setResponses(merged);
         setLoading(false);
 
-        // Auto-enter fullscreen if requested via ?fs=1 from the instruction modal
-        if (new URLSearchParams(window.location.search).get('fs') === '1'
-          && typeof document.documentElement.requestFullscreen === 'function') {
-          document.documentElement.requestFullscreen().catch(() => {});
-        }
+        try {
+          const wantFs = sessionStorage.getItem('mock_exam_fullscreen') === '1'
+            || new URLSearchParams(window.location.search).get('fs') === '1';
+          if (wantFs) {
+            sessionStorage.removeItem('mock_exam_fullscreen');
+            if (!document.fullscreenElement && typeof document.documentElement.requestFullscreen === 'function') {
+              document.documentElement.requestFullscreen().catch(() => {
+                // Browser blocked auto-fullscreen — show a prompt overlay
+                setShowFullscreenPrompt(true);
+              });
+            }
+          }
+        } catch { /* ignore */ }
 
       })
       .catch(() => setLoading(false));
@@ -758,6 +767,39 @@ export function MockExamInterface({ slug, attemptId }) {
                 {submitting ? 'Submitting...' : 'Submit'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showFullscreenPrompt && !isFullscreen && canFullscreen && (
+        <div
+          role="dialog"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 10001,
+            background: 'rgba(0,0,0,0.85)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+          onClick={() => {
+            document.documentElement.requestFullscreen().catch(() => {});
+            setShowFullscreenPrompt(false);
+          }}
+        >
+          <div style={{ textAlign: 'center', color: 'white' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⊞</div>
+            <p style={{ fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '8px' }}>
+              Click anywhere to enter fullscreen
+            </p>
+            <p style={{ fontSize: '0.85rem', opacity: 0.7, marginBottom: '20px' }}>
+              Press Esc anytime to exit fullscreen
+            </p>
+            <button
+              class="c-btn c-btn--secondary"
+              onClick={(e) => { e.stopPropagation(); setShowFullscreenPrompt(false); }}
+              style={{ opacity: 0.8 }}
+            >
+              Skip
+            </button>
           </div>
         </div>
       )}

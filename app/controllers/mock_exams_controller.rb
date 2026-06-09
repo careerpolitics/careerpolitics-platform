@@ -1,5 +1,5 @@
 class MockExamsController < ApplicationController
-  before_action :set_cache_control_headers, only: %i[index show]
+  before_action :set_cache_control_headers, only: %i[index show], unless: -> { request.format.json? }
   before_action :authenticate_user!, only: %i[dashboard show sets leaderboard stats]
   before_action :set_template_by_slug, only: %i[show leaderboard stats sets]
 
@@ -148,7 +148,7 @@ class MockExamsController < ApplicationController
       has_calculator: template.has_calculator,
       has_scratchpad: template.has_scratchpad,
       published_sets_count: template.published_set_count,
-      tag_list: template.tag ? [{ name: template.tag.name, id: template.tag.id }] : []
+      tag_list: template.tag ? [{ name: template.tag.name, id: template.tag.id, bg_color_hex: template.tag.bg_color_hex }] : []
     }
   end
 

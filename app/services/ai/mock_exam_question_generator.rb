@@ -1,9 +1,17 @@
 module Ai
   class MockExamQuestionGenerator
-    VERSION = "1.0"
+    VERSION = "1.1"
     MAX_RETRIES = 2
-    BATCH_SIZE = 20
     MAX_SHORTFALL_RETRIES = 3
+
+    BATCH_SIZES = {
+      "knowledge" => 20,
+      "maths" => 10,
+      "reasoning" => 15,
+      "data_interp" => 10,
+      "visual_reasoning" => 5,
+    }.freeze
+    DEFAULT_BATCH_SIZE = 20
 
     def initialize(template, ai_client: nil)
       @template = template
@@ -36,21 +44,25 @@ module Ai
       remaining = count
       shortfall_retries = 0
 
+      batch_size = BATCH_SIZES[section_type] || DEFAULT_BATCH_SIZE
+
       while remaining > 0 && shortfall_retries <= MAX_SHORTFALL_RETRIES
-        batches = (remaining.to_f / BATCH_SIZE).ceil
+        batches = (remaining.to_f / batch_size).ceil
 
         batches.times do |batch_index|
-          batch_count = [BATCH_SIZE, remaining - (batch_index * BATCH_SIZE)].min
+          batch_count = [batch_size, remaining - (batch_index * batch_size)].min
           prompt = build_prompt(
-            section_name: section_name,
-            section_type: section_type,
-            count: batch_count,
-            topics: topics,
+            section_name: section_name, section_type: section_type,
+            count: batch_count, topics: topics,
             )
 
           parsed = generate_with_retry(prompt)
           if parsed
             parsed = sanitize_svg_questions(parsed) if section_type == "visual_reasoning"
+            parsed.each do |q|
+              q["section_name"] = section_name
+              q["question_type"] = section_type
+            end
             all_questions.concat(parsed)
           end
         end
@@ -60,14 +72,16 @@ module Ai
 
         shortfall_retries += 1
         Rails.logger.warn(
-          "Ai::MockExamQuestionGenerator: Section '#{section_name}' shortfall — got #{all_questions.size}/#{count}, " \
-            "retry #{shortfall_retries}/#{MAX_SHORTFALL_RETRIES} for #{remaining} more",
+          "Ai::MockExamQuestionGenerator: Section '#{section_name}' shortfall — " \
+            "got #{all_questions.size}/#{count}, retry #{shortfall_retries}/#{MAX_SHORTFALL_RETRIES} " \
+            "for #{remaining} more",
           )
       end
 
       if all_questions.size < count
         Rails.logger.error(
-          "Ai::MockExamQuestionGenerator: Section '#{section_name}' incomplete — #{all_questions.size}/#{count} after all retries",
+          "Ai::MockExamQuestionGenerator: Section '#{section_name}' incomplete — " \
+            "#{all_questions.size}/#{count} after all retries",
           )
       end
 
@@ -87,19 +101,36 @@ module Ai
       retries = 0
       begin
         response = @ai_client.call(prompt, response_mime_type: "application/json")
-        parsed = JSON.parse(response)
+        cleaned = clean_json_response(response)
+        parsed = JSON.parse(cleaned)
 
-        unless parsed.is_a?(Array) && parsed.all? { |q| valid_question?(q) }
-          raise "Malformed question data"
+        unless parsed.is_a?(Array)
+          raise "Response is not a JSON array"
         end
 
-        parsed
+        parsed.map! { |q| repair_question(q) }
+
+        # Keep valid questions, filter out malformed ones instead of rejecting the whole batch
+        valid, invalid = parsed.partition { |q| valid_question?(q) }
+
+        if invalid.any?
+          Rails.logger.warn(
+            "Ai::MockExamQuestionGenerator: Filtered #{invalid.length} malformed questions " \
+              "from batch of #{parsed.length}",
+            )
+        end
+
+        raise "No valid questions in response" if valid.empty?
+
+        valid
       rescue StandardError => e
         retries += 1
         if retries <= MAX_RETRIES
+          delay = 2**retries
           Rails.logger.warn(
-            "Ai::MockExamQuestionGenerator: Retry #{retries}/#{MAX_RETRIES} — #{e.message}",
+            "Ai::MockExamQuestionGenerator: Retry #{retries}/#{MAX_RETRIES} in #{delay}s — #{e.message}",
             )
+          sleep(delay)
           retry
         end
         Rails.logger.error(
@@ -240,6 +271,81 @@ module Ai
       else
         ""
       end
+    end
+
+    def clean_json_response(response)
+      text = response.to_s.strip
+
+      # Remove markdown code fences if present
+      text = text.gsub(/\A```
+
+(?:json)?\s*\n?/, "").gsub(/\n?
+
+```\s*\z/, "").strip
+
+      return text unless text.include?("[")
+
+      # Fast path: try parsing as-is
+      begin
+        JSON.parse(text)
+        return text
+      rescue JSON::ParserError
+        # Continue with cleaning
+      end
+
+      # Trim from the last ] backwards to find a valid JSON array
+      start_idx = text.index("[")
+      last_bracket = text.rindex("]")
+      while last_bracket && last_bracket > start_idx
+        candidate = text[start_idx..last_bracket]
+        begin
+          JSON.parse(candidate)
+          return candidate
+        rescue JSON::ParserError
+          last_bracket = text.rindex("]", last_bracket - 1)
+        end
+      end
+
+      # No valid closing ] — try to salvage a truncated response
+      truncated = text[start_idx..]
+      last_brace = truncated.rindex("}")
+      if last_brace
+        salvaged = truncated[0..last_brace].sub(/,\s*\z/, "") + "]"
+        begin
+          JSON.parse(salvaged)
+          return salvaged
+        rescue JSON::ParserError
+          # Fall through — will fail in caller and trigger retry
+        end
+      end
+
+      text
+    end
+
+    def repair_question(q)
+      return q unless q.is_a?(Hash)
+
+      key_map = { "1" => "A", "2" => "B", "3" => "C", "4" => "D" }
+
+      if key_map.key?(q["correct_option_key"])
+        q["correct_option_key"] = key_map[q["correct_option_key"]]
+      end
+
+      if q["options"].is_a?(Array)
+        q["options"].each do |opt|
+          next unless opt.is_a?(Hash)
+
+          opt["key"] = key_map[opt["key"]] if key_map.key?(opt["key"])
+        end
+        q["options"] = q["options"].first(4) if q["options"].length > 4
+      end
+
+      q["correct_option_key"] = q["correct_option_key"].to_s.upcase.strip if q["correct_option_key"].present?
+
+      valid_difficulties = %w[easy medium hard]
+      q["difficulty"] = "medium" unless valid_difficulties.include?(q["difficulty"])
+
+      q
     end
 
     def valid_question?(question)

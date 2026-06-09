@@ -17,21 +17,38 @@
                       method: :post, class: "c-btn c-btn--primary",
                       data: { confirm: "This will make Set #{@set_number} available to users. Continue?" } %>
       <% end %>
+      <%= link_to "Diagnostics", diagnostics_admin_mock_exam_template_path(@template), class: "c-btn c-btn--secondary" %>
       <%= link_to "Back", admin_mock_exam_template_path(@template), class: "c-btn c-btn--secondary" %>
     </div>
   </div>
 
-  <div class="mb-3">
-    <% if @is_published %>
-      <span class="c-indicator c-indicator--success">Published</span>
-    <% else %>
-      <span class="c-indicator c-indicator--warning">Draft — not visible to users</span>
+  <div class="flex items-center justify-between mb-3">
+    <div>
+      <% if @is_published %>
+        <span class="c-indicator c-indicator--success">Published</span>
+      <% else %>
+        <span class="c-indicator c-indicator--warning">Draft — not visible to users</span>
+      <% end %>
+      <span class="color-secondary ml-2"><%= @questions.count %> / <%= @template.total_questions %> questions</span>
+      <span class="color-secondary ml-2">|</span>
+      <span class="color-secondary ml-2">
+        Hindi: <%= translated_count %>/<%= @questions.count %> translated
+      </span>
+    </div>
+    <% unless @is_published %>
+      <div class="flex gap-2">
+        <% set_shortfall = @template.total_questions - @questions.count %>
+        <% if set_shortfall > 0 %>
+          <%= button_to "Backfill #{set_shortfall} Missing",
+                        backfill_set_admin_mock_exam_template_path(@template, set: @set_number),
+                        method: :post, class: "c-btn c-btn--primary c-btn--s",
+                        data: { confirm: "Generate #{set_shortfall} missing questions?" } %>
+        <% end %>
+        <%= link_to "Add Question Manually",
+                    new_question_admin_mock_exam_template_path(@template, set: @set_number),
+                    class: "c-btn c-btn--secondary c-btn--s" %>
+      </div>
     <% end %>
-    <span class="color-secondary ml-2"><%= @questions.count %> questions</span>
-    <span class="color-secondary ml-2">|</span>
-    <span class="color-secondary ml-2">
-      Hindi: <%= translated_count %>/<%= @questions.count %> translated
-    </span>
   </div>
 
   <% if @questions.any? %>
@@ -51,6 +68,10 @@
             <%= link_to "Edit",
                         edit_question_admin_mock_exam_template_path(@template, question_id: q.id),
                         class: "c-btn c-btn--secondary c-btn--s" %>
+            <%= button_to "Retranslate",
+                          retranslate_question_admin_mock_exam_template_path(@template, question_id: q.id),
+                          method: :post, class: "c-btn c-btn--secondary c-btn--s",
+                          data: { confirm: "Clear Hindi translation and re-translate this question?" } %>
             <%= button_to "Delete",
                           destroy_question_admin_mock_exam_template_path(@template, question_id: q.id),
                           method: :delete, class: "c-btn c-btn--destructive c-btn--s",
