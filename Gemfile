@@ -76,7 +76,7 @@ gem "omniauth-mlh", "~> 4.1"
 gem "omniauth-rails_csrf_protection", "~> 1.0" # Provides CSRF protection on OmniAuth request endpoint on Rails application.
 gem "omniauth-twitter", "~> 1.4" # OmniAuth strategy for Twitter
 gem "parallel", "~> 1.22" # Run any kind of code in parallel processes
-gem "pg", "~> 1.4" # Pg is the Ruby interface to the PostgreSQL RDBMS
+gem "pg", "~> 1.6" # Pg is the Ruby interface to the PostgreSQL RDBMS
 gem "pg_query", ">= 6.0.0" # Allows PGHero to analyze queries
 gem "pg_search", "~> 2.3.6" # PgSearch builds Active Record named scopes that take advantage of PostgreSQL's full text search
 gem "pghero", "~> 3.6" # Dashboard for Postgres
@@ -117,7 +117,7 @@ gem "strong_migrations", "~> 1.7" # Catch unsafe migrations
 gem "terser", "~> 1.1" # Terser is a Ruby wrapper for the terser JavaScript parser and minifier
 gem "twitter", "~> 7.0" # A Ruby interface to the Twitter API
 gem "validate_url", "~> 1.0" # Library for validating urls in Rails
-gem "vault", "~> 0.17" # Used to store secrets
+gem "vault", "~> 0.20" # Used to store secrets
 gem "warning", "~> 1.3" # Adds custom processing for warnings, including the ability to ignore specific warning messages
 gem "wcag_color_contrast", "~> 0.1" # Detect contrast of colors to determine readability and a11y.
 
