@@ -206,7 +206,7 @@
                 <% end %>
                 <%= @article.type_of == "status" ? @article.title_finalized : @article.title %>
               </h1>
-              
+
               <% if @article.type_of == "full_post" %>
                 <% cache("main-article-tags-#{@article.cached_tag_list_array.sort.join('-')}", expires_in: 72.hours) do %>
                   <div class="spec__tags flex flex-wrap">
@@ -329,6 +329,9 @@
       <%== AgentSessionTag.script %>
     <% end %>
   </script>
+  <% if @article.processed_html.include?("mermaid-container") %>
+    <%== MermaidTag.script %>
+  <% end %>
   <div class="js-billboard-container pb-4 crayons-layout__comments-billboard" data-async-url="<%= article_billboard_path(username: @article.username, slug: @article.slug, placement_area: :post_fixed_bottom) %>"></div>
 
   <% if user_signed_in? %>

@@ -541,6 +541,37 @@ article {
   }
 }
 
+.mermaid-container {
+  margin: 1.2em 0;
+  text-align: center;
+  overflow-x: auto;
+
+  .mermaid-diagram {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+.mermaid-fallback {
+  background: var(--body-bg, #f9f9f9);
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: var(--radius, 4px);
+  padding: var(--su-4, 16px);
+  margin: 1.2em 0;
+
+  pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}
+
+.mermaid-error {
+  color: var(--accent-danger-color, #dc3545);
+  font-size: 0.85em;
+  margin-bottom: var(--su-2, 8px);
+}
+
 // This classname is added by the freezeframe library we use to play/pause animated images
 .ff-container {
   --gif-bg: rgb(var(--black));
