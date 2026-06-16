@@ -155,6 +155,7 @@ Rails.application.routes.draw do
       get "/mailchimp/:secret/unsubscribe", to: "mailchimp_unsubscribes#index", as: :mailchimp_unsubscribe_check
       post "/mailchimp/:secret/unsubscribe", to: "mailchimp_unsubscribes#create", as: :mailchimp_unsubscribe
       resources :stripe_events, only: [:create]
+      resources :razorpay_events, only: [:create]
     end
 
     resources :magic_links, only: %i[show create new]
@@ -238,6 +239,11 @@ Rails.application.routes.draw do
     }
     resources :stripe_active_cards, only: %i[create update destroy]
     resources :stripe_subscriptions, only: %i[new edit destroy]
+    resources :razorpay_subscriptions, only: %i[new edit destroy] do
+      collection do
+        get :confirm
+      end
+    end
     resources :github_repos, only: %i[index] do
       collection do
         post "/update_or_create", to: "github_repos#update_or_create"

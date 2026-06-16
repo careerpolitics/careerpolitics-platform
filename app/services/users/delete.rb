@@ -53,6 +53,7 @@ module Users
 
     def cancel_stripe_subscriptions
       CancelStripeSubscriptions.call(user)
+      CancelRazorpaySubscriptions.call(user)
     end
   end
 end

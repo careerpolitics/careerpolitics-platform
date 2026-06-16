@@ -18,7 +18,7 @@ pt:
       account_deleted: "%{community} - Confirmação de Exclusão de Conta"
       deletion_requested: "%{community} - Exclusão de Conta Solicitada"
       trusted: Parabéns! Você agora é um usuário "confiável" no %{community}!
-      base_subscriber: Parabéns! Você agora está inscrito no DEV++
+      base_subscriber: Parabéns! Agora você é um membro Premium da %{community}!
       moderator: "Parabéns! Você agora é um moderador para #%{tag_name}"
       subforem_moderator: "Parabéns! Você agora é um moderador para %{subforem_name}"
       new_follower: acabou de seguir você no %{community}

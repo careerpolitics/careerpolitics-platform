@@ -6,7 +6,7 @@ fr:
       more_top_posts: plus de meilleurs articles de %{community}
       more_top_posts_based: plus de meilleurs articles de %{community} basé sur vos intérêts
       more_top_posts_from: d'autres lectures de la communauté
-      more_trending_posts: plus de d'articles tendances sur %{community} 
+      more_trending_posts: plus de d'articles tendances sur %{community}
       more_trending_posts_picked: plus de d'articles tendances sur %{community} choisie pour vous
       other_posts: autres articles que vous pourriez aimer
       other_community_posts: d'autres posts de la %{community} que vous pourriez aimer
@@ -18,7 +18,7 @@ fr:
       account_deleted: "%{community} - Confirmation de la suppression du compte"
       deletion_requested: "%{community} - Suppression du compte demandée"
       trusted: Félicitations ! Vous êtes maintenant un utilisateur "de confiance" sur %{community} !
-      base_subscriber: Congrats! You're now subscribed to DEV++
+      base_subscriber: Félicitations ! Vous êtes désormais membre Premium de %{community} !
       moderator: "Congrats! You're now a moderator for #%{tag_name}"
       subforem_moderator: "Congrats! You're now a moderator for %{subforem_name}"
       new_follower: vous suit sur %{community}

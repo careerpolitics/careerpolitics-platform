@@ -1,0 +1,59 @@
+<% title t("views.settings.billing.heading") %>
+
+<div class="crayons-layout crayons-layout--limited-width crayons-layout--single-col">
+  <div class="crayons-card crayons-card--content-rows p-6">
+    <h2 class="crayons-subtitle-1 mb-4"><%= community_name %> Premium</h2>
+
+    <p class="mb-4">Complete your subscription using the secure payment form below.</p>
+
+    <button id="razorpay-pay-btn" class="crayons-btn crayons-btn--brand">
+      Subscribe Now
+    </button>
+
+    <p class="fs-s color-base-60 mt-4">
+      Powered by Razorpay. Supports UPI, Cards, NetBanking, and Wallets.
+    </p>
+  </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  document.getElementById('razorpay-pay-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+
+    var options = {
+      key: '<%= @razorpay_key_id %>',
+      subscription_id: '<%= @subscription_id %>',
+      name: '<%= j(community_name) %>',
+      description: 'Premium Subscription',
+      image: '<%= asset_path("apple-icon.png") %>',
+      prefill: {
+        name: '<%= j(@user.name) %>',
+        email: '<%= j(@user.email) %>'
+      },
+      notes: {
+        user_id: '<%= @user.id %>'
+      },
+      theme: {
+        color: '#3b49df'
+      },
+      handler: function(response) {
+        var params = new URLSearchParams({
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_subscription_id: response.razorpay_subscription_id,
+          razorpay_signature: response.razorpay_signature
+        });
+        window.location.href = '/razorpay_subscriptions/confirm?' + params.toString();
+      },
+      modal: {
+        ondismiss: function() {}
+      }
+    };
+
+    var rzp = new Razorpay(options);
+    rzp.on('payment.failed', function(response) {
+      alert('Payment failed: ' + response.error.description);
+    });
+    rzp.open();
+  });
+</script>

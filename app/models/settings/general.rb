@@ -89,6 +89,8 @@ module Settings
     # Monetization
     setting :stripe_api_key, type: :string, default: ApplicationConfig["STRIPE_SECRET_KEY"]
     setting :stripe_publishable_key, type: :string, default: ApplicationConfig["STRIPE_PUBLISHABLE_KEY"]
+    setting :razorpay_key_id, type: :string, default: ApplicationConfig["RAZORPAY_KEY_ID"]
+    setting :razorpay_key_secret, type: :string, default: ApplicationConfig["RAZORPAY_KEY_SECRET"]
     # Billboard-related. Not sure this is the best place for it, but it's a start.
     setting :billboard_enabled_countries, type: :hash, default: Geolocation::DEFAULT_ENABLED_COUNTRIES, validates: {
       enabled_countries_hash: true
@@ -186,12 +188,12 @@ module Settings
     class << self
       # 1) grab the DSL‐generated setter
       alias_method :__orig_set_resized_logo, :set_resized_logo
-    
+
       # 2) override it in the singleton class
       def set_resized_logo(value, subforem_id: nil)
         # a) write the URL as normal
         __orig_set_resized_logo(value, subforem_id: subforem_id)
-    
+
         # b) compute & persist the ratio
         if value.present?
           begin
@@ -202,7 +204,7 @@ module Settings
             Rails.logger.warn("[Settings::General] FastImage failed for #{value}: #{e.message}")
           end
         end
-    
+
         # c) return the raw value
         value
       end
