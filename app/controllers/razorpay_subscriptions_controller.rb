@@ -64,6 +64,12 @@ class RazorpaySubscriptionsController < ApplicationController
     subscription_id = params[:razorpay_subscription_id]
     signature = params[:razorpay_signature]
 
+    unless payment_id.present? && subscription_id.present? && signature.present?
+      Rails.logger.error "Razorpay confirm missing payment parameters for user #{current_user.id}"
+      flash[:error] = "Payment verification failed. Please contact support if you were charged."
+      redirect_to user_settings_path(:billing) and return
+    end
+
     # Verify the payment signature
     expected_signature = OpenSSL::HMAC.hexdigest(
       "SHA256",
@@ -71,7 +77,8 @@ class RazorpaySubscriptionsController < ApplicationController
       "#{payment_id}|#{subscription_id}",
       )
 
-    if ActiveSupport::SecurityUtils.secure_compare(expected_signature, signature)
+    if signature.bytesize == expected_signature.bytesize &&
+        ActiveSupport::SecurityUtils.secure_compare(expected_signature, signature)
       unless current_user.base_subscriber?
         current_user.add_role("base_subscriber")
         current_user.update(

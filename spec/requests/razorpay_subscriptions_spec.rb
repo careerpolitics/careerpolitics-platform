@@ -30,6 +30,7 @@ RSpec.describe "RazorpaySubscriptions" do
   before do
     allow(Settings::General).to receive(:razorpay_key_id).and_return(razorpay_key_id)
     allow(Settings::General).to receive(:razorpay_key_secret).and_return(razorpay_key_secret)
+    allow(Settings::General).to receive(:logo_png).and_return("https://careerpolitics.com/cp-logo.png")
     allow(Razorpay).to receive(:setup)
     allow(Razorpay).to receive(:headers=)
   end
@@ -66,13 +67,16 @@ RSpec.describe "RazorpaySubscriptions" do
         expect(response).to have_http_status(:ok)
       end
 
-      it "does not override Razorpay content type headers" do
-        subscription_double = double("Razorpay::Subscription", id: "sub_test789")
-        allow(Razorpay::Subscription).to receive(:create).and_return(subscription_double)
+      it "renders CP++ branding and passes CP logo options to Razorpay Checkout" do
+        allow(HTTParty).to receive(:post).and_return(
+          razorpay_response(success: true, body: { "id" => "sub_test789" }),
+        )
 
         get new_razorpay_subscription_path
 
-        expect(Razorpay).not_to have_received(:headers=)
+        expect(response.body).to include("subscription-icon")
+        expect(response.body).to include("image: 'https://careerpolitics.com/cp-logo.png'")
+        expect(response.body).not_to include("readonly")
       end
 
       it "uses plan param when provided" do
@@ -145,6 +149,16 @@ RSpec.describe "RazorpaySubscriptions" do
         }
 
         expect(user.reload.roles.where(name: "base_subscriber").count).to eq(1)
+      end
+    end
+
+    context "with missing confirmation params" do
+      it "does not raise and redirects with verification error" do
+        get confirm_razorpay_subscriptions_path
+
+        expect(user.reload.roles.pluck(:name)).not_to include("base_subscriber")
+        expect(flash[:error]).to include("Payment verification failed")
+        expect(response).to redirect_to(user_settings_path(:billing))
       end
     end
 
