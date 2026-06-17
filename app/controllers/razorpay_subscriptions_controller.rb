@@ -6,26 +6,39 @@ class RazorpaySubscriptionsController < ApplicationController
   # Creates a Razorpay Subscription and returns checkout data for the frontend
   def new
     plan_id = if params[:plan].present?
-                params[:plan]
+                params[:plan].strip
               else
-                Settings::General.razorpay_plan_id.presence
+                Settings::General.razorpay_plan_id&.strip.presence
               end
+
+    Rails.logger.info "Razorpay plan_id resolved to: #{plan_id.inspect} (from Settings: #{Settings::General.razorpay_plan_id.inspect})"
 
     unless plan_id
       flash[:error] = "Payment plan not configured. Please contact support."
       redirect_back(fallback_location: user_settings_path) and return
     end
 
-    subscription = Razorpay::Subscription.create(
+    payload = {
       plan_id: plan_id,
       total_count: params[:total_count] || 12,
       quantity: 1,
+      customer_notify: 1,
       notes: {
-        user_id: current_user.id,
-        username: current_user.username,
-        email: current_user.email
-      },
-      )
+        user_id: current_user.id.to_s,
+        username: current_user.username.to_s,
+        email: current_user.email.to_s
+      }
+    }
+
+    Rails.logger.info "[Razorpay Debug] ----------------------------------------"
+    Rails.logger.info "[Razorpay Debug] Key ID configured: #{Settings::General.razorpay_key_id.inspect}"
+    Rails.logger.info "[Razorpay Debug] Plan ID configured: #{plan_id.inspect}"
+    Rails.logger.info "[Razorpay Debug] Sending Payload: #{payload.to_json}"
+
+    subscription = Razorpay::Subscription.create(payload)
+
+    Rails.logger.info "[Razorpay Debug] Success! Subscription ID: #{subscription.id}"
+    Rails.logger.info "[Razorpay Debug] ----------------------------------------"
 
     @subscription_id = subscription.id
     @razorpay_key_id = Settings::General.razorpay_key_id
@@ -34,7 +47,12 @@ class RazorpaySubscriptionsController < ApplicationController
 
     render :new
   rescue Razorpay::Error => e
-    Rails.logger.error "Razorpay subscription creation error: #{e.message}"
+    Rails.logger.error "[Razorpay Debug] ----------------------------------------"
+    Rails.logger.error "[Razorpay Debug] Razorpay::Error caught!"
+    Rails.logger.error "[Razorpay Debug] Message: #{e.message}"
+    Rails.logger.error "[Razorpay Debug] Class: #{e.class.name}"
+    Rails.logger.error "[Razorpay Debug] Inspect: #{e.inspect}"
+    Rails.logger.error "[Razorpay Debug] ----------------------------------------"
     flash[:error] = "Unable to create subscription. Please try again."
     redirect_back(fallback_location: user_settings_path)
   end
@@ -126,5 +144,6 @@ class RazorpaySubscriptionsController < ApplicationController
 
   def initialize_razorpay
     Razorpay.setup(Settings::General.razorpay_key_id, Settings::General.razorpay_key_secret)
+    Razorpay.headers = { "Content-Type" => "application/json" }
   end
 end
