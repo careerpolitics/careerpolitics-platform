@@ -1,264 +1,39 @@
-Follow Logs:
-Show timestamp:
-Since:
--1
-Tail:
--1
-Destination:
-Filter:
-Enter your keywords
-Wrap lines:
-Running command:
-bundle exec rails server -b 0.0.0.0 -p 3000
-=> Booting Puma
-=> Rails 7.0.8.7 application starting in production
-=> Run `bin/rails server --help` for more startup options
-service_name is unknown, will set to unknown_service:rails
-dataset will be ignored, sending data to unknown_service:rails
-/opt/apps/forem/app/services/images/generate_subforem_images.rb:2: warning: already initialized constant Images::TEMPLATE_PATH
-/opt/apps/forem/app/services/images/generate_social_image_magickally.rb:4: warning: previous definition of TEMPLATE_PATH was here
-/opt/apps/forem/app/services/push_notifications/unified_notifier.rb:25: warning: key :payload is duplicated and overwritten on line 28
-/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:44: warning: already initialized constant Net::HTTP::Purge::METHOD
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:166: warning: previous definition of METHOD was here
-/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:45: warning: already initialized constant Net::HTTP::Purge::REQUEST_HAS_BODY
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:167: warning: previous definition of REQUEST_HAS_BODY was here
-/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:46: warning: already initialized constant Net::HTTP::Purge::RESPONSE_HAS_BODY
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:168: warning: previous definition of RESPONSE_HAS_BODY was here
-I, [2026-06-17T05:53:45.468308 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2026-06-17T05:53:45.475160 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2026-06-17T05:53:45+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
-I, [2026-06-17T05:53:54.986641 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
-W, [2026-06-17T05:53:57.586847 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
-I, [2026-06-17T05:53:57.710596 #1]  INFO -- : CareerPolitics Android consumer app initialized
-[1] Puma starting in cluster mode...
-[1] * Puma version: 5.6.9 (ruby 3.3.0-p0) ("Birdie's Version")
-[1] *  Min threads: 2
-[1] *  Max threads: 2
-[1] *  Environment: production
-[1] *   Master PID: 1
-[1] *      Workers: 2
-[1] *     Restarts: (✔) hot (✖) phased
-[1] * Preloading application
-[1] * Listening on http://0.0.0.0:3000
-[1] Use Ctrl-C to stop
-[1] ! Promoting existing objects to old generation...
-[1] ! Compacting...
-[1] ! Friendly fork preparation complete.
-[1] - Worker 0 (PID: 66) booted in 0.08s, phase: 0
-[1] - Worker 1 (PID: 73) booted in 0.02s, phase: 0
-E, [2026-06-17T05:54:01.185315 #66] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
-I, [2026-06-17T05:54:01.216215 #66]  INFO -- : [dbc0b394ee75a10143f44c8e4f42846e] Started GET "/" for 103.24.87.178 at 2026-06-17 05:54:01 +0000
-I, [2026-06-17T05:54:01.880739 #66]  INFO -- : [dbc0b394ee75a10143f44c8e4f42846e] Processing by StoriesController#index as HTML
-I, [2026-06-17T05:54:01.880975 #66]  INFO -- : [dbc0b394ee75a10143f44c8e4f42846e]   Parameters: {"locale"=>nil}
-I, [2026-06-17T05:54:03.262362 #66]  INFO -- : [dbc0b394ee75a10143f44c8e4f42846e]   Rendered articles/index.html.erb within layouts/application (Duration: 1211.8ms | Allocations: 221539)
-I, [2026-06-17T05:54:04.219148 #66]  INFO -- : [dbc0b394ee75a10143f44c8e4f42846e]   Rendered layout layouts/application.html.erb (Duration: 2169.6ms | Allocations: 297782)
-I, [2026-06-17T05:54:04.220921 #66]  INFO -- : [dbc0b394ee75a10143f44c8e4f42846e] Completed 200 OK in 2339ms (Views: 2007.7ms | ActiveRecord: 262.1ms | Allocations: 308261)
-E, [2026-06-17T05:54:04.423874 #73] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
-I, [2026-06-17T05:54:04.437213 #66]  INFO -- : [8c9e3de07a37a1fad273f790e80692c7] Started GET "/stories/feed/?page=1&type_of=discover" for 103.24.87.178 at 2026-06-17 05:54:04 +0000
-I, [2026-06-17T05:54:04.442071 #66]  INFO -- : [b8744e76353336329a502428942caf3f] Started GET "/bb/feed_third" for 103.24.87.178 at 2026-06-17 05:54:04 +0000
-I, [2026-06-17T05:54:04.455297 #73]  INFO -- : [24ca95d51b513c6debec259abd99fde2] Started GET "/bb/feed_second" for 103.24.87.178 at 2026-06-17 05:54:04 +0000
-I, [2026-06-17T05:54:04.458277 #73]  INFO -- : [348b07bef1ff821d19d058aae7714a9b] Started GET "/bb/feed_first" for 103.24.87.178 at 2026-06-17 05:54:04 +0000
-I, [2026-06-17T05:54:04.563124 #66]  INFO -- : [8c9e3de07a37a1fad273f790e80692c7] Processing by Stories::FeedsController#show as JSON
-I, [2026-06-17T05:54:04.564210 #66]  INFO -- : [8c9e3de07a37a1fad273f790e80692c7]   Parameters: {"page"=>"1", "type_of"=>"discover", "locale"=>nil}
-I, [2026-06-17T05:54:04.794033 #66]  INFO -- : [b8744e76353336329a502428942caf3f] Processing by BillboardsController#show as */*
-I, [2026-06-17T05:54:04.794500 #66]  INFO -- : [b8744e76353336329a502428942caf3f]   Parameters: {"locale"=>nil, "placement_area"=>"feed_third"}
-I, [2026-06-17T05:54:04.856594 #73]  INFO -- : [348b07bef1ff821d19d058aae7714a9b] Processing by BillboardsController#show as */*
-I, [2026-06-17T05:54:04.856857 #73]  INFO -- : [348b07bef1ff821d19d058aae7714a9b]   Parameters: {"locale"=>nil, "placement_area"=>"feed_first"}
-I, [2026-06-17T05:54:04.868440 #73]  INFO -- : [24ca95d51b513c6debec259abd99fde2] Processing by BillboardsController#show as */*
-I, [2026-06-17T05:54:04.868672 #73]  INFO -- : [24ca95d51b513c6debec259abd99fde2]   Parameters: {"locale"=>nil, "placement_area"=>"feed_second"}
-I, [2026-06-17T05:54:04.890199 #66]  INFO -- : [b8744e76353336329a502428942caf3f]   Rendered billboards/show.html.erb (Duration: 13.7ms | Allocations: 3296)
-I, [2026-06-17T05:54:04.892455 #66]  INFO -- : [b8744e76353336329a502428942caf3f] Completed 200 OK in 97ms (Views: 18.8ms | ActiveRecord: 47.4ms | Allocations: 15471)
-I, [2026-06-17T05:54:04.928387 #66]  INFO -- : [8c9e3de07a37a1fad273f790e80692c7]   Rendered stories/feeds/show.json.jbuilder (Duration: 11.4ms | Allocations: 2629)
-I, [2026-06-17T05:54:04.930297 #66]  INFO -- : [8c9e3de07a37a1fad273f790e80692c7] Completed 200 OK in 365ms (Views: 19.0ms | ActiveRecord: 213.5ms | Allocations: 54093)
-I, [2026-06-17T05:54:04.947765 #66]  INFO -- : [7433ab92bea114fb32538b6118ad4a3d] Started GET "/stories/feed/?page=2&type_of=discover" for 103.24.87.178 at 2026-06-17 05:54:04 +0000
-I, [2026-06-17T05:54:04.993228 #66]  INFO -- : [7433ab92bea114fb32538b6118ad4a3d] Processing by Stories::FeedsController#show as JSON
-I, [2026-06-17T05:54:04.993194 #73]  INFO -- : [348b07bef1ff821d19d058aae7714a9b]   Rendered billboards/show.html.erb (Duration: 7.4ms | Allocations: 975)
-I, [2026-06-17T05:54:04.993852 #66]  INFO -- : [7433ab92bea114fb32538b6118ad4a3d]   Parameters: {"page"=>"2", "type_of"=>"discover", "locale"=>nil}
-I, [2026-06-17T05:54:04.995396 #73]  INFO -- : [348b07bef1ff821d19d058aae7714a9b] Completed 200 OK in 138ms (Views: 22.1ms | ActiveRecord: 40.6ms | Allocations: 23595)
-I, [2026-06-17T05:54:05.054482 #66]  INFO -- : [7433ab92bea114fb32538b6118ad4a3d]   Rendered stories/feeds/show.json.jbuilder (Duration: 0.2ms | Allocations: 48)
-I, [2026-06-17T05:54:05.056911 #66]  INFO -- : [7433ab92bea114fb32538b6118ad4a3d] Completed 200 OK in 62ms (Views: 2.9ms | ActiveRecord: 23.5ms | Allocations: 7687)
-I, [2026-06-17T05:54:05.145262 #73]  INFO -- : [24ca95d51b513c6debec259abd99fde2]   Rendered billboards/show.html.erb (Duration: 61.2ms | Allocations: 1326)
-I, [2026-06-17T05:54:05.148653 #73]  INFO -- : [24ca95d51b513c6debec259abd99fde2] Completed 200 OK in 280ms (Views: 63.7ms | ActiveRecord: 91.7ms | Allocations: 44073)
-I, [2026-06-17T05:54:05.151079 #66]  INFO -- : [4708e6eb93fd7f112316ff42516b7ee1] Started GET "/sidebars/home" for 103.24.87.178 at 2026-06-17 05:54:05 +0000
-I, [2026-06-17T05:54:05.210035 #66]  INFO -- : [4708e6eb93fd7f112316ff42516b7ee1] Processing by SidebarsController#show as */*
-I, [2026-06-17T05:54:05.210270 #66]  INFO -- : [4708e6eb93fd7f112316ff42516b7ee1]   Parameters: {"locale"=>nil, "id"=>"home"}
-I, [2026-06-17T05:54:05.260717 #73]  INFO -- : [e7d2dc6c92930fdf9392c8e2563be8c9] Started GET "/notifications/counts" for 103.24.87.178 at 2026-06-17 05:54:05 +0000
-I, [2026-06-17T05:54:05.294964 #66]  INFO -- : [a99278404008ef1485c22e0fb0c70486] Started GET "/async_info/base_data" for 103.24.87.178 at 2026-06-17 05:54:05 +0000
-I, [2026-06-17T05:54:05.380786 #73]  INFO -- : [e7d2dc6c92930fdf9392c8e2563be8c9] Processing by Notifications::CountsController#index as */*
-I, [2026-06-17T05:54:05.381236 #73]  INFO -- : [e7d2dc6c92930fdf9392c8e2563be8c9]   Parameters: {"locale"=>nil}
-I, [2026-06-17T05:54:05.413522 #73]  INFO -- : [c2e80de8097f4ce7ddcf98871d48fc9c] Started GET "/bb/sidebar_left" for 103.24.87.178 at 2026-06-17 05:54:05 +0000
-I, [2026-06-17T05:54:05.466816 #66]  INFO -- : [a99278404008ef1485c22e0fb0c70486] Processing by AsyncInfoController#base_data as JSON
-I, [2026-06-17T05:54:05.471487 #66]  INFO -- : [a99278404008ef1485c22e0fb0c70486]   Parameters: {"locale"=>nil}
-I, [2026-06-17T05:54:05.517652 #73]  INFO -- : [e7d2dc6c92930fdf9392c8e2563be8c9]   Rendered text template (Duration: 0.2ms | Allocations: 33)
-I, [2026-06-17T05:54:05.520325 #73]  INFO -- : [e7d2dc6c92930fdf9392c8e2563be8c9] Completed 200 OK in 137ms (Views: 5.5ms | ActiveRecord: 33.8ms | Allocations: 5675)
-I, [2026-06-17T05:54:05.744274 #73]  INFO -- : [c2e80de8097f4ce7ddcf98871d48fc9c] Processing by BillboardsController#show as */*
-I, [2026-06-17T05:54:05.744518 #73]  INFO -- : [c2e80de8097f4ce7ddcf98871d48fc9c]   Parameters: {"locale"=>nil, "placement_area"=>"sidebar_left"}
-I, [2026-06-17T05:54:05.783373 #73]  INFO -- : [7e83f022cd97eeee0f546cb287124be2] Started GET "/bb/sidebar_left_2" for 103.24.87.178 at 2026-06-17 05:54:05 +0000
-I, [2026-06-17T05:54:05.802969 #73]  INFO -- : [c2e80de8097f4ce7ddcf98871d48fc9c]   Rendered billboards/show.html.erb (Duration: 8.0ms | Allocations: 34)
-I, [2026-06-17T05:54:05.808534 #73]  INFO -- : [c2e80de8097f4ce7ddcf98871d48fc9c] Completed 200 OK in 64ms (Views: 12.9ms | ActiveRecord: 18.7ms | Allocations: 6640)
-I, [2026-06-17T05:54:05.926058 #73]  INFO -- : [7e83f022cd97eeee0f546cb287124be2] Processing by BillboardsController#show as */*
-I, [2026-06-17T05:54:05.926397 #73]  INFO -- : [7e83f022cd97eeee0f546cb287124be2]   Parameters: {"locale"=>nil, "placement_area"=>"sidebar_left_2"}
-I, [2026-06-17T05:54:05.939992 #66]  INFO -- : [a99278404008ef1485c22e0fb0c70486] Completed 200 OK in 468ms (Views: 0.6ms | ActiveRecord: 108.6ms | Allocations: 50014)
-I, [2026-06-17T05:54:05.996069 #73]  INFO -- : [7e83f022cd97eeee0f546cb287124be2]   Rendered billboards/show.html.erb (Duration: 0.3ms | Allocations: 34)
-I, [2026-06-17T05:54:06.020802 #73]  INFO -- : [7e83f022cd97eeee0f546cb287124be2] Completed 200 OK in 94ms (Views: 27.8ms | ActiveRecord: 25.0ms | Allocations: 5544)
-I, [2026-06-17T05:54:06.079036 #73]  INFO -- : [23421796503303943eaec6650ef82b09] Started GET "/notifications?i=i" for 103.24.87.178 at 2026-06-17 05:54:06 +0000
-I, [2026-06-17T05:54:06.123587 #73]  INFO -- : [22d859ee2c7ad2ab9ed93eeaf4fb6b47] Started GET "/follows/bulk_show?ids%5B%5D=18&followable_type=User" for 103.24.87.178 at 2026-06-17 05:54:06 +0000
-I, [2026-06-17T05:54:06.182297 #73]  INFO -- : [23421796503303943eaec6650ef82b09] Processing by NotificationsController#index as */*
-I, [2026-06-17T05:54:06.182923 #73]  INFO -- : [23421796503303943eaec6650ef82b09]   Parameters: {"i"=>"i", "locale"=>nil}
-I, [2026-06-17T05:54:06.351219 #73]  INFO -- : [22d859ee2c7ad2ab9ed93eeaf4fb6b47] Processing by FollowsController#bulk_show as JSON
-I, [2026-06-17T05:54:06.354605 #73]  INFO -- : [22d859ee2c7ad2ab9ed93eeaf4fb6b47]   Parameters: {"ids"=>["18"], "followable_type"=>"User", "locale"=>nil}
-I, [2026-06-17T05:54:06.359961 #66]  INFO -- : [4708e6eb93fd7f112316ff42516b7ee1]   Rendered sidebars/show.html.erb (Duration: 1080.0ms | Allocations: 108663)
-I, [2026-06-17T05:54:06.369715 #66]  INFO -- : [4708e6eb93fd7f112316ff42516b7ee1] Completed 200 OK in 1159ms (Views: 992.6ms | ActiveRecord: 114.7ms | Allocations: 117973)
-I, [2026-06-17T05:54:06.467716 #73]  INFO -- : [22d859ee2c7ad2ab9ed93eeaf4fb6b47] Completed 200 OK in 112ms (Views: 0.6ms | ActiveRecord: 75.0ms | Allocations: 8995)
-F, [2026-06-17T05:54:06.510483 #66] FATAL -- : [3f8c287be496739b6985f12fdf36491d]
-[3f8c287be496739b6985f12fdf36491d] ActionController::RoutingError (No route matches [POST] "/ahoy/visits"):
-[3f8c287be496739b6985f12fdf36491d]
-[3f8c287be496739b6985f12fdf36491d] config/initializers/timeout.rb:16:in `call'
-[3f8c287be496739b6985f12fdf36491d] app/lib/middlewares/restore_original_host.rb:23:in `call'
-I, [2026-06-17T05:54:06.907772 #73]  INFO -- : [23421796503303943eaec6650ef82b09]   Rendered notifications/index.html.erb within layouts/application (Duration: 332.5ms | Allocations: 37868)
-I, [2026-06-17T05:54:06.920026 #73]  INFO -- : [23421796503303943eaec6650ef82b09]   Rendered layout layouts/application.html.erb (Duration: 344.8ms | Allocations: 41335)
-I, [2026-06-17T05:54:06.921162 #73]  INFO -- : [23421796503303943eaec6650ef82b09] Completed 200 OK in 727ms (Views: 331.4ms | ActiveRecord: 230.4ms | Allocations: 67931)
-I, [2026-06-17T05:54:08.969290 #73]  INFO -- : [b38ad2bd686e24e72837edffead1727c] Started GET "/squirrel/17-june-2026-current-affairs-quiz-govt-job-prep-3o25?i=i" for 103.24.87.178 at 2026-06-17 05:54:08 +0000
-I, [2026-06-17T05:54:09.069677 #73]  INFO -- : [b38ad2bd686e24e72837edffead1727c] Processing by StoriesController#show as */*
-I, [2026-06-17T05:54:09.070218 #73]  INFO -- : [b38ad2bd686e24e72837edffead1727c]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"squirrel", "slug"=>"17-june-2026-current-affairs-quiz-govt-job-prep-3o25"}
-I, [2026-06-17T05:54:10.138632 #73]  INFO -- : [b38ad2bd686e24e72837edffead1727c]   Rendered articles/show.html.erb within layouts/application (Duration: 857.0ms | Allocations: 84460)
-I, [2026-06-17T05:54:10.143232 #73]  INFO -- : [b38ad2bd686e24e72837edffead1727c]   Rendered layout layouts/application.html.erb (Duration: 861.6ms | Allocations: 85711)
-I, [2026-06-17T05:54:10.144545 #73]  INFO -- : [b38ad2bd686e24e72837edffead1727c] Completed 200 OK in 1074ms (Views: 758.3ms | ActiveRecord: 225.1ms | Allocations: 102606)
-I, [2026-06-17T05:54:11.057110 #66]  INFO -- : [fba5e35b1106553908a493bc435b07b8] Started GET "/squirrel/17-june-2026-daily-current-affairs-summary-govt-job-prep-44dn?i=i" for 103.24.87.178 at 2026-06-17 05:54:11 +0000
-I, [2026-06-17T05:54:11.091960 #66]  INFO -- : [908e4c6fba32da873d4c97bf633f0b16] Started GET "/squirrel/17-june-2026-daily-current-affairs-summary-govt-job-prep-44dn?i=i" for 103.24.87.178 at 2026-06-17 05:54:11 +0000
-I, [2026-06-17T05:54:11.121598 #73]  INFO -- : [b498e3cdb3e365f0d54972ef340776fa] Started POST "/feed_events" for 103.24.87.178 at 2026-06-17 05:54:11 +0000
-I, [2026-06-17T05:54:11.129240 #66]  INFO -- : [fba5e35b1106553908a493bc435b07b8] Processing by StoriesController#show as */*
-I, [2026-06-17T05:54:11.130848 #66]  INFO -- : [fba5e35b1106553908a493bc435b07b8]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"squirrel", "slug"=>"17-june-2026-daily-current-affairs-summary-govt-job-prep-44dn"}
-I, [2026-06-17T05:54:11.206481 #66]  INFO -- : [908e4c6fba32da873d4c97bf633f0b16] Processing by StoriesController#show as */*
-I, [2026-06-17T05:54:11.210727 #66]  INFO -- : [908e4c6fba32da873d4c97bf633f0b16]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"squirrel", "slug"=>"17-june-2026-daily-current-affairs-summary-govt-job-prep-44dn"}
-I, [2026-06-17T05:54:11.875392 #66]  INFO -- : [908e4c6fba32da873d4c97bf633f0b16]   Rendered articles/show.html.erb within layouts/application (Duration: 512.8ms | Allocations: 93597)
-I, [2026-06-17T05:54:11.878777 #66]  INFO -- : [908e4c6fba32da873d4c97bf633f0b16]   Rendered layout layouts/application.html.erb (Duration: 516.3ms | Allocations: 94678)
-I, [2026-06-17T05:54:11.880105 #66]  INFO -- : [908e4c6fba32da873d4c97bf633f0b16] Completed 200 OK in 669ms (Views: 439.9ms | ActiveRecord: 179.0ms | Allocations: 113128)
-I, [2026-06-17T05:54:11.891067 #66]  INFO -- : [fba5e35b1106553908a493bc435b07b8]   Rendered articles/show.html.erb within layouts/application (Duration: 563.8ms | Allocations: 104225)
-I, [2026-06-17T05:54:11.893687 #66]  INFO -- : [fba5e35b1106553908a493bc435b07b8]   Rendered layout layouts/application.html.erb (Duration: 566.5ms | Allocations: 105305)
-I, [2026-06-17T05:54:11.894859 #66]  INFO -- : [fba5e35b1106553908a493bc435b07b8] Completed 200 OK in 763ms (Views: 500.1ms | ActiveRecord: 195.2ms | Allocations: 129022)
-I, [2026-06-17T05:54:12.599126 #73]  INFO -- : [aba9247e2444f6df74d85e972bb5f342] Started GET "/bb/feed_second" for 103.24.87.178 at 2026-06-17 05:54:12 +0000
-I, [2026-06-17T05:54:12.600311 #66]  INFO -- : [2850ab2bef67d1bf93b948df919f0abf] Started GET "/bb/feed_third" for 103.24.87.178 at 2026-06-17 05:54:12 +0000
-I, [2026-06-17T05:54:12.601981 #73]  INFO -- : [b9438564d214355cc57eeeda371e1711] Started GET "/bb/feed_first" for 103.24.87.178 at 2026-06-17 05:54:12 +0000
-I, [2026-06-17T05:54:12.673602 #66]  INFO -- : [2850ab2bef67d1bf93b948df919f0abf] Processing by BillboardsController#show as */*
-I, [2026-06-17T05:54:12.674034 #66]  INFO -- : [2850ab2bef67d1bf93b948df919f0abf]   Parameters: {"locale"=>nil, "placement_area"=>"feed_third"}
-I, [2026-06-17T05:54:12.709709 #73]  INFO -- : [b9438564d214355cc57eeeda371e1711] Processing by BillboardsController#show as */*
-I, [2026-06-17T05:54:12.711696 #73]  INFO -- : [b9438564d214355cc57eeeda371e1711]   Parameters: {"locale"=>nil, "placement_area"=>"feed_first"}
-I, [2026-06-17T05:54:12.727141 #66]  INFO -- : [2850ab2bef67d1bf93b948df919f0abf]   Rendered billboards/show.html.erb (Duration: 0.8ms | Allocations: 34)
-I, [2026-06-17T05:54:12.728811 #66]  INFO -- : [2850ab2bef67d1bf93b948df919f0abf] Completed 200 OK in 54ms (Views: 3.0ms | ActiveRecord: 21.7ms | Allocations: 6136)
-I, [2026-06-17T05:54:12.730106 #73]  INFO -- : [aba9247e2444f6df74d85e972bb5f342] Processing by BillboardsController#show as */*
-I, [2026-06-17T05:54:12.733232 #73]  INFO -- : [aba9247e2444f6df74d85e972bb5f342]   Parameters: {"locale"=>nil, "placement_area"=>"feed_second"}
-I, [2026-06-17T05:54:12.794017 #73]  INFO -- : [b9438564d214355cc57eeeda371e1711]   Rendered billboards/show.html.erb (Duration: 0.4ms | Allocations: 34)
-I, [2026-06-17T05:54:12.795778 #73]  INFO -- : [b9438564d214355cc57eeeda371e1711] Completed 200 OK in 83ms (Views: 2.2ms | ActiveRecord: 39.0ms | Allocations: 15449)
-I, [2026-06-17T05:54:12.826745 #73]  INFO -- : [aba9247e2444f6df74d85e972bb5f342]   Rendered billboards/show.html.erb (Duration: 3.2ms | Allocations: 420)
-I, [2026-06-17T05:54:12.828166 #73]  INFO -- : [aba9247e2444f6df74d85e972bb5f342] Completed 200 OK in 92ms (Views: 4.8ms | ActiveRecord: 41.7ms | Allocations: 14996)
-I, [2026-06-17T05:54:13.021341 #73]  INFO -- : [1ca6120c086ac6a6623513f56720d741] Started GET "/stories/feed/?page=1&type_of=following" for 103.24.87.178 at 2026-06-17 05:54:13 +0000
-I, [2026-06-17T05:54:13.334163 #73]  INFO -- : [1ca6120c086ac6a6623513f56720d741] Processing by Stories::FeedsController#show as JSON
-I, [2026-06-17T05:54:13.335697 #73]  INFO -- : [1ca6120c086ac6a6623513f56720d741]   Parameters: {"page"=>"1", "type_of"=>"following", "locale"=>nil}
-I, [2026-06-17T05:54:13.500666 #73]  INFO -- : [1ca6120c086ac6a6623513f56720d741]   Rendered stories/feeds/show.json.jbuilder (Duration: 85.0ms | Allocations: 25926)
-I, [2026-06-17T05:54:13.502306 #73]  INFO -- : [1ca6120c086ac6a6623513f56720d741] Completed 200 OK in 164ms (Views: 89.6ms | ActiveRecord: 44.2ms | Allocations: 32464)
-I, [2026-06-17T05:54:13.668634 #73]  INFO -- : [7d390b5736b8a719ef3f8073d8f6a30e] Started GET "/follows/bulk_show?ids%5B%5D=18&followable_type=User" for 103.24.87.178 at 2026-06-17 05:54:13 +0000
-I, [2026-06-17T05:54:13.725216 #73]  INFO -- : [7d390b5736b8a719ef3f8073d8f6a30e] Processing by FollowsController#bulk_show as JSON
-I, [2026-06-17T05:54:13.726039 #73]  INFO -- : [7d390b5736b8a719ef3f8073d8f6a30e]   Parameters: {"ids"=>["18"], "followable_type"=>"User", "locale"=>nil}
-I, [2026-06-17T05:54:13.749296 #73]  INFO -- : [7d390b5736b8a719ef3f8073d8f6a30e] Completed 200 OK in 23ms (Views: 0.3ms | ActiveRecord: 9.9ms | Allocations: 3051)
-I, [2026-06-17T05:54:13.909234 #73]  INFO -- : [0b0a4c490e215433e6f40478be138488] Started POST "/bb_tabulations" for 103.24.87.178 at 2026-06-17 05:54:13 +0000
-I, [2026-06-17T05:54:14.183751 #66]  INFO -- : [c277f911699ecb3d48a7ddb7109f291c] Started GET "/squirrel/29-may-2026-daily-current-affairs-summary-govt-job-prep-4cj2" for 43.130.174.37 at 2026-06-17 05:54:14 +0000
-I, [2026-06-17T05:54:14.233090 #66]  INFO -- : [c277f911699ecb3d48a7ddb7109f291c] Processing by StoriesController#show as HTML
-I, [2026-06-17T05:54:14.233467 #66]  INFO -- : [c277f911699ecb3d48a7ddb7109f291c]   Parameters: {"locale"=>nil, "username"=>"squirrel", "slug"=>"29-may-2026-daily-current-affairs-summary-govt-job-prep-4cj2"}
-I, [2026-06-17T05:54:14.706187 #66]  INFO -- : [c277f911699ecb3d48a7ddb7109f291c]   Rendered articles/show.html.erb within layouts/application (Duration: 378.6ms | Allocations: 42763)
-I, [2026-06-17T05:54:14.823139 #73]  INFO -- : [1d87fcd3090b606ed2fdbf201b54ad4a] Started POST "/bb_tabulations" for 103.24.87.178 at 2026-06-17 05:54:14 +0000
-I, [2026-06-17T05:54:14.874393 #73]  INFO -- : [6fd6827cb9edbe67511ad66f2fa00c56] Started POST "/bb_tabulations" for 103.24.87.178 at 2026-06-17 05:54:14 +0000
-I, [2026-06-17T05:54:14.927389 #66]  INFO -- : [c277f911699ecb3d48a7ddb7109f291c]   Rendered layout layouts/application.html.erb (Duration: 600.0ms | Allocations: 69630)
-I, [2026-06-17T05:54:14.928373 #66]  INFO -- : [c277f911699ecb3d48a7ddb7109f291c] Completed 200 OK in 692ms (Views: 541.7ms | ActiveRecord: 89.4ms | Allocations: 77304)
-I, [2026-06-17T05:54:16.119634 #73]  INFO -- : [3457aa5ca7bb27428994ffc7b65eb6c6] Started POST "/feed_events" for 103.24.87.178 at 2026-06-17 05:54:16 +0000
-I, [2026-06-17T05:54:16.360429 #73]  INFO -- : [3e71ec923082c711d75103f63e65298c] Started GET "/squirrel/15-june-2026-current-affairs-quiz-govt-job-prep-5hd8?i=i" for 103.24.87.178 at 2026-06-17 05:54:16 +0000
-I, [2026-06-17T05:54:16.432205 #73]  INFO -- : [3e71ec923082c711d75103f63e65298c] Processing by StoriesController#show as */*
-I, [2026-06-17T05:54:16.432826 #73]  INFO -- : [3e71ec923082c711d75103f63e65298c]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"squirrel", "slug"=>"15-june-2026-current-affairs-quiz-govt-job-prep-5hd8"}
-I, [2026-06-17T05:54:16.685594 #73]  INFO -- : [3e71ec923082c711d75103f63e65298c]   Rendered articles/show.html.erb within layouts/application (Duration: 153.5ms | Allocations: 39402)
-I, [2026-06-17T05:54:16.688911 #73]  INFO -- : [3e71ec923082c711d75103f63e65298c]   Rendered layout layouts/application.html.erb (Duration: 156.8ms | Allocations: 40488)
-I, [2026-06-17T05:54:16.690351 #73]  INFO -- : [3e71ec923082c711d75103f63e65298c] Completed 200 OK in 257ms (Views: 138.5ms | ActiveRecord: 82.2ms | Allocations: 54737)
-I, [2026-06-17T05:54:16.841291 #73]  INFO -- : [5605c85e3685b928871cdc6077e0edb7] Started GET "/squirrel/17-june-2026-daily-current-affairs-summary-govt-job-prep-44dn?i=i" for 103.24.87.178 at 2026-06-17 05:54:16 +0000
-I, [2026-06-17T05:54:16.883925 #73]  INFO -- : [5605c85e3685b928871cdc6077e0edb7] Processing by StoriesController#show as */*
-I, [2026-06-17T05:54:16.884201 #73]  INFO -- : [5605c85e3685b928871cdc6077e0edb7]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"squirrel", "slug"=>"17-june-2026-daily-current-affairs-summary-govt-job-prep-44dn"}
-I, [2026-06-17T05:54:17.077024 #73]  INFO -- : [5605c85e3685b928871cdc6077e0edb7]   Rendered articles/show.html.erb within layouts/application (Duration: 122.9ms | Allocations: 33549)
-I, [2026-06-17T05:54:17.079442 #73]  INFO -- : [5605c85e3685b928871cdc6077e0edb7]   Rendered layout layouts/application.html.erb (Duration: 125.3ms | Allocations: 34627)
-I, [2026-06-17T05:54:17.080499 #73]  INFO -- : [5605c85e3685b928871cdc6077e0edb7] Completed 200 OK in 196ms (Views: 108.7ms | ActiveRecord: 52.1ms | Allocations: 43054)
-I, [2026-06-17T05:54:18.390653 #73]  INFO -- : [e939bf33efe10cec0edd96c25247d739] Started GET "/bb/feed_first" for 103.24.87.178 at 2026-06-17 05:54:18 +0000
-I, [2026-06-17T05:54:18.393197 #66]  INFO -- : [a4b6fda00e229725fc6dd041469a263a] Started GET "/bb/feed_second" for 103.24.87.178 at 2026-06-17 05:54:18 +0000
-I, [2026-06-17T05:54:18.398715 #73]  INFO -- : [888b34341ff5a9fd2ba73b6237ea0c51] Started GET "/stories/feed/latest?page=1&type_of=discover" for 103.24.87.178 at 2026-06-17 05:54:18 +0000
-I, [2026-06-17T05:54:18.519115 #66]  INFO -- : [a4b6fda00e229725fc6dd041469a263a] Processing by BillboardsController#show as */*
-I, [2026-06-17T05:54:18.519651 #66]  INFO -- : [a4b6fda00e229725fc6dd041469a263a]   Parameters: {"locale"=>nil, "placement_area"=>"feed_second"}
-I, [2026-06-17T05:54:18.563943 #73]  INFO -- : [888b34341ff5a9fd2ba73b6237ea0c51] Processing by Stories::FeedsController#show as JSON
-I, [2026-06-17T05:54:18.570411 #73]  INFO -- : [888b34341ff5a9fd2ba73b6237ea0c51]   Parameters: {"page"=>"1", "type_of"=>"discover", "locale"=>nil, "timeframe"=>"latest"}
-I, [2026-06-17T05:54:18.604471 #66]  INFO -- : [d62a4db8552a4f8b431366ff3453bfd2] Started POST "/bb_tabulations" for 103.24.87.178 at 2026-06-17 05:54:18 +0000
-I, [2026-06-17T05:54:18.620302 #73]  INFO -- : [e939bf33efe10cec0edd96c25247d739] Processing by BillboardsController#show as */*
-I, [2026-06-17T05:54:18.636345 #73]  INFO -- : [e939bf33efe10cec0edd96c25247d739]   Parameters: {"locale"=>nil, "placement_area"=>"feed_first"}
-I, [2026-06-17T05:54:18.706712 #66]  INFO -- : [a4b6fda00e229725fc6dd041469a263a]   Rendered billboards/show.html.erb (Duration: 73.6ms | Allocations: 5091)
-I, [2026-06-17T05:54:18.716868 #66]  INFO -- : [a4b6fda00e229725fc6dd041469a263a] Completed 200 OK in 197ms (Views: 84.9ms | ActiveRecord: 34.3ms | Allocations: 15407)
-I, [2026-06-17T05:54:18.755320 #73]  INFO -- : [e939bf33efe10cec0edd96c25247d739]   Rendered billboards/show.html.erb (Duration: 0.9ms | Allocations: 34)
-I, [2026-06-17T05:54:18.757245 #73]  INFO -- : [e939bf33efe10cec0edd96c25247d739] Completed 200 OK in 120ms (Views: 3.0ms | ActiveRecord: 36.4ms | Allocations: 8983)
-I, [2026-06-17T05:54:18.921572 #73]  INFO -- : [888b34341ff5a9fd2ba73b6237ea0c51]   Rendered stories/feeds/show.json.jbuilder (Duration: 138.7ms | Allocations: 20318)
-I, [2026-06-17T05:54:18.923140 #73]  INFO -- : [888b34341ff5a9fd2ba73b6237ea0c51] Completed 200 OK in 352ms (Views: 140.5ms | ActiveRecord: 128.6ms | Allocations: 38812)
-I, [2026-06-17T05:54:18.993924 #73]  INFO -- : [8de0918f561a181ac6c931a1d238d86e] Started GET "/bb/feed_third" for 103.24.87.178 at 2026-06-17 05:54:18 +0000
-I, [2026-06-17T05:54:19.078113 #73]  INFO -- : [8de0918f561a181ac6c931a1d238d86e] Processing by BillboardsController#show as */*
-I, [2026-06-17T05:54:19.078572 #73]  INFO -- : [8de0918f561a181ac6c931a1d238d86e]   Parameters: {"locale"=>nil, "placement_area"=>"feed_third"}
-I, [2026-06-17T05:54:19.138531 #73]  INFO -- : [8de0918f561a181ac6c931a1d238d86e]   Rendered billboards/show.html.erb (Duration: 0.2ms | Allocations: 34)
-I, [2026-06-17T05:54:19.140273 #73]  INFO -- : [8de0918f561a181ac6c931a1d238d86e] Completed 200 OK in 61ms (Views: 2.0ms | ActiveRecord: 12.9ms | Allocations: 6110)
-I, [2026-06-17T05:54:19.429977 #73]  INFO -- : [53f3b5849e40eb18300b3159abedaa26] Started GET "/follows/bulk_show?ids%5B%5D=1&ids%5B%5D=18&followable_type=User" for 103.24.87.178 at 2026-06-17 05:54:19 +0000
-I, [2026-06-17T05:54:19.486934 #73]  INFO -- : [53f3b5849e40eb18300b3159abedaa26] Processing by FollowsController#bulk_show as JSON
-I, [2026-06-17T05:54:19.487566 #73]  INFO -- : [53f3b5849e40eb18300b3159abedaa26]   Parameters: {"ids"=>["1", "18"], "followable_type"=>"User", "locale"=>nil}
-I, [2026-06-17T05:54:19.527412 #73]  INFO -- : [53f3b5849e40eb18300b3159abedaa26] Completed 200 OK in 39ms (Views: 0.3ms | ActiveRecord: 16.7ms | Allocations: 3086)
-I, [2026-06-17T05:54:20.591903 #73]  INFO -- : [613c3501cc4d993cc2ceaba293e97b28] Started POST "/bb_tabulations" for 103.24.87.178 at 2026-06-17 05:54:20 +0000
-I, [2026-06-17T05:54:21.137239 #73]  INFO -- : [19c629e92a25fe44a40da85c02ed03a6] Started POST "/feed_events" for 103.24.87.178 at 2026-06-17 05:54:21 +0000
-I, [2026-06-17T05:54:22.506852 #73]  INFO -- : [d9b250cb0358d822dfc05ee5c7cf06eb] Started GET "/t/gk?i=i" for 103.24.87.178 at 2026-06-17 05:54:22 +0000
-I, [2026-06-17T05:54:22.586870 #73]  INFO -- : [d9b250cb0358d822dfc05ee5c7cf06eb] Processing by Stories::TaggedArticlesController#index as */*
-I, [2026-06-17T05:54:22.587430 #73]  INFO -- : [d9b250cb0358d822dfc05ee5c7cf06eb]   Parameters: {"i"=>"i", "locale"=>nil, "tag"=>"gk"}
-I, [2026-06-17T05:54:23.063483 #73]  INFO -- : [d9b250cb0358d822dfc05ee5c7cf06eb]   Rendered stories/tagged_articles/index.html.erb within layouts/application (Duration: 387.5ms | Allocations: 54294)
-I, [2026-06-17T05:54:23.066546 #73]  INFO -- : [d9b250cb0358d822dfc05ee5c7cf06eb]   Rendered layout layouts/application.html.erb (Duration: 390.7ms | Allocations: 55363)
-I, [2026-06-17T05:54:23.067793 #73]  INFO -- : [d9b250cb0358d822dfc05ee5c7cf06eb] Completed 200 OK in 480ms (Views: 386.2ms | ActiveRecord: 44.6ms | Allocations: 62627)
-I, [2026-06-17T05:54:26.131205 #73]  INFO -- : [b7a189aab60f6e3f4d8e5856d3d7c85e] Started POST "/feed_events" for 103.24.87.178 at 2026-06-17 05:54:26 +0000
-I, [2026-06-17T05:54:54.629086 #73]  INFO -- : [662f988c87270f29ede67e51a99dfaf5] Started GET "/the_cp_team/first-general-elections-democracys-greatest-gamble-5bmi?i=i" for 103.24.87.178 at 2026-06-17 05:54:54 +0000
-I, [2026-06-17T05:54:54.816908 #73]  INFO -- : [662f988c87270f29ede67e51a99dfaf5] Processing by StoriesController#show as */*
-I, [2026-06-17T05:54:54.817611 #73]  INFO -- : [662f988c87270f29ede67e51a99dfaf5]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"the_cp_team", "slug"=>"first-general-elections-democracys-greatest-gamble-5bmi"}
-I, [2026-06-17T05:54:55.261625 #73]  INFO -- : [662f988c87270f29ede67e51a99dfaf5]   Rendered articles/show.html.erb within layouts/application (Duration: 181.7ms | Allocations: 60772)
-I, [2026-06-17T05:54:55.263796 #73]  INFO -- : [662f988c87270f29ede67e51a99dfaf5]   Rendered layout layouts/application.html.erb (Duration: 183.9ms | Allocations: 61863)
-I, [2026-06-17T05:54:55.264551 #73]  INFO -- : [662f988c87270f29ede67e51a99dfaf5] Completed 200 OK in 446ms (Views: 152.9ms | ActiveRecord: 221.5ms | Allocations: 80709)
-I, [2026-06-17T05:55:01.375718 #66]  INFO -- : [06c96c85f27b00065d38e28caf5b4d4a] Started GET "/++" for 103.24.87.178 at 2026-06-17 05:55:01 +0000
-I, [2026-06-17T05:55:01.770371 #66]  INFO -- : [16b6c1125e68bac099ea629f60e15327] Started GET "/razorpay_subscriptions/new" for 103.24.87.178 at 2026-06-17 05:55:01 +0000
-I, [2026-06-17T05:55:01.854601 #66]  INFO -- : [16b6c1125e68bac099ea629f60e15327] Processing by RazorpaySubscriptionsController#new as HTML
-I, [2026-06-17T05:55:01.854901 #66]  INFO -- : [16b6c1125e68bac099ea629f60e15327]   Parameters: {"locale"=>nil}
-E, [2026-06-17T05:55:02.662841 #66] ERROR -- : [16b6c1125e68bac099ea629f60e15327] Razorpay subscription creation error: The plan id field is required.
-I, [2026-06-17T05:55:02.663756 #66]  INFO -- : [16b6c1125e68bac099ea629f60e15327] Redirected to https://careerpolitics.com/settings
-I, [2026-06-17T05:55:02.664752 #66]  INFO -- : [16b6c1125e68bac099ea629f60e15327] Completed 302 Found in 809ms (ActiveRecord: 17.6ms | Allocations: 7500)
-I, [2026-06-17T05:55:02.761275 #66]  INFO -- : [9bedce9a31644e50a84f331e89e1e136] Started GET "/settings" for 103.24.87.178 at 2026-06-17 05:55:02 +0000
-I, [2026-06-17T05:55:02.827962 #66]  INFO -- : [9bedce9a31644e50a84f331e89e1e136] Processing by UsersController#edit as HTML
-I, [2026-06-17T05:55:02.831763 #66]  INFO -- : [9bedce9a31644e50a84f331e89e1e136]   Parameters: {"locale"=>nil}
-I, [2026-06-17T05:55:03.900503 #66]  INFO -- : [9bedce9a31644e50a84f331e89e1e136]   Rendered users/edit.html.erb within layouts/application (Duration: 587.8ms | Allocations: 19079)
-I, [2026-06-17T05:55:04.014708 #66]  INFO -- : [9bedce9a31644e50a84f331e89e1e136]   Rendered layout layouts/application.html.erb (Duration: 702.0ms | Allocations: 40315)
-I, [2026-06-17T05:55:04.015563 #66]  INFO -- : [9bedce9a31644e50a84f331e89e1e136] Completed 200 OK in 1183ms (Views: 510.6ms | ActiveRecord: 566.8ms | Allocations: 56568)
-I, [2026-06-17T05:55:04.248696 #66]  INFO -- : [0c4cd4aa205480258da6495c06f1c51b] Started GET "/notifications/counts" for 103.24.87.178 at 2026-06-17 05:55:04 +0000
-I, [2026-06-17T05:55:04.299634 #66]  INFO -- : [3763d4e7db5dab791551b4be5522f736] Started GET "/async_info/base_data" for 103.24.87.178 at 2026-06-17 05:55:04 +0000
-I, [2026-06-17T05:55:04.362509 #73]  INFO -- : [b8cd1255bb4523492a55552ad6daa24a] Started GET "/notifications?i=i" for 103.24.87.178 at 2026-06-17 05:55:04 +0000
-I, [2026-06-17T05:55:04.430842 #66]  INFO -- : [0c4cd4aa205480258da6495c06f1c51b] Processing by Notifications::CountsController#index as */*
-I, [2026-06-17T05:55:04.432826 #66]  INFO -- : [0c4cd4aa205480258da6495c06f1c51b]   Parameters: {"locale"=>nil}
-I, [2026-06-17T05:55:04.491945 #73]  INFO -- : [b8cd1255bb4523492a55552ad6daa24a] Processing by NotificationsController#index as */*
-I, [2026-06-17T05:55:04.492626 #73]  INFO -- : [b8cd1255bb4523492a55552ad6daa24a]   Parameters: {"i"=>"i", "locale"=>nil}
-I, [2026-06-17T05:55:04.515477 #66]  INFO -- : [3763d4e7db5dab791551b4be5522f736] Processing by AsyncInfoController#base_data as JSON
-I, [2026-06-17T05:55:04.515884 #66]  INFO -- : [3763d4e7db5dab791551b4be5522f736]   Parameters: {"locale"=>nil}
-I, [2026-06-17T05:55:04.584030 #66]  INFO -- : [0c4cd4aa205480258da6495c06f1c51b]   Rendered text template (Duration: 0.2ms | Allocations: 33)
-I, [2026-06-17T05:55:04.592473 #66]  INFO -- : [0c4cd4aa205480258da6495c06f1c51b] Completed 200 OK in 158ms (Views: 10.9ms | ActiveRecord: 123.0ms | Allocations: 14018)
-I, [2026-06-17T05:55:04.591157 #66]  INFO -- : [3763d4e7db5dab791551b4be5522f736] Completed 200 OK in 75ms (Views: 5.1ms | ActiveRecord: 43.6ms | Allocations: 4366)
-I, [2026-06-17T05:55:04.787825 #73]  INFO -- : [b8cd1255bb4523492a55552ad6daa24a]   Rendered notifications/index.html.erb within layouts/application (Duration: 179.6ms | Allocations: 12251)
-I, [2026-06-17T05:55:04.790328 #73]  INFO -- : [b8cd1255bb4523492a55552ad6daa24a]   Rendered layout layouts/application.html.erb (Duration: 182.1ms | Allocations: 13309)
-I, [2026-06-17T05:55:04.791360 #73]  INFO -- : [b8cd1255bb4523492a55552ad6daa24a] Completed 200 OK in 298ms (Views: 173.0ms | ActiveRecord: 94.1ms | Allocations: 17919)
-I, [2026-06-17T05:55:05.190197 #73]  INFO -- : [2fc96e3df90d6e85768b3d52430531f8] Started GET "/settings/profile?i=i" for 103.24.87.178 at 2026-06-17 05:55:05 +0000
-I, [2026-06-17T05:55:05.268725 #73]  INFO -- : [2fc96e3df90d6e85768b3d52430531f8] Processing by UsersController#edit as */*
-I, [2026-06-17T05:55:05.269034 #73]  INFO -- : [2fc96e3df90d6e85768b3d52430531f8]   Parameters: {"i"=>"i", "locale"=>nil, "tab"=>"profile"}
-I, [2026-06-17T05:55:05.620420 #73]  INFO -- : [2fc96e3df90d6e85768b3d52430531f8]   Rendered users/edit.html.erb within layouts/application (Duration: 147.9ms | Allocations: 17935)
-I, [2026-06-17T05:55:05.625716 #73]  INFO -- : [2fc96e3df90d6e85768b3d52430531f8]   Rendered layout layouts/application.html.erb (Duration: 153.3ms | Allocations: 18992)
-I, [2026-06-17T05:55:05.626799 #73]  INFO -- : [2fc96e3df90d6e85768b3d52430531f8] Completed 200 OK in 357ms (Views: 116.4ms | ActiveRecord: 80.6ms | Allocations: 33870)
-I, [2026-06-17T05:55:25.465080 #73]  INFO -- : [0636ab911fa06338725928381f50f4ea] Started GET "/squirrel/26-may-2026-current-affairs-quiz-govt-job-prep-9dk" for 57.141.14.26 at 2026-06-17 05:55:25 +0000
-I, [2026-06-17T05:55:25.610828 #73]  INFO -- : [0636ab911fa06338725928381f50f4ea] Processing by StoriesController#show as */*
-I, [2026-06-17T05:55:25.611041 #73]  INFO -- : [0636ab911fa06338725928381f50f4ea]   Parameters: {"locale"=>nil, "username"=>"squirrel", "slug"=>"26-may-2026-current-affairs-quiz-govt-job-prep-9dk"}
-I, [2026-06-17T05:55:25.963425 #73]  INFO -- : [0636ab911fa06338725928381f50f4ea]   Rendered articles/show.html.erb within layouts/application (Duration: 146.9ms | Allocations: 36238)
-I, [2026-06-17T05:55:26.030750 #73]  INFO -- : [0636ab911fa06338725928381f50f4ea]   Rendered layout layouts/application.html.erb (Duration: 214.3ms | Allocations: 56665)
-I, [2026-06-17T05:55:26.031525 #73]  INFO -- : [0636ab911fa06338725928381f50f4ea] Completed 200 OK in 420ms (Views: 164.3ms | ActiveRecord: 214.7ms | Allocations: 67636)
+E, [2026-06-17T09:12:50.331885 #75] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
+I, [2026-06-17T09:12:50.375581 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] Started GET "/razorpay_subscriptions/new" for 103.24.87.178 at 2026-06-17 09:12:50 +0000
+I, [2026-06-17T09:12:50.723920 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] Processing by RazorpaySubscriptionsController#new as HTML
+I, [2026-06-17T09:12:50.724220 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d]   Parameters: {"locale"=>nil}
+I, [2026-06-17T09:12:50.745570 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] Razorpay plan_id resolved to: "plan_T2dD4LCjkATpN9" (from Settings: "plan_T2dD4LCjkATpN9")
+I, [2026-06-17T09:12:50.746154 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] ----------------------------------------
+I, [2026-06-17T09:12:50.746284 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Key ID configured: "rzp_live_T2d81aZ2NNveXS"
+I, [2026-06-17T09:12:50.746362 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Plan ID configured: "plan_T2dD4LCjkATpN9"
+I, [2026-06-17T09:12:50.746606 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Sending Payload: {"plan_id":"plan_T2dD4LCjkATpN9","total_count":12,"quantity":1,"customer_notify":1,"notes":{"user_id":"1","username":"the_cp_admin","email":"support@careerpolitics.com"}}
+E, [2026-06-17T09:12:51.504655 #75] ERROR -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] ----------------------------------------
+E, [2026-06-17T09:12:51.504742 #75] ERROR -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Razorpay::Error caught!
+E, [2026-06-17T09:12:51.504761 #75] ERROR -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Message: The plan id field is required.
+E, [2026-06-17T09:12:51.504775 #75] ERROR -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Class: Razorpay::BadRequestError
+E, [2026-06-17T09:12:51.504795 #75] ERROR -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Inspect: #<Razorpay::BadRequestError: The plan id field is required.>
+E, [2026-06-17T09:12:51.504812 #75] ERROR -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] ----------------------------------------
+I, [2026-06-17T09:12:51.506876 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] Redirected to https://careerpolitics.com/settings
+I, [2026-06-17T09:12:51.507929 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] Completed 302 Found in 783ms (ActiveRecord: 10.3ms | Allocations: 10582)
+I, [2026-06-17T09:12:51.623261 #75]  INFO -- : [35a3213cd04a043b657157e90337bb8b] Started GET "/settings" for 103.24.87.178 at 2026-06-17 09:12:51 +0000
+I, [2026-06-17T09:12:51.657229 #75]  INFO -- : [35a3213cd04a043b657157e90337bb8b] Processing by UsersController#edit as HTML
+I, [2026-06-17T09:12:51.657658 #75]  INFO -- : [35a3213cd04a043b657157e90337bb8b]   Parameters: {"locale"=>nil}
+I, [2026-06-17T09:12:52.100050 #75]  INFO -- : [35a3213cd04a043b657157e90337bb8b]   Rendered users/edit.html.erb within layouts/application (Duration: 340.9ms | Allocations: 63950)
+I, [2026-06-17T09:12:52.766839 #75]  INFO -- : [35a3213cd04a043b657157e90337bb8b]   Rendered layout layouts/application.html.erb (Duration: 1007.8ms | Allocations: 140569)
+I, [2026-06-17T09:12:52.767997 #75]  INFO -- : [35a3213cd04a043b657157e90337bb8b] Completed 200 OK in 1110ms (Views: 921.3ms | ActiveRecord: 121.8ms | Allocations: 168051)
+I, [2026-06-17T09:12:53.024964 #75]  INFO -- : [46bfcfee75d189249d5daa61717e338e] Started GET "/notifications/counts" for 103.24.87.178 at 2026-06-17 09:12:53 +0000
+I, [2026-06-17T09:12:53.087519 #75]  INFO -- : [0d99938f612abfda0e34e0bfd6a6adc0] Started GET "/async_info/base_data" for 103.24.87.178 at 2026-06-17 09:12:53 +0000
+E, [2026-06-17T09:12:53.150596 #68] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
+I, [2026-06-17T09:12:53.166922 #68]  INFO -- : [706c123dd707aa17442138323d413c75] Started GET "/notifications?i=i" for 103.24.87.178 at 2026-06-17 09:12:53 +0000
+I, [2026-06-17T09:12:53.234555 #75]  INFO -- : [0d99938f612abfda0e34e0bfd6a6adc0] Processing by AsyncInfoController#base_data as JSON
+I, [2026-06-17T09:12:53.235364 #75]  INFO -- : [0d99938f612abfda0e34e0bfd6a6adc0]   Parameters: {"locale"=>nil}
+I, [2026-06-17T09:12:53.330796 #75]  INFO -- : [46bfcfee75d189249d5daa61717e338e] Processing by Notifications::CountsController#index as */*
+I, [2026-06-17T09:12:53.334124 #75]  INFO -- : [46bfcfee75d189249d5daa61717e338e]   Parameters: {"locale"=>nil}
+I, [2026-06-17T09:12:53.419810 #75]  INFO -- : [0d99938f612abfda0e34e0bfd6a6adc0] Completed 200 OK in 183ms (Views: 0.5ms | ActiveRecord: 155.5ms | Allocations: 22026)
+I, [2026-06-17T09:12:53.467502 #75]  INFO -- : [46bfcfee75d189249d5daa61717e338e]   Rendered text template (Duration: 0.2ms | Allocations: 34)
+I, [2026-06-17T09:12:53.468669 #75]  INFO -- : [46bfcfee75d189249d5daa61717e338e] Completed 200 OK in 134ms (Views: 3.2ms | ActiveRecord: 117.8ms | Allocations: 9824)
+I, [2026-06-17T09:12:53.569049 #68]  INFO -- : [706c123dd707aa17442138323d413c75] Processing by NotificationsController#index as */*
+I, [2026-06-17T09:12:53.569404 #68]  INFO -- : [706c123dd707aa17442138323d413c75]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-06-17T09:12:53.917700 #68]  INFO -- : [706c123dd707aa17442138323d413c75]   Rendered notifications/index.html.erb within layouts/application (Duration: 179.8ms | Allocations: 38150)
+I, [2026-06-17T09:12:53.927302 #68]  INFO -- : [706c123dd707aa17442138323d413c75]   Rendered layout layouts/application.html.erb (Duration: 189.5ms | Allocations: 41660)
+I, [2026-06-17T09:12:53.928489 #68]  INFO -- : [706c123dd707aa17442138323d413c75] Completed 200 OK in 359ms (Views: 182.0ms | ActiveRecord: 115.8ms | Allocations: 61595)
