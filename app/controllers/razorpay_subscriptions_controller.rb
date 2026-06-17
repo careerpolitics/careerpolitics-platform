@@ -64,7 +64,7 @@ class RazorpaySubscriptionsController < ApplicationController
         current_user.profile&.touch
         NotifyMailer.with(user: current_user).base_subscriber_role_email.deliver_later
       end
-      flash[:notice] = "Welcome to #{Settings::Community.community_name} Premium! Your subscription is now active."
+      flash[:notice] = "Welcome to CP++! Your subscription is now active."
     else
       Rails.logger.error "Razorpay signature verification failed for user #{current_user.id}"
       flash[:error] = "Payment verification failed. Please contact support if you were charged."

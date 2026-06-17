@@ -2,7 +2,7 @@
 
 <div class="crayons-layout crayons-layout--limited-width crayons-layout--single-col">
   <div class="crayons-card crayons-card--content-rows p-6">
-    <h2 class="crayons-subtitle-1 mb-4"><%= community_name %> Premium</h2>
+    <h2 class="crayons-subtitle-1 mb-4">CP++</h2>
 
     <p class="mb-4">Complete your subscription using the secure payment form below.</p>
 
@@ -25,7 +25,7 @@
       key: '<%= @razorpay_key_id %>',
       subscription_id: '<%= @subscription_id %>',
       name: '<%= j(community_name) %>',
-      description: 'Premium Subscription',
+      description: 'CP++ Subscription',
       image: '<%= asset_path("apple-icon.png") %>',
       prefill: {
         name: '<%= j(@user.name) %>',

@@ -9,7 +9,9 @@ RSpec.describe "IncomingWebhooks::RazorpayEventsController" do
     allow(Rails.logger).to receive(:info)
     allow(Rails.logger).to receive(:warn)
     allow(Rails.logger).to receive(:error)
-    allow(NotifyMailer).to receive_message_chain(:with, :base_subscriber_role_email, :deliver_later)
+    mailer_double = instance_double(ActionMailer::MessageDelivery, deliver_later: true)
+    mailer_with_double = instance_double(NotifyMailer, base_subscriber_role_email: mailer_double)
+    allow(NotifyMailer).to receive(:with).and_return(mailer_with_double)
   end
 
   def razorpay_signature(payload)
