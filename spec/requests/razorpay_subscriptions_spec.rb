@@ -10,6 +10,7 @@ RSpec.describe "RazorpaySubscriptions" do
     allow(Settings::General).to receive(:razorpay_key_id).and_return(razorpay_key_id)
     allow(Settings::General).to receive(:razorpay_key_secret).and_return(razorpay_key_secret)
     allow(Razorpay).to receive(:setup)
+    allow(Razorpay).to receive(:headers=)
   end
 
   describe "GET /razorpay_subscriptions/new" do
@@ -38,6 +39,15 @@ RSpec.describe "RazorpaySubscriptions" do
           hash_including(plan_id: plan_id, quantity: 1),
           )
         expect(response).to have_http_status(:ok)
+      end
+
+      it "does not override Razorpay content type headers" do
+        subscription_double = double("Razorpay::Subscription", id: "sub_test789")
+        allow(Razorpay::Subscription).to receive(:create).and_return(subscription_double)
+
+        get new_razorpay_subscription_path
+
+        expect(Razorpay).not_to have_received(:headers=)
       end
 
       it "uses plan param when provided" do
