@@ -35,12 +35,12 @@ class RazorpaySubscriptionsController < ApplicationController
     Rails.logger.info "[Razorpay Debug] Plan ID configured: #{plan_id.inspect}"
     Rails.logger.info "[Razorpay Debug] Sending Payload: #{payload.to_json}"
 
-    subscription = Razorpay::Subscription.create(payload)
+    subscription = create_razorpay_subscription(payload)
 
-    Rails.logger.info "[Razorpay Debug] Success! Subscription ID: #{subscription.id}"
+    Rails.logger.info "[Razorpay Debug] Success! Subscription ID: #{subscription.fetch("id")}"
     Rails.logger.info "[Razorpay Debug] ----------------------------------------"
 
-    @subscription_id = subscription.id
+    @subscription_id = subscription.fetch("id")
     @razorpay_key_id = Settings::General.razorpay_key_id
     @user = current_user
     @plan_id = plan_id
@@ -142,8 +142,36 @@ class RazorpaySubscriptionsController < ApplicationController
 
   private
 
+  def create_razorpay_subscription(payload)
+    response = HTTParty.post(
+      "https://api.razorpay.com/v1/subscriptions",
+      basic_auth: {
+        username: Settings::General.razorpay_key_id,
+        password: Settings::General.razorpay_key_secret,
+      },
+      body: payload.to_json,
+      headers: { "Content-Type" => "application/json" },
+      timeout: 10,
+    )
+
+    parsed_response = response.parsed_response.presence || JSON.parse(response.body)
+    return parsed_response if response.success?
+
+    error_message = razorpay_error_message(parsed_response, response.body)
+    raise Razorpay::Error, error_message
+  rescue JSON::ParserError => e
+    raise Razorpay::Error, "Unable to parse Razorpay subscription response: #{e.message}"
+  rescue HTTParty::Error, SocketError, Net::OpenTimeout, Net::ReadTimeout, Timeout::Error => e
+    raise Razorpay::Error, "Unable to reach Razorpay subscriptions API: #{e.message}"
+  end
+
+  def razorpay_error_message(parsed_response, raw_body)
+    return raw_body unless parsed_response.is_a?(Hash)
+
+    parsed_response.dig("error", "description") || parsed_response["error"] || raw_body
+  end
+
   def initialize_razorpay
     Razorpay.setup(Settings::General.razorpay_key_id, Settings::General.razorpay_key_secret)
-    Razorpay.headers = { "Content-Type" => "application/json" }
   end
 end
