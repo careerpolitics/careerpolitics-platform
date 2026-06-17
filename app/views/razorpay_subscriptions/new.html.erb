@@ -1,8 +1,17 @@
 <% title t("views.settings.billing.heading") %>
+<% cp_logo = Settings::General.logo_png.presence || URL.url(asset_path("icon.png")) %>
 
 <div class="crayons-layout crayons-layout--limited-width crayons-layout--single-col">
   <div class="crayons-card crayons-card--content-rows p-6">
-    <h2 class="crayons-subtitle-1 mb-4">CP++</h2>
+    <div class="flex items-center mb-4">
+      <img
+        src="<%= asset_path("subscription-icon.png") %>"
+        alt="CP++"
+        width="64"
+        height="42"
+        class="mr-3 radius-default" />
+      <h2 class="crayons-subtitle-1 mb-0">CP++</h2>
+    </div>
 
     <p class="mb-4">Complete your subscription using the secure payment form below.</p>
 
@@ -26,10 +35,14 @@
       subscription_id: '<%= @subscription_id %>',
       name: '<%= j(community_name) %>',
       description: 'CP++ Subscription',
-      image: '<%= asset_path("apple-icon.png") %>',
+      image: '<%= j(cp_logo) %>',
       prefill: {
         name: '<%= j(@user.name) %>',
         email: '<%= j(@user.email) %>'
+      },
+      readonly: {
+        name: true,
+        email: true
       },
       notes: {
         user_id: '<%= @user.id %>'
