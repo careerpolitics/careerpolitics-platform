@@ -31,7 +31,7 @@ module MockExams
     def select_from_set
       questions = @template.set_questions(@pool_set).where(set_published: true).to_a
       return nil if questions.empty?
-      questions.each(&:increment_served!)
+      MockExamQuestion.where(id: questions.map(&:id)).update_all("times_served = times_served + 1") # rubocop:disable Rails/SkipsModelValidations
       questions
     end
 

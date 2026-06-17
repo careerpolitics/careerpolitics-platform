@@ -244,6 +244,7 @@ Rails.application.routes.draw do
         get :confirm
       end
     end
+    get "/++", to: redirect("/razorpay_subscriptions/new")
     resources :github_repos, only: %i[index] do
       collection do
         post "/update_or_create", to: "github_repos#update_or_create"

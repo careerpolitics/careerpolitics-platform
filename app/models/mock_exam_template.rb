@@ -57,7 +57,7 @@ class MockExamTemplate < ApplicationRecord
   end
 
   def published_pool_size
-    mock_exam_questions.published_sets.count
+    pool_questions.where(set_published: true).count
   end
 
   def available_sets

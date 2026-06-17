@@ -24,6 +24,12 @@ class MockExamsController < ApplicationController
                    else
                      []
                    end
+        template_ids = @mock_exam_templates.map(&:id)
+        @published_counts = MockExamQuestion
+                              .where(mock_exam_template_id: template_ids, mock_exam_attempt_id: nil, set_published: true)
+                              .where.not(pool_set: nil)
+                              .group(:mock_exam_template_id)
+                              .distinct.count(:pool_set)
         render json: {
           templates: @mock_exam_templates.map { |t| template_json(t) },
           followed_tags: followed,
@@ -62,42 +68,66 @@ class MockExamsController < ApplicationController
   end
 
   def sets
-    sets_data = @template.published_sets.map do |set_number, count|
-      attempts_for_set = @template.mock_exam_attempts.where(pool_set: set_number).count
-      user_attempted = false
-      user_attempt_data = nil
+    published = @template.published_sets
+    set_numbers = published.keys
 
-      if current_user
-        best_attempt = current_user.mock_exam_attempts
-                                   .for_template(@template)
-                                   .submitted_or_timed_out
-                                   .where(pool_set: set_number)
-                                   .order(total_score: :desc, submitted_at: :desc)
-                                   .first
+    attempts_by_set = @template.mock_exam_attempts
+                               .where(pool_set: set_numbers)
+                               .group(:pool_set).count
 
-        if best_attempt
-          user_attempted = true
-          user_attempt_data = {
-            attempt_id: best_attempt.id,
-            total_score: best_attempt.total_score,
-            max_possible_score: best_attempt.max_possible_score,
-            accuracy_percent: best_attempt.accuracy_percent,
-            percentile: best_attempt.percentile,
-          }
-        end
+    user_bests = if current_user
+                   current_user.mock_exam_attempts
+                               .for_template(@template)
+                               .submitted_or_timed_out
+                               .where(pool_set: set_numbers)
+                               .order(total_score: :desc, submitted_at: :desc)
+                               .index_by(&:pool_set)
+                 else
+                   {}
+                 end
+
+    difficulties_by_set = @template.pool_questions
+                                   .where(pool_set: set_numbers, set_published: true)
+                                   .group(:pool_set, :difficulty).count
+
+    labels_by_set = @template.pool_questions
+                             .where(pool_set: set_numbers)
+                             .group(:pool_set)
+                             .minimum(:created_at)
+
+    sets_data = published.map do |set_number, count|
+      best_attempt = user_bests[set_number]
+      user_attempt_data = if best_attempt
+                            {
+                              attempt_id: best_attempt.id,
+                              total_score: best_attempt.total_score,
+                              max_possible_score: best_attempt.max_possible_score,
+                              accuracy_percent: best_attempt.accuracy_percent,
+                              percentile: best_attempt.percentile,
+                            }
+                          end
+
+      set_difficulties = difficulties_by_set.each_with_object({}) do |((ps, diff), cnt), h|
+        h[diff] = cnt if ps == set_number
       end
+      primary_difficulty = set_difficulties.max_by { |_, v| v }&.first || "mixed"
 
-      difficulties = @template.set_questions(set_number).reorder(nil).group(:difficulty).count
-      primary_difficulty = difficulties.max_by { |_, v| v }&.first || "mixed"
+      set_date = labels_by_set[set_number]
+      label = if set_date
+                "#{set_date.strftime("%d-%m")}-#{Digest::MD5.hexdigest("#{@template.id}-#{set_number}")[0, 3]}"
+              else
+                "Set #{set_number}"
+              end
+
       {
         set_number: set_number,
-        label: @template.set_label(set_number),
+        label: label,
         question_count: count,
-        attempts_count: attempts_for_set,
-        user_attempted: user_attempted,
+        attempts_count: attempts_by_set[set_number] || 0,
+        user_attempted: best_attempt.present?,
         user_attempt_data: user_attempt_data,
         difficulty: primary_difficulty,
-        difficulty_breakdown: difficulties
+        difficulty_breakdown: set_difficulties
       }
     end
     render json: { sets: sets_data }
@@ -158,7 +188,7 @@ class MockExamsController < ApplicationController
       sections_config: template.sections_config,
       has_calculator: template.has_calculator,
       has_scratchpad: template.has_scratchpad,
-      published_sets_count: template.published_set_count,
+      published_sets_count: @published_counts ? (@published_counts[template.id] || 0) : template.published_set_count,
       tag_list: template.tag ? [{ name: template.tag.name, id: template.tag.id, bg_color_hex: template.tag.bg_color_hex }] : []
     }
   end
@@ -212,12 +242,12 @@ class MockExamsController < ApplicationController
                          .map(&:id)
 
     attempts = MockExamAttempt
-               .where(id: best_attempt_ids)
-               .order(total_score: :desc)
-               .order(Arel.sql("EXTRACT(EPOCH FROM (submitted_at - started_at)) ASC NULLS LAST"))
-               .order(submitted_at: :asc)
-               .limit(20)
-               .includes(:user)
+                 .where(id: best_attempt_ids)
+                 .order(total_score: :desc)
+                 .order(Arel.sql("EXTRACT(EPOCH FROM (submitted_at - started_at)) ASC NULLS LAST"))
+                 .order(submitted_at: :asc)
+                 .limit(20)
+                 .includes(:user)
 
     attempts.map do |attempt|
       {
@@ -268,10 +298,10 @@ class MockExamsController < ApplicationController
 
   def calculate_streak
     dates = current_user.mock_exam_attempts
+                        .where("submitted_at >= ?", 90.days.ago)
                         .where.not(submitted_at: nil)
                         .order(submitted_at: :desc)
-                        .pluck(Arel.sql("DATE(submitted_at)"))
-                        .uniq
+                        .pluck(Arel.sql("DISTINCT DATE(submitted_at)"))
 
     streak = 0
     check_date = Date.current

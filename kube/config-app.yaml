@@ -54,6 +54,7 @@ data:
   WEB_CONCURRENCY: "2"
   REDIRECT_WWW_TO_ROOT: "true"
   LOG_LEVEL: "info"
+  OPTIMIZED_TAGGABLE_QUERY: "true"
 
   # Trending Article Automation (Selenium)
 

@@ -18,7 +18,13 @@
   <% end %>
 
   <% if Settings::General.razorpay_key_id.present? %>
-    <% unless current_user.cached_base_subscriber? %>
+    <% if current_user.cached_base_subscriber? %>
+      <div class="mb-4">
+        <a href="<%= edit_razorpay_subscription_path("me") %>" class="crayons-btn crayons-btn--secondary" data-no-instant>
+          Manage <%= community_name %> Premium Subscription
+        </a>
+      </div>
+    <% else %>
       <div class="mb-4">
         <p class="mb-2">Subscribe to <%= community_name %> Premium to unlock exclusive features.</p>
         <a href="<%= new_razorpay_subscription_path %>" class="crayons-btn" data-no-instant>

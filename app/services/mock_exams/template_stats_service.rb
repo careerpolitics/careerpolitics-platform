@@ -42,10 +42,14 @@ module MockExams
       return [] if max.zero?
 
       bucket_size = (max / 10.0).ceil
+      counts = @attempts
+                 .group(Arel.sql("width_bucket(total_score, 0, #{max.to_f + bucket_size}, 10)"))
+                 .count
+
       (0..9).map do |i|
         min_val = i * bucket_size
         max_val = (i + 1) * bucket_size
-        { min: min_val, max: max_val, count: @attempts.where(total_score: min_val...max_val).count }
+        { min: min_val, max: max_val, count: counts[i + 1] || 0 }
       end
     end
 

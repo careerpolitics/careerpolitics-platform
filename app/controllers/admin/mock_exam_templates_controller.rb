@@ -142,7 +142,7 @@ module Admin
       @template = MockExamTemplate.find(params[:id])
       set_number = params[:set].to_i
       existing = @template.set_questions(set_number)
-      existing_by_section = existing.reorder(nil).group(:section_name).count
+      existing_by_section = existing.unscope(:order).group(:section_name).count
 
       shortfalls = @template.sections_config.filter_map do |section|
         have = existing_by_section[section["name"]] || 0
@@ -245,7 +245,7 @@ module Admin
 
       @set_details = @sets_data.keys.sort.map do |set_num|
         questions = @template.set_questions(set_num)
-        by_section = questions.reorder(nil).group(:section_name).count
+        existing_by_section = existing.unscope(:order).group(:section_name).count
 
         sections = @template.sections_config.map do |sc|
           have = by_section[sc["name"]] || 0
