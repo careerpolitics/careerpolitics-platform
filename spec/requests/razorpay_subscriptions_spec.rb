@@ -23,7 +23,7 @@ RSpec.describe "RazorpaySubscriptions" do
     context "when the user is signed in" do
       before do
         sign_in user
-        ENV["RAZORPAY_PLAN_ID"] = plan_id
+        allow(Settings::General).to receive(:razorpay_plan_id).and_return(plan_id)
       end
 
       after { ENV.delete("RAZORPAY_PLAN_ID") }
@@ -53,7 +53,7 @@ RSpec.describe "RazorpaySubscriptions" do
       end
 
       it "redirects with error when no plan is configured" do
-        ENV.delete("RAZORPAY_PLAN_ID")
+        allow(Settings::General).to receive(:razorpay_plan_id).and_return(nil)
 
         get new_razorpay_subscription_path
 

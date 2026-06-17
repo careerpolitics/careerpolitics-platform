@@ -25,6 +25,24 @@
         </div>
 
         <div class="crayons-field">
+          <%= admin_config_label :razorpay_webhook_secret, "Razorpay Webhook Secret" %>
+          <%= admin_config_description Constants::Settings::General.details[:razorpay_webhook_secret][:description] %>
+          <%= f.text_field :razorpay_webhook_secret,
+                           class: "crayons-textfield",
+                           value: Settings::General.razorpay_webhook_secret,
+                           placeholder: Constants::Settings::General.details[:razorpay_webhook_secret][:placeholder] %>
+        </div>
+
+        <div class="crayons-field">
+          <%= admin_config_label :razorpay_plan_id, "Razorpay Plan ID" %>
+          <%= admin_config_description Constants::Settings::General.details[:razorpay_plan_id][:description] %>
+          <%= f.text_field :razorpay_plan_id,
+                           class: "crayons-textfield",
+                           value: Settings::General.razorpay_plan_id,
+                           placeholder: Constants::Settings::General.details[:razorpay_plan_id][:placeholder] %>
+        </div>
+
+        <div class="crayons-field">
           <%= admin_config_label :stripe_api_key, "Stripe API key" %>
           <%= admin_config_description Constants::Settings::General.details[:stripe_api_key][:description] %>
           <%= f.text_field :stripe_api_key,

@@ -134,6 +134,16 @@ module Constants
                                 default: "Razorpay Key Secret for payment processing"),
             placeholder: "your_razorpay_secret"
           },
+          razorpay_webhook_secret: {
+            description: I18n.t("lib.constants.settings.general.razorpay_webhook_secret.description",
+                                default: "Razorpay Webhook Secret for verifying webhook signatures"),
+            placeholder: "your_razorpay_webhook_secret"
+          },
+          razorpay_plan_id: {
+            description: I18n.t("lib.constants.settings.general.razorpay_plan_id.description",
+                                default: "Razorpay Plan ID for subscriptions"),
+            placeholder: "plan_..."
+          },
           stripe_api_key: {
             description: I18n.t("lib.constants.settings.general.stripe_api.description"),
             placeholder: "sk_live_...."
