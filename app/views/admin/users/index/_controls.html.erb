@@ -19,6 +19,9 @@
             <span id="active-filters-count" class="c-indicator c-indicator--info fs-xs absolute" style="top: -4px; right: -4px;"><%= active_filters_count %></span>
           <% end %>
         </button>
+        <%= link_to "CP++ subscribers",
+                    admin_razorpay_subscriptions_path,
+                    class: "crayons-btn crayons-btn--secondary ml-2" %>
         <%= render "admin/users/controls/export" %>
       </div>
     </div>

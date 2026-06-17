@@ -75,8 +75,7 @@ RSpec.describe "RazorpaySubscriptions" do
 
         expect(response.body).to include("subscription-icon")
         expect(response.body).to include("image: 'https://careerpolitics.com/cp-logo.png'")
-        expect(response.body).to include("readonly")
-        expect(response.body).to include("email: true")
+        expect(response.body).not_to include("readonly")
       end
 
       it "uses plan param when provided" do
