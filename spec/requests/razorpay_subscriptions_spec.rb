@@ -177,6 +177,40 @@ RSpec.describe "RazorpaySubscriptions" do
     end
   end
 
+
+  describe "POST /razorpay_subscriptions/free_trial" do
+    context "when the user is not signed in" do
+      it "redirects to the sign in page" do
+        post free_trial_razorpay_subscriptions_path
+        expect(response).to redirect_to("/magic_links/new")
+      end
+    end
+
+    context "when the user is signed in" do
+      before { sign_in user }
+
+      it "grants CP++ trial access without a payment method" do
+        post free_trial_razorpay_subscriptions_path
+
+        user.reload
+        expect(user.roles.pluck(:name)).to include("base_subscriber")
+        expect(user.current_subscriber_status).to eq("trial_subscription")
+        expect(user.stripe_id_code).to be_nil
+        expect(response).to redirect_to(user_settings_path(:billing))
+      end
+
+      it "does not change existing subscribers" do
+        user.add_role("base_subscriber")
+        user.update!(current_subscriber_status: :paying_subscription, stripe_id_code: "sub_test789")
+
+        post free_trial_razorpay_subscriptions_path
+
+        expect(user.reload.current_subscriber_status).to eq("paying_subscription")
+        expect(user.stripe_id_code).to eq("sub_test789")
+      end
+    end
+  end
+
   describe "GET /razorpay_subscriptions/:id/edit" do
     context "when the user is not signed in" do
       it "redirects to the sign in page" do

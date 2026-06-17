@@ -242,6 +242,7 @@ Rails.application.routes.draw do
     resources :razorpay_subscriptions, only: %i[new edit destroy] do
       collection do
         get :confirm
+        post :free_trial
       end
     end
     get "/++", to: redirect("/razorpay_subscriptions/new")

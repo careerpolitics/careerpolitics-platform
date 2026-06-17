@@ -72,12 +72,10 @@ export function UserMockExamDashboard() {
           <div class="flex items-center justify-between flex-wrap gap-3">
             <div>
               <p class="fw-bold fs-s" style={{ color: 'var(--accent-brand)' }}>
-                {data.daily_attempts_remaining != null && data.daily_attempts_remaining > 0
-                  ? `${data.daily_attempts_remaining} free attempt${data.daily_attempts_remaining === 1 ? '' : 's'} remaining today`
-                  : 'Daily free attempt used'}
+                Start a free trial or subscribe to access mock exams
               </p>
               <p class="fs-s color-secondary mt-1">
-                Upgrade to Premium for unlimited mock exams, and more
+                Start a free trial or subscribe for CP++ mock exam access
               </p>
             </div>
             <a href={data.upgrade_url} class="c-btn c-btn--primary"

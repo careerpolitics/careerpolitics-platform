@@ -5,17 +5,15 @@ class MockExamAttemptsController < ApplicationController
 
   def create
     unless policy(MockExamAttempt).create?
-      resets_at = Time.current.end_of_day.iso8601
-      msg = "You've used your free attempt for today. Upgrade to Premium for unlimited mock exams."
+      msg = mock_exam_access_denied_message
       respond_to do |format|
         format.html { redirect_to mock_exam_path(slug: @template.slug), alert: msg }
         format.json do
           render json: {
-            error: "daily_limit_reached",
+            error: "mock_exam_access_required",
             message: msg,
             is_premium: current_user.cached_base_subscriber?,
             upgrade_url: Settings::General.razorpay_key_id.present? ? new_razorpay_subscription_path : new_stripe_subscription_path,
-            resets_at: resets_at,
           }, status: :forbidden
         end
       end
@@ -124,6 +122,10 @@ class MockExamAttemptsController < ApplicationController
   end
 
   private
+
+  def mock_exam_access_denied_message
+    "Start your free CP++ trial or subscribe to access mock exams."
+  end
 
   def set_template
     @template = MockExamTemplate.find_by!(slug: params[:mock_exam_slug], active: true, published: true)

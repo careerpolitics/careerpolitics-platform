@@ -12,27 +12,37 @@ RSpec.describe MockExamAttemptPolicy, type: :policy do
   context "when user is signed in" do
     let(:user) { create(:user) }
 
-    context "when user has no attempts today" do
-      it { is_expected.to permit_actions(%i[create]) }
-    end
-
-    context "when user has used their daily free attempt" do
-      before do
-        template = create(:mock_exam_template)
-        create(:mock_exam_attempt, user: user, mock_exam_template: template, created_at: Time.current)
-      end
-
+    context "when user has no CP++ access" do
       it { is_expected.to forbid_actions(%i[create]) }
     end
 
-    context "when user is a premium subscriber" do
+    context "when user has an active free trial" do
       before do
         user.add_role("base_subscriber")
+        user.update!(current_subscriber_status: :trial_subscription)
       end
 
       it { is_expected.to permit_actions(%i[create]) }
 
-      context "when they have already used multiple attempts today" do
+      context "when they have already used multiple attempts" do
+        before do
+          template = create(:mock_exam_template)
+          3.times { create(:mock_exam_attempt, user: user, mock_exam_template: template, created_at: Time.current) }
+        end
+
+        it { is_expected.to permit_actions(%i[create]) }
+      end
+    end
+
+    context "when user is a paying premium subscriber" do
+      before do
+        user.add_role("base_subscriber")
+        user.update!(current_subscriber_status: :paying_subscription)
+      end
+
+      it { is_expected.to permit_actions(%i[create]) }
+
+      context "when they have already used multiple attempts" do
         before do
           template = create(:mock_exam_template)
           3.times { create(:mock_exam_attempt, user: user, mock_exam_template: template, created_at: Time.current) }
@@ -53,39 +63,31 @@ RSpec.describe MockExamAttemptPolicy, type: :policy do
     let(:user) { create(:user) }
     let(:policy) { described_class.new(user, MockExamAttempt) }
 
-    context "when user is a premium subscriber" do
-      before { user.add_role("base_subscriber") }
-
-      it "returns nil" do
-        expect(policy.daily_attempts_remaining).to be_nil
-      end
-    end
-
-    context "when user has no attempts today" do
-      it "returns the daily free limit" do
-        expect(policy.daily_attempts_remaining).to eq(described_class::DAILY_FREE_LIMIT)
-      end
-    end
-
-    context "when user has used their daily free attempt" do
-      before do
-        template = create(:mock_exam_template)
-        create(:mock_exam_attempt, user: user, mock_exam_template: template, created_at: Time.current)
-      end
-
+    context "when user has no CP++ access" do
       it "returns 0" do
         expect(policy.daily_attempts_remaining).to eq(0)
       end
     end
 
-    context "when user's attempts were from yesterday" do
+    context "when user has an active free trial" do
       before do
-        template = create(:mock_exam_template)
-        create(:mock_exam_attempt, user: user, mock_exam_template: template, created_at: 1.day.ago)
+        user.add_role("base_subscriber")
+        user.update!(current_subscriber_status: :trial_subscription)
       end
 
-      it "returns the daily free limit (resets daily)" do
-        expect(policy.daily_attempts_remaining).to eq(described_class::DAILY_FREE_LIMIT)
+      it "returns nil for unlimited attempts" do
+        expect(policy.daily_attempts_remaining).to be_nil
+      end
+    end
+
+    context "when user is a paying premium subscriber" do
+      before do
+        user.add_role("base_subscriber")
+        user.update!(current_subscriber_status: :paying_subscription)
+      end
+
+      it "returns nil for unlimited attempts" do
+        expect(policy.daily_attempts_remaining).to be_nil
       end
     end
   end
