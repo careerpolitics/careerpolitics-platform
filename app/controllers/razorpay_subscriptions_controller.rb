@@ -8,7 +8,7 @@ class RazorpaySubscriptionsController < ApplicationController
     plan_id = if params[:plan].present?
                 params[:plan]
               else
-                ENV.fetch("RAZORPAY_PLAN_ID", nil)
+                Settings::General.razorpay_plan_id.presence
               end
 
     unless plan_id

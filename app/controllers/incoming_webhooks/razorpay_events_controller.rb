@@ -2,7 +2,9 @@ module IncomingWebhooks
   class RazorpayEventsController < ApplicationController
     skip_before_action :verify_authenticity_token
 
-    RAZORPAY_WEBHOOK_SECRET = ApplicationConfig["RAZORPAY_WEBHOOK_SECRET"]
+    def self.webhook_secret
+      Settings::General.razorpay_webhook_secret
+    end
 
     def create
       payload = request.body.read
@@ -45,9 +47,10 @@ module IncomingWebhooks
     private
 
     def verify_signature(payload, signature)
-      return false if signature.blank? || RAZORPAY_WEBHOOK_SECRET.blank?
+      secret = self.class.webhook_secret
+      return false if signature.blank? || secret.blank?
 
-      expected = OpenSSL::HMAC.hexdigest("SHA256", RAZORPAY_WEBHOOK_SECRET, payload)
+      expected = OpenSSL::HMAC.hexdigest("SHA256", secret, payload)
       ActiveSupport::SecurityUtils.secure_compare(expected, signature)
     end
 

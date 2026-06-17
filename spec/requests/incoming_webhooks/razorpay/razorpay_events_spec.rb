@@ -5,7 +5,7 @@ RSpec.describe "IncomingWebhooks::RazorpayEventsController" do
   let(:user) { create(:user) }
 
   before do
-    stub_const("IncomingWebhooks::RazorpayEventsController::RAZORPAY_WEBHOOK_SECRET", webhook_secret)
+    allow(IncomingWebhooks::RazorpayEventsController).to receive(:webhook_secret).and_return(webhook_secret)
     allow(Rails.logger).to receive(:info)
     allow(Rails.logger).to receive(:warn)
     allow(Rails.logger).to receive(:error)

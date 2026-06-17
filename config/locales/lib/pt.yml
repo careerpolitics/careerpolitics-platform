@@ -180,6 +180,10 @@ pt:
             description: 'Chave pública (Key ID) do Razorpay para receber pagamentos. Consulte: https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps/'
           razorpay_key_secret:
             description: 'Chave secreta (Key Secret) do Razorpay para receber pagamentos. Mantenha esta chave confidencial e nunca a exponha aos clientes. Consulte: https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps/'
+          razorpay_webhook_secret:
+            description: 'Segredo usado para verificar assinaturas de webhooks do Razorpay. Gere-o no painel do Razorpay em Configurações → Webhooks.'
+          razorpay_plan_id:
+            description: 'ID do plano Razorpay para cobrança de assinaturas. Crie um plano no painel do Razorpay em Assinaturas → Planos.'
           tags:
             description: Default tags for the community
             placeholder: Default tags for the community

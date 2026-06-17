@@ -141,8 +141,10 @@ module Admin
     def backfill_set
       @template = MockExamTemplate.find(params[:id])
       set_number = params[:set].to_i
-      existing = @template.set_questions(set_number)
-      existing_by_section = existing.unscope(:order).group(:section_name).count
+      existing_by_section = @template.pool_questions
+                                     .where(pool_set: set_number)
+                                     .group(:section_name)
+                                     .count
 
       shortfalls = @template.sections_config.filter_map do |section|
         have = existing_by_section[section["name"]] || 0
