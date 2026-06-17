@@ -7,6 +7,24 @@
       <fieldset class="grid gap-4">
 
         <div class="crayons-field">
+          <%= admin_config_label :razorpay_key_id, "Razorpay Key ID" %>
+          <%= admin_config_description Constants::Settings::General.details[:razorpay_key_id][:description] %>
+          <%= f.text_field :razorpay_key_id,
+                           class: "crayons-textfield",
+                           value: Settings::General.razorpay_key_id,
+                           placeholder: Constants::Settings::General.details[:razorpay_key_id][:placeholder] %>
+        </div>
+
+        <div class="crayons-field">
+          <%= admin_config_label :razorpay_key_secret, "Razorpay Key Secret" %>
+          <%= admin_config_description Constants::Settings::General.details[:razorpay_key_secret][:description] %>
+          <%= f.text_field :razorpay_key_secret,
+                           class: "crayons-textfield",
+                           value: Settings::General.razorpay_key_secret,
+                           placeholder: Constants::Settings::General.details[:razorpay_key_secret][:placeholder] %>
+        </div>
+
+        <div class="crayons-field">
           <%= admin_config_label :stripe_api_key, "Stripe API key" %>
           <%= admin_config_description Constants::Settings::General.details[:stripe_api_key][:description] %>
           <%= f.text_field :stripe_api_key,

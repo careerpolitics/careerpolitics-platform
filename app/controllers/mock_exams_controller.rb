@@ -28,6 +28,9 @@ class MockExamsController < ApplicationController
           templates: @mock_exam_templates.map { |t| template_json(t) },
           followed_tags: followed,
           user_signed_in: current_user.present?,
+          is_premium: current_user&.cached_base_subscriber? || false,
+          daily_attempts_remaining: premium_attempts_remaining,
+          upgrade_url: premium_upgrade_url,
         }
       end
     end
@@ -44,6 +47,10 @@ class MockExamsController < ApplicationController
           pool_ready: @template.pool_ready?,
           can_attempt: can_attempt?,
           user_signed_in: current_user.present?,
+          is_premium: current_user&.cached_base_subscriber? || false,
+          daily_attempts_remaining: premium_attempts_remaining,
+          daily_limit: current_user&.cached_base_subscriber? ? nil : MockExamAttemptPolicy::DAILY_FREE_LIMIT,
+          upgrade_url: premium_upgrade_url,
           )
       end
     end
@@ -114,6 +121,7 @@ class MockExamsController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
+        policy = MockExamAttemptPolicy.new(current_user, MockExamAttempt)
         render json: {
           total_attempts: current_user.mock_exam_attempts.count,
           completed_attempts: completed,
@@ -124,7 +132,10 @@ class MockExamsController < ApplicationController
             { accuracy_percent: a.accuracy_percent, date: a.submitted_at&.to_date }
           end,
           section_accuracy: build_section_accuracy(attempts),
-          attempts: attempts.map { |a| dashboard_attempt_json(a) }
+          attempts: attempts.map { |a| dashboard_attempt_json(a) },
+          is_premium: current_user.cached_base_subscriber?,
+          daily_attempts_remaining: policy.daily_attempts_remaining,
+          upgrade_url: Settings::General.razorpay_key_id.present? ? new_razorpay_subscription_path : new_stripe_subscription_path
         }
       end
     end
@@ -274,6 +285,26 @@ class MockExamsController < ApplicationController
   end
 
   def can_attempt?
-    current_user.present?
+    return false unless current_user
+    return true if current_user.cached_base_subscriber?
+
+    policy = MockExamAttemptPolicy.new(current_user, MockExamAttempt)
+    policy.create?
+  rescue Pundit::NotAuthorizedError
+    false
+  end
+
+  def premium_attempts_remaining
+    return nil unless current_user
+    return nil if current_user.cached_base_subscriber?
+
+    policy = MockExamAttemptPolicy.new(current_user, MockExamAttempt)
+    policy.daily_attempts_remaining
+  end
+
+  def premium_upgrade_url
+    return nil if current_user&.cached_base_subscriber?
+
+    Settings::General.razorpay_key_id.present? ? "/razorpay_subscriptions/new" : "/stripe_subscriptions/new"
   end
 end

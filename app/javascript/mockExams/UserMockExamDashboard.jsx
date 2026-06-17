@@ -66,6 +66,28 @@ export function UserMockExamDashboard() {
         </a>
       </div>
 
+      {!data.is_premium && data.upgrade_url && (
+        <div class="p-4 radius-default mb-4"
+             style={{ background: 'var(--accent-brand-a10)', border: '1px solid var(--accent-brand)' }}>
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <p class="fw-bold fs-s" style={{ color: 'var(--accent-brand)' }}>
+                {data.daily_attempts_remaining != null && data.daily_attempts_remaining > 0
+                  ? `${data.daily_attempts_remaining} free attempt${data.daily_attempts_remaining === 1 ? '' : 's'} remaining today`
+                  : 'Daily free attempt used'}
+              </p>
+              <p class="fs-s color-secondary mt-1">
+                Upgrade to Premium for unlimited mock exams, and more
+              </p>
+            </div>
+            <a href={data.upgrade_url} class="c-btn c-btn--primary"
+               style={{ whiteSpace: 'nowrap' }}>
+              Upgrade to Premium
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* Summary Cards */}
       <div class="grid gap-3 mb-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))' }}>
         <SummaryCard label="Total Attempts" value={data.total_attempts} />

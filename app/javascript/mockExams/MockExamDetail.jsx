@@ -57,7 +57,16 @@ export function MockExamDetail({ slug }) {
         window.location.href = goFullscreen ? `${url}?fs=1` : url;
       } else {
         const errData = await res.json();
-        setError(errData.errors?.[0] || errData.error || 'Failed to start exam');
+        if (errData.error === 'daily_limit_reached') {
+          setTemplate(prev => ({
+            ...prev,
+            can_attempt: false,
+            daily_attempts_remaining: 0,
+            upgrade_url: errData.upgrade_url,
+          }));
+          setShowInstructions(false);
+        }
+        setError(errData.message || errData.errors?.[0] || errData.error || 'Failed to start exam');
         setStarting(false);
         try { sessionStorage.removeItem('mock_exam_fullscreen'); } catch { /* ignore */ }
 
@@ -112,6 +121,36 @@ export function MockExamDetail({ slug }) {
         {error && (
           <div class="crayons-notice crayons-notice--danger mb-4">
             {error}
+          </div>
+        )}
+
+        {!t.is_premium && t.user_signed_in && (
+          <div class="p-4 radius-default mb-2"
+               style={{ background: 'var(--accent-brand-a10)', border: '1px solid var(--accent-brand)' }}>
+            <div class="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                {t.can_attempt ? (
+                  <p class="fw-bold fs-s" style={{ color: 'var(--accent-brand)' }}>
+                    {t.daily_attempts_remaining === 1
+                      ? '1 free attempt remaining today'
+                      : `${t.daily_attempts_remaining} free attempts remaining today`}
+                  </p>
+                ) : (
+                  <p class="fw-bold fs-s" style={{ color: 'var(--accent-danger)' }}>
+                    Daily free attempt used
+                  </p>
+                )}
+                <p class="fs-s color-secondary mt-1">
+                  Upgrade to Premium for unlimited mock exam attempts
+                </p>
+              </div>
+              {t.upgrade_url && (
+                <a href={t.upgrade_url} class="c-btn c-btn--primary"
+                   style={{ whiteSpace: 'nowrap' }}>
+                  Upgrade to Premium
+                </a>
+              )}
+            </div>
           </div>
         )}
 
