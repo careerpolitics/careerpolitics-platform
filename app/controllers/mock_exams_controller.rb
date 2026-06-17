@@ -121,6 +121,7 @@ class MockExamsController < ApplicationController
     respond_to do |format|
       format.html
       format.json do
+        policy = MockExamAttemptPolicy.new(current_user, MockExamAttempt)
         render json: {
           total_attempts: current_user.mock_exam_attempts.count,
           completed_attempts: completed,
@@ -131,7 +132,10 @@ class MockExamsController < ApplicationController
             { accuracy_percent: a.accuracy_percent, date: a.submitted_at&.to_date }
           end,
           section_accuracy: build_section_accuracy(attempts),
-          attempts: attempts.map { |a| dashboard_attempt_json(a) }
+          attempts: attempts.map { |a| dashboard_attempt_json(a) },
+          is_premium: current_user.cached_base_subscriber?,
+          daily_attempts_remaining: policy.daily_attempts_remaining,
+          upgrade_url: Settings::General.razorpay_key_id.present? ? new_razorpay_subscription_path : new_stripe_subscription_path
         }
       end
     end

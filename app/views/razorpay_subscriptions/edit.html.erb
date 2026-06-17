@@ -1,0 +1,36 @@
+<% title t("views.settings.billing.heading") %>
+
+<div class="crayons-layout crayons-layout--limited-width crayons-layout--single-col">
+  <div class="crayons-card crayons-card--content-rows p-6">
+    <h2 class="crayons-subtitle-1 mb-4"><%= community_name %> Premium — Manage Subscription</h2>
+
+    <div class="crayons-notice crayons-notice--info mb-4" role="alert">
+      <p>
+        <strong>Status:</strong> <%= @subscription.attributes["status"]&.humanize || "Unknown" %>
+      </p>
+      <% if @subscription.attributes["current_end"] %>
+        <p>
+          <strong>Current period ends:</strong>
+          <%= Time.zone.at(@subscription.attributes["current_end"]).strftime("%B %d, %Y") %>
+        </p>
+      <% end %>
+    </div>
+
+    <h3 class="crayons-subtitle-2 mt-6 mb-2">Cancel Subscription</h3>
+    <p class="mb-2">
+      To cancel your subscription, type the verification phrase below and click Cancel.
+    </p>
+
+    <%= form_with(url: razorpay_subscription_path("me"), method: :delete, class: "grid gap-2") do |f| %>
+      <%= f.label :verification, 'Verify with phrase "pleasecancelmysubscription"', class: "crayons-field__label" %>
+      <%= f.text_field :verification, class: "crayons-textfield mt-1", placeholder: "Put verification phrase here" %>
+      <%= f.submit "Cancel Subscription", class: "crayons-btn crayons-btn--danger mt-2" %>
+    <% end %>
+
+    <div class="mt-6">
+      <a href="<%= user_settings_path(:billing) %>" class="crayons-btn crayons-btn--secondary" data-no-instant>
+        Back to Billing
+      </a>
+    </div>
+  </div>
+</div>
