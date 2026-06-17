@@ -19,14 +19,14 @@ class RazorpaySubscriptionsController < ApplicationController
     end
 
     payload = {
-      plan_id: plan_id,
-      total_count: params[:total_count] || 12,
-      quantity: 1,
-      customer_notify: 1,
-      notes: {
-        user_id: current_user.id.to_s,
-        username: current_user.username.to_s,
-        email: current_user.email.to_s
+      "plan_id" => plan_id,
+      "total_count" => (params[:total_count] || 12).to_i,
+      "quantity" => 1,
+      "customer_notify" => 1,
+      "notes" => {
+        "user_id" => current_user.id.to_s,
+        "username" => current_user.username.to_s,
+        "email" => current_user.email.to_s
       }
     }
 
