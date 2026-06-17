@@ -16,7 +16,82 @@ I, [2026-06-08T05:48:14.535777 #68]  INFO -- : [ef50dde7abe2ac15f84a3d99cf7f0926
 I, [2026-06-08T05:48:14.711610 #68]  INFO -- : [ef50dde7abe2ac15f84a3d99cf7f0926]   Rendered articles/show.html.erb within layouts/application (Duration: 97.6ms | Allocations: 27062)
 I, [2026-06-08T05:48:14.744485 #68]  INFO -- : [ef50dde7abe2ac15f84a3d99cf7f0926]   Rendered layout layouts/application.html.erb (Duration: 130.5ms | Allocations: 40029)
 I, [2026-06-08T05:48:14.745579 #68]  INFO -- : [ef50dde7abe2ac15f84a3d99cf7f0926] Completed 200 OK in 209ms (Views: 111.7ms | ActiveRecord: 62.3ms | Allocations: 48422)
-I, [2026-06-08T05:48:22.089666 #75]  INFO -- : [54cf0eaa71b55e65110f192d3b2048dd] Started GET "/the_cp_team/aiims-norcet-10-exam-city-slip-released-admit-card-on-april-8-for-april-11-test-e92" for 51.75.236.148 at 2026-06-08 05:48:22 +0000
+I, [2026-06-08T05:48I, [2026-06-17T02:30:33.716457 #73]  INFO -- : [55769b41ea288eb065733b8bfc9ad131]   Parameters: {"locale"=>nil, "slug"=>"bihar-si-prelims-full-length-mock-test"}
+                    I, [2026-06-17T02:30:35.790595 #73]  INFO -- : [e0955dcd944c902a94497c9a4f89bec4] Started GET "/razorpay_subscriptions/new" for 103.24.87.178 at 2026-06-17 02:30:35 +0000
+                    I, [2026-06-17T02:30:37.929891 #73]  INFO -- : [55769b41ea288eb065733b8bfc9ad131] Completed 500 Internal Server Error in 4213ms (ActiveRecord: 4193.3ms | Allocations: 12508)
+                    F, [2026-06-17T02:30:37.932044 #73] FATAL -- : [55769b41ea288eb065733b8bfc9ad131]
+                    [55769b41ea288eb065733b8bfc9ad131] ActiveRecord::QueryCanceled (PG::QueryCanceled: ERROR:  canceling statement due to statement timeout
+                    ):
+                    [55769b41ea288eb065733b8bfc9ad131]
+                    [55769b41ea288eb065733b8bfc9ad131] app/models/mock_exam_template.rb:75:in `published_sets'
+                    [55769b41ea288eb065733b8bfc9ad131] app/models/mock_exam_template.rb:96:in `published_set_count'
+                    [55769b41ea288eb065733b8bfc9ad131] app/controllers/mock_exams_controller.rb:161:in `template_json'
+                    [55769b41ea288eb065733b8bfc9ad131] app/controllers/mock_exams_controller.rb:45:in `block (2 levels) in show'
+                    [55769b41ea288eb065733b8bfc9ad131] app/controllers/mock_exams_controller.rb:42:in `show'
+                    [55769b41ea288eb065733b8bfc9ad131] app/controllers/application_controller.rb:187:in `handle_argument_error'
+                    [55769b41ea288eb065733b8bfc9ad131] app/lib/middlewares/set_subforem.rb:24:in `call'
+                    [55769b41ea288eb065733b8bfc9ad131] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
+                    [55769b41ea288eb065733b8bfc9ad131] config/initializers/timeout.rb:16:in `call'
+                    [55769b41ea288eb065733b8bfc9ad131] app/lib/middlewares/restore_original_host.rb:23:in `call'
+                    I, [2026-06-17T02:30:40.367224 #66]  INFO -- : [c3530602a2c41f2485dcda1fe829e8bb]   Rendered articles/show.html.erb within layouts/application (Duration: 7263.4ms | Allocations: 54041)
+                    I, [2026-06-17T02:30:40.368308 #66]  INFO -- : [c3530602a2c41f2485dcda1fe829e8bb]   Rendered layout layouts/application.html.erb (Duration: 7264.6ms | Allocations: 54204)
+                    I, [2026-06-17T02:30:40.369119 #66]  INFO -- : [c3530602a2c41f2485dcda1fe829e8bb] Completed 500 Internal Server Error in 9380ms (ActiveRecord: 9192.7ms | Allocations: 206014)
+                    F, [2026-06-17T02:30:40.371694 #66] FATAL -- : [c3530602a2c41f2485dcda1fe829e8bb]
+                    [c3530602a2c41f2485dcda1fe829e8bb] ActionView::Template::Error (PG::QueryCanceled: ERROR:  canceling statement due to statement timeout
+                    ):
+                    [c3530602a2c41f2485dcda1fe829e8bb]      5:   </div>
+                    [c3530602a2c41f2485dcda1fe829e8bb]      6:
+                    [c3530602a2c41f2485dcda1fe829e8bb]      7:   <% cache("article-sticky-nav-articles-#{@article.id}-#{@actor.latest_article_updated_at}", expires_in: 48.hours) do %>
+                    [c3530602a2c41f2485dcda1fe829e8bb]      8:     <% if (user_stickies = Articles::GetUserStickies.call(@article, @actor)).present? %>
+                    [c3530602a2c41f2485dcda1fe829e8bb]      9:       <div class="crayons-card crayons-card--secondary">
+                    [c3530602a2c41f2485dcda1fe829e8bb]     10:         <header class="crayons-card__header">
+                    [c3530602a2c41f2485dcda1fe829e8bb]     11:           <h3 class="crayons-subtitle-2">
+                    [c3530602a2c41f2485dcda1fe829e8bb]
+                    [c3530602a2c41f2485dcda1fe829e8bb] app/views/articles/_sticky_nav.html.erb:8
+                    [c3530602a2c41f2485dcda1fe829e8bb] app/views/articles/_sticky_nav.html.erb:7
+                    [c3530602a2c41f2485dcda1fe829e8bb] app/views/articles/show.html.erb:287
+                    [c3530602a2c41f2485dcda1fe829e8bb] app/controllers/stories_controller.rb:375:in `handle_article_show'
+                    [c3530602a2c41f2485dcda1fe829e8bb] app/controllers/stories_controller.rb:66:in `show'
+                    [c3530602a2c41f2485dcda1fe829e8bb] app/controllers/application_controller.rb:187:in `handle_argument_error'
+                    [c3530602a2c41f2485dcda1fe829e8bb] app/lib/middlewares/set_subforem.rb:24:in `call'
+                    [c3530602a2c41f2485dcda1fe829e8bb] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
+                    [c3530602a2c41f2485dcda1fe829e8bb] config/initializers/timeout.rb:16:in `call'
+                    [c3530602a2c41f2485dcda1fe829e8bb] app/lib/middlewares/restore_original_host.rb:23:in `call'
+                    I, [2026-06-17T02:30:40.489572 #66]  INFO -- : [504e447eb2432cc42383dff9cb664787] Completed 500 Internal Server Error in 7133ms (ActiveRecord: 7116.3ms | Allocations: 29342)
+                    F, [2026-06-17T02:30:40.491641 #66] FATAL -- : [504e447eb2432cc42383dff9cb664787]
+                    [504e447eb2432cc42383dff9cb664787] ActiveRecord::QueryCanceled (PG::QueryCanceled: ERROR:  canceling statement due to statement timeout
+                    ):
+                    [504e447eb2432cc42383dff9cb664787]
+                    [504e447eb2432cc42383dff9cb664787] app/models/mock_exam_template.rb:75:in `published_sets'
+                    [504e447eb2432cc42383dff9cb664787] app/controllers/mock_exams_controller.rb:65:in `sets'
+                    [504e447eb2432cc42383dff9cb664787] app/controllers/application_controller.rb:187:in `handle_argument_error'
+                    [504e447eb2432cc42383dff9cb664787] app/lib/middlewares/set_subforem.rb:24:in `call'
+                    [504e447eb2432cc42383dff9cb664787] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
+                    [504e447eb2432cc42383dff9cb664787] config/initializers/timeout.rb:16:in `call'
+                    [504e447eb2432cc42383dff9cb664787] app/lib/middlewares/restore_original_host.rb:23:in `call'
+                    F, [2026-06-17T02:30:40.673130 #73] FATAL -- : [e0955dcd944c902a94497c9a4f89bec4]
+                    [e0955dcd944c902a94497c9a4f89bec4] ActiveRecord::QueryCanceled (PG::QueryCanceled: ERROR:  canceling statement due to statement timeout
+                    ):
+                    [e0955dcd944c902a94497c9a4f89bec4]
+                    [e0955dcd944c902a94497c9a4f89bec4] app/models/subforem.rb:45:in `block in cached_default_id'
+                    [e0955dcd944c902a94497c9a4f89bec4] lib/memory_first_cache.rb:38:in `fetch'
+                    [e0955dcd944c902a94497c9a4f89bec4] app/models/subforem.rb:44:in `cached_default_id'
+                    [e0955dcd944c902a94497c9a4f89bec4] app/lib/middlewares/set_subforem.rb:12:in `call'
+                    [e0955dcd944c902a94497c9a4f89bec4] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
+                    [e0955dcd944c902a94497c9a4f89bec4] config/initializers/timeout.rb:16:in `call'
+                    [e0955dcd944c902a94497c9a4f89bec4] app/lib/middlewares/restore_original_host.rb:23:in `call'
+                    I, [2026-06-17T02:30:40.835822 #66]  INFO -- : [56f9fc88f3d1e21e1fedc999f1c18fb7] Started GET "/mock_exams/bihar-si-prelims-full-length-mock-test/leaderboard.json?filter=all" for 103.24.87.178 at 2026-06-17 02:30:40 +0000
+                    F, [2026-06-17T02:30:45.575757 #66] FATAL -- : [56f9fc88f3d1e21e1fedc999f1c18fb7]
+                    [56f9fc88f3d1e21e1fedc999f1c18fb7] ActiveRecord::QueryCanceled (PG::QueryCanceled: ERROR:  canceling statement due to statement timeout
+                    ):
+                    [56f9fc88f3d1e21e1fedc999f1c18fb7]
+                    [56f9fc88f3d1e21e1fedc999f1c18fb7] app/models/subforem.rb:45:in `block in cached_default_id'
+                    [56f9fc88f3d1e21e1fedc999f1c18fb7] lib/memory_first_cache.rb:38:in `fetch'
+                    [56f9fc88f3d1e21e1fedc999f1c18fb7] app/models/subforem.rb:44:in `cached_default_id'
+                    [56f9fc88f3d1e21e1fedc999f1c18fb7] app/lib/middlewares/set_subforem.rb:12:in `call'
+                    [56f9fc88f3d1e21e1fedc999f1c18fb7] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
+                    [56f9fc88f3d1e21e1fedc999f1c18fb7] config/initializers/timeout.rb:16:in `call'
+                    [56f9fc88f3d1e21e1fedc999f1c18fb7] app/lib/middlewares/restore_original_host.rb:23:in `call':22.089666 #75]  INFO -- : [54cf0eaa71b55e65110f192d3b2048dd] Started GET "/the_cp_team/aiims-norcet-10-exam-city-slip-released-admit-card-on-april-8-for-april-11-test-e92" for 51.75.236.148 at 2026-06-08 05:48:22 +0000
 I, [2026-06-08T05:48:22.220990 #75]  INFO -- : [54cf0eaa71b55e65110f192d3b2048dd] Processing by StoriesController#show as */*
 I, [2026-06-08T05:48:22.221193 #75]  INFO -- : [54cf0eaa71b55e65110f192d3b2048dd]   Parameters: {"locale"=>nil, "username"=>"the_cp_team", "slug"=>"aiims-norcet-10-exam-city-slip-released-admit-card-on-april-8-for-april-11-test-e92"}
 I, [2026-06-08T05:48:22.390665 #75]  INFO -- : [54cf0eaa71b55e65110f192d3b2048dd]   Rendered articles/show.html.erb within layouts/application (Duration: 93.7ms | Allocations: 22826)
