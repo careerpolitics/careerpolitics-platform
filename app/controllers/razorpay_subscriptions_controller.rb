@@ -144,6 +144,5 @@ class RazorpaySubscriptionsController < ApplicationController
 
   def initialize_razorpay
     Razorpay.setup(Settings::General.razorpay_key_id, Settings::General.razorpay_key_secret)
-    Razorpay.headers = { "Content-Type" => "application/json" }
   end
 end
