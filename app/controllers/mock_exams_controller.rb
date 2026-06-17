@@ -35,7 +35,7 @@ class MockExamsController < ApplicationController
           followed_tags: followed,
           user_signed_in: current_user.present?,
           is_premium: current_user&.cached_base_subscriber? || false,
-          daily_attempts_remaining: premium_attempts_remaining,
+          trial_attempts_remaining: premium_attempts_remaining,
           upgrade_url: premium_upgrade_url,
         }
       end
@@ -54,8 +54,7 @@ class MockExamsController < ApplicationController
           can_attempt: can_attempt?,
           user_signed_in: current_user.present?,
           is_premium: current_user&.cached_base_subscriber? || false,
-          daily_attempts_remaining: premium_attempts_remaining,
-          daily_limit: current_user&.cached_base_subscriber? ? nil : MockExamAttemptPolicy::DAILY_FREE_LIMIT,
+          trial_attempts_remaining: premium_attempts_remaining,
           upgrade_url: premium_upgrade_url,
           )
       end
@@ -164,7 +163,7 @@ class MockExamsController < ApplicationController
           section_accuracy: build_section_accuracy(attempts),
           attempts: attempts.map { |a| dashboard_attempt_json(a) },
           is_premium: current_user.cached_base_subscriber?,
-          daily_attempts_remaining: policy.daily_attempts_remaining,
+          trial_attempts_remaining: policy.daily_attempts_remaining,
           upgrade_url: Settings::General.razorpay_key_id.present? ? new_razorpay_subscription_path : new_stripe_subscription_path
         }
       end
@@ -316,8 +315,6 @@ class MockExamsController < ApplicationController
 
   def can_attempt?
     return false unless current_user
-    return true if current_user.cached_base_subscriber?
-
     policy = MockExamAttemptPolicy.new(current_user, MockExamAttempt)
     policy.create?
   rescue Pundit::NotAuthorizedError
@@ -326,8 +323,6 @@ class MockExamsController < ApplicationController
 
   def premium_attempts_remaining
     return nil unless current_user
-    return nil if current_user.cached_base_subscriber?
-
     policy = MockExamAttemptPolicy.new(current_user, MockExamAttempt)
     policy.daily_attempts_remaining
   end

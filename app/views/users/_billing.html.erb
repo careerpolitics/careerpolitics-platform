@@ -3,7 +3,7 @@
     <%= t("views.settings.billing.heading") %>
   </h2>
 
-  <% if current_user.stripe_id_code.present? && current_user.cached_base_subscriber? %>
+  <% if current_user.cached_base_subscriber? %>
     <div class="crayons-notice crayons-notice--info mb-4" role="alert">
       <p>
         <strong><%= t("views.settings.billing.current_status") %>:</strong>
@@ -18,19 +18,29 @@
   <% end %>
 
   <% if Settings::General.razorpay_key_id.present? %>
-    <% if current_user.cached_base_subscriber? %>
+    <% if current_user.cached_base_subscriber? && current_user.stripe_id_code.present? %>
       <div class="mb-4">
         <a href="<%= edit_razorpay_subscription_path("me") %>" class="crayons-btn crayons-btn--secondary" data-no-instant>
           Manage <%= community_name %> Premium Subscription
         </a>
       </div>
-    <% else %>
+    <% elsif current_user.cached_base_subscriber? %>
       <div class="mb-4">
-        <p class="mb-2">Subscribe to <%= community_name %> Premium to unlock exclusive features.</p>
+        <p class="mb-2">Your free CP++ trial is active with unlimited mock exam access. Subscribe to keep CP++ access.</p>
         <a href="<%= new_razorpay_subscription_path %>" class="crayons-btn" data-no-instant>
           Subscribe Now
         </a>
-        <p class="fs-s color-base-60 mt-2">Supports UPI, Cards, NetBanking, and Wallets via Razorpay.</p>
+      </div>
+    <% else %>
+      <div class="mb-4">
+        <p class="mb-2">Subscribe to <%= community_name %> Premium to unlock exclusive features.</p>
+        <div class="flex gap-2 fw-wrap">
+          <%= button_to "Start Free Trial", free_trial_razorpay_subscriptions_path, method: :post, class: "crayons-btn crayons-btn--secondary" %>
+          <a href="<%= new_razorpay_subscription_path %>" class="crayons-btn" data-no-instant>
+            Subscribe Now
+          </a>
+        </div>
+        <p class="fs-s color-base-60 mt-2">Start a CP++ trial without a debit card, or subscribe with UPI, Cards, NetBanking, and Wallets via Razorpay.</p>
       </div>
     <% end %>
   <% elsif current_user.stripe_id_code.blank? %>

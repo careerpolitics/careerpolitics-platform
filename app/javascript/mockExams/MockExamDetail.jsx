@@ -57,11 +57,11 @@ export function MockExamDetail({ slug }) {
         window.location.href = goFullscreen ? `${url}?fs=1` : url;
       } else {
         const errData = await res.json();
-        if (errData.error === 'daily_limit_reached') {
+        if (['daily_limit_reached', 'mock_exam_access_required'].includes(errData.error)) {
           setTemplate(prev => ({
             ...prev,
             can_attempt: false,
-            daily_attempts_remaining: 0,
+            trial_attempts_remaining: 0,
             upgrade_url: errData.upgrade_url,
           }));
           setShowInstructions(false);
@@ -131,17 +131,15 @@ export function MockExamDetail({ slug }) {
               <div>
                 {t.can_attempt ? (
                   <p class="fw-bold fs-s" style={{ color: 'var(--accent-brand)' }}>
-                    {t.daily_attempts_remaining === 1
-                      ? '1 free attempt remaining today'
-                      : `${t.daily_attempts_remaining} free attempts remaining today`}
+                    Start a free trial or subscribe to access mock exams
                   </p>
                 ) : (
                   <p class="fw-bold fs-s" style={{ color: 'var(--accent-danger)' }}>
-                    Daily free attempt used
+                    Start a free trial or subscribe to access mock exams
                   </p>
                 )}
                 <p class="fs-s color-secondary mt-1">
-                  Upgrade to Premium for unlimited mock exam attempts
+                  Start a free trial or subscribe for CP++ mock exam access
                 </p>
               </div>
               {t.upgrade_url && (

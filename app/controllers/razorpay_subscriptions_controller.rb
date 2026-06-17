@@ -102,6 +102,24 @@ class RazorpaySubscriptionsController < ApplicationController
     redirect_to user_settings_path(:billing)
   end
 
+  # POST /razorpay_subscriptions/free_trial
+  # Grants CP++ trial access without collecting payment details.
+  def free_trial
+    if current_user.cached_base_subscriber?
+      flash[:notice] = "You already have CP++ access."
+      redirect_to user_settings_path(:billing) and return
+    end
+
+    current_user.add_role("base_subscriber")
+    current_user.update!(current_subscriber_status: :trial_subscription)
+    current_user.touch
+    current_user.profile&.touch
+    NotifyMailer.with(user: current_user).base_subscriber_role_email.deliver_later
+
+    flash[:notice] = "Your free CP++ trial is active. You now have unlimited mock exam access."
+    redirect_to user_settings_path(:billing)
+  end
+
   # GET /razorpay_subscriptions/:id/edit
   # Shows subscription management page
   def edit
