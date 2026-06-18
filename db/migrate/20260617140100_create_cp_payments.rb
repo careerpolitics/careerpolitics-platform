@@ -14,7 +14,6 @@ class CreateCpPayments < ActiveRecord::Migration[7.0]
       t.timestamps
     end
 
-    add_index :cp_payments, :user_id
     add_index :cp_payments, :status
   end
 end

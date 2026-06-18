@@ -8,281 +8,254 @@ Destination:
 Filter:
 Enter your keywords
 Wrap lines:
+Running command:
+bundle exec rails server -b 0.0.0.0 -p 3000
+=> Booting Puma
+=> Rails 7.0.8.7 application starting in production
+=> Run `bin/rails server --help` for more startup options
 service_name is unknown, will set to unknown_service:rails
 dataset will be ignored, sending data to unknown_service:rails
-I, [2026-06-18T02:50:35.577241 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
-I, [2026-06-18T02:50:35.607063 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2026-06-18T02:50:35+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
-[strong_migrations] DANGER: No lock timeout set
-[strong_migrations] DANGER: No lock timeout set
-rails aborted!
-StandardError: An error has occurred, this and all later migrations canceled: (StandardError)
-PG::DuplicateTable: ERROR:  relation "index_cp_payments_on_user_id" already exists
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `exec'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `block (2 levels) in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/share_lock.rb:187:in `yield_shares'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/dependencies/interlock.rb:41:in `permit_concurrent_loads'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:47:in `block in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:752:in `block in log'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/notifications/instrumenter.rb:24:in `instrument'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:743:in `log'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:46:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/schema_statements.rb:448:in `add_index'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:965:in `block in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `block in say_with_time'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `say_with_time'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:954:in `method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/hypershield-0.2.2/lib/hypershield/migration.rb:11:in `method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:17:in `block (2 levels) in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/checker.rb:101:in `perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:16:in `block in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `catch'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `method_missing'
-/opt/apps/forem/db/migrate/20260617140100_create_cp_payments.rb:17:in `change'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:905:in `exec_migration'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:889:in `block (2 levels) in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:888:in `block in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:887:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:5:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1095:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1409:in `block in execute_migration_in_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:319:in `block in within_new_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:317:in `within_new_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/database_statements.rb:316:in `transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/transactions.rb:209:in `transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1460:in `ddl_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migrator.rb:4:in `ddl_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1408:in `execute_migration_in_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `migrate_without_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `block in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1481:in `block in with_advisory_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1496:in `with_advisory_lock_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1477:in `with_advisory_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1166:in `up'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1141:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/tasks/database_tasks.rb:262:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/database_tasks.rb:5:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/railties/databases.rake:92:in `block (2 levels) in <main>'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `block in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:21:in `block in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/client.rb:65:in `start_span'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:16:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:219:in `block in invoke_with_call_chain'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `invoke_with_call_chain'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:188:in `invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:188:in `invoke_task'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block (2 levels) in top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block in top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:147:in `run_with_threads'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:132:in `top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block (2 levels) in perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:214:in `standard_exception_handling'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block in perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/rake_module.rb:59:in `with_application'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:18:in `perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command.rb:51:in `invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands.rb:18:in `<main>'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
-Caused by:
-ActiveRecord::StatementInvalid: PG::DuplicateTable: ERROR:  relation "index_cp_payments_on_user_id" already exists (ActiveRecord::StatementInvalid)
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `exec'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `block (2 levels) in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/share_lock.rb:187:in `yield_shares'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/dependencies/interlock.rb:41:in `permit_concurrent_loads'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:47:in `block in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:752:in `block in log'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/notifications/instrumenter.rb:24:in `instrument'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:743:in `log'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:46:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/schema_statements.rb:448:in `add_index'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:965:in `block in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `block in say_with_time'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `say_with_time'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:954:in `method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/hypershield-0.2.2/lib/hypershield/migration.rb:11:in `method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:17:in `block (2 levels) in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/checker.rb:101:in `perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:16:in `block in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `catch'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `method_missing'
-/opt/apps/forem/db/migrate/20260617140100_create_cp_payments.rb:17:in `change'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:905:in `exec_migration'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:889:in `block (2 levels) in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:888:in `block in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:887:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:5:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1095:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1409:in `block in execute_migration_in_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:319:in `block in within_new_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:317:in `within_new_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/database_statements.rb:316:in `transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/transactions.rb:209:in `transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1460:in `ddl_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migrator.rb:4:in `ddl_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1408:in `execute_migration_in_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `migrate_without_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `block in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1481:in `block in with_advisory_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1496:in `with_advisory_lock_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1477:in `with_advisory_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1166:in `up'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1141:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/tasks/database_tasks.rb:262:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/database_tasks.rb:5:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/railties/databases.rake:92:in `block (2 levels) in <main>'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `block in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:21:in `block in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/client.rb:65:in `start_span'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:16:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:219:in `block in invoke_with_call_chain'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `invoke_with_call_chain'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:188:in `invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:188:in `invoke_task'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block (2 levels) in top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block in top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:147:in `run_with_threads'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:132:in `top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block (2 levels) in perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:214:in `standard_exception_handling'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block in perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/rake_module.rb:59:in `with_application'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:18:in `perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command.rb:51:in `invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands.rb:18:in `<main>'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
-Caused by:
-PG::DuplicateTable: ERROR:  relation "index_cp_payments_on_user_id" already exists (PG::DuplicateTable)
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `exec'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `block (2 levels) in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/share_lock.rb:187:in `yield_shares'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/dependencies/interlock.rb:41:in `permit_concurrent_loads'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:47:in `block in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:752:in `block in log'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/notifications/instrumenter.rb:24:in `instrument'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:743:in `log'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:46:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/schema_statements.rb:448:in `add_index'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:965:in `block in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `block in say_with_time'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `say_with_time'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:954:in `method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/hypershield-0.2.2/lib/hypershield/migration.rb:11:in `method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:17:in `block (2 levels) in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/checker.rb:101:in `perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:16:in `block in method_missing'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `catch'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `method_missing'
-/opt/apps/forem/db/migrate/20260617140100_create_cp_payments.rb:17:in `change'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:905:in `exec_migration'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:889:in `block (2 levels) in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:888:in `block in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:887:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:5:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1095:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1409:in `block in execute_migration_in_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:319:in `block in within_new_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:317:in `within_new_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/database_statements.rb:316:in `transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/transactions.rb:209:in `transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1460:in `ddl_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migrator.rb:4:in `ddl_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1408:in `execute_migration_in_transaction'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `migrate_without_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `block in migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1481:in `block in with_advisory_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1496:in `with_advisory_lock_connection'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1477:in `with_advisory_lock'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1166:in `up'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1141:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/tasks/database_tasks.rb:262:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/database_tasks.rb:5:in `migrate'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/railties/databases.rake:92:in `block (2 levels) in <main>'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `block in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:21:in `block in execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/client.rb:65:in `start_span'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:16:in `execute'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:219:in `block in invoke_with_call_chain'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `synchronize'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `invoke_with_call_chain'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:188:in `invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:188:in `invoke_task'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block (2 levels) in top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `each'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block in top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:147:in `run_with_threads'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:132:in `top_level'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block (2 levels) in perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:214:in `standard_exception_handling'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block in perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/rake_module.rb:59:in `with_application'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:18:in `perform'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command.rb:51:in `invoke'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands.rb:18:in `<main>'
-/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
-Tasks: TOP => db:migrate
-(See full trace by running task with --trace)
-I, [2026-06-18T02:50:37.255118 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
-W, [2026-06-18T02:50:38.242443 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
-I, [2026-06-18T02:50:38.426929 #1]  INFO -- : CareerPolitics Android consumer app initialized
-I, [2026-06-18T02:50:39.124452 #1]  INFO -- : Migrating to CreateCpSubscriptions (20260617140000)
-== 20260617140000 CreateCpSubscriptions: migrating ============================
--- create_table(:cp_subscriptions)
-   -> 0.1742s
--- add_index(:cp_subscriptions, :user_id)
-   -> 0.0063s
--- add_index(:cp_subscriptions, :status)
-   -> 0.0063s
--- add_index(:cp_subscriptions, :trial_ends_at, {:where=>"status = 0"})
-   -> 0.0039s
-== 20260617140000 CreateCpSubscriptions: migrated (0.2007s) ===================
-I, [2026-06-18T02:50:39.374718 #1]  INFO -- : Migrating to CreateCpPayments (20260617140100)
-== 20260617140100 CreateCpPayments: migrating =================================
--- create_table(:cp_payments)
-   -> 0.0496s
--- add_index(:cp_payments, :user_id)
-I, [2026-06-18T02:50:39.535965 #1]  INFO -- honeybadger: ** [Honeybadger] Reporting error id=7cb709e8-e2de-43df-87c0-7001e8bbc089 level=1 pid=1
+/opt/apps/forem/app/services/images/generate_subforem_images.rb:2: warning: already initialized constant Images::TEMPLATE_PATH
+/opt/apps/forem/app/services/images/generate_social_image_magickally.rb:4: warning: previous definition of TEMPLATE_PATH was here
+/opt/apps/forem/app/services/push_notifications/unified_notifier.rb:25: warning: key :payload is duplicated and overwritten on line 28
+/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:44: warning: already initialized constant Net::HTTP::Purge::METHOD
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:166: warning: previous definition of METHOD was here
+/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:45: warning: already initialized constant Net::HTTP::Purge::REQUEST_HAS_BODY
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:167: warning: previous definition of REQUEST_HAS_BODY was here
+/opt/apps/forem/app/services/edge_cache/bust/nginx.rb:46: warning: already initialized constant Net::HTTP::Purge::RESPONSE_HAS_BODY
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/fastly-3.0.2/lib/fastly/client.rb:168: warning: previous definition of RESPONSE_HAS_BODY was here
+I, [2026-06-18T02:56:30.554778 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2026-06-18T02:56:30.564894 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2026-06-18T02:56:30+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+I, [2026-06-18T02:56:39.779014 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
+W, [2026-06-18T02:56:42.127228 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
+I, [2026-06-18T02:56:42.242891 #1]  INFO -- : CareerPolitics Android consumer app initialized
+[1] Puma starting in cluster mode...
+[1] * Puma version: 5.6.9 (ruby 3.3.0-p0) ("Birdie's Version")
+[1] *  Min threads: 2
+[1] *  Max threads: 2
+[1] *  Environment: production
+[1] *   Master PID: 1
+[1] *      Workers: 2
+[1] *     Restarts: (✔) hot (✖) phased
+[1] * Preloading application
+[1] * Listening on http://0.0.0.0:3000
+[1] Use Ctrl-C to stop
+[1] ! Promoting existing objects to old generation...
+[1] ! Compacting...
+[1] ! Friendly fork preparation complete.
+[1] - Worker 0 (PID: 65) booted in 0.02s, phase: 0
+[1] - Worker 1 (PID: 77) booted in 0.01s, phase: 0
+E, [2026-06-18T02:56:43.923302 #77] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
+I, [2026-06-18T02:56:43.949509 #77]  INFO -- : [6597bd164d8635223b56140648516e9a] Started GET "/mock_exams/ctet-paper-2-full-length-mock-test-9edab64d" for 103.24.87.178 at 2026-06-18 02:56:43 +0000
+I, [2026-06-18T02:56:44.147358 #77]  INFO -- : [6597bd164d8635223b56140648516e9a] Processing by MockExamsController#show as HTML
+I, [2026-06-18T02:56:44.147608 #77]  INFO -- : [6597bd164d8635223b56140648516e9a]   Parameters: {"locale"=>nil, "slug"=>"ctet-paper-2-full-length-mock-test-9edab64d"}
+I, [2026-06-18T02:56:44.247867 #77]  INFO -- : [6597bd164d8635223b56140648516e9a]   Rendered mock_exams/show.html.erb within layouts/application (Duration: 4.9ms | Allocations: 1025)
+I, [2026-06-18T02:56:44.904223 #77]  INFO -- : [6597bd164d8635223b56140648516e9a]   Rendered layout layouts/application.html.erb (Duration: 661.4ms | Allocations: 116417)
+I, [2026-06-18T02:56:44.905475 #77]  INFO -- : [6597bd164d8635223b56140648516e9a] Completed 200 OK in 757ms (Views: 628.1ms | ActiveRecord: 70.5ms | Allocations: 139066)
+I, [2026-06-18T02:56:45.110474 #77]  INFO -- : [9072e0d94f9f55865901974114fb05e0] Started GET "/notifications/counts" for 103.24.87.178 at 2026-06-18 02:56:45 +0000
+E, [2026-06-18T02:56:45.138276 #65] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
+I, [2026-06-18T02:56:45.150553 #77]  INFO -- : [9072e0d94f9f55865901974114fb05e0] Processing by Notifications::CountsController#index as */*
+I, [2026-06-18T02:56:45.150989 #77]  INFO -- : [9072e0d94f9f55865901974114fb05e0]   Parameters: {"locale"=>nil}
+I, [2026-06-18T02:56:45.155333 #65]  INFO -- : [103ea376db4eae7a629fcfeeb4a57a9f] Started GET "/async_info/base_data" for 103.24.87.178 at 2026-06-18 02:56:45 +0000
+I, [2026-06-18T02:56:45.182459 #65]  INFO -- : [efbf6081499f7bfa292dc29531c4beeb] Started GET "/notifications?i=i" for 103.24.87.178 at 2026-06-18 02:56:45 +0000
+I, [2026-06-18T02:56:45.203944 #77]  INFO -- : [9072e0d94f9f55865901974114fb05e0]   Rendered text template (Duration: 0.3ms | Allocations: 33)
+I, [2026-06-18T02:56:45.207051 #77]  INFO -- : [9072e0d94f9f55865901974114fb05e0] Completed 200 OK in 56ms (Views: 3.7ms | ActiveRecord: 27.1ms | Allocations: 4132)
+I, [2026-06-18T02:56:45.274554 #77]  INFO -- : [c0d79167cd4809d682a952514b781e8c] Started GET "/?i=i" for 103.24.87.178 at 2026-06-18 02:56:45 +0000
+I, [2026-06-18T02:56:45.343835 #77]  INFO -- : [c0d79167cd4809d682a952514b781e8c] Processing by StoriesController#index as */*
+I, [2026-06-18T02:56:45.344634 #77]  INFO -- : [c0d79167cd4809d682a952514b781e8c]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-06-18T02:56:45.506551 #65]  INFO -- : [103ea376db4eae7a629fcfeeb4a57a9f] Processing by AsyncInfoController#base_data as JSON
+I, [2026-06-18T02:56:45.512315 #65]  INFO -- : [103ea376db4eae7a629fcfeeb4a57a9f]   Parameters: {"locale"=>nil}
+I, [2026-06-18T02:56:45.512224 #65]  INFO -- : [efbf6081499f7bfa292dc29531c4beeb] Processing by NotificationsController#index as */*
+I, [2026-06-18T02:56:45.516177 #65]  INFO -- : [efbf6081499f7bfa292dc29531c4beeb]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-06-18T02:56:45.931656 #65]  INFO -- : [103ea376db4eae7a629fcfeeb4a57a9f] Completed 200 OK in 419ms (Views: 0.4ms | ActiveRecord: 191.8ms | Allocations: 64021)
+I, [2026-06-18T02:56:46.049898 #65]  INFO -- : [efbf6081499f7bfa292dc29531c4beeb]   Rendered notifications/index.html.erb within layouts/application (Duration: 177.4ms | Allocations: 49845)
+I, [2026-06-18T02:56:46.058414 #65]  INFO -- : [efbf6081499f7bfa292dc29531c4beeb]   Rendered layout layouts/application.html.erb (Duration: 186.1ms | Allocations: 53335)
+I, [2026-06-18T02:56:46.059570 #65]  INFO -- : [efbf6081499f7bfa292dc29531c4beeb] Completed 200 OK in 543ms (Views: 189.9ms | ActiveRecord: 174.6ms | Allocations: 99688)
+I, [2026-06-18T02:56:46.176429 #77]  INFO -- : [c0d79167cd4809d682a952514b781e8c]   Rendered articles/index.html.erb within layouts/application (Duration: 761.0ms | Allocations: 206959)
+I, [2026-06-18T02:56:46.178827 #77]  INFO -- : [c0d79167cd4809d682a952514b781e8c]   Rendered layout layouts/application.html.erb (Duration: 763.4ms | Allocations: 208271)
+I, [2026-06-18T02:56:46.179781 #77]  INFO -- : [c0d79167cd4809d682a952514b781e8c] Completed 200 OK in 835ms (Views: 713.3ms | ActiveRecord: 86.3ms | Allocations: 214879)
+I, [2026-06-18T02:56:46.239159 #65]  INFO -- : [307b2ba8e729739086faa0ee0eca10f3] Started GET "/mock_exams/ctet-paper-2-full-length-mock-test-9edab64d.json" for 103.24.87.178 at 2026-06-18 02:56:46 +0000
+I, [2026-06-18T02:56:46.239467 #65]  INFO -- : [8415b0c2a59cce2b7a268d275e34b2e8] Started GET "/mock_exams/ctet-paper-2-full-length-mock-test-9edab64d/sets.json" for 103.24.87.178 at 2026-06-18 02:56:46 +0000
+I, [2026-06-18T02:56:46.304348 #65]  INFO -- : [307b2ba8e729739086faa0ee0eca10f3] Processing by MockExamsController#show as JSON
+I, [2026-06-18T02:56:46.306537 #65]  INFO -- : [307b2ba8e729739086faa0ee0eca10f3]   Parameters: {"locale"=>nil, "slug"=>"ctet-paper-2-full-length-mock-test-9edab64d"}
+I, [2026-06-18T02:56:46.327354 #65]  INFO -- : [8415b0c2a59cce2b7a268d275e34b2e8] Processing by MockExamsController#sets as JSON
+I, [2026-06-18T02:56:46.330303 #65]  INFO -- : [8415b0c2a59cce2b7a268d275e34b2e8]   Parameters: {"locale"=>nil, "slug"=>"ctet-paper-2-full-length-mock-test-9edab64d"}
+I, [2026-06-18T02:56:46.553013 #65]  INFO -- : [8415b0c2a59cce2b7a268d275e34b2e8] Completed 200 OK in 222ms (Views: 0.9ms | ActiveRecord: 172.4ms | Allocations: 39956)
+I, [2026-06-18T02:56:46.570172 #65]  INFO -- : [307b2ba8e729739086faa0ee0eca10f3] Completed 200 OK in 260ms (Views: 1.1ms | ActiveRecord: 176.3ms | Allocations: 50777)
+I, [2026-06-18T02:56:46.959283 #65]  INFO -- : [a2dfeee20051552a9c8456840efa8aeb] Started GET "/mock_exams/ctet-paper-2-full-length-mock-test-9edab64d/leaderboard.json?filter=all" for 103.24.87.178 at 2026-06-18 02:56:46 +0000
+I, [2026-06-18T02:56:46.994031 #65]  INFO -- : [a2dfeee20051552a9c8456840efa8aeb] Processing by MockExamsController#leaderboard as JSON
+I, [2026-06-18T02:56:46.994378 #65]  INFO -- : [a2dfeee20051552a9c8456840efa8aeb]   Parameters: {"filter"=>"all", "locale"=>nil, "slug"=>"ctet-paper-2-full-length-mock-test-9edab64d"}
+I, [2026-06-18T02:56:47.111367 #65]  INFO -- : [a2dfeee20051552a9c8456840efa8aeb] Completed 200 OK in 116ms (Views: 2.1ms | ActiveRecord: 55.2ms | Allocations: 16920)
+I, [2026-06-18T02:56:53.084278 #65]  INFO -- : [c198bbea6b9dab46300e50b4e2e7e7ce] Started GET "/razorpay_subscriptions/new?i=i" for 103.24.87.178 at 2026-06-18 02:56:53 +0000
+I, [2026-06-18T02:56:53.234956 #65]  INFO -- : [c198bbea6b9dab46300e50b4e2e7e7ce] Processing by RazorpaySubscriptionsController#new as */*
+I, [2026-06-18T02:56:53.235425 #65]  INFO -- : [c198bbea6b9dab46300e50b4e2e7e7ce]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-06-18T02:56:53.255850 #65]  INFO -- : [c198bbea6b9dab46300e50b4e2e7e7ce]   Rendered razorpay_subscriptions/new.html.erb within layouts/application (Duration: 5.0ms | Allocations: 1694)
+I, [2026-06-18T02:56:53.258130 #65]  INFO -- : [c198bbea6b9dab46300e50b4e2e7e7ce]   Rendered layout layouts/application.html.erb (Duration: 7.3ms | Allocations: 2772)
+I, [2026-06-18T02:56:53.259113 #65]  INFO -- : [c198bbea6b9dab46300e50b4e2e7e7ce] Completed 200 OK in 23ms (Views: 11.5ms | ActiveRecord: 2.2ms | Allocations: 5780)
+I, [2026-06-18T02:56:53.863579 #65]  INFO -- : [86f2a1d12eb6619628a00a81e4c4c8ae] Started GET "/notifications/counts" for 103.24.87.178 at 2026-06-18 02:56:53 +0000
+I, [2026-06-18T02:56:53.895323 #65]  INFO -- : [155637a03cb7c4905ea0777edfff0e26] Started GET "/async_info/base_data" for 103.24.87.178 at 2026-06-18 02:56:53 +0000
+I, [2026-06-18T02:56:53.945711 #65]  INFO -- : [86f2a1d12eb6619628a00a81e4c4c8ae] Processing by Notifications::CountsController#index as */*
+I, [2026-06-18T02:56:53.946190 #65]  INFO -- : [86f2a1d12eb6619628a00a81e4c4c8ae]   Parameters: {"locale"=>nil}
+I, [2026-06-18T02:56:53.964921 #65]  INFO -- : [155637a03cb7c4905ea0777edfff0e26] Processing by AsyncInfoController#base_data as JSON
+I, [2026-06-18T02:56:53.965371 #65]  INFO -- : [155637a03cb7c4905ea0777edfff0e26]   Parameters: {"locale"=>nil}
+I, [2026-06-18T02:56:53.969950 #65]  INFO -- : [86f2a1d12eb6619628a00a81e4c4c8ae]   Rendered text template (Duration: 0.2ms | Allocations: 34)
+I, [2026-06-18T02:56:53.971304 #65]  INFO -- : [86f2a1d12eb6619628a00a81e4c4c8ae] Completed 200 OK in 25ms (Views: 3.3ms | ActiveRecord: 14.0ms | Allocations: 9036)
+I, [2026-06-18T02:56:53.990736 #65]  INFO -- : [155637a03cb7c4905ea0777edfff0e26] Completed 200 OK in 25ms (Views: 0.4ms | ActiveRecord: 9.3ms | Allocations: 6330)
+I, [2026-06-18T02:57:20.929408 #77]  INFO -- : [af1e4346566c5467f92bf50d5d477312] Started POST "/razorpay_subscriptions/free_trial" for 103.24.87.178 at 2026-06-18 02:57:20 +0000
+I, [2026-06-18T02:57:21.006082 #77]  INFO -- : [af1e4346566c5467f92bf50d5d477312] Processing by RazorpaySubscriptionsController#free_trial as HTML
+I, [2026-06-18T02:57:21.006483 #77]  INFO -- : [af1e4346566c5467f92bf50d5d477312]   Parameters: {"authenticity_token"=>"[FILTERED]", "locale"=>nil}
+I, [2026-06-18T02:57:21.302416 #77]  INFO -- : [af1e4346566c5467f92bf50d5d477312] [ActiveJob] Enqueued ActionMailer::MailDeliveryJob (Job ID: 4ad7d908-abc7-40be-b40a-09b4e91579ee) to Async(default) with arguments: "NotifyMailer", "base_subscriber_role_email", "deliver_now", {:params=>{:user=>#<GlobalID:0x00007f5bf58d6190 @uri=#<URI::GID gid://practical-developer/User/1>>;}, :args=>[]}
+I, [2026-06-18T02:57:21.324802 #77]  INFO -- : [af1e4346566c5467f92bf50d5d477312] Redirected to https://careerpolitics.com/settings/billing
+I, [2026-06-18T02:57:21.325682 #77]  INFO -- : [af1e4346566c5467f92bf50d5d477312] Completed 302 Found in 318ms (ActiveRecord: 132.2ms | Allocations: 40251)
+I, [2026-06-18T02:57:21.400405 #77]  INFO -- : [ActiveJob] [ActionMailer::MailDeliveryJob] [4ad7d908-abc7-40be-b40a-09b4e91579ee] Performing ActionMailer::MailDeliveryJob (Job ID: 4ad7d908-abc7-40be-b40a-09b4e91579ee) from Async(default) enqueued at 2026-06-18T02:57:21Z with arguments: "NotifyMailer", "base_subscriber_role_email", "deliver_now", {:params=>{:user=>#<GlobalID:0x00007f5bf59aa648 @uri=#<URI::GID gid://practical-developer/User/1>>;}, :args=>[]}
+I, [2026-06-18T02:57:21.421716 #77]  INFO -- : [2aeb3172b62a2f00fff1114e78a9110b] Started GET "/settings/billing" for 103.24.87.178 at 2026-06-18 02:57:21 +0000
+I, [2026-06-18T02:57:21.437710 #77]  INFO -- : [ActiveJob] [ActionMailer::MailDeliveryJob] [4ad7d908-abc7-40be-b40a-09b4e91579ee]   Rendered mailers/notify_mailer/base_subscriber_role_email.html.erb within layouts/mailer (Duration: 1.7ms | Allocations: 421)
+I, [2026-06-18T02:57:21.471957 #77]  INFO -- : [2aeb3172b62a2f00fff1114e78a9110b] Processing by UsersController#edit as HTML
+I, [2026-06-18T02:57:21.472598 #77]  INFO -- : [2aeb3172b62a2f00fff1114e78a9110b]   Parameters: {"locale"=>nil, "tab"=>"billing"}
+I, [2026-06-18T02:57:21.484041 #77]  INFO -- : [2aeb3172b62a2f00fff1114e78a9110b] Completed 500 Internal Server Error in 11ms (ActiveRecord: 2.1ms | Allocations: 2456)
+F, [2026-06-18T02:57:21.486812 #77] FATAL -- : [2aeb3172b62a2f00fff1114e78a9110b]
+[2aeb3172b62a2f00fff1114e78a9110b] NoMethodError (undefined method `initialize_stripe' for an instance of UsersController):
+[2aeb3172b62a2f00fff1114e78a9110b]
+[2aeb3172b62a2f00fff1114e78a9110b] app/controllers/application_controller.rb:187:in `handle_argument_error'
+[2aeb3172b62a2f00fff1114e78a9110b] app/lib/middlewares/set_subforem.rb:24:in `call'
+[2aeb3172b62a2f00fff1114e78a9110b] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
+[2aeb3172b62a2f00fff1114e78a9110b] config/initializers/timeout.rb:16:in `call'
+[2aeb3172b62a2f00fff1114e78a9110b] app/lib/middlewares/restore_original_host.rb:23:in `call'
+I, [2026-06-18T02:57:21.504798 #77]  INFO -- honeybadger: ** [Honeybadger] Reporting error id=30bbab9d-d8d2-4958-829d-fe2a97485ab1 level=1 pid=77
+I, [2026-06-18T02:57:21.520482 #77]  INFO -- : [ActiveJob] [ActionMailer::MailDeliveryJob] [4ad7d908-abc7-40be-b40a-09b4e91579ee]   Rendered layout layouts/mailer.html.erb (Duration: 84.6ms | Allocations: 29395)
+I, [2026-06-18T02:57:22.484858 #77]  INFO -- honeybadger: ** [Honeybadger] Success ⚡ https://app.honeybadger.io/notice/30bbab9d-d8d2-4958-829d-fe2a97485ab1 id=30bbab9d-d8d2-4958-829d-fe2a97485ab1 code=201 level=1 pid=77
+I, [2026-06-18T02:57:23.738179 #77]  INFO -- : [ActiveJob] [ActionMailer::MailDeliveryJob] [4ad7d908-abc7-40be-b40a-09b4e91579ee] Delivered mail 6a335e918004d_4d45ce044045@careerpolitics-web-6846fd5bf8-9trnd.mail (2214.6ms)
+I, [2026-06-18T02:57:23.787805 #77]  INFO -- : [ActiveJob] [ActionMailer::MailDeliveryJob] [4ad7d908-abc7-40be-b40a-09b4e91579ee] Performed ActionMailer::MailDeliveryJob (Job ID: 4ad7d908-abc7-40be-b40a-09b4e91579ee) from Async(default) in 2484.34ms
+I, [2026-06-18T02:57:37.544878 #65]  INFO -- : [ae6732450f7936569be4e6c68492ba72] Started GET "/t/medicaljobs" for 185.191.171.1 at 2026-06-18 02:57:37 +0000
+I, [2026-06-18T02:57:37.606234 #65]  INFO -- : [ae6732450f7936569be4e6c68492ba72] Processing by Stories::TaggedArticlesController#index as HTML
+I, [2026-06-18T02:57:37.606678 #65]  INFO -- : [ae6732450f7936569be4e6c68492ba72]   Parameters: {"locale"=>nil, "tag"=>"medicaljobs"}
+I, [2026-06-18T02:57:37.661103 #65]  INFO -- : [ae6732450f7936569be4e6c68492ba72] Completed 404 Not Found in 54ms (ActiveRecord: 36.4ms | Allocations: 3328)
+F, [2026-06-18T02:57:37.664631 #65] FATAL -- : [ae6732450f7936569be4e6c68492ba72]
+[ae6732450f7936569be4e6c68492ba72] ActiveRecord::RecordNotFound (Not Found):
+[ae6732450f7936569be4e6c68492ba72]
+[ae6732450f7936569be4e6c68492ba72] app/controllers/application_controller.rb:146:in `not_found'
+[ae6732450f7936569be4e6c68492ba72] app/controllers/stories/tagged_articles_controller.rb:57:in `set_stories'
+[ae6732450f7936569be4e6c68492ba72] app/controllers/stories/tagged_articles_controller.rb:27:in `index'
+[ae6732450f7936569be4e6c68492ba72] app/controllers/application_controller.rb:187:in `handle_argument_error'
+[ae6732450f7936569be4e6c68492ba72] app/lib/middlewares/set_subforem.rb:24:in `call'
+[ae6732450f7936569be4e6c68492ba72] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
+[ae6732450f7936569be4e6c68492ba72] config/initializers/timeout.rb:16:in `call'
+[ae6732450f7936569be4e6c68492ba72] app/lib/middlewares/restore_original_host.rb:23:in `call'
+I, [2026-06-18T02:58:18.169128 #65]  INFO -- : [e4349d5fde723c3a039e6b2e9654532f] Started GET "/neha-singh_bot_1777170696/gujarat-board-12th-result-2026-check-hsc-scores-on-may-4-5hb1" for 47.128.35.207 at 2026-06-18 02:58:18 +0000
+I, [2026-06-18T02:58:18.409399 #65]  INFO -- : [e4349d5fde723c3a039e6b2e9654532f] Processing by StoriesController#show as HTML
+I, [2026-06-18T02:58:18.409815 #65]  INFO -- : [e4349d5fde723c3a039e6b2e9654532f]   Parameters: {"locale"=>nil, "username"=>"neha-singh_bot_1777170696", "slug"=>"gujarat-board-12th-result-2026-check-hsc-scores-on-may-4-5hb1"}
+I, [2026-06-18T02:58:18.866359 #65]  INFO -- : [e4349d5fde723c3a039e6b2e9654532f]   Rendered articles/show.html.erb within layouts/application (Duration: 328.1ms | Allocations: 58361)
+I, [2026-06-18T02:58:19.068186 #65]  INFO -- : [e4349d5fde723c3a039e6b2e9654532f]   Rendered layout layouts/application.html.erb (Duration: 530.0ms | Allocations: 100512)
+I, [2026-06-18T02:58:19.069102 #65]  INFO -- : [e4349d5fde723c3a039e6b2e9654532f] Completed 200 OK in 659ms (Views: 448.0ms | ActiveRecord: 160.7ms | Allocations: 111614)
+I, [2026-06-18T02:58:30.359148 #77]  INFO -- : [a6e6092fe3947ced6f6af0cade6b515d] Started GET "/razorpay_subscriptions/new" for 103.24.87.178 at 2026-06-18 02:58:30 +0000
+I, [2026-06-18T02:58:30.669098 #77]  INFO -- : [a6e6092fe3947ced6f6af0cade6b515d] Processing by RazorpaySubscriptionsController#new as HTML
+I, [2026-06-18T02:58:30.673912 #77]  INFO -- : [a6e6092fe3947ced6f6af0cade6b515d]   Parameters: {"locale"=>nil}
+I, [2026-06-18T02:58:30.708332 #77]  INFO -- : [a6e6092fe3947ced6f6af0cade6b515d] Completed 500 Internal Server Error in 34ms (ActiveRecord: 17.6ms | Allocations: 3491)
+F, [2026-06-18T02:58:30.710109 #77] FATAL -- : [a6e6092fe3947ced6f6af0cade6b515d]
+[a6e6092fe3947ced6f6af0cade6b515d] NoMethodError (undefined method `razorpay_subscription_id' for an instance of User):
+[a6e6092fe3947ced6f6af0cade6b515d]
+[a6e6092fe3947ced6f6af0cade6b515d] app/controllers/razorpay_subscriptions_controller.rb:178:in `redirect_if_already_subscribed'
+[a6e6092fe3947ced6f6af0cade6b515d] app/controllers/application_controller.rb:187:in `handle_argument_error'
+[a6e6092fe3947ced6f6af0cade6b515d] app/lib/middlewares/set_subforem.rb:24:in `call'
+[a6e6092fe3947ced6f6af0cade6b515d] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
+[a6e6092fe3947ced6f6af0cade6b515d] config/initializers/timeout.rb:16:in `call'
+[a6e6092fe3947ced6f6af0cade6b515d] app/lib/middlewares/restore_original_host.rb:23:in `call'
+I, [2026-06-18T02:58:30.716762 #77]  INFO -- honeybadger: ** [Honeybadger] Reporting error id=e2df8303-d789-4ab2-997d-25cdec044ef6 level=1 pid=77
+I, [2026-06-18T02:58:31.721225 #77]  INFO -- honeybadger: ** [Honeybadger] Success ⚡ https://app.honeybadger.io/notice/e2df8303-d789-4ab2-997d-25cdec044ef6 id=e2df8303-d789-4ab2-997d-25cdec044ef6 code=201 level=1 pid=77
+I, [2026-06-18T02:58:37.051870 #77]  INFO -- : [b4a12108b5072230bd8599e11545812a] Started GET "/mock_exams/ctet-paper-2-full-length-mock-test-9edab64d" for 103.24.87.178 at 2026-06-18 02:58:37 +0000
+I, [2026-06-18T02:58:37.093196 #77]  INFO -- : [b4a12108b5072230bd8599e11545812a] Processing by MockExamsController#show as HTML
+I, [2026-06-18T02:58:37.093506 #77]  INFO -- : [b4a12108b5072230bd8599e11545812a]   Parameters: {"locale"=>nil, "slug"=>"ctet-paper-2-full-length-mock-test-9edab64d"}
+I, [2026-06-18T02:58:37.122757 #77]  INFO -- : [b4a12108b5072230bd8599e11545812a]   Rendered mock_exams/show.html.erb within layouts/application (Duration: 2.1ms | Allocations: 534)
+I, [2026-06-18T02:58:37.171813 #77]  INFO -- : [b4a12108b5072230bd8599e11545812a]   Rendered layout layouts/application.html.erb (Duration: 51.2ms | Allocations: 21705)
+I, [2026-06-18T02:58:37.172821 #77]  INFO -- : [b4a12108b5072230bd8599e11545812a] Completed 200 OK in 79ms (Views: 50.2ms | ActiveRecord: 12.0ms | Allocations: 25465)
+I, [2026-06-18T02:58:37.363580 #77]  INFO -- : [bf76cef83048f9ea7b473a73b825cc74] Started GET "/notifications/counts" for 103.24.87.178 at 2026-06-18 02:58:37 +0000
+I, [2026-06-18T02:58:37.392062 #65]  INFO -- : [44b0eef1e7f29334cff2d168eeb36907] Started GET "/async_info/base_data" for 103.24.87.178 at 2026-06-18 02:58:37 +0000
+I, [2026-06-18T02:58:37.399199 #77]  INFO -- : [bf76cef83048f9ea7b473a73b825cc74] Processing by Notifications::CountsController#index as */*
+I, [2026-06-18T02:58:37.399733 #77]  INFO -- : [bf76cef83048f9ea7b473a73b825cc74]   Parameters: {"locale"=>nil}
+I, [2026-06-18T02:58:37.429534 #77]  INFO -- : [bf76cef83048f9ea7b473a73b825cc74]   Rendered text template (Duration: 0.2ms | Allocations: 31)
+I, [2026-06-18T02:58:37.430402 #77]  INFO -- : [bf76cef83048f9ea7b473a73b825cc74] Completed 200 OK in 30ms (Views: 1.2ms | ActiveRecord: 19.2ms | Allocations: 2523)
+I, [2026-06-18T02:58:37.458264 #65]  INFO -- : [44b0eef1e7f29334cff2d168eeb36907] Processing by AsyncInfoController#base_data as JSON
+I, [2026-06-18T02:58:37.458777 #65]  INFO -- : [44b0eef1e7f29334cff2d168eeb36907]   Parameters: {"locale"=>nil}
+I, [2026-06-18T02:58:37.472732 #77]  INFO -- : [4f4e19dea13af2075dcd5f729462bc02] Started GET "/notifications?i=i" for 103.24.87.178 at 2026-06-18 02:58:37 +0000
+I, [2026-06-18T02:58:37.513169 #77]  INFO -- : [4f4e19dea13af2075dcd5f729462bc02] Processing by NotificationsController#index as */*
+I, [2026-06-18T02:58:37.513491 #77]  INFO -- : [4f4e19dea13af2075dcd5f729462bc02]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-06-18T02:58:37.732072 #65]  INFO -- : [44b0eef1e7f29334cff2d168eeb36907] Completed 200 OK in 273ms (Views: 0.3ms | ActiveRecord: 34.7ms | Allocations: 18635)
+I, [2026-06-18T02:58:37.750408 #77]  INFO -- : [4f4e19dea13af2075dcd5f729462bc02]   Rendered notifications/index.html.erb within layouts/application (Duration: 100.4ms | Allocations: 32113)
+I, [2026-06-18T02:58:37.752567 #77]  INFO -- : [4f4e19dea13af2075dcd5f729462bc02]   Rendered layout layouts/application.html.erb (Duration: 102.6ms | Allocations: 33197)
+I, [2026-06-18T02:58:37.753413 #77]  INFO -- : [4f4e19dea13af2075dcd5f729462bc02] Completed 200 OK in 239ms (Views: 96.9ms | ActiveRecord: 76.2ms | Allocations: 50612)
+I, [2026-06-18T02:58:37.923789 #65]  INFO -- : [f107c2c46a8a4451a0bbd31c9c07b873] Started GET "/mock_exams/ctet-paper-2-full-length-mock-test-9edab64d/sets.json" for 103.24.87.178 at 2026-06-18 02:58:37 +0000
+I, [2026-06-18T02:58:37.924393 #77]  INFO -- : [d369812eb4308861e2addbc18f7b07d8] Started GET "/mock_exams/ctet-paper-2-full-length-mock-test-9edab64d.json" for 103.24.87.178 at 2026-06-18 02:58:37 +0000
+I, [2026-06-18T02:58:38.203664 #77]  INFO -- : [d369812eb4308861e2addbc18f7b07d8] Processing by MockExamsController#show as JSON
+I, [2026-06-18T02:58:38.209405 #77]  INFO -- : [d369812eb4308861e2addbc18f7b07d8]   Parameters: {"locale"=>nil, "slug"=>"ctet-paper-2-full-length-mock-test-9edab64d"}
+I, [2026-06-18T02:58:38.246817 #65]  INFO -- : [f107c2c46a8a4451a0bbd31c9c07b873] Processing by MockExamsController#sets as JSON
+I, [2026-06-18T02:58:38.247195 #65]  INFO -- : [f107c2c46a8a4451a0bbd31c9c07b873]   Parameters: {"locale"=>nil, "slug"=>"ctet-paper-2-full-length-mock-test-9edab64d"}
+I, [2026-06-18T02:58:38.344820 #65]  INFO -- : [f107c2c46a8a4451a0bbd31c9c07b873] Completed 200 OK in 97ms (Views: 0.9ms | ActiveRecord: 67.9ms | Allocations: 8726)
+I, [2026-06-18T02:58:38.395357 #77]  INFO -- : [d369812eb4308861e2addbc18f7b07d8] Completed 200 OK in 185ms (Views: 1.1ms | ActiveRecord: 111.6ms | Allocations: 9032)
+I, [2026-06-18T02:58:38.769462 #77]  INFO -- : [0784be41dff955301d941cd8acf1cf01] Started GET "/mock_exams/ctet-paper-2-full-length-mock-test-9edab64d/leaderboard.json?filter=all" for 103.24.87.178 at 2026-06-18 02:58:38 +0000
+I, [2026-06-18T02:58:38.806640 #77]  INFO -- : [0784be41dff955301d941cd8acf1cf01] Processing by MockExamsController#leaderboard as JSON
+I, [2026-06-18T02:58:38.807448 #77]  INFO -- : [0784be41dff955301d941cd8acf1cf01]   Parameters: {"filter"=>"all", "locale"=>nil, "slug"=>"ctet-paper-2-full-length-mock-test-9edab64d"}
+I, [2026-06-18T02:58:38.913163 #77]  INFO -- : [0784be41dff955301d941cd8acf1cf01] Completed 200 OK in 105ms (Views: 1.7ms | ActiveRecord: 40.3ms | Allocations: 26410)
+I, [2026-06-18T02:58:39.042652 #77]  INFO -- : [989277cfc22bd8ab98714707d78b9eba] Started GET "/new?i=i" for 103.24.87.178 at 2026-06-18 02:58:39 +0000
+I, [2026-06-18T02:58:39.072846 #77]  INFO -- : [989277cfc22bd8ab98714707d78b9eba] Processing by ArticlesController#new as */*
+I, [2026-06-18T02:58:39.073670 #77]  INFO -- : [989277cfc22bd8ab98714707d78b9eba]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-06-18T02:58:39.092671 #65]  INFO -- : [882e4c770bada7eca90d54fddd983332] Started GET "/mod?i=i" for 103.24.87.178 at 2026-06-18 02:58:39 +0000
+I, [2026-06-18T02:58:39.142773 #65]  INFO -- : [882e4c770bada7eca90d54fddd983332] Processing by ModerationsController#index as */*
+I, [2026-06-18T02:58:39.143271 #65]  INFO -- : [882e4c770bada7eca90d54fddd983332]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-06-18T02:58:39.326132 #77]  INFO -- : [989277cfc22bd8ab98714707d78b9eba]   Rendered articles/new.html.erb within layouts/application (Duration: 169.4ms | Allocations: 38989)
+I, [2026-06-18T02:58:39.333518 #77]  INFO -- : [989277cfc22bd8ab98714707d78b9eba]   Rendered layout layouts/application.html.erb (Duration: 176.8ms | Allocations: 40089)
+I, [2026-06-18T02:58:39.334152 #77]  INFO -- : [989277cfc22bd8ab98714707d78b9eba] Completed 200 OK in 260ms (Views: 140.4ms | ActiveRecord: 67.8ms | Allocations: 57419)
+I, [2026-06-18T02:58:39.344331 #65]  INFO -- : [882e4c770bada7eca90d54fddd983332]   Rendered moderations/index.html.erb within layouts/application (Duration: 43.1ms | Allocations: 9987)
+I, [2026-06-18T02:58:39.346744 #65]  INFO -- : [882e4c770bada7eca90d54fddd983332]   Rendered layout layouts/application.html.erb (Duration: 45.6ms | Allocations: 11050)
+I, [2026-06-18T02:58:39.347832 #65]  INFO -- : [882e4c770bada7eca90d54fddd983332] Completed 200 OK in 204ms (Views: 50.7ms | ActiveRecord: 88.8ms | Allocations: 32138)
+I, [2026-06-18T02:58:42.714075 #77]  INFO -- : [0ae3b74c0db223d508ac2260b16cb6bc] Started GET "/mod?i=i" for 103.24.87.178 at 2026-06-18 02:58:42 +0000
+I, [2026-06-18T02:58:42.765179 #77]  INFO -- : [0ae3b74c0db223d508ac2260b16cb6bc] Processing by ModerationsController#index as */*
+I, [2026-06-18T02:58:42.765678 #77]  INFO -- : [0ae3b74c0db223d508ac2260b16cb6bc]   Parameters: {"i"=>"i", "locale"=>nil}
+I, [2026-06-18T02:58:42.886414 #77]  INFO -- : [0ae3b74c0db223d508ac2260b16cb6bc]   Rendered moderations/index.html.erb within layouts/application (Duration: 17.2ms | Allocations: 9967)
+I, [2026-06-18T02:58:42.888300 #77]  INFO -- : [0ae3b74c0db223d508ac2260b16cb6bc]   Rendered layout layouts/application.html.erb (Duration: 19.1ms | Allocations: 11027)
+I, [2026-06-18T02:58:42.889129 #77]  INFO -- : [0ae3b74c0db223d508ac2260b16cb6bc] Completed 200 OK in 123ms (Views: 22.1ms | ActiveRecord: 55.3ms | Allocations: 32147)
+I, [2026-06-18T02:58:43.827937 #77]  INFO -- : [10dd057e27b82ad5240bd58deb87b8b1] Started GET "/the_cp_admin?i=i" for 103.24.87.178 at 2026-06-18 02:58:43 +0000
+I, [2026-06-18T02:58:43.887629 #77]  INFO -- : [10dd057e27b82ad5240bd58deb87b8b1] Processing by StoriesController#index as */*
+I, [2026-06-18T02:58:43.887790 #77]  INFO -- : [10dd057e27b82ad5240bd58deb87b8b1]   Parameters: {"i"=>"i", "locale"=>nil, "username"=>"the_cp_admin"}
+E, [2026-06-18T02:58:44.051966 #77] ERROR -- : [10dd057e27b82ad5240bd58deb87b8b1]   Couldn't find template for digesting: user_comments_sections/user_comments_section
+I, [2026-06-18T02:58:44.277563 #77]  INFO -- : [10dd057e27b82ad5240bd58deb87b8b1]   Rendered users/show.html.erb within layouts/application (Duration: 250.1ms | Allocations: 69102)
+I, [2026-06-18T02:58:44.281885 #77]  INFO -- : [10dd057e27b82ad5240bd58deb87b8b1]   Rendered layout layouts/application.html.erb (Duration: 254.4ms | Allocations: 70151)
+I, [2026-06-18T02:58:44.282685 #77]  INFO -- : [10dd057e27b82ad5240bd58deb87b8b1] Completed 200 OK in 394ms (Views: 191.0ms | ActiveRecord: 132.9ms | Allocations: 94234)
+I, [2026-06-18T02:58:45.024429 #65]  INFO -- : [1deac64949f00d441272ac15c1369702] Started GET "/admin" for 103.24.87.178 at 2026-06-18 02:58:45 +0000
+I, [2026-06-18T02:58:45.064188 #65]  INFO -- : [1deac64949f00d441272ac15c1369702] Processing by Admin::OverviewController#index as HTML
+I, [2026-06-18T02:58:45.064541 #65]  INFO -- : [1deac64949f00d441272ac15c1369702]   Parameters: {"locale"=>nil}
+I, [2026-06-18T02:58:45.123304 #65]  INFO -- : [1deac64949f00d441272ac15c1369702]   Rendered admin/overview/index.html.erb within layouts/admin (Duration: 39.0ms | Allocations: 3747)
+I, [2026-06-18T02:58:45.286565 #65]  INFO -- : [1deac64949f00d441272ac15c1369702]   Rendered layout layouts/admin.html.erb (Duration: 202.3ms | Allocations: 23980)
+I, [2026-06-18T02:58:45.287702 #65]  INFO -- : [1deac64949f00d441272ac15c1369702] Completed 200 OK in 222ms (Views: 199.3ms | ActiveRecord: 12.5ms | Allocations: 27256)
+I, [2026-06-18T02:58:45.474934 #65]  INFO -- : [840821da6dfe1333d923ff7611636aaa] Started GET "/admin/stats?period=7" for 103.24.87.178 at 2026-06-18 02:58:45 +0000
+I, [2026-06-18T02:58:45.526279 #65]  INFO -- : [840821da6dfe1333d923ff7611636aaa] Processing by Admin::OverviewController#stats as */*
+I, [2026-06-18T02:58:45.526458 #65]  INFO -- : [840821da6dfe1333d923ff7611636aaa]   Parameters: {"period"=>"7", "locale"=>nil}
+I, [2026-06-18T02:58:45.560209 #65]  INFO -- : [840821da6dfe1333d923ff7611636aaa] Completed 200 OK in 34ms (Views: 0.3ms | ActiveRecord: 16.4ms | Allocations: 4479)
+I, [2026-06-18T02:58:48.427403 #65]  INFO -- : [8adf6444adb743ca10427fcbb4510b64] Started GET "/admin/member_manager/users" for 103.24.87.178 at 2026-06-18 02:58:48 +0000
+I, [2026-06-18T02:58:48.459786 #65]  INFO -- : [8adf6444adb743ca10427fcbb4510b64] Processing by Admin::UsersController#index as HTML
+I, [2026-06-18T02:58:48.460196 #65]  INFO -- : [8adf6444adb743ca10427fcbb4510b64]   Parameters: {"locale"=>nil}
+I, [2026-06-18T02:58:51.958143 #65]  INFO -- : [8adf6444adb743ca10427fcbb4510b64]   Rendered admin/users/index.html.erb within layouts/admin (Duration: 3455.5ms | Allocations: 961575)
+I, [2026-06-18T02:58:52.016179 #65]  INFO -- : [8adf6444adb743ca10427fcbb4510b64]   Rendered layout layouts/admin.html.erb (Duration: 3513.6ms | Allocations: 981713)
+I, [2026-06-18T02:58:52.017157 #65]  INFO -- : [8adf6444adb743ca10427fcbb4510b64] Completed 200 OK in 3557ms (Views: 2823.6ms | ActiveRecord: 720.6ms | Allocations: 985854)
+I, [2026-06-18T02:58:54.887987 #65]  INFO -- : [c264b4fcbba1e6929ad09c9aea2ce1b4] Started GET "/admin/content_manager/spaces" for 103.24.87.178 at 2026-06-18 02:58:54 +0000
+I, [2026-06-18T02:58:54.942364 #65]  INFO -- : [c264b4fcbba1e6929ad09c9aea2ce1b4] Processing by Admin::SpacesController#index as HTML
+I, [2026-06-18T02:58:54.942576 #65]  INFO -- : [c264b4fcbba1e6929ad09c9aea2ce1b4]   Parameters: {"locale"=>nil}
+I, [2026-06-18T02:58:55.044071 #65]  INFO -- : [c264b4fcbba1e6929ad09c9aea2ce1b4]   Rendered admin/spaces/index.html.erb within layouts/admin (Duration: 70.8ms | Allocations: 4561)
+I, [2026-06-18T02:58:55.077600 #65]  INFO -- : [c264b4fcbba1e6929ad09c9aea2ce1b4]   Rendered layout layouts/admin.html.erb (Duration: 104.4ms | Allocations: 22437)
+I, [2026-06-18T02:58:55.078426 #65]  INFO -- : [c264b4fcbba1e6929ad09c9aea2ce1b4] Completed 200 OK in 135ms (Views: 91.5ms | ActiveRecord: 28.3ms | Allocations: 26310)
+I, [2026-06-18T02:59:01.262642 #65]  INFO -- : [ecbcef8b3eb95f6832f07af82856bdb3] Started GET "/admin/member_manager/razorpay_subscriptions" for 103.24.87.178 at 2026-06-18 02:59:01 +0000
+I, [2026-06-18T02:59:01.361843 #65]  INFO -- : [ecbcef8b3eb95f6832f07af82856bdb3] Processing by Admin::RazorpaySubscriptionsController#index as HTML
+I, [2026-06-18T02:59:01.362306 #65]  INFO -- : [ecbcef8b3eb95f6832f07af82856bdb3]   Parameters: {"locale"=>nil}
+I, [2026-06-18T02:59:01.482295 #65]  INFO -- : [ecbcef8b3eb95f6832f07af82856bdb3] Completed 500 Internal Server Error in 118ms (ActiveRecord: 98.9ms | Allocations: 4052)
+F, [2026-06-18T02:59:01.483877 #65] FATAL -- : [ecbcef8b3eb95f6832f07af82856bdb3]
+[ecbcef8b3eb95f6832f07af82856bdb3] ActiveRecord::StatementInvalid (PG::UndefinedColumn: ERROR:  column users.razorpay_subscription_id does not exist
+LINE 1: ...d" WHERE (users.current_subscriber_status <> 0 OR users.razo...
+                                                             ^
+):
+[ecbcef8b3eb95f6832f07af82856bdb3]
+[ecbcef8b3eb95f6832f07af82856bdb3] app/controllers/admin/razorpay_subscriptions_controller.rb:80:in `map'
+[ecbcef8b3eb95f6832f07af82856bdb3] app/controllers/admin/razorpay_subscriptions_controller.rb:80:in `subscriber_role_dates'
+[ecbcef8b3eb95f6832f07af82856bdb3] app/controllers/admin/razorpay_subscriptions_controller.rb:7:in `index'
+[ecbcef8b3eb95f6832f07af82856bdb3] app/controllers/application_controller.rb:187:in `handle_argument_error'
+[ecbcef8b3eb95f6832f07af82856bdb3] app/lib/middlewares/set_subforem.rb:24:in `call'
+[ecbcef8b3eb95f6832f07af82856bdb3] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
+[ecbcef8b3eb95f6832f07af82856bdb3] config/initializers/timeout.rb:16:in `call'
