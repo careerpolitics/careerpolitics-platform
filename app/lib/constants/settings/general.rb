@@ -125,12 +125,12 @@ module Constants
             placeholder: I18n.t("lib.constants.settings.general.sidebar.placeholder")
           },
           razorpay_key_id: {
-            description: I18n.t("lib.constants.settings.general.razorpay_key.description",
+            description: I18n.t("lib.constants.settings.general.razorpay_key_id.description",
                                 default: "Razorpay Key ID for payment processing"),
             placeholder: "rzp_live_...."
           },
           razorpay_key_secret: {
-            description: I18n.t("lib.constants.settings.general.razorpay_secret.description",
+            description: I18n.t("lib.constants.settings.general.razorpay_key_secret.description",
                                 default: "Razorpay Key Secret for payment processing"),
             placeholder: "your_razorpay_secret"
           },

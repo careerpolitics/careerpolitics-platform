@@ -1,39 +1,288 @@
-E, [2026-06-17T09:12:50.331885 #75] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
-I, [2026-06-17T09:12:50.375581 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] Started GET "/razorpay_subscriptions/new" for 103.24.87.178 at 2026-06-17 09:12:50 +0000
-I, [2026-06-17T09:12:50.723920 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] Processing by RazorpaySubscriptionsController#new as HTML
-I, [2026-06-17T09:12:50.724220 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d]   Parameters: {"locale"=>nil}
-I, [2026-06-17T09:12:50.745570 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] Razorpay plan_id resolved to: "plan_T2dD4LCjkATpN9" (from Settings: "plan_T2dD4LCjkATpN9")
-I, [2026-06-17T09:12:50.746154 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] ----------------------------------------
-I, [2026-06-17T09:12:50.746284 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Key ID configured: "rzp_live_T2d81aZ2NNveXS"
-I, [2026-06-17T09:12:50.746362 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Plan ID configured: "plan_T2dD4LCjkATpN9"
-I, [2026-06-17T09:12:50.746606 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Sending Payload: {"plan_id":"plan_T2dD4LCjkATpN9","total_count":12,"quantity":1,"customer_notify":1,"notes":{"user_id":"1","username":"the_cp_admin","email":"support@careerpolitics.com"}}
-E, [2026-06-17T09:12:51.504655 #75] ERROR -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] ----------------------------------------
-E, [2026-06-17T09:12:51.504742 #75] ERROR -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Razorpay::Error caught!
-E, [2026-06-17T09:12:51.504761 #75] ERROR -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Message: The plan id field is required.
-E, [2026-06-17T09:12:51.504775 #75] ERROR -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Class: Razorpay::BadRequestError
-E, [2026-06-17T09:12:51.504795 #75] ERROR -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] Inspect: #<Razorpay::BadRequestError: The plan id field is required.>
-E, [2026-06-17T09:12:51.504812 #75] ERROR -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] [Razorpay Debug] ----------------------------------------
-I, [2026-06-17T09:12:51.506876 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] Redirected to https://careerpolitics.com/settings
-I, [2026-06-17T09:12:51.507929 #75]  INFO -- : [3ecf0c9d99ba664aa2ee21a2ff1bb31d] Completed 302 Found in 783ms (ActiveRecord: 10.3ms | Allocations: 10582)
-I, [2026-06-17T09:12:51.623261 #75]  INFO -- : [35a3213cd04a043b657157e90337bb8b] Started GET "/settings" for 103.24.87.178 at 2026-06-17 09:12:51 +0000
-I, [2026-06-17T09:12:51.657229 #75]  INFO -- : [35a3213cd04a043b657157e90337bb8b] Processing by UsersController#edit as HTML
-I, [2026-06-17T09:12:51.657658 #75]  INFO -- : [35a3213cd04a043b657157e90337bb8b]   Parameters: {"locale"=>nil}
-I, [2026-06-17T09:12:52.100050 #75]  INFO -- : [35a3213cd04a043b657157e90337bb8b]   Rendered users/edit.html.erb within layouts/application (Duration: 340.9ms | Allocations: 63950)
-I, [2026-06-17T09:12:52.766839 #75]  INFO -- : [35a3213cd04a043b657157e90337bb8b]   Rendered layout layouts/application.html.erb (Duration: 1007.8ms | Allocations: 140569)
-I, [2026-06-17T09:12:52.767997 #75]  INFO -- : [35a3213cd04a043b657157e90337bb8b] Completed 200 OK in 1110ms (Views: 921.3ms | ActiveRecord: 121.8ms | Allocations: 168051)
-I, [2026-06-17T09:12:53.024964 #75]  INFO -- : [46bfcfee75d189249d5daa61717e338e] Started GET "/notifications/counts" for 103.24.87.178 at 2026-06-17 09:12:53 +0000
-I, [2026-06-17T09:12:53.087519 #75]  INFO -- : [0d99938f612abfda0e34e0bfd6a6adc0] Started GET "/async_info/base_data" for 103.24.87.178 at 2026-06-17 09:12:53 +0000
-E, [2026-06-17T09:12:53.150596 #68] ERROR -- ddtrace: [ddtrace] (/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/ddtrace-1.16.2/lib/datadog/core/remote/negotiation.rb:23:in `endpoint?') agent unreachable: cannot negotiate /v0.7/config
-I, [2026-06-17T09:12:53.166922 #68]  INFO -- : [706c123dd707aa17442138323d413c75] Started GET "/notifications?i=i" for 103.24.87.178 at 2026-06-17 09:12:53 +0000
-I, [2026-06-17T09:12:53.234555 #75]  INFO -- : [0d99938f612abfda0e34e0bfd6a6adc0] Processing by AsyncInfoController#base_data as JSON
-I, [2026-06-17T09:12:53.235364 #75]  INFO -- : [0d99938f612abfda0e34e0bfd6a6adc0]   Parameters: {"locale"=>nil}
-I, [2026-06-17T09:12:53.330796 #75]  INFO -- : [46bfcfee75d189249d5daa61717e338e] Processing by Notifications::CountsController#index as */*
-I, [2026-06-17T09:12:53.334124 #75]  INFO -- : [46bfcfee75d189249d5daa61717e338e]   Parameters: {"locale"=>nil}
-I, [2026-06-17T09:12:53.419810 #75]  INFO -- : [0d99938f612abfda0e34e0bfd6a6adc0] Completed 200 OK in 183ms (Views: 0.5ms | ActiveRecord: 155.5ms | Allocations: 22026)
-I, [2026-06-17T09:12:53.467502 #75]  INFO -- : [46bfcfee75d189249d5daa61717e338e]   Rendered text template (Duration: 0.2ms | Allocations: 34)
-I, [2026-06-17T09:12:53.468669 #75]  INFO -- : [46bfcfee75d189249d5daa61717e338e] Completed 200 OK in 134ms (Views: 3.2ms | ActiveRecord: 117.8ms | Allocations: 9824)
-I, [2026-06-17T09:12:53.569049 #68]  INFO -- : [706c123dd707aa17442138323d413c75] Processing by NotificationsController#index as */*
-I, [2026-06-17T09:12:53.569404 #68]  INFO -- : [706c123dd707aa17442138323d413c75]   Parameters: {"i"=>"i", "locale"=>nil}
-I, [2026-06-17T09:12:53.917700 #68]  INFO -- : [706c123dd707aa17442138323d413c75]   Rendered notifications/index.html.erb within layouts/application (Duration: 179.8ms | Allocations: 38150)
-I, [2026-06-17T09:12:53.927302 #68]  INFO -- : [706c123dd707aa17442138323d413c75]   Rendered layout layouts/application.html.erb (Duration: 189.5ms | Allocations: 41660)
-I, [2026-06-17T09:12:53.928489 #68]  INFO -- : [706c123dd707aa17442138323d413c75] Completed 200 OK in 359ms (Views: 182.0ms | ActiveRecord: 115.8ms | Allocations: 61595)
+Follow Logs:
+Show timestamp:
+Since:
+-1
+Tail:
+-1
+Destination:
+Filter:
+Enter your keywords
+Wrap lines:
+service_name is unknown, will set to unknown_service:rails
+dataset will be ignored, sending data to unknown_service:rails
+I, [2026-06-18T02:50:35.577241 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - PROFILING - {"profiling_enabled":false}
+I, [2026-06-18T02:50:35.607063 #1]  INFO -- ddtrace: [ddtrace] DATADOG CONFIGURATION - CORE - {"date":"2026-06-18T02:50:35+00:00","os_name":"x86_64-pc-linux","version":"1.16.2","lang":"ruby","lang_version":"3.3.0","env":"production","service":"rails","dd_version":null,"debug":false,"tags":null,"runtime_metrics_enabled":false,"vm":"ruby-3.3.0","health_metrics_enabled":false}
+[strong_migrations] DANGER: No lock timeout set
+[strong_migrations] DANGER: No lock timeout set
+rails aborted!
+StandardError: An error has occurred, this and all later migrations canceled: (StandardError)
+PG::DuplicateTable: ERROR:  relation "index_cp_payments_on_user_id" already exists
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `exec'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `block (2 levels) in execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/share_lock.rb:187:in `yield_shares'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/dependencies/interlock.rb:41:in `permit_concurrent_loads'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:47:in `block in execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:752:in `block in log'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/notifications/instrumenter.rb:24:in `instrument'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:743:in `log'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:46:in `execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/schema_statements.rb:448:in `add_index'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:965:in `block in method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `block in say_with_time'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `say_with_time'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:954:in `method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/hypershield-0.2.2/lib/hypershield/migration.rb:11:in `method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:17:in `block (2 levels) in method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/checker.rb:101:in `perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:16:in `block in method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `catch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `method_missing'
+/opt/apps/forem/db/migrate/20260617140100_create_cp_payments.rb:17:in `change'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:905:in `exec_migration'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:889:in `block (2 levels) in migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:888:in `block in migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:887:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:5:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1095:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1409:in `block in execute_migration_in_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:319:in `block in within_new_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:317:in `within_new_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/database_statements.rb:316:in `transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/transactions.rb:209:in `transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1460:in `ddl_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migrator.rb:4:in `ddl_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1408:in `execute_migration_in_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `migrate_without_lock'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `block in migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1481:in `block in with_advisory_lock'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1496:in `with_advisory_lock_connection'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1477:in `with_advisory_lock'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1166:in `up'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1141:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/tasks/database_tasks.rb:262:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/database_tasks.rb:5:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/railties/databases.rake:92:in `block (2 levels) in <main>'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `block in execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:21:in `block in execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/client.rb:65:in `start_span'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:16:in `execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:219:in `block in invoke_with_call_chain'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `invoke_with_call_chain'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:188:in `invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:188:in `invoke_task'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block (2 levels) in top_level'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block in top_level'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:147:in `run_with_threads'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:132:in `top_level'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block (2 levels) in perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:214:in `standard_exception_handling'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block in perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/rake_module.rb:59:in `with_application'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:18:in `perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command.rb:51:in `invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands.rb:18:in `<main>'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
+Caused by:
+ActiveRecord::StatementInvalid: PG::DuplicateTable: ERROR:  relation "index_cp_payments_on_user_id" already exists (ActiveRecord::StatementInvalid)
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `exec'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `block (2 levels) in execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/share_lock.rb:187:in `yield_shares'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/dependencies/interlock.rb:41:in `permit_concurrent_loads'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:47:in `block in execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:752:in `block in log'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/notifications/instrumenter.rb:24:in `instrument'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:743:in `log'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:46:in `execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/schema_statements.rb:448:in `add_index'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:965:in `block in method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `block in say_with_time'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `say_with_time'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:954:in `method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/hypershield-0.2.2/lib/hypershield/migration.rb:11:in `method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:17:in `block (2 levels) in method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/checker.rb:101:in `perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:16:in `block in method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `catch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `method_missing'
+/opt/apps/forem/db/migrate/20260617140100_create_cp_payments.rb:17:in `change'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:905:in `exec_migration'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:889:in `block (2 levels) in migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:888:in `block in migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:887:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:5:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1095:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1409:in `block in execute_migration_in_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:319:in `block in within_new_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:317:in `within_new_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/database_statements.rb:316:in `transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/transactions.rb:209:in `transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1460:in `ddl_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migrator.rb:4:in `ddl_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1408:in `execute_migration_in_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `migrate_without_lock'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `block in migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1481:in `block in with_advisory_lock'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1496:in `with_advisory_lock_connection'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1477:in `with_advisory_lock'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1166:in `up'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1141:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/tasks/database_tasks.rb:262:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/database_tasks.rb:5:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/railties/databases.rake:92:in `block (2 levels) in <main>'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `block in execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:21:in `block in execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/client.rb:65:in `start_span'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:16:in `execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:219:in `block in invoke_with_call_chain'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `invoke_with_call_chain'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:188:in `invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:188:in `invoke_task'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block (2 levels) in top_level'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block in top_level'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:147:in `run_with_threads'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:132:in `top_level'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block (2 levels) in perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:214:in `standard_exception_handling'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block in perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/rake_module.rb:59:in `with_application'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:18:in `perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command.rb:51:in `invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands.rb:18:in `<main>'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
+Caused by:
+PG::DuplicateTable: ERROR:  relation "index_cp_payments_on_user_id" already exists (PG::DuplicateTable)
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `exec'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:48:in `block (2 levels) in execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/share_lock.rb:187:in `yield_shares'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/dependencies/interlock.rb:41:in `permit_concurrent_loads'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:47:in `block in execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:752:in `block in log'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/notifications/instrumenter.rb:24:in `instrument'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract_adapter.rb:743:in `log'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/database_statements.rb:46:in `execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/postgresql/schema_statements.rb:448:in `add_index'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:965:in `block in method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `block in say_with_time'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:935:in `say_with_time'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:954:in `method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/hypershield-0.2.2/lib/hypershield/migration.rb:11:in `method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:17:in `block (2 levels) in method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/checker.rb:101:in `perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:16:in `block in method_missing'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `catch'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:15:in `method_missing'
+/opt/apps/forem/db/migrate/20260617140100_create_cp_payments.rb:17:in `change'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:905:in `exec_migration'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:889:in `block (2 levels) in migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:888:in `block in migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:887:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migration.rb:5:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1095:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1409:in `block in execute_migration_in_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:319:in `block in within_new_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:25:in `block in synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `handle_interrupt'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activesupport-7.0.8.7/lib/active_support/concurrency/load_interlock_aware_monitor.rb:21:in `synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/transaction.rb:317:in `within_new_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/database_statements.rb:316:in `transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/transactions.rb:209:in `transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1460:in `ddl_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/migrator.rb:4:in `ddl_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1408:in `execute_migration_in_transaction'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1382:in `migrate_without_lock'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `block in migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1481:in `block in with_advisory_lock'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/connection_adapters/abstract/connection_pool.rb:215:in `with_connection'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1496:in `with_advisory_lock_connection'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1477:in `with_advisory_lock'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1331:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1166:in `up'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/migration.rb:1141:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/tasks/database_tasks.rb:262:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/strong_migrations-1.8.0/lib/strong_migrations/database_tasks.rb:5:in `migrate'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/activerecord-7.0.8.7/lib/active_record/railties/databases.rake:92:in `block (2 levels) in <main>'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `block in execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:281:in `execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:21:in `block in execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/client.rb:65:in `start_span'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/honeycomb-beeline-2.11.0/lib/honeycomb/integrations/rake.rb:16:in `execute'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:219:in `block in invoke_with_call_chain'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `synchronize'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:199:in `invoke_with_call_chain'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/task.rb:188:in `invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:188:in `invoke_task'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block (2 levels) in top_level'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `each'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:138:in `block in top_level'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:147:in `run_with_threads'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:132:in `top_level'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block (2 levels) in perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/application.rb:214:in `standard_exception_handling'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:24:in `block in perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/rake-13.2.1/lib/rake/rake_module.rb:59:in `with_application'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands/rake/rake_command.rb:18:in `perform'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/command.rb:51:in `invoke'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/railties-7.0.8.7/lib/rails/commands.rb:18:in `<main>'
+/opt/apps/forem/vendor/bundle/ruby/3.3.0/gems/bootsnap-1.18.3/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:30:in `require'
+Tasks: TOP => db:migrate
+(See full trace by running task with --trace)
+I, [2026-06-18T02:50:37.255118 #1]  INFO -- honeybadger: ** [Honeybadger] Initializing Honeybadger Error Tracker for Ruby. Ship it! version=4.12.2 framework=rails level=1 pid=1
+W, [2026-06-18T02:50:38.242443 #1]  WARN -- : FCM is not configured. Set RPUSH_FCM_JSON (Firebase service account JSON)
+I, [2026-06-18T02:50:38.426929 #1]  INFO -- : CareerPolitics Android consumer app initialized
+I, [2026-06-18T02:50:39.124452 #1]  INFO -- : Migrating to CreateCpSubscriptions (20260617140000)
+== 20260617140000 CreateCpSubscriptions: migrating ============================
+-- create_table(:cp_subscriptions)
+   -> 0.1742s
+-- add_index(:cp_subscriptions, :user_id)
+   -> 0.0063s
+-- add_index(:cp_subscriptions, :status)
+   -> 0.0063s
+-- add_index(:cp_subscriptions, :trial_ends_at, {:where=>"status = 0"})
+   -> 0.0039s
+== 20260617140000 CreateCpSubscriptions: migrated (0.2007s) ===================
+I, [2026-06-18T02:50:39.374718 #1]  INFO -- : Migrating to CreateCpPayments (20260617140100)
+== 20260617140100 CreateCpPayments: migrating =================================
+-- create_table(:cp_payments)
+   -> 0.0496s
+-- add_index(:cp_payments, :user_id)
+I, [2026-06-18T02:50:39.535965 #1]  INFO -- honeybadger: ** [Honeybadger] Reporting error id=7cb709e8-e2de-43df-87c0-7001e8bbc089 level=1 pid=1
