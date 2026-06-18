@@ -12,20 +12,19 @@ module Admin
 
       if user.razorpay_subscription_id.blank?
         flash[:error] = "No Razorpay subscription ID found for #{user.username}."
-        redirect_to admin_razorpay_subscriptions_path and return
+        redirect_to admin_subscriptions_path and return
       end
-
-      Razorpay.setup(Settings::General.razorpay_key_id, Settings::General.razorpay_key_secret)
+      Razorpay.setup(::Settings::General.razorpay_key_id, ::Settings::General.razorpay_key_secret)
       subscription = Razorpay::Subscription.fetch(user.razorpay_subscription_id)
       Razorpay::Subscription.cancel(subscription.id, cancel_at_cycle_end: 0)
       mark_not_subscribed(user)
 
       flash[:success] = "Cancelled Razorpay subscription for #{user.username}."
-      redirect_to admin_razorpay_subscriptions_path
+      redirect_to admin_subscriptions_path
     rescue Razorpay::Error => e
       Rails.logger.error "Admin Razorpay cancellation failed for user #{params[:id]}: #{e.message}"
       flash[:error] = "Unable to cancel Razorpay subscription: #{e.message}"
-      redirect_to admin_razorpay_subscriptions_path
+      redirect_to admin_subscriptions_path
     end
 
     def refund
@@ -34,18 +33,18 @@ module Admin
 
       if payment_id.blank?
         flash[:error] = "Enter a Razorpay payment ID to refund."
-        redirect_to admin_razorpay_subscriptions_path and return
+        redirect_to admin_subscriptions_path and return
       end
 
       refund_razorpay_payment(payment_id)
       mark_not_subscribed(user) if params[:cancel_access].to_s == "1"
 
       flash[:success] = "Refund initiated for Razorpay payment #{payment_id}."
-      redirect_to admin_razorpay_subscriptions_path
+      redirect_to admin_subscriptions_path
     rescue Razorpay::Error => e
       Rails.logger.error "Admin Razorpay refund failed for user #{params[:id]}: #{e.message}"
       flash[:error] = "Unable to refund Razorpay payment: #{e.message}"
-      redirect_to admin_razorpay_subscriptions_path
+      redirect_to admin_subscriptions_path
     end
 
     private
@@ -91,8 +90,8 @@ module Admin
       response = HTTParty.post(
         "https://api.razorpay.com/v1/payments/#{payment_id}/refund",
         basic_auth: {
-          username: Settings::General.razorpay_key_id,
-          password: Settings::General.razorpay_key_secret,
+          username: ::Settings::General.razorpay_key_id,
+          password: ::Settings::General.razorpay_key_secret,
         },
         headers: { "Content-Type" => "application/json" },
         body: {}.to_json,

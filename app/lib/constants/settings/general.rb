@@ -141,7 +141,12 @@ module Constants
           },
           razorpay_plan_id: {
             description: I18n.t("lib.constants.settings.general.razorpay_plan_id.description",
-                                default: "Razorpay Plan ID for subscriptions"),
+                                default: "Razorpay Monthly Plan ID for subscriptions"),
+            placeholder: "plan_..."
+          },
+          razorpay_yearly_plan_id: {
+            description: I18n.t("lib.constants.settings.general.razorpay_yearly_plan_id.description",
+                                default: "Razorpay Yearly Plan ID for subscriptions"),
             placeholder: "plan_..."
           },
           suggested_tags: {

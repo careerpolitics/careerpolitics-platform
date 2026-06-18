@@ -8,9 +8,10 @@ class RazorpaySubscriptionsController < ApplicationController
   def new
     @user = current_user
     @razorpay_key_id = Settings::General.razorpay_key_id
-    @plan_id = resolve_plan_id
+    @monthly_plan_id = Settings::General.razorpay_plan_id&.strip.presence
+    @yearly_plan_id = Settings::General.razorpay_yearly_plan_id&.strip.presence
 
-    unless @plan_id
+    unless @monthly_plan_id || @yearly_plan_id
       flash[:error] = "Payment plan not configured. Please contact support."
       redirect_back(fallback_location: user_settings_path) and return
     end
@@ -29,7 +30,7 @@ class RazorpaySubscriptionsController < ApplicationController
 
     payload = {
       "plan_id" => plan_id,
-      "total_count" => (params[:total_count] || 12).to_i,
+      "total_count" => 1,
       "quantity" => 1,
       "customer_notify" => 1,
       "notes" => {
@@ -167,8 +168,9 @@ class RazorpaySubscriptionsController < ApplicationController
   private
 
   def resolve_plan_id
-    if params[:plan].present?
-      params[:plan].strip
+    case params[:plan_type].to_s
+    when "yearly"
+      Settings::General.razorpay_yearly_plan_id&.strip.presence
     else
       Settings::General.razorpay_plan_id&.strip.presence
     end

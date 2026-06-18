@@ -32,14 +32,14 @@
         <td>
           <div class="flex flex-col gap-2">
             <%= button_to "Cancel subscription",
-                          cancel_admin_razorpay_subscription_path(user),
+                          cancel_admin_subscription_path(user),
                           method: :post,
                           class: "crayons-btn crayons-btn--danger crayons-btn--s",
                           data: { confirm: "Cancel this user's Razorpay subscription immediately?" },
                           disabled: user.razorpay_subscription_id.blank? %>
 
             <%= form_with(
-                  url: refund_admin_razorpay_subscription_path(user),
+                  url: refund_admin_subscription_path(user),
                   method: :post,
                   local: true,
                   class: "flex gap-2 items-center",

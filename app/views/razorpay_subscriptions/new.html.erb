@@ -53,35 +53,54 @@
     </div>
   </div>
 
-  <%# ── Pricing + CTA Section ── %>
+  <%# ── Plan Selection + CTA Section ── %>
   <div class="crayons-card crayons-card--content-rows p-6 mb-4">
-    <div class="flex justify-between items-center fw-wrap gap-4">
-      <div>
-        <h2 class="crayons-subtitle-1 mb-2">Start your journey</h2>
-        <p class="color-base-60 mb-0">Cancel anytime. Supports UPI, Cards, NetBanking, and Wallets.</p>
-      </div>
-      <div class="flex gap-3 items-center fw-wrap">
-        <% unless current_user.cached_base_subscriber? %>
-          <%= button_to "Start Free 7-Day Trial",
-                        free_trial_razorpay_subscriptions_path,
-                        method: :post,
-                        class: "crayons-btn crayons-btn--secondary" %>
-        <% end %>
-        <button
-          id="razorpay-pay-btn"
-          class="crayons-btn crayons-btn--brand"
-          data-create-url="<%= razorpay_subscriptions_path %>"
-          data-confirm-url="<%= confirm_razorpay_subscriptions_path %>"
-          data-community-name="<%= j(community_name) %>"
-          data-logo="<%= j(cp_logo) %>"
-          data-csrf-token="<%= form_authenticity_token %>">
-          Subscribe Now
-        </button>
-      </div>
+    <h2 class="crayons-subtitle-1 mb-4">Choose your plan</h2>
+
+    <div class="grid gap-4 m:grid-cols-2 mb-4">
+      <% if @monthly_plan_id %>
+        <label class="crayons-card p-4 cursor-pointer plan-option" style="border: 2px solid var(--accent-brand);">
+          <input type="radio" name="plan_type" value="monthly" checked class="plan-radio hidden" />
+          <div class="flex justify-between items-center mb-2">
+            <span class="fw-bold fs-l">Monthly</span>
+            <span class="crayons-tag crayons-tag--monochrome">Popular</span>
+          </div>
+          <p class="color-base-60 fs-s mb-0">Billed once. Access for one month.</p>
+        </label>
+      <% end %>
+      <% if @yearly_plan_id %>
+        <label class="crayons-card p-4 cursor-pointer plan-option" style="border: 2px solid transparent;">
+          <input type="radio" name="plan_type" value="yearly" class="plan-radio hidden" />
+          <div class="flex justify-between items-center mb-2">
+            <span class="fw-bold fs-l">Yearly</span>
+            <span class="crayons-tag crayons-tag--monochrome" style="background: var(--accent-brand); color: #fff;">Save more</span>
+          </div>
+          <p class="color-base-60 fs-s mb-0">Billed once. Access for one year.</p>
+        </label>
+      <% end %>
+    </div>
+
+    <div class="flex gap-3 items-center fw-wrap">
+      <% unless current_user.cached_base_subscriber? %>
+        <%= button_to "Start Free 7-Day Trial",
+                      free_trial_subscriptions_path,
+                      method: :post,
+                      class: "crayons-btn crayons-btn--secondary" %>
+      <% end %>
+      <button
+        id="razorpay-pay-btn"
+        class="crayons-btn crayons-btn--brand"
+        data-create-url="<%= subscriptions_path %>"
+        data-confirm-url="<%= confirm_subscriptions_path %>"
+        data-community-name="<%= j(community_name) %>"
+        data-logo="<%= j(cp_logo) %>"
+        data-csrf-token="<%= form_authenticity_token %>">
+        Subscribe Now
+      </button>
     </div>
 
     <p class="fs-s color-base-60 mt-4 mb-0">
-      Powered by Razorpay. Your payment details are fully encrypted and secure.
+      Powered by Razorpay. Supports UPI, Cards, NetBanking, and Wallets. Your payment details are fully encrypted and secure.
     </p>
   </div>
 
@@ -102,7 +121,7 @@
     </details>
     <details>
       <summary class="fw-bold cursor-pointer">Will my subscription auto-renew?</summary>
-      <p class="color-base-70 mt-2 mb-0">Yes, your subscription renews automatically each billing cycle. You'll receive a notification before each renewal.</p>
+      <p class="color-base-70 mt-2 mb-0">No, subscriptions are one-time payments. You'll need to manually renew when your plan period ends.</p>
     </details>
   </div>
 </div>
@@ -119,6 +138,23 @@
     var logo = btn.dataset.logo;
     var csrfToken = btn.dataset.csrfToken;
 
+    // Plan selection UI
+    var planOptions = document.querySelectorAll('.plan-option');
+    var planRadios = document.querySelectorAll('.plan-radio');
+    planRadios.forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        planOptions.forEach(function(opt) {
+          opt.style.borderColor = 'transparent';
+        });
+        radio.closest('.plan-option').style.borderColor = 'var(--accent-brand)';
+      });
+    });
+
+    function getSelectedPlanType() {
+      var checked = document.querySelector('.plan-radio:checked');
+      return checked ? checked.value : 'monthly';
+    }
+
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       btn.disabled = true;
@@ -130,7 +166,7 @@
           'Content-Type': 'application/json',
           'X-CSRF-Token': csrfToken,
         },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ plan_type: getSelectedPlanType() }),
         credentials: 'same-origin',
       })
         .then(function(resp) { return resp.json(); })
@@ -152,7 +188,6 @@
             notes: { user_id: String(data.user_id) },
             theme: { color: '#3b49df' },
             handler: function(response) {
-              // POST confirm (CSRF-protected) via a hidden form
               var form = document.createElement('form');
               form.method = 'POST';
               form.action = confirmUrl;
