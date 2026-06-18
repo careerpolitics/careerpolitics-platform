@@ -120,11 +120,6 @@ pt:
   stories_controller:
     404_bio_not_found: 404 bio não encontrada
     searching: "...pesquisando"
-  stripe_active_cards_controller:
-    cannot_remove: Não é possível remover o cartão se você tem uma assinatura ativa. Por favor, cancele sua assinatura primeiro.
-    cannot_update: Houve um problema ao atualizar suas informações de cobrança.
-    updated: Suas informações de cobrança foram atualizadas
-    removed: Seu cartão foi removido com sucesso.
   tag_adjustments_controller:
     failure: 'Falha: %{errors}'
     destroyed: Ajuste de tag destruído

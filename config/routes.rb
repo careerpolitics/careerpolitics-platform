@@ -154,7 +154,6 @@ Rails.application.routes.draw do
     namespace :incoming_webhooks do
       get "/mailchimp/:secret/unsubscribe", to: "mailchimp_unsubscribes#index", as: :mailchimp_unsubscribe_check
       post "/mailchimp/:secret/unsubscribe", to: "mailchimp_unsubscribes#create", as: :mailchimp_unsubscribe
-      resources :stripe_events, only: [:create]
       resources :razorpay_events, only: [:create]
     end
 
@@ -237,15 +236,13 @@ Rails.application.routes.draw do
       slug = path_params[:slug]
       locale ? "/locale/#{locale}/trending/#{slug}" : "/trending/#{slug}"
     }
-    resources :stripe_active_cards, only: %i[create update destroy]
-    resources :stripe_subscriptions, only: %i[new edit destroy]
-    resources :razorpay_subscriptions, only: %i[new edit destroy] do
+    resources :razorpay_subscriptions, only: %i[new create edit destroy] do
       collection do
-        get :confirm
+        post :confirm
         post :free_trial
       end
     end
-    get "/++", to: redirect("/razorpay_subscriptions/new")
+    get "/++", to: "razorpay_subscriptions#new"
     resources :github_repos, only: %i[index] do
       collection do
         post "/update_or_create", to: "github_repos#update_or_create"
@@ -276,7 +273,10 @@ Rails.application.routes.draw do
     resources :insights, only: %i[create]
     resources :feed_events, only: %i[create]
     resources :credits, only: %i[index new create] do
-      get "purchase", on: :collection, to: "credits#new"
+      collection do
+        get "purchase", to: "credits#new"
+        post "create_order", to: "credits#create_order"
+      end
     end
     resources :reading_list_items, only: [:update]
     resources :poll_votes, only: %i[show create]

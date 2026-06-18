@@ -127,12 +127,12 @@ class ApplicationController < ActionController::Base
         request_domain: request.host&.downcase,
         original_url: request.fullpath
       )
-      
+
       redirect_rule ||= RequestRedirect.find_by(
         request_domain: request.host&.downcase,
         original_url: request.path
       )
-      
+
       if redirect_rule
         raise RedirectRequired.new(redirect_rule.destination_url, status: :moved_permanently)
       end
@@ -349,14 +349,6 @@ class ApplicationController < ActionController::Base
 
   def anonymous_user
     User.new(ip_address: request.env["HTTP_FASTLY_CLIENT_IP"] || request.remote_ip)
-  end
-
-  def initialize_stripe
-    Stripe.api_key = Settings::General.stripe_api_key
-
-    return unless Rails.env.development? && Stripe.api_key.present?
-
-    Stripe.log_level = Stripe::LEVEL_INFO
   end
 
   def determine_locale

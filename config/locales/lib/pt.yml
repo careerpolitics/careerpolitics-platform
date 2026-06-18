@@ -172,10 +172,6 @@ pt:
           sidebar:
             description: Sidebar content
             placeholder: Sidebar content
-          stripe_api:
-            description: Stripe API key
-          stripe_key:
-            description: Stripe publishable key
           razorpay_key_id:
             description: 'Chave pública (Key ID) do Razorpay para receber pagamentos. Consulte: https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps/'
           razorpay_key_secret:

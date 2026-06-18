@@ -42,24 +42,6 @@
                            placeholder: Constants::Settings::General.details[:razorpay_plan_id][:placeholder] %>
         </div>
 
-        <div class="crayons-field">
-          <%= admin_config_label :stripe_api_key, "Stripe API key" %>
-          <%= admin_config_description Constants::Settings::General.details[:stripe_api_key][:description] %>
-          <%= f.text_field :stripe_api_key,
-                           class: "crayons-textfield",
-                           value: Settings::General.stripe_api_key,
-                           placeholder: Constants::Settings::General.details[:stripe_api_key][:placeholder] %>
-        </div>
-
-        <div class="crayons-field">
-          <%= admin_config_label :stripe_publishable_key %>
-          <%= admin_config_description Constants::Settings::General.details[:stripe_publishable_key][:description] %>
-          <%= f.text_field :stripe_publishable_key,
-                           class: "crayons-textfield",
-                           value: Settings::General.stripe_publishable_key,
-                           placeholder: Constants::Settings::General.details[:stripe_publishable_key][:placeholder] %>
-        </div>
-
         <% if FeatureFlag.enabled?(Geolocation::FEATURE_FLAG) %>
           <div class="crayons-field">
             <%= admin_config_label :billboard_enabled_countries %>

@@ -144,14 +144,6 @@ module Constants
                                 default: "Razorpay Plan ID for subscriptions"),
             placeholder: "plan_..."
           },
-          stripe_api_key: {
-            description: I18n.t("lib.constants.settings.general.stripe_api.description"),
-            placeholder: "sk_live_...."
-          },
-          stripe_publishable_key: {
-            description: I18n.t("lib.constants.settings.general.stripe_key.description"),
-            placeholder: "pk_live_...."
-          },
           suggested_tags: {
             description: I18n.t("lib.constants.settings.general.tags.description"),
             placeholder: I18n.t("lib.constants.settings.general.tags.placeholder")

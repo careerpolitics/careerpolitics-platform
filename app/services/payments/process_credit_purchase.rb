@@ -1,110 +1,120 @@
 module Payments
-  # This service encapsulates purchasing credits via the Stripe API.
+  # This service encapsulates purchasing credits via the Razorpay API.
   #
-  # NOTE: We still use the legacy checkout API here. While this doesn't
-  # support all features of Stripe's new API (e.g. SCA) it's well suited
-  # for our use-case of occasional one-off purchases.
-  # An exploration of alternatives and the decision to stick to the legacy API
-  # can be found here: https://github.com/forem/internalEngineering/issues/364
+  # Flow:
+  #   1. Controller calls .create_order to get a Razorpay Order ID + amount.
+  #   2. Frontend opens Razorpay Checkout with that order.
+  #   3. On payment success, frontend POSTs back with razorpay_payment_id,
+  #      razorpay_order_id, and razorpay_signature.
+  #   4. Controller calls .verify_and_fulfill to verify the signature and
+  #      create the credits.
   class ProcessCreditPurchase
-    def self.call(user, credits_count, purchase_options:)
-      new(
-        user,
-        credits_count,
-        purchase_options: purchase_options,
-      ).call
+    class << self
+      def create_order(user, credits_count, organization_id: nil)
+        new(user, credits_count, organization_id: organization_id).create_order
+      end
+
+      def verify_and_fulfill(user, credits_count, razorpay_payment_id:, razorpay_order_id:, razorpay_signature:, organization_id: nil)
+        new(user, credits_count, organization_id: organization_id)
+          .verify_and_fulfill(razorpay_payment_id: razorpay_payment_id,
+                              razorpay_order_id: razorpay_order_id,
+                              razorpay_signature: razorpay_signature)
+      end
     end
 
-    attr_reader :purchaser, :error
+    attr_reader :purchaser, :error, :order_id, :amount_in_paise, :currency
 
-    def initialize(user, credits_count, purchase_options:)
-      self.user = user
-      self.credits_count = credits_count
-      self.purchase_options = purchase_options
-      self.success = false
+    def initialize(user, credits_count, organization_id: nil)
+      @user = user
+      @credits_count = credits_count
+      @organization_id = organization_id
+      @success = false
+      @currency = "INR"
     end
 
-    def call
-      if payment_method_provided?
-        process_purchase
-        create_credits if success?
+    def create_order
+      @amount_in_paise = @credits_count * cost_per_credit
+      payload = {
+        amount: @amount_in_paise,
+        currency: @currency,
+        receipt: "credits_#{@user.id}_#{Time.current.to_i}",
+        notes: {
+          user_id: @user.id.to_s,
+          credits_count: @credits_count.to_s,
+          organization_id: @organization_id.to_s,
+        },
+      }
+
+      response = HTTParty.post(
+        "https://api.razorpay.com/v1/orders",
+        basic_auth: { username: Settings::General.razorpay_key_id, password: Settings::General.razorpay_key_secret },
+        headers: { "Content-Type" => "application/json" },
+        body: payload.to_json,
+        timeout: 10,
+        )
+
+      if response.success?
+        parsed = response.parsed_response
+        @order_id = parsed["id"]
+        @success = true
       else
-        self.error = I18n.t("services.payments.errors.select_payment_method")
+        @error = "Unable to create payment order. Please try again."
+        @success = false
       end
 
       self
     end
 
+    def verify_and_fulfill(razorpay_payment_id:, razorpay_order_id:, razorpay_signature:)
+      unless verify_signature(razorpay_payment_id, razorpay_order_id, razorpay_signature)
+        @error = "Payment verification failed. Please contact support."
+        @success = false
+        return self
+      end
+
+      @amount_in_paise = @credits_count * cost_per_credit
+      create_credits
+      @success = true
+      self
+    rescue StandardError => e
+      Rails.logger.error "Credit purchase fulfillment error for user #{@user.id}: #{e.message}"
+      @error = "An error occurred while processing your purchase."
+      @success = false
+      self
+    end
+
     def success?
-      success
+      @success
     end
 
     private
 
-    attr_accessor :user, :credits_count, :success, :purchase_options
-    attr_writer :purchaser, :error
-
-    def payment_method_provided?
-      # we expect at least one of :stripe_token or :selected_card to process
-      purchase_options.slice(:stripe_token, :selected_card).compact_blank.present?
-    end
-
-    def process_purchase
-      customer = find_or_create_customer
-      update_user_stripe_info(customer)
-      card = find_or_create_card(customer)
-      create_charge(customer, card)
-      self.success = true
-    rescue Payments::PaymentsError => e
-      self.error = e.message
-    end
-
-    def find_or_create_customer
-      if user.stripe_id_code
-        Payments::Customer.get(user.stripe_id_code)
-      else
-        Payments::Customer.create(email: user.email)
-      end
-    end
-
-    def find_or_create_card(customer)
-      if purchase_options[:stripe_token]
-        Payments::Customer.create_source(customer.id, purchase_options[:stripe_token])
-      else
-        Payments::Customer.get_source(customer, purchase_options[:selected_card])
-      end
-    end
-
-    def update_user_stripe_info(customer)
-      user.update_column(:stripe_id_code, customer.id) if user.stripe_id_code.nil?
-    end
-
-    def create_charge(customer, card)
-      Payments::Customer.charge(
-        customer: customer,
-        amount: credits_count * cost_per_credit,
-        description: I18n.t("services.payments.process_credit_purchase.charge", count: credits_count),
-        card_id: card&.id,
-      )
+    def verify_signature(payment_id, order_id, signature)
+      expected = OpenSSL::HMAC.hexdigest(
+        "SHA256",
+        Settings::General.razorpay_key_secret,
+        "#{order_id}|#{payment_id}",
+        )
+      ActiveSupport::SecurityUtils.secure_compare(expected, signature)
     end
 
     def create_credits
-      purchaser = user
+      purchaser = if @organization_id.present?
+                    Organization.find(@organization_id)
+                  else
+                    @user
+                  end
 
-      credits_attributes = Array.new(credits_count) do
-        # unfortunately Rails requires the timestamps to be present and doesn't add them automatically
-        # see <https://github.com/rails/rails/issues/35493>
-        now = Time.current
-        attrs = { created_at: now, updated_at: now, cost: cost_per_credit / 100.0 }
+      now = Time.current
+      unit_cost = cost_per_credit / 100.0
+      base_attrs = if @organization_id.present?
+                     { organization_id: @organization_id }
+                   else
+                     { user_id: @user.id }
+                   end
 
-        if purchase_options[:organization_id].present?
-          purchaser = Organization.find(purchase_options[:organization_id])
-          attrs[:organization_id] = purchase_options[:organization_id]
-        else
-          attrs[:user_id] = user.id
-        end
-
-        attrs
+      credits_attributes = Array.new(@credits_count) do
+        base_attrs.merge(created_at: now, updated_at: now, cost: unit_cost)
       end
 
       Credit.insert_all(credits_attributes)
@@ -112,14 +122,14 @@ module Payments
         credits_count: purchaser.credits.size,
         spent_credits_count: purchaser.credits.spent.size,
         unspent_credits_count: purchaser.credits.unspent.size,
-      )
-      self.purchaser = purchaser
+        )
+      @purchaser = purchaser
     end
 
     def cost_per_credit
       prices = Settings::General.credit_prices_in_cents
 
-      case credits_count
+      case @credits_count
       when ..9
         prices[:small]
       when 10..99

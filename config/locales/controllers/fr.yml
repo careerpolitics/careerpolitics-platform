@@ -120,11 +120,6 @@ fr:
   stories_controller:
     404_bio_not_found: 404 bio non trouvé
     searching: "...recherche"
-  stripe_active_cards_controller:
-    cannot_remove: Vous ne pouvez pas retirer la carte si vous avez une adhésion active. Veuillez d'abord annuler votre adhésion.
-    cannot_update: Il y a eu un problème pour mettre à jour vos informations de facturation.
-    updated: Vos informations de facturation ont été mises à jour
-    removed: Votre carte a été retirée avec succès.
   tag_adjustments_controller:
     failure: 'Échec : %{errors}'
     destroyed: Tag détruit

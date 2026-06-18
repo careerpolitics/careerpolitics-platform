@@ -10,13 +10,13 @@ module Admin
     def cancel
       user = User.find(params[:id])
 
-      if user.stripe_id_code.blank?
+      if user.razorpay_subscription_id.blank?
         flash[:error] = "No Razorpay subscription ID found for #{user.username}."
         redirect_to admin_razorpay_subscriptions_path and return
       end
 
       Razorpay.setup(Settings::General.razorpay_key_id, Settings::General.razorpay_key_secret)
-      subscription = Razorpay::Subscription.fetch(user.stripe_id_code)
+      subscription = Razorpay::Subscription.fetch(user.razorpay_subscription_id)
       Razorpay::Subscription.cancel(subscription.id, cancel_at_cycle_end: 0)
       mark_not_subscribed(user)
 
@@ -56,19 +56,19 @@ module Admin
 
     def subscribed_users
       User.left_joins(:roles)
-        .where(
-          subscribed_users_sql,
-          not_subscribed: User.current_subscriber_statuses[:not_subscribed],
-          role: "base_subscriber",
-        )
-        .distinct
-        .order(created_at: :desc)
+          .where(
+            subscribed_users_sql,
+            not_subscribed: User.current_subscriber_statuses[:not_subscribed],
+            role: "base_subscriber",
+            )
+          .distinct
+          .order(created_at: :desc)
     end
 
     def subscribed_users_sql
       <<~SQL.squish
         users.current_subscriber_status <> :not_subscribed
-        OR users.stripe_id_code IS NOT NULL
+        OR users.razorpay_subscription_id IS NOT NULL
         OR roles.name = :role
       SQL
     end
@@ -97,7 +97,7 @@ module Admin
         headers: { "Content-Type" => "application/json" },
         body: {}.to_json,
         timeout: 10,
-      )
+        )
 
       parsed_response = response.parsed_response.presence || JSON.parse(response.body)
       return parsed_response if response.success?

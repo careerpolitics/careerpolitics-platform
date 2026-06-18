@@ -1,8 +1,9 @@
-<% title t("views.settings.billing.heading") %>
+<% title "CP++ Premium — #{community_name}" %>
 <% cp_logo = Settings::General.logo_png.presence || URL.url(asset_path("icon.png")) %>
 
 <div class="crayons-layout crayons-layout--limited-width crayons-layout--single-col">
-  <div class="crayons-card crayons-card--content-rows p-6">
+  <%# ── Hero Section ── %>
+  <div class="crayons-card crayons-card--content-rows p-6 mb-4">
     <div class="flex items-center mb-4">
       <img
         src="<%= asset_path("subscription-icon.png") %>"
@@ -10,59 +11,190 @@
         width="64"
         height="42"
         class="mr-3 radius-default" />
-      <h2 class="crayons-subtitle-1 mb-0">CP++</h2>
+      <div>
+        <h1 class="crayons-title mb-0">CP++ Premium</h1>
+        <p class="color-base-60 fs-s mb-0">Unlock your full exam preparation potential</p>
+      </div>
+    </div>
+  </div>
+
+  <%# ── Features Section ── %>
+  <div class="crayons-card crayons-card--content-rows p-6 mb-4">
+    <h2 class="crayons-subtitle-1 mb-4">What you get with CP++</h2>
+    <div class="grid gap-4 m:grid-cols-2">
+      <div class="flex items-start gap-3">
+        <span class="crayons-icon crayons-icon--default" style="color: var(--accent-brand);">✓</span>
+        <div>
+          <p class="fw-bold mb-1">Unlimited Mock Exams</p>
+          <p class="fs-s color-base-60 mb-0">Attempt every exam set as many times as you want, with no daily limits.</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="crayons-icon crayons-icon--default" style="color: var(--accent-brand);">✓</span>
+        <div>
+          <p class="fw-bold mb-1">Detailed Performance Analytics</p>
+          <p class="fs-s color-base-60 mb-0">Track your progress with section-wise accuracy, percentiles, and trends.</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="crayons-icon crayons-icon--default" style="color: var(--accent-brand);">✓</span>
+        <div>
+          <p class="fw-bold mb-1">Augmented Content Preferences</p>
+          <p class="fs-s color-base-60 mb-0">Personalize your feed with AI-powered content recommendations.</p>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="crayons-icon crayons-icon--default" style="color: var(--accent-brand);">✓</span>
+        <div>
+          <p class="fw-bold mb-1">Premium Badge</p>
+          <p class="fs-s color-base-60 mb-0">Stand out in the community with a verified premium member badge.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# ── Pricing + CTA Section ── %>
+  <div class="crayons-card crayons-card--content-rows p-6 mb-4">
+    <div class="flex justify-between items-center fw-wrap gap-4">
+      <div>
+        <h2 class="crayons-subtitle-1 mb-2">Start your journey</h2>
+        <p class="color-base-60 mb-0">Cancel anytime. Supports UPI, Cards, NetBanking, and Wallets.</p>
+      </div>
+      <div class="flex gap-3 items-center fw-wrap">
+        <% unless current_user.cached_base_subscriber? %>
+          <%= button_to "Start Free 7-Day Trial",
+                        free_trial_razorpay_subscriptions_path,
+                        method: :post,
+                        class: "crayons-btn crayons-btn--secondary" %>
+        <% end %>
+        <button
+          id="razorpay-pay-btn"
+          class="crayons-btn crayons-btn--brand"
+          data-create-url="<%= razorpay_subscriptions_path %>"
+          data-confirm-url="<%= confirm_razorpay_subscriptions_path %>"
+          data-community-name="<%= j(community_name) %>"
+          data-logo="<%= j(cp_logo) %>"
+          data-csrf-token="<%= form_authenticity_token %>">
+          Subscribe Now
+        </button>
+      </div>
     </div>
 
-    <p class="mb-4">Complete your subscription using the secure payment form below.</p>
-
-    <button id="razorpay-pay-btn" class="crayons-btn crayons-btn--brand">
-      Subscribe Now
-    </button>
-
-    <p class="fs-s color-base-60 mt-4">
-      Powered by Razorpay. Supports UPI, Cards, NetBanking, and Wallets.
+    <p class="fs-s color-base-60 mt-4 mb-0">
+      Powered by Razorpay. Your payment details are fully encrypted and secure.
     </p>
+  </div>
+
+  <%# ── FAQ Section ── %>
+  <div class="crayons-card crayons-card--content-rows p-6">
+    <h2 class="crayons-subtitle-1 mb-4">Frequently Asked Questions</h2>
+    <details class="mb-3">
+      <summary class="fw-bold cursor-pointer">Can I try before I pay?</summary>
+      <p class="color-base-70 mt-2 mb-0">Yes! Start a free 7-day trial with full access — no payment details required.</p>
+    </details>
+    <details class="mb-3">
+      <summary class="fw-bold cursor-pointer">How do I cancel?</summary>
+      <p class="color-base-70 mt-2 mb-0">Go to Settings → Billing → Manage Subscription. You can cancel anytime and retain access until the end of your billing period.</p>
+    </details>
+    <details class="mb-3">
+      <summary class="fw-bold cursor-pointer">What payment methods are supported?</summary>
+      <p class="color-base-70 mt-2 mb-0">We accept UPI, Credit/Debit Cards, NetBanking, and Wallets via Razorpay.</p>
+    </details>
+    <details>
+      <summary class="fw-bold cursor-pointer">Will my subscription auto-renew?</summary>
+      <p class="color-base-70 mt-2 mb-0">Yes, your subscription renews automatically each billing cycle. You'll receive a notification before each renewal.</p>
+    </details>
   </div>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-  document.getElementById('razorpay-pay-btn').addEventListener('click', function(e) {
-    e.preventDefault();
+  (function() {
+    var btn = document.getElementById('razorpay-pay-btn');
+    if (!btn) return;
 
-    var options = {
-      key: '<%= @razorpay_key_id %>',
-      subscription_id: '<%= @subscription_id %>',
-      name: '<%= j(community_name) %>',
-      description: 'CP++ Subscription',
-      image: '<%= j(cp_logo) %>',
-      prefill: {
-        name: '<%= j(@user.name) %>',
-        email: '<%= j(@user.email) %>'
-      },
-      notes: {
-        user_id: '<%= @user.id %>'
-      },
-      theme: {
-        color: '#3b49df'
-      },
-      handler: function(response) {
-        var params = new URLSearchParams({
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_subscription_id: response.razorpay_subscription_id,
-          razorpay_signature: response.razorpay_signature
+    var createUrl  = btn.dataset.createUrl;
+    var confirmUrl = btn.dataset.confirmUrl;
+    var communityName = btn.dataset.communityName;
+    var logo = btn.dataset.logo;
+    var csrfToken = btn.dataset.csrfToken;
+
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      btn.disabled = true;
+      btn.textContent = 'Processing…';
+
+      fetch(createUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
+        body: JSON.stringify({}),
+        credentials: 'same-origin',
+      })
+        .then(function(resp) { return resp.json(); })
+        .then(function(data) {
+          if (data.error) {
+            alert(data.error);
+            btn.disabled = false;
+            btn.textContent = 'Subscribe Now';
+            return;
+          }
+
+          var options = {
+            key: data.razorpay_key_id,
+            subscription_id: data.subscription_id,
+            name: communityName,
+            description: "'CP++ Premium Subscription'",
+            image: logo,
+            prefill: { name: data.user_name, email: data.user_email },
+            notes: { user_id: String(data.user_id) },
+            theme: { color: '#3b49df' },
+            handler: function(response) {
+              // POST confirm (CSRF-protected) via a hidden form
+              var form = document.createElement('form');
+              form.method = 'POST';
+              form.action = confirmUrl;
+              form.style.display = 'none';
+
+              var fields = {
+                authenticity_token: csrfToken,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_subscription_id: response.razorpay_subscription_id,
+                razorpay_signature: response.razorpay_signature,
+              };
+              for (var key in fields) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = fields[key];
+                form.appendChild(input);
+              }
+              document.body.appendChild(form);
+              form.submit();
+            },
+            modal: {
+              ondismiss: function() {
+                btn.disabled = false;
+                btn.textContent = 'Subscribe Now';
+              }
+            }
+          };
+
+          var rzp = new Razorpay(options);
+          rzp.on('payment.failed', function(response) {
+            alert('Payment failed: ' + response.error.description);
+            btn.disabled = false;
+            btn.textContent = 'Subscribe Now';
+          });
+          rzp.open();
+        })
+        .catch(function(err) {
+          alert('Something went wrong. Please try again.');
+          btn.disabled = false;
+          btn.textContent = 'Subscribe Now';
         });
-        window.location.href = '/razorpay_subscriptions/confirm?' + params.toString();
-      },
-      modal: {
-        ondismiss: function() {}
-      }
-    };
-
-    var rzp = new Razorpay(options);
-    rzp.on('payment.failed', function(response) {
-      alert('Payment failed: ' + response.error.description);
     });
-    rzp.open();
-  });
+  })();
 </script>

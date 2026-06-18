@@ -355,15 +355,15 @@ RSpec.describe "/admin/customization/config" do
       end
 
       describe "Monetization" do
-        it "updates stripe configs" do
+        it "updates razorpay configs" do
           post admin_settings_general_settings_path, params: {
             settings_general: {
-              stripe_api_key: "sk_live_yo",
-              stripe_publishable_key: "pk_live_haha"
+              razorpay_key_id: "rzp_live_yo",
+              razorpay_key_secret: "rzp_live_secret"
             }
           }
-          expect(Settings::General.stripe_api_key).to eq("sk_live_yo")
-          expect(Settings::General.stripe_publishable_key).to eq("pk_live_haha")
+          expect(Settings::General.razorpay_key_id).to eq("rzp_live_yo")
+          expect(Settings::General.razorpay_key_secret).to eq("rzp_live_secret")
         end
       end
 

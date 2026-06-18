@@ -43,152 +43,134 @@ RSpec.describe "Credits" do
     end
   end
 
-  describe "POST credits" do
+  describe "POST /credits/create_order" do
     let(:user) { create(:user) }
-    let(:org_admin) { create(:user, :org_admin) }
-    let(:admin_org_id) { org_admin.organizations.first.id }
-    let(:stripe_helper) { StripeMock.create_test_helper }
+    let(:razorpay_key_id) { "rzp_test_key123" }
+    let(:razorpay_key_secret) { "rzp_test_secret456" }
 
-    def charges(customer)
-      Stripe::Charge.list(customer: customer.id)
+    def razorpay_response(success:, body:)
+      response_class = Class.new do
+        def initialize(success, body)
+          @success = success
+          @body = body
+        end
+
+        attr_reader :body
+
+        def success?
+          @success
+        end
+
+        def parsed_response
+          JSON.parse(body)
+        end
+      end
+
+      response_class.new(success, body.to_json)
     end
 
     before do
-      StripeMock.start
+      allow(Settings::General).to receive(:razorpay_key_id).and_return(razorpay_key_id)
+      allow(Settings::General).to receive(:razorpay_key_secret).and_return(razorpay_key_secret)
       sign_in user
     end
 
-    after do
-      StripeMock.stop
+    it "creates a Razorpay order and returns JSON" do
+      allow(HTTParty).to receive(:post).and_return(
+        razorpay_response(success: true, body: { "id" => "order_test123" }),
+        )
+
+      post create_order_credits_path, params: { credits_count: 25 }, as: :json
+
+      expect(response).to have_http_status(:ok)
+      json = response.parsed_body
+      expect(json["order_id"]).to eq("order_test123")
+      expect(json["razorpay_key_id"]).to eq(razorpay_key_id)
     end
 
-    it "creates unspent credits" do
+    it "returns error for invalid credits count" do
+      post create_order_credits_path, params: { credits_count: 0 }, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body["error"]).to include("valid number")
+    end
+  end
+
+  describe "POST /credits" do
+    let(:user) { create(:user) }
+    let(:razorpay_key_secret) { "rzp_test_secret456" }
+    let(:order_id) { "order_test123" }
+    let(:payment_id) { "pay_test456" }
+    let(:valid_signature) do
+      OpenSSL::HMAC.hexdigest("SHA256", razorpay_key_secret, "#{order_id}|#{payment_id}")
+    end
+
+    before do
+      allow(Settings::General).to receive(:razorpay_key_id).and_return("rzp_test_key123")
+      allow(Settings::General).to receive(:razorpay_key_secret).and_return(razorpay_key_secret)
+      sign_in user
+    end
+
+    it "creates unspent credits on valid payment" do
       post "/credits", params: {
-        credit: {
-          number_to_purchase: 25
-        },
-        stripe_token: stripe_helper.generate_card_token
+        credits_count: 25,
+        razorpay_payment_id: payment_id,
+        razorpay_order_id: order_id,
+        razorpay_signature: valid_signature,
       }
       expect(user.credits.where(spent: false).size).to eq(25)
     end
 
-    it "makes a valid Stripe charge" do
+    it "redirects with success notice" do
       post "/credits", params: {
-        credit: {
-          number_to_purchase: 20
-        },
-        stripe_token: stripe_helper.generate_card_token
+        credits_count: 20,
+        razorpay_payment_id: payment_id,
+        razorpay_order_id: order_id,
+        razorpay_signature: valid_signature,
       }
-      customer = Payments::Customer.get(user.stripe_id_code)
-      expect(charges(customer).first.amount).to eq 8000
-    end
-
-    context "when a user already has a card" do
-      before do
-        customer = Payments::Customer.create(email: user.email)
-        user.update_column(:stripe_id_code, customer.id)
-        customer.sources.create(source: stripe_helper.generate_card_token)
-      end
-
-      it "makes a valid Stripe charge" do
-        customer = Payments::Customer.get(user.stripe_id_code)
-        post "/credits", params: {
-          credit: {
-            number_to_purchase: 20
-          },
-          selected_card: customer.sources.first.id
-        }
-        expect(charges(customer).first.amount).to eq 8000
-      end
-
-      it "creates unspent credits" do
-        customer = Payments::Customer.get(user.stripe_id_code)
-        post "/credits", params: {
-          credit: {
-            number_to_purchase: 20
-          },
-          selected_card: customer.sources.first.id
-        }
-        expect(user.credits.where(spent: false).size).to eq(20)
-      end
-
-      it "charges a new card if given one" do
-        post "/credits", params: {
-          credit: {
-            number_to_purchase: 20
-          },
-          stripe_token: stripe_helper.generate_card_token
-        }
-        customer = Payments::Customer.get(user.stripe_id_code)
-        card_id = customer.sources.data.last.id
-        expect(charges(customer).first.source.id).to eq card_id
-      end
+      expect(response).to redirect_to(credits_path)
+      expect(flash[:notice]).to include("20")
     end
 
     context "when purchasing as an organization" do
+      let(:org_admin) { create(:user, :org_admin) }
+      let(:admin_org_id) { org_admin.organizations.first.id }
+
       before { sign_in org_admin }
 
       it "creates unspent credits for the organization" do
         post "/credits", params: {
           organization_id: admin_org_id,
-          credit: {
-            number_to_purchase: 20
-          },
-          stripe_token: stripe_helper.generate_card_token
+          credits_count: 20,
+          razorpay_payment_id: payment_id,
+          razorpay_order_id: order_id,
+          razorpay_signature: valid_signature,
         }
-        expect(Credit.where(organization_id: admin_org_id, spent: false).size).to eq 20
-      end
-
-      it "makes a valid Stripe charge" do
-        post "/credits", params: {
-          organization_id: admin_org_id,
-          credit: {
-            number_to_purchase: 20
-          },
-          stripe_token: stripe_helper.generate_card_token
-        }
-        customer = Payments::Customer.get(org_admin.stripe_id_code)
-        expect(charges(customer).first.amount).to eq 8000
+        expect(Credit.where(organization_id: admin_org_id, spent: false).size).to eq(20)
       end
 
       it "does not create unspent credits for the current_user" do
         post "/credits", params: {
           organization_id: admin_org_id,
-          credit: {
-            number_to_purchase: 20
-          },
-          stripe_token: stripe_helper.generate_card_token
+          credits_count: 20,
+          razorpay_payment_id: payment_id,
+          razorpay_order_id: order_id,
+          razorpay_signature: valid_signature,
         }
-        expect(org_admin.credits.where(spent: false).size).to eq 0
+        expect(org_admin.credits.where(spent: false).size).to eq(0)
       end
     end
 
-    context "when payment fails" do
+    context "when payment verification fails" do
       it "does not reward credits" do
-        StripeMock.prepare_card_error(:card_declined, :new_charge)
-
         post "/credits", params: {
-          credit: {
-            number_to_purchase: 25
-          },
-          stripe_token: stripe_helper.generate_card_token
+          credits_count: 25,
+          razorpay_payment_id: payment_id,
+          razorpay_order_id: order_id,
+          razorpay_signature: "invalid_signature",
         }
         expect(user.credits.where(spent: false).size).to eq(0)
-      end
-
-      it "does not reward credits for orgs" do
-        sign_in org_admin
-
-        StripeMock.prepare_card_error(:card_declined, :new_charge)
-
-        post "/credits", params: {
-          organization_id: admin_org_id,
-          credit: {
-            number_to_purchase: 25
-          },
-          stripe_token: stripe_helper.generate_card_token
-        }
-        expect(Credit.where(organization_id: admin_org_id, spent: false).size).to eq(0)
+        expect(flash[:error]).to include("verification failed")
       end
     end
   end

@@ -120,11 +120,6 @@ en:
   stories_controller:
     404_bio_not_found: 404 bio not found
     searching: "...searching"
-  stripe_active_cards_controller:
-    cannot_remove: Can't remove card if you have an active membership. Please cancel your membership first.
-    cannot_update: There was a problem updating your billing info.
-    updated: Your billing information has been updated
-    removed: Your card has been successfully removed.
   tag_adjustments_controller:
     failure: 'Failure: %{errors}'
     destroyed: Tag adjustment destroyed
