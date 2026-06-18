@@ -87,8 +87,6 @@ module Settings
     }
 
     # Monetization
-    setting :stripe_api_key, type: :string, default: ApplicationConfig["STRIPE_SECRET_KEY"]
-    setting :stripe_publishable_key, type: :string, default: ApplicationConfig["STRIPE_PUBLISHABLE_KEY"]
     setting :razorpay_key_id, type: :string, default: ApplicationConfig["RAZORPAY_KEY_ID"]
     setting :razorpay_key_secret, type: :string, default: ApplicationConfig["RAZORPAY_KEY_SECRET"]
     setting :razorpay_webhook_secret, type: :string, default: ApplicationConfig["RAZORPAY_WEBHOOK_SECRET"]

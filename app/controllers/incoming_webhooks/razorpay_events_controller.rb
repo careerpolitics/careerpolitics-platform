@@ -61,12 +61,15 @@ module IncomingWebhooks
       unless user.base_subscriber?
         user.add_role("base_subscriber")
         user.update(
-          stripe_id_code: subscription["id"],
+          razorpay_subscription_id: subscription["id"],
           current_subscriber_status: :paying_subscription,
           )
         user.profile&.touch
         NotifyMailer.with(user: user).base_subscriber_role_email.deliver_later
       end
+
+      # Ensure a CpSubscription record exists
+      ensure_cp_subscription(user, subscription)
     end
 
     def handle_subscription_charged(subscription, payment)
@@ -75,6 +78,19 @@ module IncomingWebhooks
 
       user.add_role("base_subscriber") unless user.base_subscriber?
       user.update(current_subscriber_status: :paying_subscription)
+
+      # Persist the payment record
+      cp_sub = ensure_cp_subscription(user, subscription)
+      record_payment(cp_sub, user, payment) if cp_sub
+
+      # Update period dates from Razorpay
+      if subscription["current_start"] && subscription["current_end"]
+        cp_sub&.update(
+          current_period_start: Time.zone.at(subscription["current_start"]),
+          current_period_end: Time.zone.at(subscription["current_end"]),
+          )
+      end
+
       Rails.logger.info "Razorpay subscription charged for user #{user.id}, payment: #{payment['id']}"
     end
 
@@ -82,12 +98,18 @@ module IncomingWebhooks
       user = find_user_from_notes(subscription)
       return unless user
 
+      cp_sub = user.cp_subscriptions.find_by(razorpay_subscription_id: subscription["id"])
+      cp_sub&.update(status: :expired, cancelled_at: Time.current)
+
       Rails.logger.info "Razorpay subscription completed for user #{user.id}"
     end
 
     def handle_subscription_cancelled(subscription)
       user = find_user_from_notes(subscription)
       return unless user
+
+      cp_sub = user.cp_subscriptions.find_by(razorpay_subscription_id: subscription["id"])
+      cp_sub&.update(status: :cancelled, cancelled_at: Time.current)
 
       user.remove_role("base_subscriber")
       user.update(current_subscriber_status: :not_subscribed)
@@ -100,13 +122,48 @@ module IncomingWebhooks
       user = find_user_from_notes(subscription)
       return unless user
 
-      user.remove_role("base_subscriber")
-      user.update(current_subscriber_status: :not_subscribed)
+      cp_sub = user.cp_subscriptions.find_by(razorpay_subscription_id: subscription["id"])
+      cp_sub&.update(status: :halted)
+
+      # Grace period: warn the user but don't immediately revoke access
       Rails.logger.warn "Razorpay subscription halted (payment failures) for user #{user.id}"
+      # Schedule access revocation after grace period (3 days)
+      Subscriptions::RevokeHaltedAccessWorker.perform_in(3.days.to_i, user.id, cp_sub&.id)
     end
 
     def handle_payment_captured(payment)
       Rails.logger.info "Razorpay payment captured: #{payment['id']}, amount: #{payment['amount']}"
+    end
+
+    def ensure_cp_subscription(user, subscription)
+      user.cp_subscriptions.find_or_create_by!(razorpay_subscription_id: subscription["id"]) do |cs|
+        cs.razorpay_plan_id = subscription["plan_id"]
+        cs.status = :active
+        cs.provider = "razorpay"
+        cs.current_period_start = subscription["current_start"] ? Time.zone.at(subscription["current_start"]) : Time.current
+        cs.current_period_end = subscription["current_end"] ? Time.zone.at(subscription["current_end"]) : nil
+      end
+    rescue ActiveRecord::RecordInvalid => e
+      Rails.logger.error "Failed to ensure CpSubscription for user #{user.id}: #{e.message}"
+      nil
+    end
+
+    def record_payment(cp_sub, user, payment)
+      return if CpPayment.exists?(razorpay_payment_id: payment["id"])
+
+      cp_sub.cp_payments.create!(
+        user: user,
+        razorpay_payment_id: payment["id"],
+        amount_cents: payment["amount"] || 0,
+        currency: (payment["currency"] || "INR").upcase,
+        method_type: payment["method"],
+        status: :captured,
+        paid_at: payment["created_at"] ? Time.zone.at(payment["created_at"]) : Time.current,
+        )
+
+      NotifyMailer.with(user: user).base_subscriber_role_email.deliver_later
+    rescue ActiveRecord::RecordInvalid => e
+      Rails.logger.error "Failed to record payment #{payment['id']} for user #{user.id}: #{e.message}"
     end
 
     def find_user_from_notes(entity)

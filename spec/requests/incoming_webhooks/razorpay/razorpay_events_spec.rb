@@ -78,7 +78,7 @@ RSpec.describe "IncomingWebhooks::RazorpayEventsController" do
 
         user.reload
         expect(user.roles.pluck(:name)).to include("base_subscriber")
-        expect(user.stripe_id_code).to eq("sub_test123")
+        expect(user.razorpay_subscription_id).to eq("sub_test123")
         expect(user.current_subscriber_status).to eq("paying_subscription")
       end
     end
@@ -100,7 +100,7 @@ RSpec.describe "IncomingWebhooks::RazorpayEventsController" do
 
       before do
         user.add_role("base_subscriber")
-        user.update(stripe_id_code: "sub_test123", current_subscriber_status: :paying_subscription)
+        user.update(razorpay_subscription_id: "sub_test123", current_subscriber_status: :paying_subscription)
       end
 
       it_behaves_like "a successful razorpay event"
@@ -135,7 +135,7 @@ RSpec.describe "IncomingWebhooks::RazorpayEventsController" do
 
       before do
         user.add_role("base_subscriber")
-        user.update(stripe_id_code: "sub_test123", current_subscriber_status: :paying_subscription)
+        user.update(razorpay_subscription_id: "sub_test123", current_subscriber_status: :paying_subscription)
       end
 
       it_behaves_like "a successful razorpay event"

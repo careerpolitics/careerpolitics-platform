@@ -5,15 +5,15 @@
     <h1><%= t("views.credits.new.heading", name: @purchaser.username) %></h1>
 
     <% if @organizations %>
-        <% @organizations.each do |org| %>
-          <% unless @purchaser.id == org.id %>
-            <a href="/credits/purchase?organization_id=<%= org.id %>" data-no-instant><%= t("views.credits.new.switch.org", name: org.name) %></a>
-          <% end %>
+      <% @organizations.each do |org| %>
+        <% unless @purchaser.id == org.id %>
+          <a href="/credits/purchase?organization_id=<%= org.id %>" data-no-instant><%= t("views.credits.new.switch.org", name: org.name) %></a>
         <% end %>
       <% end %>
-      <% unless @purchaser.is_a? User %>
-        <a href="/credits/purchase" data-no-instant><%= t("views.credits.new.switch.user") %></a>
-      <% end %>
+    <% end %>
+    <% unless @purchaser.is_a? User %>
+      <a href="/credits/purchase" data-no-instant><%= t("views.credits.new.switch.user") %></a>
+    <% end %>
   </div>
 
   <% if flash[:error].present? %>
@@ -22,7 +22,7 @@
     </div>
   <% end %>
 
-  <script src="https://js.stripe.com/v3/"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
   <div style="margin-top: 30px; text-align: center">
     <%= render "pricing" %>
@@ -49,210 +49,185 @@
         </p>
       </div>
     </details>
-    <%= form_for(@credit) do |f| %>
+
+    <div class="credit-purchase-form">
       <label for="amount-input" class="main-form-label">
         <%= t("views.credits.new.form.amount.label") %>
       </label>
       <div class="amount-wrapper">
-        <%= f.number_field :number_to_purchase,
-                           id: "amount-input",
-                           placeholder: t("views.credits.new.form.amount.placeholder"), autocomplete: "off",
-                           min: "0",
-                           max: "10000000",
-                           required: true %>
+        <input type="number" id="amount-input"
+               placeholder="<%= t("views.credits.new.form.amount.placeholder") %>"
+               autocomplete="off" min="1" max="10000000" required />
         <div id="calculated-price"></div>
       </div>
-      <% if @purchaser.is_a? Organization %>
-        <input type="hidden" name="organization_id" value="<%= @purchaser.id %>">
-      <% end %>
-      <div class="form-row">
-      <label for="card-element" class="main-form-label">
-        <%= t("views.credits.new.form.method.label") %>
-      </label>
-      <% if @customer %>
-        <div id="cards-wrapper">
-          <% @customer.sources.each do |source| %>
-            <div class="existing-card">
-            <input type="radio" <%= "checked" if source.id == @customer.default_source %>
-              name="selected_card" value="<%= source.id %>" id="existing-card-<%= source.id %>" />
-            <label for="existing-card-<%= source.id %>">
-              <span class="credit-card-component credit-card-component--bold"><%= source.brand %></span>
-              <span class="credit-card-component"><%= t("views.credits.new.form.method.number", last: source.last4) %></span>
-              <span class="credit-card-component"><%= t("views.credits.new.form.method.exp", mm: source.exp_month, yy: source.exp_year.to_s.last(2)) %></span>
-            </label>
-            </div>
-          <% end %>
-          <button id="add-new-card"><%= t("views.credits.new.form.method.add") %></button>
-        </div>
-      <% else %>
-        <div id="card-element">
-          <%# A Stripe Element will be inserted here. %>
-        </div>
-      <% end %>
-      <%# Used to display form errors. %>
-      <div id="card-errors" role="alert"></div>
-      </div>
-      <button id="add-credit-card-button" class="credit-card-button"><%= t("views.credits.new.form.submit") %></button>
+
+      <div id="payment-errors" class="crayons-notice crayons-notice--danger" role="alert" style="display:none;"></div>
+
+      <button id="buy-credits-button" class="credit-card-button">
+        <%= t("views.credits.new.form.submit") %>
+      </button>
+
       <% if @purchaser.is_a? Organization %>
         <p><em><%= t("views.credits.new.form.note_org") %></em></p>
       <% end %>
-    <% end %>
+    </div>
   </div>
 </div>
-  <script>
-    function changeSubmitButton(opts) {
-      var button = document.getElementById('add-credit-card-button');
-      button.disabled = !opts.active;
-      button.textContent = opts.text;
+
+<script>
+  (function() {
+    var createOrderUrl = '<%= create_order_credits_path %>';
+    var fulfillUrl = '<%= credits_path %>';
+    var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    var organizationId = '<%= @purchaser.is_a?(Organization) ? @purchaser.id : "" %>';
+    var razorpayKeyId = '<%= @razorpay_key_id %>';
+    var userName = '<%= current_user.name %>';
+    var userEmail = '<%= current_user.email %>';
+    var communityName = '<%= community_name %>';
+
+    var buyButton = document.getElementById('buy-credits-button');
+    var amountInput = document.getElementById('amount-input');
+    var errorsDiv = document.getElementById('payment-errors');
+
+    function showError(msg) {
+      errorsDiv.textContent = msg;
+      errorsDiv.style.display = 'block';
     }
 
-    var form = document.getElementById('new_credit');
-    form.onsubmit = function(_event) {
-      changeSubmitButton({ text: '<%= t("views.credits.new.form.submitting") %>', active: false })
+    function hideError() {
+      errorsDiv.style.display = 'none';
     }
 
-    var stripe = Stripe('<%= Settings::General.stripe_publishable_key %>');
-    var elements = stripe.elements();
+    buyButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      hideError();
 
-    <% if current_user.setting.dark_theme? %>
-      var style = {
-      base: {
-        color: 'white',
-        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-        fontSmoothing: 'antialiased',
-        fontSize: '16px',
-        '::placeholder': {
-          color: '#d9dee2'
-        }
-      },
-      invalid: {
-        color: '#fa755a',
-        iconColor: '#fa755a'
+      var creditsCount = parseInt(amountInput.value, 10);
+      if (!creditsCount || creditsCount < 1) {
+        showError('Please enter a valid number of credits.');
+        return;
       }
-    };
-  <% else %>
-      var style = {
-      base: {
-        color: '#32325d',
-        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-        fontSmoothing: 'antialiased',
-        fontSize: '16px',
-        '::placeholder': {
-          color: '#aab7c4'
-        }
-      },
-      invalid: {
-        color: '#fa755a',
-        iconColor: '#fa755a'
-      }
-    };
-  <% end %>
 
-    var card = elements.create('card', {style: style});
+      buyButton.disabled = true;
+      buyButton.textContent = '<%= t("views.credits.new.form.submitting") %>';
 
-    createCardElement();
-    handleNewCardClick();
-    handleCreditPriceClick();
-    listenForNumberChange();
-    function createCardElement() {
-      if (document.getElementById("card-element")) {
-        card.mount('#card-element');
-
-        card.addEventListener('change', function(event) {
-          var displayError = document.getElementById('card-errors');
-          if (event.error) {
-            displayError.textContent = event.error.message;
-          } else {
-            displayError.textContent = '';
+      // Step 1: Create a Razorpay Order on the server
+      fetch(createOrderUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({
+          credits_count: creditsCount,
+          organization_id: organizationId || undefined
+        })
+      })
+        .then(function(resp) { return resp.json(); })
+        .then(function(data) {
+          if (data.error) {
+            showError(data.error);
+            buyButton.disabled = false;
+            buyButton.textContent = '<%= t("views.credits.new.form.submit") %>';
+            return;
           }
-        });
-        var form = document.getElementById('new_credit');
-        form.addEventListener('submit', function(event) {
-          event.preventDefault();
 
-          stripe.createToken(card).then(function(result) {
-            if (result.error) {
-              // Inform the user if there was an error.
-              changeSubmitButton({ text: '<%= t("views.credits.new.form.submit") %>', active: true });
-              var errorElement = document.getElementById('card-errors');
-              errorElement.textContent = result.error.message;
-            } else {
-              // Send the token to your server.
-              stripeTokenHandler(result.token);
+          // Step 2: Open Razorpay Checkout
+          var options = {
+            key: razorpayKeyId,
+            amount: data.amount,
+            currency: data.currency,
+            name: communityName,
+            description: creditsCount + ' Credits',
+            order_id: data.order_id,
+            prefill: {
+              name: userName,
+              email: userEmail
+            },
+            handler: function(response) {
+              // Step 3: Submit payment details to server for verification
+              var form = document.createElement('form');
+              form.method = 'POST';
+              form.action = fulfillUrl;
+
+              var fields = {
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                credits_count: creditsCount,
+                organization_id: organizationId,
+                authenticity_token: csrfToken
+              };
+
+              for (var key in fields) {
+                if (fields[key]) {
+                  var input = document.createElement('input');
+                  input.type = 'hidden';
+                  input.name = key;
+                  input.value = fields[key];
+                  form.appendChild(input);
+                }
+              }
+
+              document.body.appendChild(form);
+              form.submit();
+            },
+            modal: {
+              ondismiss: function() {
+                buyButton.disabled = false;
+                buyButton.textContent = '<%= t("views.credits.new.form.submit") %>';
+              }
             }
+          };
+
+          var rzp = new Razorpay(options);
+          rzp.on('payment.failed', function(resp) {
+            showError(resp.error.description || 'Payment failed. Please try again.');
+            buyButton.disabled = false;
+            buyButton.textContent = '<%= t("views.credits.new.form.submit") %>';
           });
+          rzp.open();
+        })
+        .catch(function(err) {
+          showError('Something went wrong. Please try again.');
+          buyButton.disabled = false;
+          buyButton.textContent = '<%= t("views.credits.new.form.submit") %>';
         });
-      }
-    }
+    });
 
-    function handleNewCardClick() {
-      if (!document.getElementById('add-new-card')) {
-        return
-      }
-      document.getElementById("add-new-card").onclick = function(e) {
-        e.preventDefault();
-        document.getElementById("cards-wrapper").innerHTML = '<div id="card-element"></div>';
-        createCardElement();
-      }
-    }
-
-    // Handle form submission.
-
-    // Submit the form with the token ID.
-    function stripeTokenHandler(token) {
-      // Insert the token ID into the form so it gets submitted to the server
-      var form = document.getElementById('new_credit');
-      var hiddenInput = document.createElement('input');
-      hiddenInput.setAttribute('type', 'hidden');
-      hiddenInput.setAttribute('name', 'stripe_token');
-      hiddenInput.setAttribute('value', token.id);
-      form.appendChild(hiddenInput);
-
-      // Submit the form
-      form.submit();
-    }
-
+    // Price calculator
     function getAmount(multiple) {
-      var value = document.getElementById('amount-input').value
+      var value = parseInt(amountInput.value, 10) || 0;
       var pricePer = 0;
-      var saleValue = 0;
       if (value < 10) {
         pricePer = 5;
       } else if (value < 100) {
-        pricePer = 4
+        pricePer = 4;
       } else if (value < 1000) {
-        pricePer = 3
+        pricePer = 3;
       } else {
         pricePer = 2.5;
       }
-      saleValue = value * pricePer * multiple
-      return {value: saleValue, pricePer: pricePer };
-    }
-    function handleCreditPriceClick() {
-      var els = document.getElementsByClassName('credit-price')
-      for(i = 0; i < els.length; i++) {
-        els[i].onclick = function(e) {
-          document.getElementById("amount-input").value = e.target.dataset.num;
-          calculatePriceAndShow();
-        }
-      }
-    }
-    function listenForNumberChange() {
-      document.getElementById("amount-input").addEventListener("keydown",function (e) {
-        (
-          (e.keyCode >= 48 && e.keyCode <= 57) || // Keyboard 0-9 Keycode is 48 to 57
-          (e.keyCode >= 96 && e.keyCode <= 105) || //Keypad 0-9 Keycode is 96 to 105
-          (e.keyCode == 8) //Allow backspace
-        )?
-          calculatePriceAndShow():
-          e.preventDefault();
-      });
+      return { value: value * pricePer * multiple, pricePer: pricePer };
     }
 
     function calculatePriceAndShow() {
-      setTimeout(function(){
-        document.getElementById("calculated-price").innerHTML = '$'+getAmount(1.0)['value'] + ' ($'+getAmount(1.0)['pricePer']+'/each)';
-      }, 100)
+      setTimeout(function() {
+        var result = getAmount(1.0);
+        document.getElementById('calculated-price').innerHTML =
+          '₹' + result.value + ' (₹' + result.pricePer + '/each)';
+      }, 100);
     }
 
-  </script>
+    // Handle credit-price quick-select buttons
+    var priceEls = document.getElementsByClassName('credit-price');
+    for (var i = 0; i < priceEls.length; i++) {
+      priceEls[i].onclick = function(e) {
+        amountInput.value = e.target.dataset.num;
+        calculatePriceAndShow();
+      };
+    }
+
+    amountInput.addEventListener('input', calculatePriceAndShow);
+  })();
+</script>

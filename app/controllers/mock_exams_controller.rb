@@ -164,7 +164,7 @@ class MockExamsController < ApplicationController
           attempts: attempts.map { |a| dashboard_attempt_json(a) },
           is_premium: current_user.cached_base_subscriber?,
           trial_attempts_remaining: policy.daily_attempts_remaining,
-          upgrade_url: Settings::General.razorpay_key_id.present? ? new_razorpay_subscription_path : new_stripe_subscription_path
+          upgrade_url: new_razorpay_subscription_path
         }
       end
     end
@@ -330,6 +330,6 @@ class MockExamsController < ApplicationController
   def premium_upgrade_url
     return nil if current_user&.cached_base_subscriber?
 
-    Settings::General.razorpay_key_id.present? ? "/razorpay_subscriptions/new" : "/stripe_subscriptions/new"
+    "/razorpay_subscriptions/new"
   end
 end

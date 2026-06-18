@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Users::CancelRazorpaySubscriptions do
-  let(:user) { create(:user, stripe_id_code: "sub_test123") }
+  let(:user) { create(:user, razorpay_subscription_id: "sub_test123") }
   let(:subscription_double) { double("Razorpay::Subscription", id: "sub_test123") }
 
   before do
@@ -30,8 +30,8 @@ RSpec.describe Users::CancelRazorpaySubscriptions do
         )
     end
 
-    context "when user has no stripe_id_code" do
-      let(:user) { create(:user, stripe_id_code: nil) }
+    context "when user has no razorpay_subscription_id" do
+      let(:user) { create(:user, razorpay_subscription_id: nil) }
 
       it "does not attempt to cancel" do
         expect(Razorpay::Subscription).not_to receive(:fetch)

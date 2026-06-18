@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe "Admin::RazorpaySubscriptions" do
   let(:admin) { create(:user, :super_admin) }
   let(:subscriber) do
-    create(:user, current_subscriber_status: :paying_subscription, stripe_id_code: "sub_test789")
+    create(:user, current_subscriber_status: :paying_subscription, razorpay_subscription_id: "sub_test789")
   end
 
   def razorpay_response(success:, body:)
@@ -70,7 +70,7 @@ RSpec.describe "Admin::RazorpaySubscriptions" do
       subscriber.add_role("base_subscriber")
       allow(HTTParty).to receive(:post).and_return(
         razorpay_response(success: true, body: { "id" => "rfnd_test123" }),
-      )
+        )
 
       post refund_admin_razorpay_subscription_path(subscriber), params: {
         payment_id: "pay_test123",

@@ -112,8 +112,7 @@ gem "sidekiq-unique-jobs", "~> 7.1.27" # Ensures that Sidekiq jobs are unique wh
 gem "slack-notifier", "~> 2.4" # A slim ruby wrapper for posting to slack webhooks
 gem "sprockets-rails", "~> 3.4" # Sprockets Rails integration
 gem "sterile", "~> 1.0" # Transliterate Unicode and Latin1 text to 7-bit ASCII for URLs
-gem "stripe", "~> 5.55" # Ruby library for the Stripe API
-gem "razorpay"
+gem "razorpay", "~> 3.0"
 gem "strong_migrations", "~> 1.7" # Catch unsafe migrations
 gem "terser", "~> 1.1" # Terser is a Ruby wrapper for the terser JavaScript parser and minifier
 gem "twitter", "~> 7.0" # A Ruby interface to the Twitter API
@@ -177,7 +176,6 @@ group :test do
   gem "shoulda-matchers", "~> 5.3", require: false # Simple one-liner tests for common Rails functionality
   gem "simplecov", "~> 0.21.2", require: false # Code coverage with a powerful configuration library and automatic merging of coverage across test suites
   gem "stackprof", "~> 0.2", require: false, platforms: :ruby # stackprof is a fast sampling profiler for ruby code, with cpu, wallclock and object allocation samplers
-  gem "stripe-ruby-mock", "3.1.0.rc3", require: "stripe_mock" # A drop-in library to test stripe without hitting their servers
   gem "test-prof", "~> 1.0" # Ruby Tests Profiling Toolbox
   gem "timecop", "~> 0.9" # A gem providing "time travel" and "time freezing" capabilities, making it dead simple to test time-dependent code
   gem "vcr", "~> 6.3" # Record your test suite's HTTP interactions and replay them during future test runs for fast, deterministic, accurate tests

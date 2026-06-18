@@ -177,10 +177,6 @@ en:
           sidebar:
             description: Determines which tags are shown on the homepage right-hand sidebar
             placeholder: List of valid, comma-separated tags e.g. help,discuss,explainlikeimfive,meta
-          stripe_api:
-            description: 'Secret Stripe key for receiving payments. See: https://stripe.com/docs/keys'
-          stripe_key:
-            description: 'Public Stripe key for receiving payments. See: https://stripe.com/docs/keys'
           razorpay_key_id:
             description: 'Public Razorpay Key ID for receiving payments. See: https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps/'
           razorpay_key_secret:
