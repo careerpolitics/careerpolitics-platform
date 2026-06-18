@@ -293,3 +293,45 @@ F, [2026-06-18T04:17:43.443495 #67] FATAL -- : [039953c2154d6caab823dd0edd1e7e46
 [039953c2154d6caab823dd0edd1e7e46] app/lib/middlewares/restore_original_host.rb:23:in `call'
 I, [2026-06-18T04:17:43.453269 #67]  INFO -- honeybadger: ** [Honeybadger] Reporting error id=8da9d649-064d-4dd6-a9ee-0ba5fd8ecaeb level=1 pid=67
 I, [2026-06-18T04:17:44.386831 #67]  INFO -- honeybadger: ** [Honeybadger] Success ⚡ https://app.honeybadger.io/notice/8da9d649-064d-4dd6-a9ee-0ba5fd8ecaeb id=8da9d649-064d-4dd6-a9ee-0ba5fd8ecaeb code=201 level=1 pid=67
+, [2026-06-18T04:25:50.640401 #67]  INFO -- : [34017785deb595071ed8c2122c85eb99] Completed 500 Internal Server Error in 27ms (ActiveRecord: 14.3ms | Allocations: 2942)
+F, [2026-06-18T04:25:50.642397 #67] FATAL -- : [34017785deb595071ed8c2122c85eb99]
+[34017785deb595071ed8c2122c85eb99] ActiveModel::MissingAttributeError (missing attribute: stripe_id_code):
+[34017785deb595071ed8c2122c85eb99]
+[34017785deb595071ed8c2122c85eb99] app/controllers/users_controller.rb:314:in `handle_billing_tab'
+[34017785deb595071ed8c2122c85eb99] app/controllers/users_controller.rb:236:in `handle_settings_tab'
+[34017785deb595071ed8c2122c85eb99] app/controllers/users_controller.rb:37:in `edit'
+[34017785deb595071ed8c2122c85eb99] app/controllers/application_controller.rb:187:in `handle_argument_error'
+[34017785deb595071ed8c2122c85eb99] app/lib/middlewares/set_subforem.rb:24:in `call'
+[34017785deb595071ed8c2122c85eb99] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
+[34017785deb595071ed8c2122c85eb99] config/initializers/timeout.rb:16:in `call'
+[34017785deb595071ed8c2122c85eb99] app/lib/middlewares/restore_original_host.rb:23:in `call'
+I, [2026-06-18T04:25:50.648347 #67]  INFO -- honeybadger: ** [Honeybadger] Reporting error id=125d63ef-8f19-4792-9e30-599b70099282 level=1 pid=67
+I, [2026-06-18T04:25:51.467875 #67]  INFO -- : [5ffdda0ddf39bfef19775b7970d6c565] Started GET "/settings/billing" for 103.24.87.178 at 2026-06-18 04:25:51 +0000
+I, [2026-06-18T04:25:51.499701 #67]  INFO -- : [5ffdda0ddf39bfef19775b7970d6c565] Processing by UsersController#edit as HTML
+I, [2026-06-18T04:25:51.499954 #67]  INFO -- : [5ffdda0ddf39bfef19775b7970d6c565]   Parameters: {"locale"=>nil, "tab"=>"billing"}
+I, [2026-06-18T04:25:51.515519 #67]  INFO -- : [5ffdda0ddf39bfef19775b7970d6c565] Completed 500 Internal Server Error in 15ms (ActiveRecord: 5.3ms | Allocations: 2865)
+F, [2026-06-18T04:25:51.517065 #67] FATAL -- : [5ffdda0ddf39bfef19775b7970d6c565]
+[5ffdda0ddf39bfef19775b7970d6c565] ActiveModel::MissingAttributeError (missing attribute: stripe_id_code):
+[5ffdda0ddf39bfef19775b7970d6c565]
+[5ffdda0ddf39bfef19775b7970d6c565] app/controllers/users_controller.rb:314:in `handle_billing_tab'
+[5ffdda0ddf39bfef19775b7970d6c565] app/controllers/users_controller.rb:236:in `handle_settings_tab'
+[5ffdda0ddf39bfef19775b7970d6c565] app/controllers/users_controller.rb:37:in `edit'
+[5ffdda0ddf39bfef19775b7970d6c565] app/controllers/application_controller.rb:187:in `handle_argument_error'
+[5ffdda0ddf39bfef19775b7970d6c565] app/lib/middlewares/set_subforem.rb:24:in `call'
+[5ffdda0ddf39bfef19775b7970d6c565] app/lib/middlewares/set_cookie_domain.rb:12:in `call'
+[5ffdda0ddf39bfef19775b7970d6c565] config/initializers/timeout.rb:16:in `call'
+[5ffdda0ddf39bfef19775b7970d6c565] app/lib/middlewares/restore_original_host.rb:23:in `call'
+I, [2026-06-18T04:25:51.522114 #67]  INFO -- honeybadger: ** [Honeybadger] Reporting error id=3ac37c43-69c2-4054-aee4-c2031e0cfe87 level=1 pid=67
+I, [2026-06-18T04:25:51.575160 #67]  INFO -- honeybadger: ** [Honeybadger] Success ⚡ https://app.honeybadger.io/notice/125d63ef-8f19-4792-9e30-599b70099282 id=125d63ef-8f19-4792-9e30-599b70099282 code=201 level=1 pid=67
+I, [2026-06-18T04:25:52.485012 #67]  INFO -- honeybadger: ** [Honeybadger] Success ⚡ https://app.honeybadger.io/notice/3ac37c43-69c2-4054-aee4-c2031e0cfe87 id=3ac37c43-69c2-4054-aee4-c2031e0cfe87 code=201 level=1 pid=67
+I, [2026-06-18T04:26:03.113728 #67]  INFO -- : [5217757645d4c38166e5c559ed366579] Started GET "/" for 43.157.180.116 at 2026-06-18 04:26:03 +0000
+I, [2026-06-18T04:26:03.244502 #67]  INFO -- : [5217757645d4c38166e5c559ed366579] Processing by StoriesController#index as HTML
+I, [2026-06-18T04:26:03.244742 #67]  INFO -- : [5217757645d4c38166e5c559ed366579]   Parameters: {"locale"=>nil}
+I, [2026-06-18T04:26:04.058770 #67]  INFO -- : [5217757645d4c38166e5c559ed366579]   Rendered articles/index.html.erb within layouts/application (Duration: 713.4ms | Allocations: 303137)
+I, [2026-06-18T04:26:04.096682 #67]  INFO -- : [5217757645d4c38166e5c559ed366579]   Rendered layout layouts/application.html.erb (Duration: 751.4ms | Allocations: 316809)
+I, [2026-06-18T04:26:04.098347 #67]  INFO -- : [5217757645d4c38166e5c559ed366579] Completed 200 OK in 853ms (Views: 639.1ms | ActiveRecord: 174.8ms | Allocations: 327605)
+I, [2026-06-18T04:26:05.028342 #67]  INFO -- : [fe7fe086e104518c39b975240b629477] Started GET "/feed" for 8.29.198.26 at 2026-06-18 04:26:05 +0000
+I, [2026-06-18T04:26:05.081831 #67]  INFO -- : [fe7fe086e104518c39b975240b629477] Processing by ArticlesController#feed as RSS
+I, [2026-06-18T04:26:05.082092 #67]  INFO -- : [fe7fe086e104518c39b975240b629477]   Parameters: {"locale"=>nil}
+I, [2026-06-18T04:26:05.368552 #67]  INFO -- : [fe7fe086e104518c39b975240b629477]   Rendered articles/feed.rss.builder (Duration: 229.3ms | Allocations: 121755)
+I, [2026-06-18T04:26:05.371201 #67]  INFO -- : [fe7fe086e104518c39b975240b629477] Completed 200 OK in 289ms (Views: 232.4ms | ActiveRecord: 27.9ms | Allocations: 130128)
