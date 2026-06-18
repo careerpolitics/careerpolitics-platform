@@ -5,7 +5,6 @@ class UsersController < ApplicationController
                 only: %i[update update_password request_destroy full_delete remove_identity]
   after_action :verify_authorized,
                except: %i[index signout_confirm add_org_admin remove_org_admin remove_from_org confirm_destroy]
-  before_action :initialize_stripe, only: %i[edit]
 
   def index
     @users = sidebar_suggestions || User.none
