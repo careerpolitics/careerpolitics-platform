@@ -187,6 +187,10 @@ fr:
             description: 'Identifiant du plan mensuel Razorpay pour la facturation des abonnements. Créez un plan dans le tableau de bord Razorpay sous Abonnements → Plans.'
           razorpay_yearly_plan_id:
             description: 'Identifiant du plan annuel Razorpay pour la facturation des abonnements. Créez un plan annuel dans le tableau de bord Razorpay sous Abonnements → Plans.'
+          razorpay_monthly_plan_amount:
+            description: "Prix affiché pour le plan mensuel sur la page de paiement (ex. ₹99). Ceci est uniquement pour l'affichage — le montant réel est défini dans le plan Razorpay."
+          razorpay_yearly_plan_amount:
+            description: "Prix affiché pour le plan annuel sur la page de paiement (ex. ₹999). Ceci est uniquement pour l'affichage — le montant réel est défini dans le plan Razorpay."
           tags:
             description: Determines which tags are suggested to new users during onboarding (comma separated, letters only)
             placeholder: 'List of valid tags: comma separated, letters only e.g. beginners,javascript,ruby,swift,kotlin'

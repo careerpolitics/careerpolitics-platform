@@ -1,92 +1,69 @@
-<% title "CP++ Premium — #{community_name}" %>
+<% title "Subscribe to CP++ — #{community_name}" %>
 <% cp_logo = Settings::General.logo_png.presence || URL.url(asset_path("icon.png")) %>
 
 <div class="crayons-layout crayons-layout--limited-width crayons-layout--single-col">
-  <%# ── Hero Section ── %>
+  <%# ── Page Header ── %>
   <div class="crayons-card crayons-card--content-rows p-6 mb-4">
-    <div class="flex items-center mb-4">
-      <img
-        src="<%= asset_path("subscription-icon.png") %>"
-        alt="CP++"
-        width="64"
-        height="42"
-        class="mr-3 radius-default" />
-      <div>
-        <h1 class="crayons-title mb-0">CP++ Premium</h1>
-        <p class="color-base-60 fs-s mb-0">Unlock your full exam preparation potential</p>
-      </div>
-    </div>
+    <h1 class="crayons-title mb-1">Subscribe to CP++</h1>
+    <p class="color-base-60 mb-0">Select a plan and complete payment to activate your premium access.</p>
   </div>
 
-  <%# ── Features Section ── %>
+  <%# ── Plan Selection ── %>
   <div class="crayons-card crayons-card--content-rows p-6 mb-4">
-    <h2 class="crayons-subtitle-1 mb-4">What you get with CP++</h2>
-    <div class="grid gap-4 m:grid-cols-2">
-      <div class="flex items-start gap-3">
-        <span class="crayons-icon crayons-icon--default" style="color: var(--accent-brand);">✓</span>
-        <div>
-          <p class="fw-bold mb-1">Unlimited Mock Exams</p>
-          <p class="fs-s color-base-60 mb-0">Attempt every exam set as many times as you want, with no daily limits.</p>
-        </div>
-      </div>
-      <div class="flex items-start gap-3">
-        <span class="crayons-icon crayons-icon--default" style="color: var(--accent-brand);">✓</span>
-        <div>
-          <p class="fw-bold mb-1">Detailed Performance Analytics</p>
-          <p class="fs-s color-base-60 mb-0">Track your progress with section-wise accuracy, percentiles, and trends.</p>
-        </div>
-      </div>
-      <div class="flex items-start gap-3">
-        <span class="crayons-icon crayons-icon--default" style="color: var(--accent-brand);">✓</span>
-        <div>
-          <p class="fw-bold mb-1">Augmented Content Preferences</p>
-          <p class="fs-s color-base-60 mb-0">Personalize your feed with AI-powered content recommendations.</p>
-        </div>
-      </div>
-      <div class="flex items-start gap-3">
-        <span class="crayons-icon crayons-icon--default" style="color: var(--accent-brand);">✓</span>
-        <div>
-          <p class="fw-bold mb-1">Premium Badge</p>
-          <p class="fs-s color-base-60 mb-0">Stand out in the community with a verified premium member badge.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <%# ── Plan Selection + CTA Section ── %>
-  <div class="crayons-card crayons-card--content-rows p-6 mb-4">
-    <h2 class="crayons-subtitle-1 mb-4">Choose your plan</h2>
+    <h2 class="crayons-subtitle-1 mb-4">Select a plan</h2>
 
     <div class="grid gap-4 m:grid-cols-2 mb-4">
       <% if @monthly_plan_id %>
-        <label class="crayons-card p-4 cursor-pointer plan-option" style="border: 2px solid var(--accent-brand);">
-          <input type="radio" name="plan_type" value="monthly" checked class="plan-radio hidden" />
+        <label class="crayons-card p-5 cursor-pointer plan-option" style="border: 2px solid var(--accent-brand);">
+          <input type="radio" name="plan_type" value="monthly" checked class="plan-radio hidden"
+                 data-amount="<%= @monthly_plan_amount %>" data-period="month" />
           <div class="flex justify-between items-center mb-2">
             <span class="fw-bold fs-l">Monthly</span>
             <span class="crayons-tag crayons-tag--monochrome">Popular</span>
           </div>
-          <p class="color-base-60 fs-s mb-0">Billed once. Access for one month.</p>
+          <p class="fs-3xl fw-heavy mb-1" style="color: var(--accent-brand);"><%= @monthly_plan_amount %><span class="fs-s fw-normal color-base-60"> / month</span></p>
+          <ul class="fs-s color-base-60 list-disc pl-5 mb-0">
+            <li>One-time payment — no auto-renewal</li>
+            <li>Full premium access for 1 month</li>
+          </ul>
         </label>
       <% end %>
       <% if @yearly_plan_id %>
-        <label class="crayons-card p-4 cursor-pointer plan-option" style="border: 2px solid transparent;">
-          <input type="radio" name="plan_type" value="yearly" class="plan-radio hidden" />
+        <label class="crayons-card p-5 cursor-pointer plan-option" style="border: 2px solid transparent;">
+          <input type="radio" name="plan_type" value="yearly" class="plan-radio hidden"
+                 data-amount="<%= @yearly_plan_amount %>" data-period="year" />
           <div class="flex justify-between items-center mb-2">
             <span class="fw-bold fs-l">Yearly</span>
-            <span class="crayons-tag crayons-tag--monochrome" style="background: var(--accent-brand); color: #fff;">Save more</span>
+            <span class="crayons-tag crayons-tag--monochrome" style="background: var(--accent-brand); color: #fff;">Best value</span>
           </div>
-          <p class="color-base-60 fs-s mb-0">Billed once. Access for one year.</p>
+          <p class="fs-3xl fw-heavy mb-1" style="color: var(--accent-brand);"><%= @yearly_plan_amount %><span class="fs-s fw-normal color-base-60"> / year</span></p>
+          <ul class="fs-s color-base-60 list-disc pl-5 mb-0">
+            <li>One-time payment — no auto-renewal</li>
+            <li>Full premium access for 12 months</li>
+          </ul>
         </label>
       <% end %>
     </div>
+  </div>
+
+  <%# ── Order Summary ── %>
+  <div class="crayons-card crayons-card--content-rows p-6 mb-4">
+    <h2 class="crayons-subtitle-1 mb-3">Order summary</h2>
+    <div class="flex justify-between items-center mb-2">
+      <span class="color-base-70">Plan</span>
+      <span class="fw-bold" id="summary-plan">Monthly</span>
+    </div>
+    <div class="flex justify-between items-center mb-2">
+      <span class="color-base-70">Amount</span>
+      <span class="fw-bold" id="summary-amount"><%= @monthly_plan_amount || @yearly_plan_amount %></span>
+    </div>
+    <div class="flex justify-between items-center mb-3">
+      <span class="color-base-70">Billing</span>
+      <span class="fs-s">One-time — does not auto-renew</span>
+    </div>
+    <hr class="mb-3" />
 
     <div class="flex gap-3 items-center fw-wrap">
-      <% unless current_user.cached_base_subscriber? %>
-        <%= button_to "Start Free 7-Day Trial",
-                      free_trial_subscriptions_path,
-                      method: :post,
-                      class: "crayons-btn crayons-btn--secondary" %>
-      <% end %>
       <button
         id="razorpay-pay-btn"
         class="crayons-btn crayons-btn--brand"
@@ -95,34 +72,30 @@
         data-community-name="<%= j(community_name) %>"
         data-logo="<%= j(cp_logo) %>"
         data-csrf-token="<%= form_authenticity_token %>">
-        Subscribe Now
+        Pay &amp; Subscribe
       </button>
+      <% unless current_user.cached_base_subscriber? %>
+        <%= button_to "Start Free 7-Day Trial Instead",
+                      free_trial_subscriptions_path,
+                      method: :post,
+                      class: "crayons-btn crayons-btn--secondary" %>
+      <% end %>
     </div>
-
-    <p class="fs-s color-base-60 mt-4 mb-0">
-      Powered by Razorpay. Supports UPI, Cards, NetBanking, and Wallets. Your payment details are fully encrypted and secure.
-    </p>
   </div>
 
-  <%# ── FAQ Section ── %>
+  <%# ── Billing Details ── %>
   <div class="crayons-card crayons-card--content-rows p-6">
-    <h2 class="crayons-subtitle-1 mb-4">Frequently Asked Questions</h2>
-    <details class="mb-3">
-      <summary class="fw-bold cursor-pointer">Can I try before I pay?</summary>
-      <p class="color-base-70 mt-2 mb-0">Yes! Start a free 7-day trial with full access — no payment details required.</p>
-    </details>
-    <details class="mb-3">
-      <summary class="fw-bold cursor-pointer">How do I cancel?</summary>
-      <p class="color-base-70 mt-2 mb-0">Go to Settings → Billing → Manage Subscription. You can cancel anytime and retain access until the end of your billing period.</p>
-    </details>
-    <details class="mb-3">
-      <summary class="fw-bold cursor-pointer">What payment methods are supported?</summary>
-      <p class="color-base-70 mt-2 mb-0">We accept UPI, Credit/Debit Cards, NetBanking, and Wallets via Razorpay.</p>
-    </details>
-    <details>
-      <summary class="fw-bold cursor-pointer">Will my subscription auto-renew?</summary>
-      <p class="color-base-70 mt-2 mb-0">No, subscriptions are one-time payments. You'll need to manually renew when your plan period ends.</p>
-    </details>
+    <h2 class="crayons-subtitle-2 mb-3">Billing details</h2>
+    <ul class="fs-s color-base-70 list-disc pl-5 mb-3">
+      <li>Your subscription is a <strong>one-time payment</strong> — it will not auto-renew.</li>
+      <li>Premium access activates instantly after successful payment.</li>
+      <li>Access expires at the end of your plan period (1 month or 12 months).</li>
+      <li>You can renew manually from Settings → Billing when your plan ends.</li>
+      <li>Cancellation and refund requests can be made from Settings → Billing → Manage Subscription.</li>
+    </ul>
+    <p class="fs-xs color-base-50 mb-0">
+      Payments processed securely by Razorpay. Supports UPI, Credit/Debit Cards, NetBanking, and Wallets.
+    </p>
   </div>
 </div>
 
@@ -138,16 +111,22 @@
     var logo = btn.dataset.logo;
     var csrfToken = btn.dataset.csrfToken;
 
-    // Plan selection UI
+    // Plan selection UI + order summary sync
     var planOptions = document.querySelectorAll('.plan-option');
     var planRadios = document.querySelectorAll('.plan-radio');
+    var summaryPlan = document.getElementById('summary-plan');
+    var summaryAmount = document.getElementById('summary-amount');
+    var planLabels = { monthly: 'Monthly', yearly: 'Yearly' };
+
+    function syncSummary(radio) {
+      planOptions.forEach(function(opt) { opt.style.borderColor = 'transparent'; });
+      radio.closest('.plan-option').style.borderColor = 'var(--accent-brand)';
+      if (summaryPlan) summaryPlan.textContent = planLabels[radio.value] || radio.value;
+      if (summaryAmount) summaryAmount.textContent = radio.dataset.amount || '';
+    }
+
     planRadios.forEach(function(radio) {
-      radio.addEventListener('change', function() {
-        planOptions.forEach(function(opt) {
-          opt.style.borderColor = 'transparent';
-        });
-        radio.closest('.plan-option').style.borderColor = 'var(--accent-brand)';
-      });
+      radio.addEventListener('change', function() { syncSummary(radio); });
     });
 
     function getSelectedPlanType() {
@@ -174,7 +153,7 @@
           if (data.error) {
             alert(data.error);
             btn.disabled = false;
-            btn.textContent = 'Subscribe Now';
+            btn.textContent = 'Pay & Subscribe';
             return;
           }
 
@@ -212,7 +191,7 @@
             modal: {
               ondismiss: function() {
                 btn.disabled = false;
-                btn.textContent = 'Subscribe Now';
+                btn.textContent = 'Pay & Subscribe';
               }
             }
           };
@@ -221,14 +200,14 @@
           rzp.on('payment.failed', function(response) {
             alert('Payment failed: ' + response.error.description);
             btn.disabled = false;
-            btn.textContent = 'Subscribe Now';
+            btn.textContent = 'Pay & Subscribe';
           });
           rzp.open();
         })
         .catch(function(err) {
           alert('Something went wrong. Please try again.');
           btn.disabled = false;
-          btn.textContent = 'Subscribe Now';
+          btn.textContent = 'Pay & Subscribe';
         });
     });
   })();

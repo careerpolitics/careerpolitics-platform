@@ -187,6 +187,10 @@ en:
             description: 'Razorpay Monthly Plan ID for subscription billing. Create a plan in the Razorpay Dashboard under Subscriptions → Plans.'
           razorpay_yearly_plan_id:
             description: 'Razorpay Yearly Plan ID for subscription billing. Create a yearly plan in the Razorpay Dashboard under Subscriptions → Plans.'
+          razorpay_monthly_plan_amount:
+            description: 'Display price for the monthly plan shown on the checkout page (e.g. ₹99). This is for display only — actual billing amount is set in the Razorpay plan.'
+          razorpay_yearly_plan_amount:
+            description: 'Display price for the yearly plan shown on the checkout page (e.g. ₹999). This is for display only — actual billing amount is set in the Razorpay plan.'
           tags:
             description: Determines which tags are suggested to new users during onboarding (comma separated, letters only)
             placeholder: 'List of valid tags: comma separated, letters only e.g. beginners,javascript,ruby,swift,kotlin'

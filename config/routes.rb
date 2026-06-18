@@ -242,7 +242,7 @@ Rails.application.routes.draw do
         post :free_trial
       end
     end
-    get "/++", to: "pages#show", defaults: { slug: "plus-plus" }
+    get "/++", to: "pages#show", defaults: { slug: "++" }
     resources :github_repos, only: %i[index] do
       collection do
         post "/update_or_create", to: "github_repos#update_or_create"

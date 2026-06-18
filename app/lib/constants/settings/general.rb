@@ -149,6 +149,16 @@ module Constants
                                 default: "Razorpay Yearly Plan ID for subscriptions"),
             placeholder: "plan_..."
           },
+          razorpay_monthly_plan_amount: {
+            description: I18n.t("lib.constants.settings.general.razorpay_monthly_plan_amount.description",
+                                default: "Display price for the monthly plan (shown on checkout page)"),
+            placeholder: "₹99"
+          },
+          razorpay_yearly_plan_amount: {
+            description: I18n.t("lib.constants.settings.general.razorpay_yearly_plan_amount.description",
+                                default: "Display price for the yearly plan (shown on checkout page)"),
+            placeholder: "₹999"
+          },
           suggested_tags: {
             description: I18n.t("lib.constants.settings.general.tags.description"),
             placeholder: I18n.t("lib.constants.settings.general.tags.placeholder")
