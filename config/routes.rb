@@ -236,13 +236,13 @@ Rails.application.routes.draw do
       slug = path_params[:slug]
       locale ? "/locale/#{locale}/trending/#{slug}" : "/trending/#{slug}"
     }
-    resources :razorpay_subscriptions, only: %i[new create edit destroy] do
+    resources :subscriptions, controller: "razorpay_subscriptions", only: %i[new create edit destroy] do
       collection do
         post :confirm
         post :free_trial
       end
     end
-    get "/++", to: "razorpay_subscriptions#new"
+    get "/++", to: "pages#show", defaults: { slug: "plus-plus" }
     resources :github_repos, only: %i[index] do
       collection do
         post "/update_or_create", to: "github_repos#update_or_create"

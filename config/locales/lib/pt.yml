@@ -179,7 +179,9 @@ pt:
           razorpay_webhook_secret:
             description: 'Segredo usado para verificar assinaturas de webhooks do Razorpay. Gere-o no painel do Razorpay em Configurações → Webhooks.'
           razorpay_plan_id:
-            description: 'ID do plano Razorpay para cobrança de assinaturas. Crie um plano no painel do Razorpay em Assinaturas → Planos.'
+            description: 'ID do plano mensal Razorpay para cobrança de assinaturas. Crie um plano no painel do Razorpay em Assinaturas → Planos.'
+          razorpay_yearly_plan_id:
+            description: 'ID do plano anual Razorpay para cobrança de assinaturas. Crie um plano anual no painel do Razorpay em Assinaturas → Planos.'
           tags:
             description: Default tags for the community
             placeholder: Default tags for the community

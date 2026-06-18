@@ -38,7 +38,7 @@ RSpec.describe "RazorpaySubscriptions" do
   describe "GET /razorpay_subscriptions/new" do
     context "when the user is not signed in" do
       it "redirects to the sign in page" do
-        get new_razorpay_subscription_path
+        get new_subscription_path
         expect(response).to redirect_to("/magic_links/new")
       end
     end
@@ -50,7 +50,7 @@ RSpec.describe "RazorpaySubscriptions" do
       end
 
       it "renders the pricing page without calling Razorpay API" do
-        get new_razorpay_subscription_path
+        get new_subscription_path
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("CP++ Premium")
@@ -59,7 +59,7 @@ RSpec.describe "RazorpaySubscriptions" do
       end
 
       it "renders CP++ branding and FAQ" do
-        get new_razorpay_subscription_path
+        get new_subscription_path
 
         expect(response.body).to include("subscription-icon")
         expect(response.body).to include("Frequently Asked Questions")
@@ -68,7 +68,7 @@ RSpec.describe "RazorpaySubscriptions" do
       it "redirects with error when no plan is configured" do
         allow(Settings::General).to receive(:razorpay_plan_id).and_return(nil)
 
-        get new_razorpay_subscription_path
+        get new_subscription_path
 
         expect(flash[:error]).to eq("Payment plan not configured. Please contact support.")
         expect(response).to have_http_status(:redirect)
@@ -78,7 +78,7 @@ RSpec.describe "RazorpaySubscriptions" do
         user.add_role("base_subscriber")
         user.update!(razorpay_subscription_id: "sub_existing")
 
-        get new_razorpay_subscription_path
+        get new_subscription_path
 
         expect(flash[:notice]).to eq("You already have an active CP++ subscription.")
         expect(response).to redirect_to(user_settings_path(:billing))
@@ -97,7 +97,7 @@ RSpec.describe "RazorpaySubscriptions" do
         razorpay_response(success: true, body: { "id" => "sub_test789" }),
         )
 
-      post razorpay_subscriptions_path, params: {}, as: :json
+      post subscriptions_path, params: {}, as: :json
 
       expect(response).to have_http_status(:ok)
       json = response.parsed_body
@@ -110,7 +110,7 @@ RSpec.describe "RazorpaySubscriptions" do
         razorpay_response(success: true, body: { "id" => "sub_test789" }),
         )
 
-      post razorpay_subscriptions_path, params: {}, as: :json
+      post subscriptions_path, params: {}, as: :json
 
       expect(HTTParty).to have_received(:post) do |url, options|
         expect(url).to eq("https://api.razorpay.com/v1/subscriptions")
@@ -124,7 +124,7 @@ RSpec.describe "RazorpaySubscriptions" do
         razorpay_response(success: false, body: { "error" => { "description" => "API error" } }),
         )
 
-      post razorpay_subscriptions_path, params: {}, as: :json
+      post subscriptions_path, params: {}, as: :json
 
       expect(response).to have_http_status(:unprocessable_entity)
       expect(response.parsed_body["error"]).to eq("Unable to create subscription. Please try again.")
@@ -133,7 +133,7 @@ RSpec.describe "RazorpaySubscriptions" do
     it "returns error when no plan is configured" do
       allow(Settings::General).to receive(:razorpay_plan_id).and_return(nil)
 
-      post razorpay_subscriptions_path, params: {}, as: :json
+      post subscriptions_path, params: {}, as: :json
 
       expect(response).to have_http_status(:unprocessable_entity)
       expect(response.parsed_body["error"]).to eq("Payment plan not configured.")
@@ -155,7 +155,7 @@ RSpec.describe "RazorpaySubscriptions" do
       end
 
       it "activates the subscription and creates CpSubscription record" do
-        post confirm_razorpay_subscriptions_path, params: {
+        post confirm_subscriptions_path, params: {
           razorpay_payment_id: payment_id,
           razorpay_subscription_id: subscription_id,
           razorpay_signature: valid_signature,
@@ -174,7 +174,7 @@ RSpec.describe "RazorpaySubscriptions" do
         user.add_role("base_subscriber")
         user.update!(razorpay_subscription_id: subscription_id)
 
-        post confirm_razorpay_subscriptions_path, params: {
+        post confirm_subscriptions_path, params: {
           razorpay_payment_id: payment_id,
           razorpay_subscription_id: subscription_id,
           razorpay_signature: valid_signature,
@@ -186,7 +186,7 @@ RSpec.describe "RazorpaySubscriptions" do
       it "expires existing trial when upgrading to paid" do
         trial = create(:cp_subscription, :trial, user: user)
 
-        post confirm_razorpay_subscriptions_path, params: {
+        post confirm_subscriptions_path, params: {
           razorpay_payment_id: payment_id,
           razorpay_subscription_id: subscription_id,
           razorpay_signature: valid_signature,
@@ -199,7 +199,7 @@ RSpec.describe "RazorpaySubscriptions" do
 
     context "with missing confirmation params" do
       it "does not raise and redirects with verification error" do
-        post confirm_razorpay_subscriptions_path
+        post confirm_subscriptions_path
 
         expect(user.reload.roles.pluck(:name)).not_to include("base_subscriber")
         expect(flash[:error]).to include("Payment verification failed")
@@ -209,7 +209,7 @@ RSpec.describe "RazorpaySubscriptions" do
 
     context "with invalid signature" do
       it "does not activate subscription and shows error" do
-        post confirm_razorpay_subscriptions_path, params: {
+        post confirm_subscriptions_path, params: {
           razorpay_payment_id: payment_id,
           razorpay_subscription_id: subscription_id,
           razorpay_signature: "invalid_signature",
@@ -225,7 +225,7 @@ RSpec.describe "RazorpaySubscriptions" do
   describe "POST /razorpay_subscriptions/free_trial" do
     context "when the user is not signed in" do
       it "redirects to the sign in page" do
-        post free_trial_razorpay_subscriptions_path
+        post free_trial_subscriptions_path
         expect(response).to redirect_to("/magic_links/new")
       end
     end
@@ -234,7 +234,7 @@ RSpec.describe "RazorpaySubscriptions" do
       before { sign_in user }
 
       it "grants CP++ trial access and creates a CpSubscription with expiry" do
-        post free_trial_razorpay_subscriptions_path
+        post free_trial_subscriptions_path
 
         user.reload
         expect(user.roles.pluck(:name)).to include("base_subscriber")
@@ -251,7 +251,7 @@ RSpec.describe "RazorpaySubscriptions" do
         user.add_role("base_subscriber")
         user.update!(current_subscriber_status: :paying_subscription, razorpay_subscription_id: "sub_test789")
 
-        post free_trial_razorpay_subscriptions_path
+        post free_trial_subscriptions_path
 
         expect(user.reload.current_subscriber_status).to eq("paying_subscription")
         expect(user.razorpay_subscription_id).to eq("sub_test789")
@@ -262,7 +262,7 @@ RSpec.describe "RazorpaySubscriptions" do
   describe "GET /razorpay_subscriptions/:id/edit" do
     context "when the user is not signed in" do
       it "redirects to the sign in page" do
-        get edit_razorpay_subscription_path("me")
+        get edit_subscription_path("me")
         expect(response).to redirect_to("/magic_links/new")
       end
     end
@@ -280,7 +280,7 @@ RSpec.describe "RazorpaySubscriptions" do
                                      attributes: { "status" => "active", "current_end" => Time.current.to_i })
         allow(Razorpay::Subscription).to receive(:fetch).with("sub_test789").and_return(subscription_double)
 
-        get edit_razorpay_subscription_path("me")
+        get edit_subscription_path("me")
 
         expect(Razorpay::Subscription).to have_received(:fetch).with("sub_test789")
         expect(response).to have_http_status(:ok)
@@ -295,7 +295,7 @@ RSpec.describe "RazorpaySubscriptions" do
       end
 
       it "renders the edit page with trial info" do
-        get edit_razorpay_subscription_path("me")
+        get edit_subscription_path("me")
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("Trial")
@@ -307,7 +307,7 @@ RSpec.describe "RazorpaySubscriptions" do
       before { sign_in user }
 
       it "redirects with an error" do
-        get edit_razorpay_subscription_path("me")
+        get edit_subscription_path("me")
 
         expect(flash[:error]).to eq("No active subscription found.")
         expect(response).to have_http_status(:redirect)
@@ -322,7 +322,7 @@ RSpec.describe "RazorpaySubscriptions" do
       end
 
       it "handles the error gracefully" do
-        get edit_razorpay_subscription_path("me")
+        get edit_subscription_path("me")
 
         expect(flash[:error]).to eq("Unable to load subscription details.")
         expect(response).to have_http_status(:redirect)
@@ -344,7 +344,7 @@ RSpec.describe "RazorpaySubscriptions" do
         allow(Razorpay::Subscription).to receive(:fetch).and_return(subscription_double)
         allow(Razorpay::Subscription).to receive(:cancel)
 
-        delete razorpay_subscription_path("me"), params: { verification: "pleasecancelmysubscription" }
+        delete subscription_path("me"), params: { verification: "pleasecancelmysubscription" }
 
         user.reload
         expect(user.roles.pluck(:name)).not_to include("base_subscriber")
@@ -358,7 +358,7 @@ RSpec.describe "RazorpaySubscriptions" do
       it "does not cancel the subscription" do
         expect(Razorpay::Subscription).not_to receive(:fetch)
 
-        delete razorpay_subscription_path("me"), params: { verification: "wrong" }
+        delete subscription_path("me"), params: { verification: "wrong" }
 
         expect(user.reload.roles.pluck(:name)).to include("base_subscriber")
         expect(flash[:error]).to eq("Invalid verification phrase. Subscription was not canceled.")
@@ -369,7 +369,7 @@ RSpec.describe "RazorpaySubscriptions" do
       before { user.update(razorpay_subscription_id: nil) }
 
       it "shows an error" do
-        delete razorpay_subscription_path("me"), params: { verification: "pleasecancelmysubscription" }
+        delete subscription_path("me"), params: { verification: "pleasecancelmysubscription" }
 
         expect(flash[:error]).to include("No active subscription found")
       end
@@ -379,7 +379,7 @@ RSpec.describe "RazorpaySubscriptions" do
       it "handles the error gracefully" do
         allow(Razorpay::Subscription).to receive(:fetch).and_raise(Razorpay::Error.new("API error"))
 
-        delete razorpay_subscription_path("me"), params: { verification: "pleasecancelmysubscription" }
+        delete subscription_path("me"), params: { verification: "pleasecancelmysubscription" }
 
         expect(flash[:error]).to include("Error canceling subscription")
       end

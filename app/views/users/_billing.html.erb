@@ -20,7 +20,7 @@
   <% if Settings::General.razorpay_key_id.present? %>
     <% if current_user.cached_base_subscriber? && current_user.razorpay_subscription_id.present? %>
       <div class="mb-4">
-        <a href="<%= edit_razorpay_subscription_path("me") %>" class="crayons-btn crayons-btn--secondary" data-no-instant>
+        <a href="<%= edit_subscription_path("me") %>" class="crayons-btn crayons-btn--secondary" data-no-instant>
           Manage <%= community_name %> Premium Subscription
         </a>
       </div>
@@ -28,10 +28,10 @@
       <div class="mb-4">
         <p class="mb-2">Your free CP++ trial is active with unlimited mock exam access. Subscribe to keep CP++ access.</p>
         <div class="flex gap-2 fw-wrap">
-          <a href="<%= new_razorpay_subscription_path %>" class="crayons-btn" data-no-instant>
+          <a href="<%= new_subscription_path %>" class="crayons-btn" data-no-instant>
             Subscribe Now
           </a>
-          <a href="<%= edit_razorpay_subscription_path("me") %>" class="crayons-btn crayons-btn--secondary" data-no-instant>
+          <a href="<%= edit_subscription_path("me") %>" class="crayons-btn crayons-btn--secondary" data-no-instant>
             View Trial Details
           </a>
         </div>
@@ -40,8 +40,8 @@
       <div class="mb-4">
         <p class="mb-2">Subscribe to <%= community_name %> Premium to unlock exclusive features.</p>
         <div class="flex gap-2 fw-wrap">
-          <%= button_to "Start Free 7-Day Trial", free_trial_razorpay_subscriptions_path, method: :post, class: "crayons-btn crayons-btn--secondary" %>
-          <a href="<%= new_razorpay_subscription_path %>" class="crayons-btn" data-no-instant>
+          <%= button_to "Start Free 7-Day Trial", free_trial_subscriptions_path, method: :post, class: "crayons-btn crayons-btn--secondary" %>
+          <a href="<%= new_subscription_path %>" class="crayons-btn" data-no-instant>
             Subscribe Now
           </a>
         </div>

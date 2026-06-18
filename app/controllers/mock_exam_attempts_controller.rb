@@ -13,7 +13,7 @@ class MockExamAttemptsController < ApplicationController
             error: "mock_exam_access_required",
             message: msg,
             is_premium: current_user.cached_base_subscriber?,
-            upgrade_url: new_razorpay_subscription_path,
+            upgrade_url: new_subscription_path,
           }, status: :forbidden
         end
       end

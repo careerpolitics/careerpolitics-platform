@@ -37,7 +37,7 @@ RSpec.describe "Admin::RazorpaySubscriptions" do
     it "shows subscribed users and subscription details" do
       subscriber.add_role("base_subscriber")
 
-      get admin_razorpay_subscriptions_path
+      get admin_subscriptions_path
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(subscriber.username)
@@ -56,12 +56,12 @@ RSpec.describe "Admin::RazorpaySubscriptions" do
       allow(Razorpay::Subscription).to receive(:fetch).with("sub_test789").and_return(subscription)
       allow(Razorpay::Subscription).to receive(:cancel)
 
-      post cancel_admin_razorpay_subscription_path(subscriber)
+      post cancel_admin_subscription_path(subscriber)
 
       expect(Razorpay::Subscription).to have_received(:cancel).with("sub_test789", cancel_at_cycle_end: 0)
       expect(subscriber.reload.current_subscriber_status).to eq("not_subscribed")
       expect(subscriber.roles.pluck(:name)).not_to include("base_subscriber")
-      expect(response).to redirect_to(admin_razorpay_subscriptions_path)
+      expect(response).to redirect_to(admin_subscriptions_path)
     end
   end
 
@@ -72,7 +72,7 @@ RSpec.describe "Admin::RazorpaySubscriptions" do
         razorpay_response(success: true, body: { "id" => "rfnd_test123" }),
         )
 
-      post refund_admin_razorpay_subscription_path(subscriber), params: {
+      post refund_admin_subscription_path(subscriber), params: {
         payment_id: "pay_test123",
         cancel_access: "1",
       }
@@ -83,14 +83,14 @@ RSpec.describe "Admin::RazorpaySubscriptions" do
       end
       expect(subscriber.reload.current_subscriber_status).to eq("not_subscribed")
       expect(subscriber.roles.pluck(:name)).not_to include("base_subscriber")
-      expect(response).to redirect_to(admin_razorpay_subscriptions_path)
+      expect(response).to redirect_to(admin_subscriptions_path)
     end
 
     it "requires a payment ID" do
-      post refund_admin_razorpay_subscription_path(subscriber), params: { payment_id: "" }
+      post refund_admin_subscription_path(subscriber), params: { payment_id: "" }
 
       expect(flash[:error]).to eq("Enter a Razorpay payment ID to refund.")
-      expect(response).to redirect_to(admin_razorpay_subscriptions_path)
+      expect(response).to redirect_to(admin_subscriptions_path)
     end
   end
 end

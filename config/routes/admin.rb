@@ -46,7 +46,7 @@ namespace :admin do
   end
 
   scope :member_manager do
-    resources :razorpay_subscriptions, only: %i[index] do
+    resources :subscriptions, controller: "razorpay_subscriptions", only: %i[index] do
       member do
         post :cancel
         post :refund

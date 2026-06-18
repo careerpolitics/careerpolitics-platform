@@ -184,7 +184,9 @@ fr:
           razorpay_webhook_secret:
             description: 'Secret utilisé pour vérifier les signatures des webhooks Razorpay. Générez-le dans le tableau de bord Razorpay sous Paramètres → Webhooks.'
           razorpay_plan_id:
-            description: 'Identifiant du plan Razorpay pour la facturation des abonnements. Créez un plan dans le tableau de bord Razorpay sous Abonnements → Plans.'
+            description: 'Identifiant du plan mensuel Razorpay pour la facturation des abonnements. Créez un plan dans le tableau de bord Razorpay sous Abonnements → Plans.'
+          razorpay_yearly_plan_id:
+            description: 'Identifiant du plan annuel Razorpay pour la facturation des abonnements. Créez un plan annuel dans le tableau de bord Razorpay sous Abonnements → Plans.'
           tags:
             description: Determines which tags are suggested to new users during onboarding (comma separated, letters only)
             placeholder: 'List of valid tags: comma separated, letters only e.g. beginners,javascript,ruby,swift,kotlin'

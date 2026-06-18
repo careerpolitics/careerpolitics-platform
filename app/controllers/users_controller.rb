@@ -311,10 +311,7 @@ class UsersController < ApplicationController
   end
 
   def handle_billing_tab
-    stripe_code = current_user.stripe_id_code
-    return if stripe_code == "special"
-
-    @customer = Payments::Customer.get(stripe_code) if stripe_code.present?
+    @cp_subscription = current_user.cp_subscriptions.order(created_at: :desc).first
   end
 
   def handle_response_templates_tab
