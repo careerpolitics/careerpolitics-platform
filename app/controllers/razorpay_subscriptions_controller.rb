@@ -10,6 +10,8 @@ class RazorpaySubscriptionsController < ApplicationController
     @razorpay_key_id = Settings::General.razorpay_key_id
     @monthly_plan_id = Settings::General.razorpay_plan_id&.strip.presence
     @yearly_plan_id = Settings::General.razorpay_yearly_plan_id&.strip.presence
+    @monthly_plan_amount = Settings::General.razorpay_monthly_plan_amount.presence || "₹99"
+    @yearly_plan_amount = Settings::General.razorpay_yearly_plan_amount.presence || "₹999"
 
     unless @monthly_plan_id || @yearly_plan_id
       flash[:error] = "Payment plan not configured. Please contact support."

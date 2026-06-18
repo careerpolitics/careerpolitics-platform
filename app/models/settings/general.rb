@@ -92,6 +92,8 @@ module Settings
     setting :razorpay_webhook_secret, type: :string, default: ApplicationConfig["RAZORPAY_WEBHOOK_SECRET"]
     setting :razorpay_plan_id, type: :string, default: ApplicationConfig["RAZORPAY_PLAN_ID"]
     setting :razorpay_yearly_plan_id, type: :string, default: ApplicationConfig["RAZORPAY_YEARLY_PLAN_ID"]
+    setting :razorpay_monthly_plan_amount, type: :string, default: ApplicationConfig["RAZORPAY_MONTHLY_PLAN_AMOUNT"]
+    setting :razorpay_yearly_plan_amount, type: :string, default: ApplicationConfig["RAZORPAY_YEARLY_PLAN_AMOUNT"]
 
     # Billboard-related. Not sure this is the best place for it, but it's a start.
     setting :billboard_enabled_countries, type: :hash, default: Geolocation::DEFAULT_ENABLED_COUNTRIES, validates: {
