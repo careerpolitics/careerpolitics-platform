@@ -12,12 +12,12 @@ module ConsumerApps
       @consumer_app = ConsumerApps::FindOrCreateByQuery.call(
         app_bundle: @app_bundle,
         platform: @platform,
-        )
+      )
     end
 
     def call
       if consumer_app.android?
-        android_app = Rpush::Client::Redis::Fcm::App.where(name: app_name).first
+        android_app = Rpush::Fcm::App.where(name: app_name).first
         android_app || recreate_android_app!
       elsif consumer_app.ios?
         ios_app = Rpush::Apns2::App.where(name: app_name).first
@@ -48,27 +48,9 @@ module ConsumerApps
       # If the ConsumerApp doesn't have credentials there's no need to create it
       return if consumer_app.auth_credentials.blank?
 
-      app = Rpush::Client::Redis::Fcm::App.new
+      app = Rpush::Fcm::App.new
       app.name = app_name
-
-      credentials = consumer_app.auth_credentials.to_s
-
-      if credentials.strip.start_with?('{')
-        begin
-          parsed_creds = JSON.parse(credentials)
-
-          app.json_key = credentials
-          app.firebase_project_id = parsed_creds['project_id']
-
-        rescue JSON::ParserError => e
-          Rails.logger.error("Failed to parse FCM JSON credentials: #{e.message}")
-          return nil
-        end
-      else
-        Rails.logger.error("Invalid FCM credentials format for #{app_name}")
-        return nil
-      end
-
+      app.auth_key = consumer_app.auth_credentials.to_s
       app.connections = 1
       app.save!
       app
