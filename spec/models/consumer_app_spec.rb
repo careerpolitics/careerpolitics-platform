@@ -40,14 +40,11 @@ RSpec.describe ConsumerApp do
           app_bundle: ConsumerApp::FOREM_BUNDLE,
           platform: ConsumerApp::FOREM_APP_PLATFORMS.sample,
         )
-        allow(ApplicationConfig).to receive(:[]).and_return(nil)
         allow(ApplicationConfig).to receive(:[]).with("RPUSH_IOS_PEM").and_return("asdf123")
-        allow(ApplicationConfig).to receive(:[]).with("RPUSH_FCM_JSON").and_return("asdf123")
         allow(ApplicationConfig).to receive(:[]).with("RPUSH_FCM_KEY").and_return("asdf123")
         expect(forem_consumer_app.operational?).to be(true)
 
         allow(ApplicationConfig).to receive(:[]).with("RPUSH_IOS_PEM").and_return(nil)
-        allow(ApplicationConfig).to receive(:[]).with("RPUSH_FCM_JSON").and_return(nil)
         allow(ApplicationConfig).to receive(:[]).with("RPUSH_FCM_KEY").and_return(nil)
         expect(forem_consumer_app.operational?).to be(false)
       end
@@ -64,7 +61,7 @@ RSpec.describe ConsumerApp do
       )
 
       # The Rpush App has the ConsumerApp's auth_credentials
-      expect(rpush_app).to be_instance_of(Rpush::Client::Redis::Fcm::App)
+      expect(rpush_app).to be_instance_of(Rpush::Fcm::App)
       expect(rpush_app.auth_key).to eq(consumer_app_android.auth_credentials)
 
       consumer_app_android.auth_key = "new_auth_key"
@@ -77,7 +74,7 @@ RSpec.describe ConsumerApp do
       )
 
       # The Rpush App has the new ConsumerApp's auth_credentials
-      expect(rpush_app).to be_instance_of(Rpush::Client::Redis::Fcm::App)
+      expect(rpush_app).to be_instance_of(Rpush::Fcm::App)
       expect(rpush_app.auth_key).to eq("new_auth_key")
     end
 
