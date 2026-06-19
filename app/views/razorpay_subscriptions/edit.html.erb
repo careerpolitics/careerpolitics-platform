@@ -14,14 +14,6 @@
         <% if @cp_subscription.trial? && @cp_subscription.trial_ends_at %>
           <p><strong>Trial expires:</strong> <%= @cp_subscription.trial_ends_at.strftime("%B %d, %Y at %I:%M %p") %></p>
         <% end %>
-      <% elsif @razorpay_subscription %>
-        <p><strong>Status:</strong> <%= @razorpay_subscription.attributes["status"]&.humanize || "Unknown" %></p>
-        <% if @razorpay_subscription.attributes["current_end"] %>
-          <p>
-            <strong>Current period ends:</strong>
-            <%= Time.zone.at(@razorpay_subscription.attributes["current_end"]).strftime("%B %d, %Y") %>
-          </p>
-        <% end %>
       <% end %>
     </div>
 
@@ -65,7 +57,7 @@
   <% end %>
 
   <%# ── Cancel Subscription ── %>
-  <% if @user.razorpay_subscription_id.present? %>
+  <% if @cp_subscription.active? %>
     <div class="crayons-card crayons-card--content-rows p-6 mb-4">
       <h3 class="crayons-subtitle-2 mb-2">Cancel Subscription</h3>
 

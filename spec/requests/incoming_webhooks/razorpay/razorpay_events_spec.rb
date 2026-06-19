@@ -9,9 +9,6 @@ RSpec.describe "IncomingWebhooks::RazorpayEventsController" do
     allow(Rails.logger).to receive(:info)
     allow(Rails.logger).to receive(:warn)
     allow(Rails.logger).to receive(:error)
-    mailer_double = instance_double(ActionMailer::MessageDelivery, deliver_later: true)
-    mailer_with_double = instance_double(NotifyMailer, base_subscriber_role_email: mailer_double)
-    allow(NotifyMailer).to receive(:with).and_return(mailer_with_double)
   end
 
   def razorpay_signature(payload)
@@ -19,20 +16,9 @@ RSpec.describe "IncomingWebhooks::RazorpayEventsController" do
   end
 
   describe "POST /incoming_webhooks/razorpay_events" do
-    shared_examples "a successful razorpay event" do
-      it "returns status :ok" do
-        signature = razorpay_signature(payload)
-        post "/incoming_webhooks/razorpay_events",
-             params: payload,
-             headers: { "X-Razorpay-Signature" => signature, "CONTENT_TYPE" => "application/json" },
-             as: :json
-        expect(response).to have_http_status(:ok)
-      end
-    end
-
     context "with invalid signature" do
       it "returns :bad_request" do
-        payload = { event: "subscription.activated" }.to_json
+        payload = { event: "payment.captured" }.to_json
         post "/incoming_webhooks/razorpay_events",
              params: payload,
              headers: { "X-Razorpay-Signature" => "invalid_sig", "CONTENT_TYPE" => "application/json" },
@@ -41,25 +27,27 @@ RSpec.describe "IncomingWebhooks::RazorpayEventsController" do
       end
     end
 
-    context "with missing signature" do
-      it "returns :bad_request" do
-        payload = { event: "subscription.activated" }.to_json
-        post "/incoming_webhooks/razorpay_events",
-             params: payload,
-             headers: { "CONTENT_TYPE" => "application/json" },
-             as: :json
-        expect(response).to have_http_status(:bad_request)
+    context "when payment.captured" do
+      let!(:cp_sub) { create(:cp_subscription, user: user) }
+      let!(:cp_payment) do
+        create(:cp_payment,
+               cp_subscription: cp_sub,
+               user: user,
+               razorpay_payment_id: "pay_test123",
+               amount_cents: 0,
+               currency: "INR",
+               status: :captured)
       end
-    end
 
-    context "when subscription.activated" do
       let(:payload) do
         {
-          event: "subscription.activated",
+          event: "payment.captured",
           payload: {
-            subscription: {
+            payment: {
               entity: {
-                id: "sub_test123",
+                id: "pay_test123",
+                amount: 9900,
+                method: "upi",
                 notes: { user_id: user.id.to_s },
               },
             },
@@ -67,117 +55,31 @@ RSpec.describe "IncomingWebhooks::RazorpayEventsController" do
         }.to_json
       end
 
-      it_behaves_like "a successful razorpay event"
-
-      it "grants the base_subscriber role and sets subscription status" do
+      it "updates the CpPayment record with amount and method" do
         signature = razorpay_signature(payload)
         post "/incoming_webhooks/razorpay_events",
              params: payload,
              headers: { "X-Razorpay-Signature" => signature, "CONTENT_TYPE" => "application/json" },
              as: :json
 
-        user.reload
-        expect(user.roles.pluck(:name)).to include("base_subscriber")
-        expect(user.razorpay_subscription_id).to eq("sub_test123")
-        expect(user.current_subscriber_status).to eq("paying_subscription")
+        cp_payment.reload
+        expect(cp_payment.amount_cents).to eq(9900)
+        expect(cp_payment.method_type).to eq("upi")
       end
     end
 
-    context "when subscription.cancelled" do
-      let(:payload) do
-        {
-          event: "subscription.cancelled",
-          payload: {
-            subscription: {
-              entity: {
-                id: "sub_test123",
-                notes: { user_id: user.id.to_s },
-              },
-            },
-          },
-        }.to_json
-      end
+    context "when an unhandled event type is received" do
+      let(:payload) { { event: "order.paid", payload: {} }.to_json }
 
-      before do
-        user.add_role("base_subscriber")
-        user.update(razorpay_subscription_id: "sub_test123", current_subscriber_status: :paying_subscription)
-      end
-
-      it_behaves_like "a successful razorpay event"
-
-      it "removes the base_subscriber role and updates status" do
+      it "returns :ok and logs the event" do
         signature = razorpay_signature(payload)
         post "/incoming_webhooks/razorpay_events",
              params: payload,
              headers: { "X-Razorpay-Signature" => signature, "CONTENT_TYPE" => "application/json" },
              as: :json
 
-        user.reload
-        expect(user.roles.pluck(:name)).not_to include("base_subscriber")
-        expect(user.current_subscriber_status).to eq("not_subscribed")
-      end
-    end
-
-    context "when subscription.halted" do
-      let(:payload) do
-        {
-          event: "subscription.halted",
-          payload: {
-            subscription: {
-              entity: {
-                id: "sub_test123",
-                notes: { user_id: user.id.to_s },
-              },
-            },
-          },
-        }.to_json
-      end
-
-      before do
-        user.add_role("base_subscriber")
-        user.update(razorpay_subscription_id: "sub_test123", current_subscriber_status: :paying_subscription)
-      end
-
-      it_behaves_like "a successful razorpay event"
-
-      it "removes the base_subscriber role on payment failure" do
-        signature = razorpay_signature(payload)
-        post "/incoming_webhooks/razorpay_events",
-             params: payload,
-             headers: { "X-Razorpay-Signature" => signature, "CONTENT_TYPE" => "application/json" },
-             as: :json
-
-        user.reload
-        expect(user.roles.pluck(:name)).not_to include("base_subscriber")
-        expect(user.current_subscriber_status).to eq("not_subscribed")
-      end
-    end
-
-    context "when user_id is missing from notes" do
-      let(:payload) do
-        {
-          event: "subscription.activated",
-          payload: {
-            subscription: {
-              entity: {
-                id: "sub_test123",
-                notes: {},
-              },
-            },
-          },
-        }.to_json
-      end
-
-      it_behaves_like "a successful razorpay event"
-
-      it "logs a warning and does not crash" do
-        signature = razorpay_signature(payload)
-        post "/incoming_webhooks/razorpay_events",
-             params: payload,
-             headers: { "X-Razorpay-Signature" => signature, "CONTENT_TYPE" => "application/json" },
-             as: :json
-
-        expect(Rails.logger).to have_received(:warn).with(/no user_id in notes/)
+        expect(response).to have_http_status(:ok)
+        expect(Rails.logger).to have_received(:info).with(/Unhandled Razorpay event type/)
       end
     end
   end

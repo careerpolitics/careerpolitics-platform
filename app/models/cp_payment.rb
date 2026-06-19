@@ -4,7 +4,7 @@ class CpPayment < ApplicationRecord
 
   enum status: { captured: 0, refunded: 1, failed: 2 }
 
-  validates :amount_cents, presence: true, numericality: { greater_than: 0 }
+  validates :amount_cents, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :razorpay_payment_id, uniqueness: true, allow_nil: true
 
   scope :successful, -> { captured }

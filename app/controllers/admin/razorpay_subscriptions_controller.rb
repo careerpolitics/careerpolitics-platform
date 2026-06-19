@@ -9,21 +9,21 @@ module Admin
 
     def cancel
       user = User.find(params[:id])
+      cp_sub = user.cp_subscriptions.current.last
 
-      if user.razorpay_subscription_id.blank?
-        flash[:error] = "No Razorpay subscription ID found for #{user.username}."
+      unless cp_sub
+        flash[:error] = "No active subscription found for #{user.username}."
         redirect_to admin_subscriptions_path and return
       end
-      Razorpay.setup(::Settings::General.razorpay_key_id, ::Settings::General.razorpay_key_secret)
-      subscription = Razorpay::Subscription.fetch(user.razorpay_subscription_id)
-      Razorpay::Subscription.cancel(subscription.id, cancel_at_cycle_end: 0)
+
+      cp_sub.update!(status: :cancelled, cancelled_at: Time.current)
       mark_not_subscribed(user)
 
-      flash[:success] = "Cancelled Razorpay subscription for #{user.username}."
+      flash[:success] = "Cancelled subscription for #{user.username}."
       redirect_to admin_subscriptions_path
-    rescue Razorpay::Error => e
-      Rails.logger.error "Admin Razorpay cancellation failed for user #{params[:id]}: #{e.message}"
-      flash[:error] = "Unable to cancel Razorpay subscription: #{e.message}"
+    rescue StandardError => e
+      Rails.logger.error "Admin subscription cancellation failed for user #{params[:id]}: #{e.message}"
+      flash[:error] = "Unable to cancel subscription: #{e.message}"
       redirect_to admin_subscriptions_path
     end
 
@@ -67,7 +67,6 @@ module Admin
     def subscribed_users_sql
       <<~SQL.squish
         users.current_subscriber_status <> :not_subscribed
-        OR users.razorpay_subscription_id IS NOT NULL
         OR roles.name = :role
       SQL
     end

@@ -183,14 +183,10 @@ en:
             description: 'Secret Razorpay Key Secret for receiving payments. Keep this confidential and never expose it to clients. See: https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps/'
           razorpay_webhook_secret:
             description: 'Secret used to verify Razorpay webhook signatures. Generate this in the Razorpay Dashboard under Settings → Webhooks.'
-          razorpay_plan_id:
-            description: 'Razorpay Monthly Plan ID for subscription billing. Create a plan in the Razorpay Dashboard under Subscriptions → Plans.'
-          razorpay_yearly_plan_id:
-            description: 'Razorpay Yearly Plan ID for subscription billing. Create a yearly plan in the Razorpay Dashboard under Subscriptions → Plans.'
-          razorpay_monthly_plan_amount:
-            description: 'Display price for the monthly plan shown on the checkout page (e.g. ₹99). This is for display only — actual billing amount is set in the Razorpay plan.'
-          razorpay_yearly_plan_amount:
-            description: 'Display price for the yearly plan shown on the checkout page (e.g. ₹999). This is for display only — actual billing amount is set in the Razorpay plan.'
+          razorpay_monthly_amount_paise:
+            description: 'Monthly plan amount in paise (e.g. 9900 = ₹99). Used for Razorpay order creation.'
+          razorpay_yearly_amount_paise:
+            description: 'Yearly plan amount in paise (e.g. 99900 = ₹999). Used for Razorpay order creation.'
           tags:
             description: Determines which tags are suggested to new users during onboarding (comma separated, letters only)
             placeholder: 'List of valid tags: comma separated, letters only e.g. beginners,javascript,ruby,swift,kotlin'

@@ -6,7 +6,7 @@ class CpSubscription < ApplicationRecord
 
   validates :provider, presence: true
   validates :status, presence: true
-  validates :razorpay_subscription_id, uniqueness: true, allow_nil: true
+  validates :razorpay_order_id, uniqueness: true, allow_nil: true
 
   scope :current, -> { where(status: %i[trial active]) }
   scope :trials_expiring_before, ->(time) { trial.where("trial_ends_at <= ?", time) }
