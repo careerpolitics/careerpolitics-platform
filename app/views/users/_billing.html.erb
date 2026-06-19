@@ -18,7 +18,7 @@
   <% end %>
 
   <% if Settings::General.razorpay_key_id.present? %>
-    <% if current_user.cached_base_subscriber? && current_user.razorpay_subscription_id.present? %>
+    <% if current_user.cached_base_subscriber? && current_user.cp_subscriptions.current.active.exists? %>
       <div class="mb-4">
         <a href="<%= edit_subscription_path("me") %>" class="crayons-btn crayons-btn--secondary" data-no-instant>
           Manage <%= community_name %> Premium Subscription

@@ -1,6 +1,5 @@
 class RazorpaySubscriptionsController < ApplicationController
   before_action :authenticate_user!
-  before_action :initialize_razorpay, only: %i[create edit destroy]
   before_action :redirect_if_already_subscribed, only: %i[new create free_trial]
 
   # GET /razorpay_subscriptions/new
