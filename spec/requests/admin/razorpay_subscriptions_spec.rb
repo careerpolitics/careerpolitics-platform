@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe "Admin::RazorpaySubscriptions" do
   let(:admin) { create(:user, :super_admin) }
   let(:subscriber) do
-    create(:user, current_subscriber_status: :paying_subscription, razorpay_subscription_id: "sub_test789")
+    create(:user, current_subscriber_status: :paying_subscription)
   end
 
   def razorpay_response(success:, body:)

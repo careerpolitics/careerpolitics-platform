@@ -24,9 +24,9 @@ module Concepts
 
     def generate_description
       prompt = <<~PROMPT
-        You are an expert technical editor.
-        Write a concise, 2-3 sentence definition/description for the developer concept: "#{@concept.name}".
-        Focus on what it is, its key characteristics, and its relevance to developers.
+        You are an expert on Indian government competitive examinations and public sector careers.
+        Write a concise, 2-3 sentence definition/description for the concept: "#{@concept.name}".
+        Focus on what it is, its key characteristics, and its relevance to government job aspirants in India preparing for competitive exams like UPSC, SSC, Banking, Railways, and State PSCs.
         Do not write any introductory or conversational text, just output the description directly.
       PROMPT
 
