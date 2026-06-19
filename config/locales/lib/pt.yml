@@ -178,14 +178,10 @@ pt:
             description: 'Chave secreta (Key Secret) do Razorpay para receber pagamentos. Mantenha esta chave confidencial e nunca a exponha aos clientes. Consulte: https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps/'
           razorpay_webhook_secret:
             description: 'Segredo usado para verificar assinaturas de webhooks do Razorpay. Gere-o no painel do Razorpay em Configurações → Webhooks.'
-          razorpay_plan_id:
-            description: 'ID do plano mensal Razorpay para cobrança de assinaturas. Crie um plano no painel do Razorpay em Assinaturas → Planos.'
-          razorpay_yearly_plan_id:
-            description: 'ID do plano anual Razorpay para cobrança de assinaturas. Crie um plano anual no painel do Razorpay em Assinaturas → Planos.'
-          razorpay_monthly_plan_amount:
-            description: 'Preço exibido para o plano mensal na página de pagamento (ex. ₹99). Apenas para exibição — o valor real da cobrança é definido no plano Razorpay.'
-          razorpay_yearly_plan_amount:
-            description: 'Preço exibido para o plano anual na página de pagamento (ex. ₹999). Apenas para exibição — o valor real da cobrança é definido no plano Razorpay.'
+          razorpay_monthly_amount_paise:
+            description: 'Valor do plano mensal em paise (ex. 9900 = ₹99). Usado para criação de pedidos Razorpay.'
+          razorpay_yearly_amount_paise:
+            description: 'Valor do plano anual em paise (ex. 99900 = ₹999). Usado para criação de pedidos Razorpay.'
           tags:
             description: Default tags for the community
             placeholder: Default tags for the community

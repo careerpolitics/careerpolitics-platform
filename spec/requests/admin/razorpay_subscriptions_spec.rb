@@ -49,18 +49,22 @@ RSpec.describe "Admin::RazorpaySubscriptions" do
   end
 
   describe "POST /admin/member_manager/razorpay_subscriptions/:id/cancel" do
-    it "cancels the Razorpay subscription and removes subscriber access" do
+    it "cancels the subscription locally and removes subscriber access" do
       subscriber.add_role("base_subscriber")
-      subscription = double("Razorpay::Subscription", id: "sub_test789")
-      allow(Razorpay).to receive(:setup)
-      allow(Razorpay::Subscription).to receive(:fetch).with("sub_test789").and_return(subscription)
-      allow(Razorpay::Subscription).to receive(:cancel)
+      cp_sub = create(:cp_subscription, user: subscriber)
 
       post cancel_admin_subscription_path(subscriber)
 
-      expect(Razorpay::Subscription).to have_received(:cancel).with("sub_test789", cancel_at_cycle_end: 0)
+      expect(cp_sub.reload.status).to eq("cancelled")
       expect(subscriber.reload.current_subscriber_status).to eq("not_subscribed")
       expect(subscriber.roles.pluck(:name)).not_to include("base_subscriber")
+      expect(response).to redirect_to(admin_subscriptions_path)
+    end
+
+    it "shows error when user has no active subscription" do
+      post cancel_admin_subscription_path(subscriber)
+
+      expect(flash[:error]).to include("No active subscription found")
       expect(response).to redirect_to(admin_subscriptions_path)
     end
   end

@@ -139,25 +139,15 @@ module Constants
                                 default: "Razorpay Webhook Secret for verifying webhook signatures"),
             placeholder: "your_razorpay_webhook_secret"
           },
-          razorpay_plan_id: {
-            description: I18n.t("lib.constants.settings.general.razorpay_plan_id.description",
-                                default: "Razorpay Monthly Plan ID for subscriptions"),
-            placeholder: "plan_..."
+          razorpay_monthly_amount_paise: {
+            description: I18n.t("lib.constants.settings.general.razorpay_monthly_amount_paise.description",
+                                default: "Monthly plan amount in paise (e.g. 9900 = ₹99). Used for Razorpay order creation."),
+            placeholder: "9900"
           },
-          razorpay_yearly_plan_id: {
-            description: I18n.t("lib.constants.settings.general.razorpay_yearly_plan_id.description",
-                                default: "Razorpay Yearly Plan ID for subscriptions"),
-            placeholder: "plan_..."
-          },
-          razorpay_monthly_plan_amount: {
-            description: I18n.t("lib.constants.settings.general.razorpay_monthly_plan_amount.description",
-                                default: "Display price for the monthly plan (shown on checkout page)"),
-            placeholder: "₹99"
-          },
-          razorpay_yearly_plan_amount: {
-            description: I18n.t("lib.constants.settings.general.razorpay_yearly_plan_amount.description",
-                                default: "Display price for the yearly plan (shown on checkout page)"),
-            placeholder: "₹999"
+          razorpay_yearly_amount_paise: {
+            description: I18n.t("lib.constants.settings.general.razorpay_yearly_amount_paise.description",
+                                default: "Yearly plan amount in paise (e.g. 99900 = ₹999). Used for Razorpay order creation."),
+            placeholder: "99900"
           },
           suggested_tags: {
             description: I18n.t("lib.constants.settings.general.tags.description"),
