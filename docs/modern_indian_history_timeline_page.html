@@ -1,0 +1,265 @@
+<div class="mih-page">
+  <style>
+    .mih-page {
+      --bg: #0f172a;
+      --surface: #111827;
+      --surface-2: #0b1220;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --line: #334155;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --accent-3: #f59e0b;
+      max-width: 1150px;
+      margin: 0 auto;
+      padding: 1.2rem;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 45%);
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.45);
+    }
+
+    .mih-hero h1 {
+      margin: 0;
+      line-height: 1.2;
+      font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+    }
+
+    .mih-hero p {
+      margin: 0.55rem 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .mih-note {
+      margin-top: 0.8rem;
+      border: 1px solid #1e3a8a;
+      background: rgba(30, 64, 175, 0.15);
+      color: #dbeafe;
+      border-radius: 10px;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.85rem;
+    }
+
+    .mih-sections {
+      margin-top: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.85rem;
+    }
+
+    .mih-section {
+      background: linear-gradient(180deg, var(--surface), var(--surface-2));
+      border: 1px solid #1f2937;
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
+      padding: 0.85rem;
+    }
+
+    .mih-section:nth-child(2n) { border-left-color: var(--accent-2); }
+    .mih-section:nth-child(3n) { border-left-color: var(--accent-3); }
+
+    .mih-section h2 {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.3;
+      color: #f8fafc;
+    }
+
+    .mih-flow {
+      margin-top: 0.65rem;
+      border: 1px dashed var(--line);
+      border-radius: 9px;
+      padding: 0.5rem;
+      background: rgba(2, 6, 23, 0.25);
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 0.84rem;
+      color: #dbeafe;
+    }
+
+    .mih-event {
+      display: inline-block;
+      background: #0f172a;
+      border: 1px solid #334155;
+      padding: 0.28rem 0.5rem;
+      border-radius: 999px;
+      margin: 0.1rem 0.2rem;
+    }
+
+    .mih-arrow { color: #64748b; margin: 0 0.05rem; }
+
+    .mih-section ul {
+      margin: 0.65rem 0 0;
+      padding-left: 1.05rem;
+      color: #cbd5e1;
+    }
+
+    .mih-section li {
+      margin: 0.25rem 0;
+      font-size: 0.86rem;
+      line-height: 1.35;
+    }
+
+    .mih-footer {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      border-top: 1px dashed var(--line);
+      padding-top: 0.7rem;
+    }
+
+    @media (prefers-color-scheme: light) {
+      .mih-page {
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --surface-2: #f8fafc;
+        --text: #0f172a;
+        --muted: #475569;
+        --line: #cbd5e1;
+        background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 55%);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      }
+
+      .mih-section,
+      .mih-flow,
+      .mih-event {
+        background: #ffffff;
+        border-color: #cbd5e1;
+      }
+
+      .mih-note {
+        color: #1e3a8a;
+        background: #eff6ff;
+        border-color: #bfdbfe;
+      }
+
+      .mih-section h2 { color: #0f172a; }
+      .mih-section li,
+      .mih-hero p,
+      .mih-footer,
+      .mih-flow { color: #475569; }
+    }
+  </style>
+
+  <section class="mih-hero">
+    <h1>Modern Indian History (1600–1950)</h1>
+    <p>Section-based flowchart timeline for easy reading on a custom Forem page.</p>
+    <div class="mih-note"><strong>Best template choice:</strong> use a normal <strong>HTML custom page (no page template)</strong> so this layout renders exactly as designed.</div>
+  </section>
+
+  <section class="mih-sections" aria-label="Modern Indian History sections">
+    <article class="mih-section">
+      <h2>1) 1600–1707 · Entry & Early Trade</h2>
+      <div class="mih-flow">
+        <span class="mih-event">1600: EIC charter</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1612: Surat foothold</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Madras, Bombay, Calcutta bases</span>
+      </div>
+      <ul>
+        <li>English East India Company enters as a trading corporation.</li>
+        <li>Factories and ports become strategic coastal anchors.</li>
+      </ul>
+    </article>
+
+    <article class="mih-section">
+      <h2>2) 1707–1765 · From Trade to Political Power</h2>
+      <div class="mih-flow">
+        <span class="mih-event">1707: Mughal decline</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1757: Plassey</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1764: Buxar</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1765: Diwani rights</span>
+      </div>
+      <ul>
+        <li>Company shifts from commerce to territorial control.</li>
+        <li>Bengal revenue strengthens military and administrative expansion.</li>
+      </ul>
+    </article>
+
+    <article class="mih-section">
+      <h2>3) 1765–1818 · Company State Formation</h2>
+      <div class="mih-flow">
+        <span class="mih-event">Revenue control in Bengal</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Mysore wars</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Maratha defeat (1818)</span>
+      </div>
+      <ul>
+        <li>British supremacy expands beyond Bengal into major regions.</li>
+        <li>Indian polities are restructured through alliance and warfare.</li>
+      </ul>
+    </article>
+
+    <article class="mih-section">
+      <h2>4) 1818–1857 · Reform, Annexation, Discontent</h2>
+      <div class="mih-flow">
+        <span class="mih-event">Legal/education reforms</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Doctrine of Lapse</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Annexations increase</span>
+      </div>
+      <ul>
+        <li>Social and educational reforms reshape elite politics.</li>
+        <li>Policies and annexations deepen military and civil resentment.</li>
+      </ul>
+    </article>
+
+    <article class="mih-section">
+      <h2>5) 1857–1885 · Revolt and Crown Raj</h2>
+      <div class="mih-flow">
+        <span class="mih-event">1857: Revolt</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1858: Crown rule</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Administrative centralization</span>
+      </div>
+      <ul>
+        <li>Company rule ends; governance moves to the British Crown.</li>
+        <li>Army reorganization and bureaucratic control intensify.</li>
+      </ul>
+    </article>
+
+    <article class="mih-section">
+      <h2>6) 1885–1919 · Organized Nationalism</h2>
+      <div class="mih-flow">
+        <span class="mih-event">1885: INC founded</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1905: Bengal partition</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Swadeshi movement</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1919: Jallianwala Bagh</span>
+      </div>
+      <ul>
+        <li>Congress evolves from petitions to broader political mobilization.</li>
+        <li>Swadeshi links economics, culture, and anti-colonial protest.</li>
+      </ul>
+    </article>
+
+    <article class="mih-section">
+      <h2>7) 1919–1935 · Gandhian Mass Movements</h2>
+      <div class="mih-flow">
+        <span class="mih-event">1920: Non-Cooperation</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1930: Salt March</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">Civil Disobedience</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1935: Govt of India Act</span>
+      </div>
+      <ul>
+        <li>National movement gains deep rural and urban participation.</li>
+        <li>Constitutional reforms open limited provincial autonomy.</li>
+      </ul>
+    </article>
+
+    <article class="mih-section">
+      <h2>8) 1935–1950 · Decolonization to Republic</h2>
+      <div class="mih-flow">
+        <span class="mih-event">1942: Quit India</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1947: Independence & Partition</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1949: Constitution adopted</span><span class="mih-arrow">➜</span>
+        <span class="mih-event">1950: Republic begins</span>
+      </div>
+      <ul>
+        <li>War-era pressures and negotiations accelerate imperial withdrawal.</li>
+        <li>State integration and constitutional democracy shape modern India.</li>
+      </ul>
+    </article>
+  </section>
+
+  <footer class="mih-footer">
+    Forem setup tip: create the page under <strong>Admin → Customization → Pages → Create New Page</strong>, paste this HTML into body content, and choose a clean slug like <code>/modern-indian-history</code>.
+  </footer>
+</div>
