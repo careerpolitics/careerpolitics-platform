@@ -4,7 +4,7 @@ class MockExamQuestion < ApplicationRecord
 
   has_many :mock_exam_responses, dependent: :destroy
 
-  enum question_type: {
+  enum :question_type, {
     knowledge: 0,
     maths: 1,
     reasoning: 2,
@@ -12,8 +12,8 @@ class MockExamQuestion < ApplicationRecord
     visual_reasoning: 4,
   }
 
-  enum question_format: { text: 0, svg: 1, image: 2 }
-  enum difficulty: { easy: 0, medium: 1, hard: 2 }
+  enum :question_format, { text: 0, svg: 1, image: 2 }
+  enum :difficulty, { easy: 0, medium: 1, hard: 2 }
 
   validates :section_name, presence: true
   validates :position, presence: true, numericality: { greater_than: 0, only_integer: true }

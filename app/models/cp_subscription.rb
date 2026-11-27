@@ -2,7 +2,7 @@ class CpSubscription < ApplicationRecord
   belongs_to :user
   has_many :cp_payments, dependent: :destroy
 
-  enum status: { trial: 0, active: 1, halted: 2, cancelled: 3, expired: 4 }
+  enum :status, { trial: 0, active: 1, halted: 2, cancelled: 3, expired: 4 }
 
   validates :provider, presence: true
   validates :status, presence: true
