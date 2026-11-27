@@ -58,7 +58,7 @@ module Notifications
           notification.read = is_read
           notification.save!
 
-          send_push_notification(followable_id, follower) if followable_type == "User"
+          send_push_notification(followable_id, follower(followers)) if followable_type == "User"
         end
         notification
       end

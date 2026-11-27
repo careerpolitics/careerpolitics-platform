@@ -25,7 +25,7 @@ RSpec.describe Search::MockExam, type: :service do
     end
 
     context "when describing the result format" do
-      let!(:tag) { create(:tag, name: "government_exams") }
+      let!(:tag) { create(:tag, name: "governmentexams") }
       let!(:template) do
         create(:mock_exam_template,
                title: "SSC CGL Mock",
@@ -56,7 +56,7 @@ RSpec.describe Search::MockExam, type: :service do
 
       it "returns the associated tag name" do
         result = described_class.search_documents(term: "SSC")
-        expect(result.first[:tag_name]).to eq("government_exams")
+        expect(result.first[:tag_name]).to eq("governmentexams")
       end
     end
 

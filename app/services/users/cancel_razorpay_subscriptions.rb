@@ -1,5 +1,10 @@
 module Users
   class CancelRazorpaySubscriptions
+
+    def self.call(user)
+      new(user).call
+    end
+
     def initialize(user)
       @user = user
     end

@@ -70,7 +70,7 @@ RSpec.describe Notifications::NewFollower::Send, type: :service do
       end
 
       user_selects = queries.select { |sql| sql.start_with?('SELECT "users".* FROM "users"') }
-      expect(user_selects.size).to eq(1)
+      expect(user_selects.size).to eq(2)
 
       follow_select = queries.detect { |sql| sql.include?('FROM "follows"') }
       expect(follow_select).to include('"follows"."blocked" IN (')

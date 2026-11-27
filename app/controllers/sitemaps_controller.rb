@@ -130,6 +130,9 @@ class SitemapsController < ApplicationController
   end
 
   def render_sitemap_xml_natively
+    # The native index serializer only knows posts/users/tags; the main-site index also
+    # lists the jobs and mock exam sitemaps, so it renders through index.xml.erb.
+    return if @view_template == "index" && @organization.nil?
     base_url = native_sitemap_base_url
     return unless base_url
 

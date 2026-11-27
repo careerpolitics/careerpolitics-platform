@@ -113,7 +113,8 @@ module Ai
       raise "No candidates received from the API." unless candidate
 
       parts = candidate.dig("content", "parts")
-      raise 'Malformed response: "parts" key not found.' unless parts.is_a?(Array)
+      # A candidate blocked on output (finishReason PROHIBITED_CONTENT) has no parts.
+      return unless parts.is_a?(Array)
 
       text = parts.filter_map { |part| part["text"] if part.is_a?(Hash) }.join
       raise "No text parts received from the API." if text.blank?

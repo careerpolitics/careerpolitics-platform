@@ -103,6 +103,14 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y imagemagick redis-tools
 
+      # LocalRedis specs spawn their own redis-server processes. policy-rc.d stops the
+      # package from auto-starting a second Redis on 6379 next to the service container.
+      - name: Install redis-server binary (for LocalRedis specs)
+        run: |
+          echo 'exit 101' | sudo tee /usr/sbin/policy-rc.d && sudo chmod +x /usr/sbin/policy-rc.d
+          sudo apt-get install -y redis-server
+          sudo rm /usr/sbin/policy-rc.d
+
       # NEW: This is the fix. It waits until Postgres and Redis are fully ready
       - name: Wait for services
         run: |

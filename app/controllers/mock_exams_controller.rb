@@ -299,8 +299,9 @@ class MockExamsController < ApplicationController
     dates = current_user.mock_exam_attempts
                         .where("submitted_at >= ?", 90.days.ago)
                         .where.not(submitted_at: nil)
-                        .order(submitted_at: :desc)
                         .pluck(Arel.sql("DISTINCT DATE(submitted_at)"))
+                        .sort
+                        .reverse
 
     streak = 0
     check_date = Date.current

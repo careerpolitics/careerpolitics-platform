@@ -230,8 +230,8 @@ RSpec.describe "Sitemaps" do
         get "/sitemap-mockexams.xml"
 
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("<loc>#{ApplicationConfig['APP_PROTOCOL']}#{ApplicationConfig['APP_DOMAIN']}/mock_exams</loc>")
-        expect(response.body).to include("<loc>#{ApplicationConfig['APP_PROTOCOL']}#{ApplicationConfig['APP_DOMAIN']}/mock_exams/#{mock_exam.slug}</loc>")
+        expect(response.body).to include("<loc>#{URL.url('/mock_exams')}</loc>")
+        expect(response.body).to include("<loc>#{URL.url("/mock_exams/#{mock_exam.slug}")}</loc>")
         expect(response.body).to include("<changefreq>daily</changefreq>")
       end
     end
@@ -249,8 +249,8 @@ RSpec.describe "Sitemaps" do
         get "/sitemap-jobs.xml"
 
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("<loc>#{ApplicationConfig['APP_PROTOCOL']}#{ApplicationConfig['APP_DOMAIN']}/jobs</loc>")
-        expect(response.body).to include("<loc>#{ApplicationConfig['APP_PROTOCOL']}#{ApplicationConfig['APP_DOMAIN']}#{job_post.link}</loc>")
+        expect(response.body).to include("<loc>#{URL.url('/jobs')}</loc>")
+        expect(response.body).to include("<loc>#{URL.url(job_post.link)}</loc>")
         expect(response.body).to include("<changefreq>weekly</changefreq>")
       end
     end
