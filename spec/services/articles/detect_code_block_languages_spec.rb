@@ -85,4 +85,100 @@ RSpec.describe Articles::DetectCodeBlockLanguages, type: :service do
       expect(Ai::Base).not_to have_received(:new)
     end
   end
+
+  describe "#call with Jev selected" do
+    let(:markdown) { "```\ndef hello\n  puts 'hi'\nend\n```\n\nText\n\n```\nconst x = 1;\n```" }
+    let(:service) { described_class.new(article) }
+
+    before { enable_jev_for(:code_block_language_detection) }
+
+    it "asks one Choice per unlabeled block, each block in its own state" do
+      requests = stub_jev do |state|
+        { language: state[:code].start_with?("def") ? ["ruby", 0.9] : ["javascript", 0.8] }
+      end
+
+      expect(service.call).to be(true)
+      expect(requests.map { |request| request[:state][:code] }).to eq(["def hello\n  puts 'hi'\nend", "const x = 1;"])
+      expect(requests.first[:questions][:language][:criteria]).to include("ruby" => "Ruby", "plaintext" => anything)
+      expect(article.reload.body_markdown).to include("```ruby").and include("```javascript")
+    end
+
+    it "falls back to plaintext on low confidence" do
+      stub_jev(language: ["ruby", 0.1])
+
+      service.call
+
+      expect(article.reload.body_markdown.scan("```plaintext").size).to eq(2)
+    end
+
+    it "offers every supported language as an option" do
+      expect(described_class.language_criteria.keys).to match_array(described_class::SUPPORTED_LANGUAGE_TAGS)
+    end
+
+    it "leaves the article unchanged when the TypeSafe circuit breaker is open" do
+      client = instance_double(Ai::TypeSafe::Client)
+      allow(Ai::TypeSafe::Client).to receive(:new).and_return(client)
+      allow(client).to receive(:evaluate).and_raise(Ai::TypeSafe::Client::CircuitOpenError, "open")
+
+      expect { expect(service.call).to be(false) }.not_to(change { article.reload.body_markdown })
+      expect(client).to have_received(:evaluate).once
+    end
+
+    it "runs without a Gemini key" do
+      stub_const("Ai::Base::DEFAULT_KEY", nil)
+      stub_jev(language: ["ruby", 0.9])
+
+      expect(service.call).to be(true)
+    end
+  end
+
+  describe "#call with Gemini Decision selected" do
+    let(:markdown) { "```\ndef hello\n  puts 'hi'\nend\n```\n\nText\n\n```\nconst x = 1;\n```" }
+    let(:service) { described_class.new(article) }
+
+    before { enable_gemini_decision_for(:code_block_language_detection) }
+
+    it "detects code block languages via Gemini Decision" do
+      stub_gemini_decision do |state|
+        { language: state[:code].start_with?("def") ? ["ruby", 0.9] : ["javascript", 0.8] }
+      end
+
+      expect(service.call).to be(true)
+      expect(article.reload.body_markdown).to include("```ruby").and include("```javascript")
+    end
+
+    it "leaves the article unchanged when the Gemini Decision circuit breaker is open" do
+      client = instance_double(Ai::GeminiDecision::Client)
+      allow(Ai::GeminiDecision::Client).to receive(:new).and_return(client)
+      allow(client).to receive(:evaluate).and_raise(Ai::GeminiDecision::Client::CircuitOpenError, "open")
+
+      expect { expect(service.call).to be(false) }.not_to(change { article.reload.body_markdown })
+      expect(client).to have_received(:evaluate).once
+    end
+  end
+
+  describe ".language_criteria and language normalization" do
+    let(:markdown) { "```\nputs 1\n```" }
+
+    it "exposes all 228 canonical Rouge tags and human-readable titles", :aggregate_failures do
+      expect(described_class::SUPPORTED_LANGUAGE_TAGS.size).to eq(228)
+      expect(described_class::SUPPORTED_LANGUAGE_TAGS).to eq(described_class::SUPPORTED_LANGUAGE_TAGS.uniq.sort)
+      expect(described_class.language_criteria["ruby"]).to eq("Ruby")
+      expect(described_class.language_criteria["javascript"]).to eq("JavaScript")
+      expect(described_class.language_criteria["cpp"]).to eq("C++")
+      expect(described_class.language_criteria["plaintext"]).to eq(
+        "Plain text, console output, or no specific language",
+      )
+    end
+
+    it "normalizes fence info strings, markdown fences, aliases, and unknown hints", :aggregate_failures do
+      instance = described_class.new(article, ai_client: ai_client)
+      expect(instance.__send__(:normalize_language, "```ts\n")).to eq("typescript")
+      expect(instance.__send__(:normalize_language, "  Py  ")).to eq("python")
+      expect(instance.__send__(:normalize_language, "sh extra_arg")).to eq("shell")
+      expect(instance.__send__(:normalize_language, "unknown_lang")).to eq("plaintext")
+      expect(instance.__send__(:normalize_language, nil)).to eq("plaintext")
+      expect(instance.__send__(:normalize_language, "")).to eq("plaintext")
+    end
+  end
 end

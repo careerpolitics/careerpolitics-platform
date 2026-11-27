@@ -6,6 +6,7 @@ pt:
         heading: Página de organização totalmente personalizável
         cover_image: Imagem de capa
         cover_image_hint: "Proporção recomendada: 8:1 (ex. 1600×200 ou 2400×300)"
+        remove_cover_image: Remover imagem de capa
         readme: Conteúdo da página (Markdown)
         readme_placeholder: "Use Markdown e tags Liquid para personalizar a página da sua organização.\n\nExemplo:\n{% org_team slug-da-org %}\n{% org_team slug-da-org role=admins limit=5 %}\n{% org_posts slug-da-org %}\n{% org_posts slug-da-org limit=5 sort=reactions min_reactions=10 since=30d %}\n{% org_lead_form 42 %}"
         default_notice: "Sua página está usando o layout padrão."
@@ -14,6 +15,56 @@ pt:
         default_example: "## Conheça a equipe\n{%% org_team %{slug} %%}\n\n## Últimas publicações\n{%% org_posts %{slug} %%}"
         save: Salvar página
         preview: Visualizar
+      pages:
+        show_in_navigation: "Mostrar nas guias da organização"
+        navigation_hint: "As páginas ocultas continuam acessíveis pela sua URL."
+        hidden_from_tabs: "Oculta das guias"
+        heading: Páginas da organização
+        new_page: Criar nova página
+        edit_page: Editar página
+        title: Título
+        slug: Sufixo do slug
+        description: Descrição
+        created: Página criada com sucesso.
+        updated: Página atualizada com sucesso.
+        deleted: Página excluída com sucesso.
+        reordered: Ordem das páginas atualizada.
+        confirm_delete: Tem certeza que deseja excluir esta página?
+        showcase: Showcase
+        showcase_hint: Esta é a página Showcase padrão.
+        no_pages: Nenhuma página personalizada criada ainda. Clique em "Criar nova página" para começar.
+        edit: Editar
+        manage_pages: Gerenciar páginas
+        description_help: Gerencie as páginas da sua organização, incluindo a página Showcase padrão.
+        create_heading: Criar nova página
+        edit_heading: Editar página
+        slug_help: Apenas letras minúsculas, números e hifens (ex. "sobre-nos").
+        showcase_slug_help: Esta é a página Showcase (padrão), então o sufixo do slug é fixado em "readme".
+        content_label: Conteúdo da página (Markdown)
+        description_placeholder: Breve descrição para SEO e compartilhamento...
+        cancel: Cancelar
+        your_pages: Suas páginas
+        order_help: Use as setas para definir a ordem das guias personalizadas. Showcase permanece sempre em primeiro lugar.
+        pinned_first: Fixado em primeiro
+        reorder: "Reordenar %{title}"
+        move_up: Mover para cima
+        move_down: Mover para baixo
+        move_up_title: "Mover %{title} para cima"
+        move_down_title: "Mover %{title} para baixo"
+        back_to_pages: Voltar às páginas
+        embed_section_heading: Páginas HTML incorporadas (isoladas)
+        embed_section_description: Crie widgets HTML personalizados e incorporações interativas que só podem ser exibidos dentro de artigos ou páginas Showcase. Por segurança, essas páginas são executadas em um iframe estritamente isolado sem acesso a cookies, armazenamento do navegador ou dados de usuários.
+        new_embed_page: Criar página HTML incorporada
+        edit_embed_page: Editar página HTML incorporada
+        no_embed_pages: Nenhuma página HTML incorporada criada ainda. Clique em "Criar página HTML incorporada" para começar.
+        embed_only_badge: Apenas incorporação · Isolada
+        embed_slug_help: Apenas letras minúsculas, números e hifens (ex. "calculadora-precos"). Não acessível diretamente por URL — incorporável apenas via tag Liquid.
+        embed_content_label: HTML personalizado (isolado)
+        embed_content_placeholder: "<!DOCTYPE html>\n<html>\n  <head>\n    <meta charset=\"utf-8\">\n    <style>\n      body { font-family: system-ui, sans-serif; margin: 16px; }\n    </style>\n  </head>\n  <body>\n    <h2>Widget interativo</h2>\n    <script>\n      // Executado em uma origem opaca estritamente isolada (sem acesso a cookies ou dados do usuário)\n    </script>\n  </body>\n</html>"
+        embed_sandbox_notice_title: Isolamento estrito de Sandbox
+        embed_sandbox_notice_body: "Esta página só pode ser visualizada via iframes {% embed ... %} ou {% page ... %} e não pode ser aberta diretamente em uma guia do navegador. Tags <style>, <script>, formulários e links target=\"_blank\" são suportados, enquanto cookies, armazenamento do navegador e dados do usuário da página pai são completamente bloqueados."
+        embed_preview_error: Não foi possível renderizar a pré-visualização isolada agora.
+        embed_usage_label: Tag Liquid de incorporação
       header_cta:
         heading: Botão CTA do Cabeçalho
         description: "Adicione um botão de chamada para ação no cabeçalho da página da sua organização. Você pode criar um botão simples ou um menu suspenso com vários links."
@@ -162,6 +213,8 @@ pt:
       cover_image_alt: "Imagem de capa de %{org}"
       settings_link: Configurações da Organização
       admin_link: Admin
+      showcase: Showcase
+      all_posts: Todos os posts
       confirm_invitation:
         title: Confirmar Convite da Organização
         greeting: "Olá %{name}!"

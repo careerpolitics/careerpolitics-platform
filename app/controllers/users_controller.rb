@@ -106,7 +106,7 @@ class UsersController < ApplicationController
       redirect_to sign_up_path and return
     end
 
-    destroy_token = Rails.cache.read("user-destroy-token-#{@user.id}")
+    destroy_token = Rails.cache.read("user-destroy-token-#{@user.id}", local_cache: false)
 
     if destroy_token.blank?
       flash[:settings_notice] = I18n.t("users_controller.token_expired")
@@ -123,6 +123,7 @@ class UsersController < ApplicationController
     set_current_tab("account")
     if @user.email?
       Users::DeleteWorker.perform_async(@user.id)
+      Authentication::AuthToken.revoke_for_user!(@user.id)
       sign_out @user
       flash[:global_notice] = I18n.t("users_controller.deletion_scheduled")
       redirect_to new_user_registration_path
@@ -170,15 +171,15 @@ class UsersController < ApplicationController
 
   def join_org
     authorize User
-    if (@organization = Organization.find_by(secret: params[:org_secret].strip))
+    secret = params[:org_secret].is_a?(String) ? params[:org_secret].strip : nil
+    if secret.present? && (@organization = Organization.find_by(secret: secret))
       OrganizationMembership.create(user_id: current_user.id, organization_id: @organization.id, type_of_user: "member")
       flash[:settings_notice] =
         I18n.t("users_controller.joined_org", organization_name: @organization.name)
-      redirect_to "/settings/organization"
     else
       flash[:error] = I18n.t("users_controller.invalid_secret")
-      redirect_to "/settings/organization"
     end
+    redirect_to "/settings/organization"
   end
 
   def leave_org
@@ -192,11 +193,11 @@ class UsersController < ApplicationController
   def add_org_admin
     adminable = User.find(params[:user_id])
     org = Organization.find_by(id: params[:organization_id])
+    membership = OrganizationMembership.active.find_by(user_id: adminable.id, organization_id: org&.id)
 
-    not_authorized unless current_user.org_admin?(org) && OrganizationMembership.exists?(user: adminable,
-                                                                                         organization: org)
+    not_authorized unless current_user.org_admin?(org) && membership
 
-    OrganizationMembership.find_by(user_id: adminable.id, organization_id: org.id).update(type_of_user: "admin")
+    membership.update(type_of_user: "admin")
     flash[:settings_notice] = I18n.t("users_controller.added_admin", name: adminable.name)
     redirect_to organization_settings_path(org.slug)
   end
@@ -219,7 +220,8 @@ class UsersController < ApplicationController
 
     not_authorized unless current_user.org_admin?(org) && removable_org_membership
 
-    removable_org_membership.delete
+    # destroy (not delete) so a withdrawn invitation's notification is cleaned up too
+    removable_org_membership.destroy
     flash[:settings_notice] = I18n.t("users_controller.removed_member", name: removable.name)
     redirect_to organization_settings_path(org.slug)
   end
@@ -248,6 +250,9 @@ class UsersController < ApplicationController
     set_current_tab("account")
 
     if @user.update_with_password(password_params)
+      bypass_sign_in(@user)
+      remember_me(@user) if cookies[:remember_user_token].present?
+      flash[:settings_notice] = I18n.t("devise.passwords.updated_not_active")
       redirect_to user_settings_path(@tab)
     else
       Honeycomb.add_field("error", @user.errors.messages.compact_blank)
@@ -339,7 +344,7 @@ class UsersController < ApplicationController
   end
 
   def destroy_request_in_progress?
-    Rails.cache.exist?("user-destroy-token-#{@user.id}")
+    Rails.cache.exist?("user-destroy-token-#{@user.id}", local_cache: false)
   end
 
   def import_articles_from_feed(user)

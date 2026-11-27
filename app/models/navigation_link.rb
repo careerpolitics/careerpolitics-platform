@@ -15,7 +15,12 @@ class NavigationLink < ApplicationRecord
   validates :name, :url, presence: true
   validates :url, url: { schemes: %w[https http] }, uniqueness: { scope: :name }
   validates :icon, format: SVG_REGEXP, if: :icon?
+  validate :icon_contains_supported_svg, if: :icon?
   validates :display_only_when_signed_in, inclusion: { in: [true, false] }
+
+  def sanitized_icon
+    SvgIconScrubber.sanitize(icon).html_safe # rubocop:disable Rails/OutputSafety
+  end
 
   def icon_url
     # Return optimized image URL if available, otherwise return nil
@@ -45,11 +50,17 @@ class NavigationLink < ApplicationRecord
     end
   end
 
+  def icon_contains_supported_svg
+    errors.add(:icon, :invalid) unless SvgIconScrubber.valid_svg?(icon)
+  end
+
   scope :ordered, -> { order(position: :asc, name: :asc) }
 
   scope :from_subforem, lambda { |subforem_id = nil|
+    return where(nil) if Subforem.disabled_by_env?
+
     subforem_id ||= RequestStore.store[:subforem_id]
-    where(subforem_id: [subforem_id, nil])
+    where(subforem_id: subforem_id ? [subforem_id, nil] : nil)
   }
 
 

@@ -16,13 +16,20 @@ module Articles
     private
 
     def process_subforem_articles(subforem_id)
+      subforem_scope = subforem_id == Subforem.cached_default_id ? [subforem_id, nil] : subforem_id
+
       # Get articles from the past day with score >= 0 and no existing mascot reactions
       eligible_articles = Article.published
-        .where(subforem_id: subforem_id)
+        .where(subforem_id: subforem_scope)
         .where("published_at > ?", 1.day.ago)
         .where("score >= 0")
         .where(type_of: "full_post")
-        .where.not(id: Reaction.where(user: mascot_user, category: %w[thumbsup thumbsdown]).select(:reactable_id))
+        .where.not(
+          Reaction.where(user: mascot_user, category: %w[thumbsup thumbsdown])
+            .where("reactions.reactable_id = articles.id")
+            .select(1)
+            .arel.exists,
+        )
         .order(score: :desc)
         .where(max_score: 0)
         .limit(12)
@@ -39,7 +46,8 @@ module Articles
       issue_thumbs_up(assessment[:best])
 
       # Apply max_score of 15 to the worst article if we have at least 12 articles
-      if eligible_articles.count >= 12 && assessment[:worst]
+      remaining_eligible_count = eligible_articles.count
+      if remaining_eligible_count >= 12 && assessment[:worst]
         apply_max_score(assessment[:worst])
         Rails.logger.info(
           "QualityReactionWorker: Subforem #{subforem_id} - Issued thumbs up to article #{assessment[:best].id} " \
@@ -48,7 +56,7 @@ module Articles
       else
         Rails.logger.info(
           "QualityReactionWorker: Subforem #{subforem_id} - Issued thumbs up to article #{assessment[:best].id} " \
-          "(only #{eligible_articles.count} eligible articles, skipping max_score)",
+          "(only #{remaining_eligible_count} eligible articles, skipping max_score)",
         )
       end
     end

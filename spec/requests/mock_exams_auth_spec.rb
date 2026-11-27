@@ -9,18 +9,15 @@ RSpec.describe "Mock Exams Authentication", type: :request do
       expect(response).to have_http_status(:ok)
     end
 
-    it "can view mock exam detail page" do
+    it "is redirected from the mock exam detail page" do
       get mock_exam_path(slug: template.slug)
-      expect(response).to have_http_status(:ok)
+      expect(response).to have_http_status(:redirect)
     end
 
-    it "receives can_attempt: false and user_signed_in: false in JSON", :aggregate_failures do
+    it "is unauthorized for the mock exam detail JSON" do
       get mock_exam_path(slug: template.slug), headers: { "Accept" => "application/json" }
 
-      expect(response).to have_http_status(:ok)
-      json = response.parsed_body
-      expect(json["can_attempt"]).to be false
-      expect(json["user_signed_in"]).to be false
+      expect(response).to have_http_status(:unauthorized)
     end
 
     it "is redirected when trying to create an attempt" do
@@ -40,7 +37,11 @@ RSpec.describe "Mock Exams Authentication", type: :request do
   describe "authenticated user" do
     let(:user) { create(:user) }
 
-    before { sign_in user }
+    before do
+      # Attempting a mock exam is a CP++ (base_subscriber) feature.
+      user.add_role(:base_subscriber)
+      sign_in user
+    end
 
     it "receives can_attempt: true and user_signed_in: true in JSON", :aggregate_failures do
       get mock_exam_path(slug: template.slug), headers: { "Accept" => "application/json" }

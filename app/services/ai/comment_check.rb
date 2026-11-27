@@ -4,14 +4,30 @@ module Ai
   #
   # This class gathers context from the comment, its parent post, and the
   # user's comment history to create a detailed prompt for the AI.
+  #
+  # When the :comment_spam_check function is set to Jev (see Ai::FunctionConfig), the
+  # holistic YES/NO prompt is replaced by narrow TypeSafe Noul questions combined by the
+  # explicit policy in #spam_from_jev?.
   class CommentCheck
-    VERSION = "1.0"
+    include Ai::CommunityContext
+    include Ai::TypeSafe::Questions
+
+    VERSION = "1.2".freeze
+    FUNCTION_KEY = :comment_spam_check
+
+    # Jev policy thresholds: act only on clear spam. Validate against labeled outcomes.
+    CLEAR = 0.85
+    SUPPORTING = 0.5
 
     # @param comment [Object] The comment object to be checked.
     #   It should respond to `body_markdown`, `commentable`, and `user`.
     def initialize(comment)
       @comment = comment
-      @ai_client = Ai::Base.new(wrapper: self, affected_content: comment, affected_user: comment.user)
+      @selection = Ai::FunctionConfig.selection_for(FUNCTION_KEY)
+      return if @selection.decision?
+
+      @ai_client = Ai::Base.new(model: @selection.gemini_model, wrapper: self, affected_content: comment,
+                                affected_user: comment.user)
     end
 
     ##
@@ -19,15 +35,127 @@ module Ai
     #
     # @return [Boolean] true if the comment is likely spam, false otherwise.
     def spam?
+      return spam_via_jev? if @selection.decision?
+
       prompt = build_prompt
       response = @ai_client.call(prompt)
       parse_response(response)
+    rescue Ai::Base::ProhibitedContentError
+      spam_in_isolation?
     rescue StandardError => e
       Rails.logger.error(e)
       false
     end
 
     private
+
+    # The full prompt includes the parent post, which may be someone else's. Re-ask about the
+    # comment alone, so a PROHIBITED_CONTENT block only reaches its author if the comment caused it.
+    def spam_in_isolation?
+      if @selection.decision?
+        client = @selection.decision_client(wrapper: self, affected_content: @comment,
+                                            affected_user: @comment.user, **Ai::TypeSafe::Client::FAIL_FAST)
+        state = { comment: @comment.body_markdown.to_s.truncate(4_000) }
+        result = client.evaluate(state: state, questions: { spam: noul("Is `comment` CLEARLY spam?") })
+        return result.noul(:spam) >= CLEAR
+      end
+
+      parse_response(@ai_client.call(<<~PROMPT))
+        Is the following comment CLEARLY spam? Answer only with YES or NO.
+        ---
+        #{@comment.body_markdown}
+      PROMPT
+    rescue Ai::Base::ProhibitedContentError
+      raise
+    rescue StandardError => e
+      Rails.logger.error(e)
+      false
+    end
+
+    # --- Jev (TypeSafe System One) ---
+
+    def spam_via_jev?
+      client = @selection.decision_client(wrapper: self, affected_content: @comment,
+                                          affected_user: @comment.user, **Ai::TypeSafe::Client::FAIL_FAST)
+      spam_from_jev?(client.evaluate(state: jev_state, questions: jev_questions))
+    end
+
+    def jev_state
+      post = @comment.commentable
+      state = {
+        post: { title: post.title, body: post.body_markdown.to_s.truncate(1_500) },
+        comment: @comment.body_markdown.to_s.truncate(4_000)
+      }
+      state[:community] = { description: community_description } if community_description.present?
+      state[:author_recent_comments] = recent_comments if recent_comments.any?
+      state
+    end
+
+    def jev_questions
+      questions = {
+        advertisement: noul(
+          "Is `comment` an unsolicited advertisement for a product, service, or business?",
+          no: { includes: "Recommending a relevant tool or resource while answering `post`." },
+        ),
+        malicious: noul(
+          "Does `comment` try to phish readers, send them to a scam, or ask for credentials or payment details?",
+        ),
+        gibberish: noul("Is `comment` gibberish or text with no coherent meaning?"),
+        off_context_promotion: noul(
+          "Is `comment` unrelated to `post` and used to promote something?",
+        ),
+        inserted_link: noul(
+          {
+            question: "Does `comment` slip a promotional link into an otherwise on-topic reply?",
+            focus: "Look for a link that serves the commenter's business rather than the discussion."
+          },
+          no: "It has no link, or its links directly support the point being made about `post`.",
+        ),
+        genuine_reply: noul(
+          "Does `comment` genuinely respond to or discuss `post`?",
+        )
+      }
+      if recent_comments.any?
+        questions[:repetitive_promotion] = noul(
+          "Do `author_recent_comments` show the author posting the same or similar promotional messages " \
+          "across different posts?",
+        )
+      end
+      questions
+    end
+
+    # Mirrors the original guidance: history only matters when the comment itself looks spammy.
+    def spam_from_jev?(result)
+      return true if result.noul(:malicious) >= CLEAR
+
+      # A promotional link slipped into an on-topic reply is spam by definition, so it is not
+      # vetoed by genuine_reply the way the off-topic signals are.
+      return true if result.noul(:inserted_link) >= CLEAR
+
+      off_topic_signal = [
+        result.noul(:advertisement),
+        result.noul(:gibberish),
+        result.noul(:off_context_promotion),
+      ].max
+      return true if off_topic_signal >= CLEAR && result.noul(:genuine_reply) < SUPPORTING
+
+      direct = [off_topic_signal, result.noul(:inserted_link)].max
+      return true if direct >= SUPPORTING && result.key?(:repetitive_promotion) &&
+        result.noul(:repetitive_promotion) >= CLEAR
+
+      false
+    end
+
+    def recent_comments
+      @recent_comments ||= @comment.user.comments.where.not(id: @comment.id).last(10)
+        .map { |c| c.body_markdown.to_s.first(1_000) }
+    end
+
+    def community_description
+      @community_description ||= resolve_community_description(@comment.commentable.try(:subforem_id))
+    end
+
+    # --- Gemini ---
 
     ##
     # Gathers all necessary context and constructs a detailed prompt for the AI.
@@ -36,6 +164,18 @@ module Ai
       user_history = @comment.user.comments.last(10).map.with_index(1) do |c, i|
         "Comment #{i}: \"#{c.body_markdown.first(1_000)}\""
       end.join("\n")
+
+      community_context_section = if community_description.present?
+                                    <<~COMMUNITY
+                                      0.  **Community Context**:
+                                          ---
+                                          #{community_description}
+                                          ---
+
+                                    COMMUNITY
+                                  else
+                                    ""
+                                  end
 
       <<~PROMPT
         Analyze the following comment for spam. Your answer must be a single word: YES or NO.
@@ -50,7 +190,7 @@ module Ai
 
         Here is the context:
 
-        1.  **The Parent Content Post** (The post the comment was left in reply to):
+        #{community_context_section}1.  **The Parent Content Post** (The post the comment was left in reply to):
             ---
             Title: #{@comment.commentable.title}
             Body#{'(truncated)' if @comment.commentable.body_markdown.size > 1500}: #{@comment.commentable.body_markdown.first(1_500)}

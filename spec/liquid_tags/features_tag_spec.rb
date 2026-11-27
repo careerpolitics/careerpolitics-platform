@@ -47,11 +47,12 @@ RSpec.describe "Features and Feature liquid tags", type: :liquid_tag do
       expect(result).to include("Launch")
     end
 
-    it "falls back to heart if a broken or missing SVG icon is provided" do
-      result = parse('{% features %}{% feature icon="nonexistent-broken-icon-123" title="Broken" %}content{% endfeature %}{% endfeatures %}').render
-      expect(result).not_to be_empty
-      expect(result).to include("Broken")
-      expect(result).to match(/<svg/)
+    it "raises a descriptive error for an unsupported icon name" do
+      template = '{% features %}{% feature icon="nonexistent-broken-icon-123" title="Broken" %}' \
+                 'content{% endfeature %}{% endfeatures %}'
+
+      expect { parse(template) }
+        .to raise_error(StandardError, /Invalid icon 'nonexistent-broken-icon-123'/)
     end
 
     it "preserves HTML content in body" do
@@ -65,9 +66,27 @@ RSpec.describe "Features and Feature liquid tags", type: :liquid_tag do
       expect(result).to include("<strong>Bold</strong>")
     end
 
+    it "does not duplicate formatting breaks in indented multiline content" do
+      markdown = <<~LIQUID
+        {% features %}
+          {% feature title="Test" %}
+          First line
+          second line
+          {% endfeature %}
+        {% endfeatures %}
+      LIQUID
+
+      result = MarkdownProcessor::Parser.new(markdown).finalize
+      body = Nokogiri::HTML.fragment(result).at_css(".ltag-feature__body")
+
+      expect(body.css("p").length).to eq(1)
+      expect(body.css("br").length).to eq(1)
+      expect(body.text.split.join(" ")).to eq("First line second line")
+    end
+
     it "raises error when title is missing" do
       expect do
-        parse('{% features %}{% feature icon="star-line" %}No title{% endfeature %}{% endfeatures %}')
+        parse('{% features %}{% feature icon="heart" %}No title{% endfeature %}{% endfeatures %}')
       end.to raise_error(StandardError, /requires a title/)
     end
   end

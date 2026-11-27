@@ -18,6 +18,15 @@ module Settings
       inclusion: { in: FEED_STYLES }
     }
     setting :feed_lookback_days, type: :integer, default: 10
+    setting :feed_config_sticky_hours, type: :integer, default: 60, validates: {
+      numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+    }
+    setting :feed_config_sticky_percentage, type: :integer, default: 50, validates: {
+      numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }
+    }
+    setting :feed_config_repeat_visit_minutes, type: :integer, default: 30, validates: {
+      numericality: { only_integer: true, greater_than: 0 }
+    }
     setting :home_feed_minimum_score, type: :integer, default: 0
     setting :index_minimum_score, type: :integer, default: 0
     setting :index_minimum_date, type: :integer, default: 1_500_000_000
@@ -50,6 +59,11 @@ module Settings
     setting :default_locale, type: :string, default: "en"
     setting :display_in_directory, type: :boolean, default: true
     setting :award_tag_minimum_score, type: :integer, default: 100
+
+    setting :community_leader_l1_favorite_allowance, type: :integer, default: 5
+    setting :community_leader_l2_favorite_allowance, type: :integer, default: 10
+    setting :community_leader_favorite_refresh_hours, type: :integer, default: 24
+    setting :community_leader_inactivity_days, type: :integer, default: 120
 
     # Mobile App
     setting :show_mobile_app_banner, type: :boolean, default: true

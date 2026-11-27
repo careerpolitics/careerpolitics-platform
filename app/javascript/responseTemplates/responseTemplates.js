@@ -13,25 +13,38 @@ function toggleTemplateTypeButton(form, e) {
     .classList.toggle('hidden');
 }
 
+const HTML_ESCAPE_MAP = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (ch) => HTML_ESCAPE_MAP[ch]);
+}
+
 const noResponsesHTML = `
 <div class="mod-response-wrapper mod-response-wrapper-empty">
   <p>🤔... It looks like you don't have any templates yet.</p>
 </div>
 `;
 
-function buildHTML(response, typeOf) {
+export function buildHTML(response, typeOf) {
   if (response.length === 0 && typeOf === 'personal_comment') {
     return noResponsesHTML;
   }
   if (typeOf === 'personal_comment') {
     return response
       .map((obj) => {
-        const content = obj.content.replaceAll('"', '&quot;');
+        const title = escapeHtml(obj.title);
+        const content = escapeHtml(obj.content);
         return `
           <div class="mod-response-wrapper flex mb-4">
             <div class="flex-1">
-              <h4>${obj.title}</h4>
-              <p>${obj.content}</p>
+              <h4>${title}</h4>
+              <p>${content}</p>
             </div>
             <div class="pl-2">
               <button class="crayons-btn crayons-btn--secondary crayons-btn--s insert-template-button" type="button" data-content="${content}">Insert</button>
@@ -44,15 +57,17 @@ function buildHTML(response, typeOf) {
   if (typeOf === 'mod_comment') {
     return response
       .map((obj) => {
-        const content = obj.content.replaceAll('"', '&quot;');
+        const id = escapeHtml(obj.id);
+        const title = escapeHtml(obj.title);
+        const content = escapeHtml(obj.content);
         return `
             <div class="mod-response-wrapper mb-4 flex">
               <div class="flex-1">
-                <h4>${obj.title}</h4>
-                <p>${obj.content}</p>
+                <h4>${title}</h4>
+                <p>${content}</p>
               </div>
               <div class="flex flex-nowrap pl-2">
-                <button class="crayons-btn crayons-btn--s crayons-btn--secondary moderator-submit-button m-1" type="submit" data-response-template-id="${obj.id}">Send as Mod</button>
+                <button class="crayons-btn crayons-btn--s crayons-btn--secondary moderator-submit-button m-1" type="submit" data-response-template-id="${id}">Send as Mod</button>
                 <button class="crayons-btn crayons-btn--s crayons-btn--outlined insert-template-button m-1" type="button" data-content="${content}">Insert</button>
               </div>
             </div>
@@ -63,8 +78,31 @@ function buildHTML(response, typeOf) {
   return `Error 😞`;
 }
 
-function submitAsModerator(responseTemplateId, parentId) {
-  const commentableId = document.getElementById('comment_commentable_id').value;
+/**
+ * Reads a comment[...] hidden field value from the given form.
+ *
+ * @param {HTMLFormElement} form The comment form
+ * @param {string} field The comment attribute name, e.g. "parent_id"
+ * @returns {string|null} The field value, or null when absent or blank
+ */
+function readCommentField(form, field) {
+  const input = form.querySelector(`[name="comment[${field}]"]`);
+  return input && input.value ? input.value : null;
+}
+
+/**
+ * Submits a moderator response template as a comment.
+ *
+ * @param {string} responseTemplateId The response template ID
+ * @param {HTMLFormElement} form The selected comment form, used for parent and commentable data
+ */
+function submitAsModerator(responseTemplateId, form) {
+  const parentId = readCommentField(form, 'parent_id');
+  const commentableId =
+    readCommentField(form, 'commentable_id') ||
+    document.getElementById('comment_commentable_id')?.value;
+  const commentableType =
+    readCommentField(form, 'commentable_type') || 'Article';
 
   fetch(`/comments/moderator_create`, {
     method: 'POST',
@@ -80,7 +118,7 @@ function submitAsModerator(responseTemplateId, parentId) {
       comment: {
         body_markdown: '',
         commentable_id: commentableId,
-        commentable_type: 'Article',
+        commentable_type: commentableType,
         parent_id: parentId,
       },
     }),
@@ -112,8 +150,6 @@ function addClickListeners(form, onTemplateSelected) {
   const responsesContainer = form.getElementsByClassName(
     'response-templates-container',
   )[0];
-  const parentCommentId =
-    form.id !== 'new_comment' && !form.id.includes('edit_comment');
   const insertButtons = Array.from(
     responsesContainer.getElementsByClassName('insert-template-button'),
   );
@@ -145,7 +181,7 @@ function addClickListeners(form, onTemplateSelected) {
       e.preventDefault();
 
       if (confirm(confirmMsg)) {
-        submitAsModerator(e.target.dataset.responseTemplateId, parentCommentId);
+        submitAsModerator(e.target.dataset.responseTemplateId, form);
       }
     });
   });

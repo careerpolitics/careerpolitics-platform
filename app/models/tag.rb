@@ -32,7 +32,10 @@ class Tag < ActsAsTaggableOn::Tag
   include StringAttributeCleaner.nullify_blanks_for(:alias_for)
   ALLOWED_CATEGORIES = %w[uncategorized language library tool site_mechanic location subcommunity].freeze
   HEX_COLOR_REGEXP = /\A#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})\z/
+  SUPPORTED_TAGS_SURROGATE_KEY = "supported_tags".freeze
   ATTRIBUTES_FOR_SERIALIZATION = %i[id name bg_color_hex text_color_hex short_summary badge_id].freeze
+  # tags.hotness_score is a 4-byte integer column
+  HOTNESS_SCORE_RANGE = (-(2**31)..((2**31) - 1))
 
   belongs_to :badge, optional: true
 
@@ -60,6 +63,8 @@ class Tag < ActsAsTaggableOn::Tag
 
   after_save :update_suggested_tags, if: :saved_change_to_suggested?
   after_commit :bust_cache
+  after_commit :purge_tag_lists, on: :create
+  after_commit :resolve_pending_liquid_embed_references, on: :create
 
   # @note Even though we have a data migration script (see further
   #       comments below), as of <2022-01-04 Tue> we had 5 tags where
@@ -86,6 +91,8 @@ class Tag < ActsAsTaggableOn::Tag
   scope :eager_load_serialized_data, -> {}
   scope :supported, -> { where(supported: true) }
   scope :from_subforem, lambda { |subforem_id = nil|
+    return where(supported: true) if Subforem.disabled_by_env?
+
     subforem_id ||= RequestStore.store[:subforem_id]
     # Include subforem_relationships and return tags that are in that relationship
     if subforem_id.present? && subforem_id == RequestStore.store[:root_subforem_id]
@@ -102,6 +109,11 @@ class Tag < ActsAsTaggableOn::Tag
 
   scope :suggested_for_onboarding, -> { where(suggested: true) }
 
+  # Purges the edge-cached list of supported tags (e.g. /api/tags/supported).
+  def self.purge_supported_tags
+    EdgeCache::PurgeByKey.call(SUPPORTED_TAGS_SURROGATE_KEY)
+  end
+
   def self.valid_categories
     ALLOWED_CATEGORIES
   end
@@ -115,6 +127,14 @@ class Tag < ActsAsTaggableOn::Tag
 
   def self.find_preferred_alias_for(word)
     find_by(name: word.downcase)&.alias_for.presence || word.downcase
+  end
+
+  def self.find_preferred_aliases_for(words)
+    return [] if words.blank?
+
+    downcased = words.map(&:downcase)
+    aliases = where(name: downcased).where.not(alias_for: [nil, ""]).pluck(:name, :alias_for).to_h
+    downcased.map { |word| aliases[word] || word }
   end
 
   # While this non-end user facing flag is "in play", our goal is to say that when it's "false"
@@ -180,6 +200,21 @@ class Tag < ActsAsTaggableOn::Tag
       .order(hotness_score: :desc)
   end
 
+  # Same tags as `Tag.with_role(:tag_moderator, user)`, but avoids rolify's
+  # `roles.resource_id IS NULL OR roles.resource_id = tags.id` join condition,
+  # which forces a sequential scan of the whole tags table.  We only fall back
+  # to rolify when the user holds a class-wide (resource_id IS NULL) role, since
+  # that grants every tag.
+  #
+  # @param user [User]
+  # @return [ActiveRecord::Relation<Tag>]
+  def self.moderated_by(user)
+    roles = user.roles.where(name: "tag_moderator", resource_type: "Tag")
+    return with_role(:tag_moderator, user) if roles.exists?(resource_id: nil)
+
+    where(id: roles.select(:resource_id))
+  end
+
   # returns the tags that are followed by the user
   # @param user [User] the user to check
   # @param points [Range] the range of explicit points to check for (default is 0 (including 0) to infinity)
@@ -210,8 +245,17 @@ class Tag < ActsAsTaggableOn::Tag
     submission_template&.gsub("PARAM_0", param_0)
   end
 
+  def tag_moderators
+    role_ids = Role.where(name: "tag_moderator", resource_type: "Tag", resource_id: [nil, id])
+      .or(Role.where(name: "tag_moderator", resource_type: nil, resource_id: nil))
+      .ids
+    return User.none if role_ids.empty?
+
+    User.where(id: UserRole.where(role_id: role_ids).select(:user_id))
+  end
+
   def tag_moderator_ids
-    User.with_role(:tag_moderator, self).order(id: :asc).ids
+    tag_moderators.order(id: :asc).ids
   end
 
   def validate_name
@@ -305,14 +349,34 @@ class Tag < ActsAsTaggableOn::Tag
       .to_a
       .first
 
-    self.hotness_score =
+    # The busiest tags (many recent articles * a large taggings_count) can
+    # exceed the integer column, which would raise ActiveModel::RangeError on
+    # save, so cap the score at the column's limits.
+    self.hotness_score = (
       score_attributes.partial_score.to_i +
       (score_attributes.article_count.to_i * ((taggings_count + 6) / 2))
+    ).clamp(HOTNESS_SCORE_RANGE)
   end
 
   def bust_cache
     Tags::BustCacheWorker.perform_async(name)
     Rails.cache.delete("view-helper-#{name}/tag_colors")
+  end
+
+  # Edge-cached tag lists (e.g. /api/tags, or a ?name= lookup that found
+  # nothing) carry only the table key, so a new tag must purge it.
+  def purge_tag_lists
+    EdgeCache::PurgeByKey.call(table_key)
+  end
+
+  def resolve_pending_liquid_embed_references
+    return if name.blank?
+
+    normalized_name = name.downcase
+    updated = LiquidEmbedReference
+      .where(tag_name: "feed", referenced_id: nil, referenced_type: [nil, "Tag"], url: [name, normalized_name].uniq)
+      .update_all(referenced_type: "Tag", referenced_id: id, url: normalized_name)
+    LiquidEmbedReference.bust_feed_targets_cache! if updated.positive?
   end
 
   def validate_alias_for

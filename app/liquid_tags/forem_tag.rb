@@ -20,6 +20,7 @@ module ForemTag
   def self.determine_klass(link)
     return TagTag if link.start_with?("#{URL.url}/t/")
     return CommentTag if link.include?("/comment/")
+    return PageTag if PageTag.embeddable_page?(link)
 
     process_other_link_types(link)
   end
@@ -43,7 +44,7 @@ module ForemTag
   end
 
   def self.podcast_or_link(match)
-    return PodcastTag if Podcast.find_by(slug: match[:podcast])
+    return PodcastTag if Podcast.published.find_by(slug: match[:podcast])
 
     LinkTag
   end

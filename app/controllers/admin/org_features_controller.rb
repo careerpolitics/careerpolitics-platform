@@ -18,12 +18,22 @@ module Admin
       org_verification: {
         name: "Organization Verification",
         description: "When enabled, organizations can request verification and display a verified badge."
+      },
+      org_related_articles: {
+        name: "Related Articles API",
+        description: "When enabled, members of this organization can call the related articles API to find " \
+                     "public community writing about their technology."
+      },
+      org_article_analytics: {
+        name: "Article Analytics API",
+        description: "When enabled, members of this organization can export their own articles' performance " \
+                     "through the analytics API."
       }
     }.freeze
 
     def index
       @features = FEATURES.map do |key, config|
-        feature = Flipper.feature(key)
+        feature = FeatureFlag.uncached.feature(key)
         globally_enabled = feature.state == :on
 
         # Get per-org enablements from Flipper gates.

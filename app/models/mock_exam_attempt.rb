@@ -5,7 +5,7 @@ class MockExamAttempt < ApplicationRecord
   has_many :mock_exam_responses, dependent: :destroy
   has_many :mock_exam_questions, dependent: :destroy
 
-  enum status: { in_progress: 0, submitted: 1, timed_out: 2, abandoned: 3 }
+  enum :status, { in_progress: 0, submitted: 1, timed_out: 2, abandoned: 3 }
 
   validates :started_at, presence: true
   validates :expires_at, presence: true

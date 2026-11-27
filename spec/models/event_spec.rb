@@ -1,30 +1,31 @@
 require "rails_helper"
 
-RSpec.describe Event, type: :model do
-  describe "validations" do
-    # Validations tests have been moved into their dedicated block extending boundaries.
-  end
-
+RSpec.describe Event do
   describe "associations" do
     it { is_expected.to belong_to(:user).optional }
     it { is_expected.to belong_to(:organization).optional }
     it { is_expected.to belong_to(:page).optional }
+    it { is_expected.to have_many(:emails).dependent(:nullify) }
+    it { is_expected.to have_many(:articles).dependent(:nullify) }
   end
 
   describe "enums" do
     it do
-      is_expected.to define_enum_for(:type_of).with_values(
+      expect(subject).to define_enum_for(:type_of).with_values(
         live_stream: 0,
         takeover: 1,
         other: 2,
-        challenge: 3
+        challenge: 3,
+        meetup: 4,
+        conference: 5,
       )
     end
+
     it do
-      is_expected.to define_enum_for(:broadcast_config).with_values(
+      expect(subject).to define_enum_for(:broadcast_config).with_values(
         no_broadcast: 0,
         tagged_broadcast: 1,
-        global_broadcast: 2
+        global_broadcast: 2,
       )
     end
   end
@@ -37,7 +38,7 @@ RSpec.describe Event, type: :model do
     it { is_expected.to validate_presence_of(:end_time) }
     it { is_expected.to validate_presence_of(:event_name_slug) }
     it { is_expected.to validate_presence_of(:event_variation_slug) }
-    
+
     it "requires uniqueness of event_variation_slug scoped to event_name_slug" do
       create(:event, event_name_slug: "test-event", event_variation_slug: "v1")
       duplicate = build(:event, event_name_slug: "test-event", event_variation_slug: "v1")
@@ -113,7 +114,7 @@ RSpec.describe Event, type: :model do
 
       event2 = create(:event, primary_stream_url: "https://streamyard.com/e/12345")
       expect(event2.primary_stream_url).to eq("https://streamyard.com/e/12345")
-      
+
       event3 = create(:event, primary_stream_url: "https://streamyard.com/12345")
       expect(event3.primary_stream_url).to eq("https://streamyard.com/e/12345")
     end
@@ -127,40 +128,40 @@ RSpec.describe Event, type: :model do
 
     it "generates fully formulated HTML billboards containing dynamic parameters for a takeover" do
       user = create(:user)
-      event = create(:event, 
-                     broadcast_config: "global_broadcast", 
+      event = create(:event,
+                     broadcast_config: "global_broadcast",
                      type_of: "takeover",
-                     title: "Test HTML Event", 
+                     title: "Test HTML Event",
                      description: "A very exciting summary",
-                     event_name_slug: "test-html-event", 
+                     event_name_slug: "test-html-event",
                      event_variation_slug: "v1",
                      data: { "image_url" => "https://dummyimage.com/img.jpg" },
                      user: user)
 
       # 2 billboards (feed_first, post_fixed_bottom)
       expect(event.billboards.count).to eq(2)
-      
+
       feed_bb = event.billboards.find_by(placement_area: "feed_first")
       post_bb = event.billboards.find_by(placement_area: "post_fixed_bottom")
 
       expect(feed_bb.published).to be(true)
       expect(feed_bb.approved).to be(false) # Needs worker to approve
-      
+
       expect(feed_bb.render_mode).to eq("raw")
       expect(feed_bb.template).to eq("authorship_box")
       expect(post_bb.template).to eq("authorship_box")
       expect(feed_bb.custom_display_label).to eq("#{Settings::Community.community_name} Takeovers")
-      
+
       expect(feed_bb.name).to start_with("takeover_")
       expect(feed_bb.dismissal_sku).to start_with("takeover_")
       expect(feed_bb.name).to include("_feed")
-      
+
       expect(post_bb.render_mode).to eq("raw")
       expect(post_bb.template).to eq("authorship_box")
       expect(post_bb.dismissal_sku).to eq(feed_bb.dismissal_sku)
       expect(post_bb.name).to include("_post")
-      expect(post_bb.name).to_not eq(feed_bb.name)
-      
+      expect(post_bb.name).not_to eq(feed_bb.name)
+
       # Assert the HTML was injected cleanly inside body_markdown using user fallback
       expect(feed_bb.body_markdown).to include("id=\"event-takeover-image-feed\"")
       expect(feed_bb.body_markdown).to include("Tune in to the full event")
@@ -171,11 +172,39 @@ RSpec.describe Event, type: :model do
 
       expect(post_bb.body_markdown).to include("id=\"event-takeover-image\"")
     end
+
+    it "generates persistent on-post billboard with minimized HTML for a live_stream event" do
+      user = create(:user)
+      event = create(:event,
+                     broadcast_config: "global_broadcast",
+                     type_of: "live_stream",
+                     title: "Test Live Stream Event",
+                     description: "A live broadcast summary",
+                     event_name_slug: "test-live-stream",
+                     event_variation_slug: "v1",
+                     user: user)
+
+      expect(event.billboards.count).to eq(2)
+
+      feed_bb = event.billboards.find_by(placement_area: "feed_first")
+      post_bb = event.billboards.find_by(placement_area: "post_fixed_bottom")
+
+      expect(feed_bb.custom_display_label).to eq("#{Settings::Community.community_name} Live Events")
+
+      expect(post_bb.special_behavior).to eq("persistent")
+      expect(post_bb.minimized_body_markdown).to include("live-stream-minimized")
+      expect(post_bb.minimized_body_markdown).to include("Test Live Stream Event")
+      expect(post_bb.minimized_body_markdown).to include("A live broadcast summary")
+      expect(post_bb.minimized_body_markdown).to include("/events/test-live-stream/v1")
+      expect(post_bb.minimized_body_markdown).to include("media-wrapper-minimized")
+      expect(post_bb.minimized_body_markdown).to include("player-container-minimized")
+      expect(post_bb.minimized_processed_html).to include("live-stream-minimized")
+    end
   end
 
   describe "Callbacks" do
     it "registers #bust_upcoming_events_cache as an after_commit callback" do
-      callback_names = Event._commit_callbacks.select { |cb| cb.kind == :after }.map(&:filter)
+      callback_names = described_class._commit_callbacks.select { |cb| cb.kind == :after }.map(&:filter)
       expect(callback_names).to include(:bust_upcoming_events_cache)
     end
   end
@@ -201,5 +230,362 @@ RSpec.describe Event, type: :model do
       expect(Rails.cache.read("upcoming_elevated_events")).to be_nil
     end
   end
-end
 
+  describe "bg_color_hex validation" do
+    it "validates format of bg_color_hex when present" do
+      valid_event = build(:event, bg_color_hex: "#3B49DF")
+      invalid_event = build(:event, bg_color_hex: "invalid-hex")
+      short_event = build(:event, bg_color_hex: "#123")
+
+      expect(valid_event).to be_valid
+      expect(invalid_event).not_to be_valid
+      expect(short_event).not_to be_valid
+    end
+  end
+
+  describe "#set_default_bg_color_hex" do
+    it "preserves explicitly assigned bg_color_hex" do
+      supported_tag = create(:tag, name: "ruby", supported: true, bg_color_hex: "#CC342D")
+      event = create(:event, bg_color_hex: "#7C3AED")
+      event.tags << supported_tag
+      event.save!
+
+      expect(event.reload.bg_color_hex).to eq("#7C3AED")
+    end
+
+    it "auto-populates bg_color_hex from the first supported tag on save when blank" do
+      supported_tag = create(:tag, name: "ruby", supported: true, bg_color_hex: "#CC342D")
+      event = build(:event, bg_color_hex: nil)
+      event.tags << supported_tag
+      event.save!
+
+      expect(event.reload.bg_color_hex).to eq("#CC342D")
+    end
+
+    it "leaves bg_color_hex nil when tags are unsupported or without color" do
+      unsupported_tag = create(:tag, name: "customtag", supported: false, bg_color_hex: "#112233")
+      event = build(:event, bg_color_hex: nil)
+      event.tags << unsupported_tag
+      event.save!
+
+      expect(event.reload.bg_color_hex).to be_nil
+    end
+  end
+
+  describe "#background_hex_color" do
+    it "returns the stored bg_color_hex if present" do
+      event = build(:event, bg_color_hex: "#DB2777")
+      expect(event.background_hex_color).to eq("#DB2777")
+    end
+
+    it "deterministically chooses from DEFAULT_HEX_COLORS when bg_color_hex is nil" do
+      event = build(:event, id: 1, bg_color_hex: nil)
+      expected_color = Event::DEFAULT_HEX_COLORS[1 % Event::DEFAULT_HEX_COLORS.size]
+      expect(event.background_hex_color).to eq(expected_color)
+    end
+  end
+
+  describe "#gradient_background_css" do
+    it "returns a linear gradient string with shaded tones" do
+      event = build(:event, id: 2, bg_color_hex: "#0D9488")
+      css = event.gradient_background_css
+      expect(css).to start_with("linear-gradient(135deg,")
+      expect(css).to include("#0D9488")
+    end
+  end
+
+  describe "#social_image_url" do
+    it "returns the fallback main social image when cover_image is blank" do
+      event = build(:event, cover_image: nil)
+      expect(event.social_image_url).to eq(Settings::General.main_social_image.to_s)
+    end
+
+    it "returns the cover image url when cover_image is present" do
+      event = create(:event, cover_image: Rack::Test::UploadedFile.new(
+        Rails.root.join("spec/fixtures/files/800x600.png"),
+        "image/png",
+      ))
+      expect(event.social_image_url).to be_present
+      expect(event.social_image_url).to include("800x600.png").or include("uploads/events/cover_image")
+    end
+  end
+
+  describe "#live?" do
+    it "returns true when current time is between start_time and end_time" do
+      event = build(:event, start_time: 1.hour.ago, end_time: 1.hour.from_now)
+      expect(event.live?).to be(true)
+    end
+
+    it "returns false when start_time is in the future" do
+      event = build(:event, start_time: 1.hour.from_now, end_time: 2.hours.from_now)
+      expect(event.live?).to be(false)
+    end
+
+    it "returns false when end_time is in the past" do
+      event = build(:event, start_time: 2.hours.ago, end_time: 1.hour.ago)
+      expect(event.live?).to be(false)
+    end
+  end
+
+  describe "#formatted_date_range" do
+    it "formats same-month date ranges as 'MMM D - D'" do
+      event = build(
+        :event,
+        start_time: Time.zone.local(2026, 8, 28, 10, 0),
+        end_time: Time.zone.local(2026, 8, 30, 18, 0),
+      )
+      expect(event.formatted_date_range).to eq("AUG 28 - 30")
+    end
+
+    it "formats cross-month date ranges as 'MMM D - MMM D'" do
+      event = build(
+        :event,
+        start_time: Time.zone.local(2026, 8, 30, 10, 0),
+        end_time: Time.zone.local(2026, 9, 2, 18, 0),
+      )
+      expect(event.formatted_date_range).to eq("AUG 30 - SEP 2")
+    end
+
+    it "formats single-day events as 'MMM D'" do
+      event = build(
+        :event,
+        start_time: Time.zone.local(2026, 8, 28, 10, 0),
+        end_time: Time.zone.local(2026, 8, 28, 18, 0),
+      )
+      expect(event.formatted_date_range).to eq("AUG 28")
+    end
+  end
+
+  describe "#time_zone" do
+    it "uses the zone named in data" do
+      event = build(:event, data: { "time_zone" => "America/Los_Angeles" })
+
+      expect(event.time_zone.tzinfo.identifier).to eq("America/Los_Angeles")
+    end
+
+    it "falls back to the app time zone when data has no zone or an unknown one" do
+      expect(build(:event, data: {}).time_zone).to eq(Time.zone)
+      expect(build(:event, data: { "time_zone" => "Not/AZone" }).time_zone).to eq(Time.zone)
+    end
+  end
+
+  describe "#format_pill_label" do
+    it "returns custom format when present in data" do
+      event = build(:event, data: { "format" => "in-person" })
+      expect(event.format_pill_label).to eq("IN-PERSON")
+    end
+
+    it "defaults to DIGITAL for live_stream" do
+      event = build(:event, type_of: :live_stream)
+      expect(event.format_pill_label).to eq("DIGITAL")
+    end
+
+    it "defaults to CHALLENGE for challenge" do
+      event = build(:event, type_of: :challenge)
+      expect(event.format_pill_label).to eq("CHALLENGE")
+    end
+
+    it "defaults to MEETUP for meetup" do
+      event = build(:event, type_of: :meetup)
+      expect(event.format_pill_label).to eq("MEETUP")
+    end
+
+    it "defaults to CONFERENCE for conference" do
+      event = build(:event, type_of: :conference)
+      expect(event.format_pill_label).to eq("CONFERENCE")
+    end
+  end
+
+  describe "#body_html" do
+    it "renders body_markdown to processed_html on save and uses it" do
+      event = create(:event, description: "Short summary.", body_markdown: "## Agenda\n\n**Bold** plan")
+      expect(event.processed_html).to include("<h2")
+      expect(event.body_html).to include("<strong>Bold</strong>")
+      expect(event.body_html).not_to include("Short summary.")
+    end
+
+    it "falls back to the description when body_markdown is blank" do
+      event = create(:event, description: "Short summary.", body_markdown: "")
+      expect(event.processed_html).to be_nil
+      expect(event.body_html).to include("<p>Short summary.</p>")
+    end
+
+    it "does not save and reports an error when the markdown fails to parse" do
+      event = build(:event, body_markdown: "hello {% gist 123 %}")
+      expect(event.save).to be(false)
+      expect(event.errors[:body_markdown].join).to include("Invalid Gist link")
+    end
+
+    it "excludes body fields from JSON serialization" do
+      event = create(:event, body_markdown: "Hello")
+      expect(event.as_json.keys).not_to include("body_markdown", "processed_html")
+    end
+
+    it "clears processed_html when body_markdown is removed" do
+      event = create(:event, body_markdown: "Hello **world**")
+      event.update!(body_markdown: "")
+      expect(event.reload.processed_html).to be_nil
+    end
+  end
+
+  describe "owned pages" do
+    it "orders markdown pages, embed pages, showcase, and syncs page slugs on rename" do
+      event = create(:event, event_name_slug: "summit", event_variation_slug: "v1")
+      second = create(:page, event: event, slug: event.page_slug_for("second"), position: 2)
+      first = create(:page, event: event, slug: event.page_slug_for("first"), position: 1, show_in_navigation: false)
+      embed = create(
+        :page,
+        event: event,
+        slug: event.embed_page_slug_for("schedule"),
+        template: Page::EMBED_HTML_TEMPLATE,
+        body_markdown: nil,
+        body_html: "<div>Schedule</div>",
+      )
+
+      expect(event.ordered_pages).to eq([first, second])
+      expect(event.navigation_pages).to eq([second])
+      expect(event.ordered_embed_pages).to eq([embed])
+      expect(event.main_page).to be_nil
+      expect(event.readme_page?).to be(false)
+
+      readme = create(:page, event: event, slug: event.page_slug_for("readme"), position: 0)
+      expect(event.main_page).to eq(readme)
+      expect(event.showcase_page).to eq(readme)
+      expect(event.readme_page?).to be(true)
+
+      event.update!(event_name_slug: "summit-new", event_variation_slug: "2026")
+      expect(readme.reload.slug).to eq("events/summit-new/2026/readme")
+      expect(first.reload.slug).to eq("events/summit-new/2026/first")
+      expect(embed.reload.slug).to eq("events/summit-new/2026/embed/schedule")
+
+      expect { event.destroy! }.to change(Page, :count).by(-4)
+    end
+
+    it "fails event validation instead of raising RecordInvalid on owned page slug collision" do
+      event = create(:event, event_name_slug: "summit-src", event_variation_slug: "v1")
+      owned = create(:page, event: event, slug: event.page_slug_for("faq"))
+      create(:page, slug: "events/summit-dst/v1/faq")
+
+      expect(event.update(event_name_slug: "summit-dst")).to be(false)
+      expect(event.errors[:base]).to be_present
+      expect(owned.reload.slug).to eq("events/summit-src/v1/faq")
+    end
+
+    it "enqueues edge cache purge with owned page and embed fallback paths when updated or destroyed" do
+      event = create(:event, published: true, event_name_slug: "purge-evt", event_variation_slug: "2026")
+      create(:page, event: event, slug: event.page_slug_for("agenda"), title: "Agenda")
+      create(
+        :page,
+        event: event,
+        slug: event.embed_page_slug_for("widget"),
+        title: "Widget",
+        template: Page::EMBED_HTML_TEMPLATE,
+        body_markdown: nil,
+        body_html: "<div>Widget</div>",
+      )
+      allow(EdgeCache::PurgeByKeyWorker).to receive(:perform_async)
+
+      event.update!(published: false)
+      expect(EdgeCache::PurgeByKeyWorker).to have_received(:perform_async).with(
+        event.record_key,
+        contain_exactly(
+          "/events/purge-evt/2026",
+          "/events/purge-evt/2026/p/agenda",
+          "/events/purge-evt/2026/embed/widget?mode=embed",
+        ),
+      )
+
+      event.update!(event_name_slug: "purge-evt-v2")
+      expect(EdgeCache::PurgeByKeyWorker).to have_received(:perform_async).with(
+        event.record_key,
+        contain_exactly(
+          "/events/purge-evt-v2/2026",
+          "/events/purge-evt-v2/2026/p/agenda",
+          "/events/purge-evt-v2/2026/embed/widget?mode=embed",
+          "/events/purge-evt/2026",
+          "/events/purge-evt/2026/p/agenda",
+          "/events/purge-evt/2026/embed/widget?mode=embed",
+        ),
+      )
+
+      event.destroy!
+      expect(EdgeCache::PurgeByKeyWorker).to have_received(:perform_async).with(
+        event.record_key,
+        contain_exactly(
+          "/events/purge-evt-v2/2026",
+          "/events/purge-evt-v2/2026/p/agenda",
+          "/events/purge-evt-v2/2026/embed/widget?mode=embed",
+        ),
+      )
+    end
+  end
+
+  describe "articles toggle, visibility, and nullify on destroy" do
+    it "defaults allow_articles to false" do
+      event = create(:event)
+      expect(event.allow_articles).to be(false)
+    end
+
+    it "evaluates timing and visibility predicates across before, during, and after" do
+      upcoming = build(:event, published: true, allow_articles: true,
+                               start_time: 2.hours.from_now, end_time: 4.hours.from_now)
+      live = build(:event, published: true, allow_articles: true,
+                           start_time: 1.hour.ago, end_time: 1.hour.from_now)
+      ended = build(:event, published: true, allow_articles: true,
+                            start_time: 4.hours.ago, end_time: 2.hours.ago)
+      disabled = build(:event, published: true, allow_articles: false,
+                               start_time: 1.hour.ago, end_time: 1.hour.from_now)
+
+      expect(upcoming).to have_attributes(upcoming?: true, started?: false, articles_visible?: false)
+      expect(live).to have_attributes(started?: true, ended?: false, articles_visible?: true)
+      expect(ended).to have_attributes(started?: true, ended?: true, articles_visible?: true)
+      expect(disabled).to have_attributes(articles_visible?: false)
+    end
+
+    it "evaluates accepting_articles? for regular users vs admins" do
+      upcoming = build(:event, published: true, allow_articles: true,
+                               start_time: 2.hours.from_now, end_time: 4.hours.from_now)
+      live = build(:event, published: true, allow_articles: true,
+                           start_time: 1.hour.ago, end_time: 1.hour.from_now)
+      ended = build(:event, published: true, allow_articles: true,
+                            start_time: 4.hours.ago, end_time: 2.hours.ago)
+      draft_live = build(:event, published: false, allow_articles: true,
+                                 start_time: 1.hour.ago, end_time: 1.hour.from_now)
+      disabled = build(:event, published: true, allow_articles: false,
+                               start_time: 1.hour.ago, end_time: 1.hour.from_now)
+
+      expect([upcoming, ended, draft_live].map(&:accepting_articles?)).to all(be(false))
+      expect([upcoming, live, ended, draft_live].map { |e| e.accepting_articles?(as_admin: true) }).to all(be(true))
+      expect(live.accepting_articles?).to be(true)
+      expect(disabled.accepting_articles?(as_admin: true)).to be(false)
+    end
+
+    it "returns visible_articles only when allow_articles is true and the event has started" do
+      admin = create(:user, :super_admin)
+      upcoming = create(:event, published: true, allow_articles: true,
+                                start_time: 1.hour.from_now, end_time: 3.hours.from_now)
+      published_article = create(:article, user: admin, event: upcoming, published: true)
+      draft_article = create(:article, user: admin, event: upcoming, published: false)
+
+      expect(upcoming.visible_articles).to be_empty
+
+      upcoming.update!(start_time: 1.hour.ago, end_time: 1.hour.from_now)
+      expect(upcoming.visible_articles).to contain_exactly(published_article)
+      expect(upcoming.visible_articles).not_to include(draft_article)
+
+      upcoming.update!(allow_articles: false)
+      expect(upcoming.visible_articles).to be_empty
+    end
+
+    it "nullifies associated articles without deleting them when destroyed" do
+      user = create(:user)
+      event = create(:event, published: true, allow_articles: true,
+                             start_time: 1.hour.ago, end_time: 1.hour.from_now)
+      article = create(:article, user: user, event: event, published: true)
+
+      event.destroy!
+
+      expect(article.reload.event_id).to be_nil
+    end
+  end
+end

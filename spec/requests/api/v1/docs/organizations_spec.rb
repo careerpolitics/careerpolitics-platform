@@ -20,10 +20,15 @@ RSpec.describe "Api::V1::Docs::Organizations" do
       get "An organization (by username)" do
         tags "organizations"
         security []
-        description "This endpoint allows the client to retrieve a single organization by their username"
+        description "Retrieve public profile information for a single organization by its username.
+
+### Integration Tip:
+- Bypasses authentication.
+- Returns details like Tech Stack, Tagline, Story, website URLs, and joined date."
         operationId "getOrganization"
         produces "application/json"
-        parameter name: :username, in: :path, type: :string, required: true
+        parameter name: :username, in: :path, type: :string, required: true,
+                  description: "The unique slugified username of the organization (e.g. `github`)."
 
         response "200", "An Organization" do
           let(:username) { organization.username }
@@ -45,12 +50,15 @@ RSpec.describe "Api::V1::Docs::Organizations" do
       get "Organization's users" do
         tags "organizations", "users"
         security []
-        description "This endpoint allows the client to retrieve a list of users belonging to the organization
+        description "Retrieve a list of public user profiles associated with the organization.
 
-It supports pagination, each page will contain `30` users by default."
+### Path Parameter Options:
+- **organization_id_or_username**: Supports either the organization's unique numerical ID OR its string username (slug).
+- Ideal for displaying team member directory lists on organization/brand pages."
         operationId "getOrgUsers"
         produces "application/json"
-        parameter name: :organization_id_or_username, in: :path, type: :string, required: true
+        parameter name: :organization_id_or_username, in: :path, type: :string, required: true,
+                  description: "The organization's numerical ID or string username."
         parameter "$ref": "#/components/parameters/pageParam"
         parameter "$ref": "#/components/parameters/perPageParam30to1000"
 
@@ -78,16 +86,61 @@ It supports pagination, each page will contain `30` users by default."
       end
     end
 
+    path "/api/organizations/{organization_id_or_username}/listings" do
+      get "Organization's listings" do
+        tags "organizations", "listings"
+        security []
+        description "This endpoint has been retired and always returns an empty array for an existing organization.
+
+### Path Parameter Options:
+- **organization_id_or_username**: Supports either the organization's numerical ID or its string username (slug)."
+        operationId "getOrgListings"
+        produces "application/json"
+        parameter name: :organization_id_or_username, in: :path, type: :string, required: true,
+                  description: "The organization's numerical ID or string username."
+
+        response "200", "An Organization's listings (with username)" do
+          let(:organization_id_or_username) { organization.username }
+          schema  type: :array,
+                  items: { type: :object }
+          add_examples
+          run_test! do |response|
+            expect(response.parsed_body).to eq([])
+          end
+        end
+
+        response "200", "An Organization's listings (with ID)" do
+          let(:organization_id_or_username) { organization.id }
+          schema  type: :array,
+                  items: { type: :object }
+          add_examples
+          run_test! do |response|
+            expect(response.parsed_body).to eq([])
+          end
+        end
+
+        response "404", "Not Found" do
+          let(:organization_id_or_username) { "non-existent-id-or-username" }
+          add_examples
+          run_test!
+        end
+      end
+    end
+
     path "/api/organizations/{organization_id_or_username}/articles" do
       get "Organization's Articles" do
         tags "organizations", "articles"
         security []
-        description "This endpoint allows the client to retrieve a list of Articles belonging to the organization
+        description "Retrieve a list of articles published by the organization.
 
-It supports pagination, each page will contain `30` users by default."
+### Path Parameter Options:
+- **organization_id_or_username**: Supports either the organization's unique numerical ID OR its string username (slug).
+- Returns articles in reverse chronological publication order.
+- Ideal for populating an organization's custom blog feed or publication listing."
         operationId "getOrgArticles"
         produces "application/json"
-        parameter name: :organization_id_or_username, in: :path, type: :string, required: true
+        parameter name: :organization_id_or_username, in: :path, type: :string, required: true,
+                  description: "The organization's numerical ID or string username."
         parameter "$ref": "#/components/parameters/pageParam"
         parameter "$ref": "#/components/parameters/perPageParam30to1000"
 

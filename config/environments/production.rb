@@ -13,7 +13,7 @@ Rails.application.configure do
   end
 
   # Configure secret_key_base directly from environment variable to support Rails 7.2 and 8.0
-  config.secret_key_base = ENV["SECRET_KEY_BASE"]
+  config.secret_key_base = ENV.fetch("SECRET_KEY_BASE", nil)
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
@@ -40,11 +40,15 @@ Rails.application.configure do
     "Cache-Control" => "public, s-maxage=#{30.days.to_i}, max-age=#{3000.days.to_i}"
   }
 
-  # Compress JavaScripts and CSS.
-  config.assets.js_compressor = :terser
+  # Compress JavaScripts and CSS (skipping app/assets/builds, which esbuild already minifies).
+  config.assets.js_compressor = :terser_skip_builds
   # config.assets.css_compressor = :sass
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
+  # NOTE: Forem intentionally keeps `config.assets.compile = true` so that
+  # `Rails.application.assets[...]` remains initialized in production for views/models
+  # that inline compiled CSS (e.g., `app/views/layouts/_user_config.html.erb`,
+  # `app/models/comment.rb#custom_css`, and `app/views/onboardings/show.html.erb`).
   config.assets.compile = true
 
   # `config.assets.precompile` and `config.assets.version` have moved to config/initializers/assets.rb
@@ -57,8 +61,21 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = 'X-Sendfile' # for Apache
   # config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for NGINX
 
+  # Assume SSL is already terminated by an upstream reverse proxy (e.g., kamal-proxy, Cloudflare, or ALB).
+  config.assume_ssl = ENV["RAILS_ASSUME_SSL"] == "true"
+
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = ENV["FORCE_SSL_IN_RAILS"] == "true"
+  health_probe_request = ->(request) { (request.get? || request.head?) && request.path == "/up" }
+  config.ssl_options = {
+    hsts: { subdomains: true },
+    redirect: {
+      exclude: health_probe_request
+    }
+  }
+  config.host_authorization = {
+    exclude: health_probe_request
+  }
 
   # Use the lowest log level to ensure availability of diagnostic information
   # when problems arise.
@@ -73,6 +90,16 @@ Rails.application.configure do
   redis_url ||= ENV.fetch("REDIS_URL", nil)
   default_expiration = 24.hours.to_i
   config.cache_store = :redis_cache_store, { url: redis_url, expires_in: default_expiration }
+  require Rails.root.join("lib/local_redis/runtime")
+  if LocalRedis::Runtime.active?
+    require Rails.root.join("lib/active_support/cache/local_redis_cache_store")
+    # Constructed before Rails applies cache_format_version; explicitly retain
+    # this application's 7.1 serialization format and legacy payload fallback.
+    config.cache_store = ActiveSupport::Cache::LocalRedisCacheStore.new(
+      url: redis_url, local_url: ENV.fetch("LOCAL_REDIS_URL"), expires_in: default_expiration,
+      serializer: :marshal_7_1
+    )
+  end
 
   config.action_mailer.perform_caching = false
 

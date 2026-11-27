@@ -19,6 +19,15 @@ require "sprockets/railtie"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+# Better Stack's Rails integration has to load before the app boots; only load it when configured
+# (see config/initializers/betterstack.rb).
+require "logtail-rails" if Rails.env.production? && ENV["BETTERSTACK_SOURCE_TOKEN"].present?
+# Same for the Better Stack errors pilot (see config/initializers/sentry.rb).
+if Rails.env.production? && ENV["BETTER_STACK_ERRORS_DSN"].present?
+  require "sentry-rails"
+  require "sentry-sidekiq"
+end
+
 if defined?(Anyway)
   Anyway.loaders.delete(:secrets)
 end
@@ -31,11 +40,15 @@ if Rails.env.test? || Rails.env.development?
   end
 end
 
+# Honeybadger's Railtie has to load before the app boots; only load it when configured
+# (see config/initializers/honeybadger.rb).
+require "honeybadger" if ENV["HONEYBADGER_API_KEY"].present?
+
 module PracticalDeveloper
   class Application < Rails::Application
     # Specify the default Rails settings version we're targetting
     # See: https://guides.rubyonrails.org/configuring.html#results-of-config-load-defaults
-    config.load_defaults 7.2
+    config.load_defaults 8.0
 
     # Set AhoyEmail secret token early to prevent it from accessing deprecated Rails.application.secrets
     config.before_initialize do
@@ -49,11 +62,13 @@ module PracticalDeveloper
     # Enable modern cache format version 7.1
     config.active_support.cache_format_version = 7.1
 
-    # Preserve receiver timezone when calling to_time (preparing for Rails 8.0/8.1)
-    config.active_support.to_time_preserves_timezone = :zone
+    # Enable modern message serializer with temporary Marshal fallback support for legacy unsubscribe links.
+    # TODO: Revert to :json after legacy links (valid for 31 days) have expired.
+    config.active_support.message_serializer = :json_allow_marshal
 
-    # Enable strict freshness to prioritize ETag over Last-Modified (preparing for Rails 8.0)
-    config.action_dispatch.strict_freshness = true
+    # Enable JSON message serializer for metadata to avoid legacy Marshal format dependency.
+    config.active_support.use_message_serializer_for_metadata = true
+
 
     # Enable validating only parent-related columns for presence when the parent is mandatory.
     config.active_record.belongs_to_required_validates_foreign_key = true
@@ -123,8 +138,9 @@ module PracticalDeveloper
 
     # After-initialize checker to add routes to reserved words
     config.after_initialize do
-      # Add routes to reserved words
-      Rails.application.reload_routes!
+      # Add routes to reserved words without bypassing routes.eager_load!
+      Rails.application.reload_routes! if Rails.application.routes.routes.empty?
+      Rails.application.routes.eager_load! if Rails.application.config.eager_load
       top_routes = []
       Rails.application.routes.routes.each do |route|
         route = route.path.spec.to_s

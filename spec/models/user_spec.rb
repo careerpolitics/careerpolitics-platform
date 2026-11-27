@@ -67,9 +67,140 @@ RSpec.describe User do
       expect(user.trackable_user_ids).to eq([user.id])
     end
 
-    it "ships a curated payload of id, username, email, name" do
+    it "ships a curated payload of identity, registration, confirmation, email consent, and Core-link state" do
       user = create(:user)
-      expect(user.trackable_payload.keys).to contain_exactly("id", "username", "email", "name")
+      expect(user.trackable_payload.keys).to contain_exactly(
+        "id", "username", "email", "name", "registered_at", "confirmed_at", "email_newsletter",
+        "email_digest_periodic", "email_comment_notifications", "email_follower_notifications",
+        "email_mention_notifications", "email_unread_notifications", "email_badge_notifications",
+        "email_tag_mod_newsletter", "email_community_mod_newsletter",
+        "mlh_user_id",
+        "signed_up_with_html", "unsubscribe_url", "notification_settings_url"
+      )
+    end
+
+    # Core maps each of these onto its own Customer.io subscription topic, and
+    # can only learn the state of an account that never toggles anything from
+    # this payload, so all nine consents have to ride along.
+    it "seeds every email consent Core mirrors, not just the newsletter and digest" do
+      user = create(:user)
+      user.notification_setting.update!(email_comment_notifications: false,
+                                        email_follower_notifications: false,
+                                        email_mention_notifications: true,
+                                        email_unread_notifications: false,
+                                        email_badge_notifications: true)
+
+      payload = user.reload.trackable_payload
+
+      expect(payload).to include(
+        "email_comment_notifications" => false,
+        "email_follower_notifications" => false,
+        "email_mention_notifications" => true,
+        "email_unread_notifications" => false,
+        "email_badge_notifications" => true,
+      )
+    end
+
+    # Customer.io fails the ENTIRE body render of a template that references an
+    # event attribute the triggering event does not carry, and fails on the first
+    # such reference -- so these three must always be present, even when blank.
+    it "always carries the three email footer keys, whatever else is missing" do
+      user = create(:user)
+      allow(Users::EmailFooterPayload).to receive(:unsubscribe_token).and_raise(StandardError, "boom")
+
+      payload = user.trackable_payload
+
+      expect(payload).to include(
+        "signed_up_with_html" => "",
+        "unsubscribe_url" => "",
+        "notification_settings_url" => "",
+      )
+    end
+
+    it "carries a one-click unsubscribe url that the unsubscribe controller accepts" do
+      user = create(:user)
+
+      url = user.trackable_payload["unsubscribe_url"]
+      token = Rack::Utils.parse_query(URI.parse(url).query)["ut"]
+      verified = Rails.application.message_verifier(:unsubscribe).verify(token).with_indifferent_access
+
+      expect(URI.parse(url).path).to eq("/email_subscriptions/unsubscribe")
+      expect(verified[:user_id]).to eq(user.id)
+      expect(verified[:email_type]).to eq("email_newsletter")
+      expect(Time.zone.parse(verified[:expires_at])).to be > Time.current
+    end
+
+    # Production sets Rails.application.routes.default_url_options to the
+    # protocol alone, while test and development both set a host there. Relying
+    # on the ambient default therefore passes locally and blanks every key in
+    # production, which is exactly what happened -- so pin the production shape.
+    it "still builds the footer when only a protocol is configured, as in production" do
+      user = create(:user)
+      allow(Rails.application.routes).to receive(:default_url_options).and_return({ protocol: "https" })
+
+      payload = user.trackable_payload
+
+      expect(payload["signed_up_with_html"]).to be_present
+      expect(payload["unsubscribe_url"]).to include("/email_subscriptions/unsubscribe?ut=")
+      expect(payload["notification_settings_url"]).to end_with("/settings/notifications")
+    end
+
+    it "points the footer at the user's onboarding subforem" do
+      subforem = create(:subforem, domain: "onboarding.example.com")
+      user = create(:user, onboarding_subforem_id: subforem.id)
+
+      payload = user.trackable_payload
+
+      expect(URI.parse(payload["unsubscribe_url"]).host).to eq("onboarding.example.com")
+      expect(payload["notification_settings_url"]).to end_with("/settings/notifications")
+    end
+
+    # signed_up_with resolves the community name from try(:subforem_id), so the
+    # copy has to follow the same subforem as the URLs beside it rather than
+    # falling back to the default community.
+    it "names the user's own subforem community in the signed-up-with copy" do
+      subforem = create(:subforem, domain: "onboarding.example.com")
+      user = create(:user, onboarding_subforem_id: subforem.id)
+      allow(Settings::Community).to receive(:community_name)
+        .with(subforem_id: subforem.id).and_return("Onboarding Community")
+
+      expect(user.trackable_payload["signed_up_with_html"]).to include("Onboarding Community")
+    end
+
+    it "reflects registration, confirmation, and email consent state in the payload" do
+      user = create(:user)
+      user.notification_setting.update!(email_newsletter: true, email_digest_periodic: true)
+      payload = user.reload.trackable_payload
+
+      expect(payload["registered_at"]).to eq(user.registered_at.iso8601)
+      expect(payload["confirmed_at"]).to eq(user.confirmed_at.iso8601)
+      expect(payload["email_newsletter"]).to be(true)
+      expect(payload["email_digest_periodic"]).to be(true)
+    end
+
+    # The two consents are independent: EmailDigest selects on
+    # email_digest_periodic alone, so the payload must carry them separately.
+    it "carries digest consent independently of newsletter consent" do
+      user = create(:user)
+      user.notification_setting.update!(email_newsletter: false, email_digest_periodic: true)
+
+      payload = user.reload.trackable_payload
+
+      expect(payload["email_newsletter"]).to be(false)
+      expect(payload["email_digest_periodic"]).to be(true)
+    end
+
+    it "includes the Core user id from the mlh identity in the payload" do
+      omniauth_mock_mlh_payload
+      user = create(:user)
+      create(:identity, user: user, provider: "mlh", uid: "424242")
+
+      expect(user.trackable_payload["mlh_user_id"]).to eq("424242")
+    end
+
+    it "leaves mlh_user_id nil when the user has no mlh identity" do
+      user = create(:user)
+      expect(user.trackable_payload["mlh_user_id"]).to be_nil
     end
 
     # Sidekiq.strict_args! (raise-mode outside production) rejects symbol keys in
@@ -115,12 +246,300 @@ RSpec.describe User do
         .with(anything, "user_updated", anything, anything, anything)
     end
 
+    it "emits user_updated when the email column actually changes" do
+      user = create(:user)
+      enable_sync(actor: user)
+      user.skip_reconfirmation!
+      user.update!(email: "new-address@example.com")
+      expect(Trackable::DispatchWorker).to have_received(:perform_async)
+        .with(anything, "user_updated", [user.id], hash_including("email" => "new-address@example.com"), anything)
+    end
+
+    # Devise reconfirmable parks the new address in unconfirmed_email; the
+    # users.email swap only lands when the user confirms, and that save does
+    # not touch profile_updated_at — so the email/confirmed_at keys must
+    # trigger user_updated on their own.
+    it "emits user_updated with the new email when a pending email change is confirmed" do
+      user = create(:user)
+      enable_sync(actor: user)
+      user.update!(email: "pending-address@example.com")
+      expect(Trackable::DispatchWorker).not_to have_received(:perform_async)
+        .with(anything, "user_updated", anything, hash_including("email" => "pending-address@example.com"), anything)
+
+      user.confirm
+      expect(Trackable::DispatchWorker).to have_received(:perform_async)
+        .with(anything, "user_updated", [user.id], hash_including("email" => "pending-address@example.com"),
+              anything)
+    end
+
+    it "emits user_updated when an unconfirmed user confirms their email" do
+      user = create(:user, confirmed_at: nil)
+      enable_sync(actor: user)
+      user.confirm
+      expect(Trackable::DispatchWorker).to have_received(:perform_async)
+        .with(anything, "user_updated", [user.id], hash_including("confirmed_at" => user.confirmed_at.iso8601),
+              anything)
+    end
+
+    describe "engagement events" do
+      # The throttle needs a real cache; the suite default is :null_store.
+      before do
+        allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new)
+      end
+
+      it "emits user_engaged when an activity timestamp advances" do
+        user = create(:user)
+        enable_sync(actor: user)
+        user.touch(:last_comment_at)
+        expect(Trackable::DispatchWorker).to have_received(:perform_async)
+          .with(anything, "user_engaged", [user.id],
+                hash_including("engaged_at" => user.reload.last_comment_at.iso8601), anything)
+      end
+
+      it "throttles repeat activity inside the emit interval" do
+        user = create(:user)
+        enable_sync(actor: user)
+        user.touch(:last_comment_at)
+        user.touch(:last_comment_at)
+        user.update!(current_sign_in_at: Time.current)
+        expect(Trackable::DispatchWorker).to have_received(:perform_async)
+          .with(anything, "user_engaged", anything, anything, anything).once
+      end
+
+      it "does not emit user_engaged for spam or suspended users" do
+        user = create(:user)
+        enable_sync(actor: user)
+        described_class.skip_trackable_events { user.add_role(:spam) }
+        user.touch(:last_comment_at)
+        expect(Trackable::DispatchWorker).not_to have_received(:perform_async)
+          .with(anything, "user_engaged", anything, anything, anything)
+      end
+
+      it "does not emit user_engaged for non-activity changes" do
+        user = create(:user)
+        enable_sync(actor: user)
+        user.touch(:profile_updated_at)
+        expect(Trackable::DispatchWorker).not_to have_received(:perform_async)
+          .with(anything, "user_engaged", anything, anything, anything)
+      end
+
+      # update_presence! writes via update_column, which bypasses callbacks, so
+      # the engagement event has to be emitted explicitly from that path.
+      it "emits user_engaged from a presence ping" do
+        user = create(:user)
+        enable_sync(actor: user)
+        user.update_presence!
+        expect(Trackable::DispatchWorker).to have_received(:perform_async)
+          .with(anything, "user_engaged", [user.id],
+                hash_including("engaged_at" => user.reload.last_presence_at.iso8601), anything)
+      end
+
+      it "throttles repeat presence pings inside the emit interval" do
+        user = create(:user)
+        enable_sync(actor: user)
+        user.update_presence!
+        Timecop.travel(2.hours.from_now) { user.update_presence! }
+        expect(Trackable::DispatchWorker).to have_received(:perform_async)
+          .with(anything, "user_engaged", anything, anything, anything).once
+      end
+
+      it "does not emit user_engaged from a presence ping for spam or suspended users" do
+        user = create(:user)
+        enable_sync(actor: user)
+        described_class.skip_trackable_events { user.add_role(:spam) }
+        user.update_presence!
+        expect(Trackable::DispatchWorker).not_to have_received(:perform_async)
+          .with(anything, "user_engaged", anything, anything, anything)
+      end
+    end
+
+    it "does not emit any sync events for bot accounts" do
+      enable_sync
+      create(:user, type_of: :community_bot)
+      expect(Trackable::DispatchWorker).not_to have_received(:perform_async)
+    end
+
+    it "does not emit user_created for unregistered invited users" do
+      enable_sync
+      create(:user, registered: false, registered_at: nil)
+      expect(Trackable::DispatchWorker).not_to have_received(:perform_async)
+    end
+
+    it "emits user_created when an invited user completes registration" do
+      user = create(:user, registered: false, registered_at: nil)
+      enable_sync(actor: user)
+      user.update!(registered: true, registered_at: Time.current)
+      expect(Trackable::DispatchWorker).to have_received(:perform_async)
+        .with(anything, "user_created", [user.id], anything, anything)
+    end
+
     it "does not emit user_destroyed when a synced user is deleted (deletes are out of scope)" do
       user = create(:user)
       enable_sync(actor: user)
       user.destroy!
       expect(Trackable::DispatchWorker).not_to have_received(:perform_async)
         .with(anything, "user_destroyed", anything, anything, anything)
+    end
+
+    describe "moderation role events" do
+      let(:user) { create(:user) }
+
+      before { enable_sync(actor: user) }
+
+      it "emits user_suspended when the suspended role is added" do
+        user.add_role(:suspended)
+        expect(Trackable::DispatchWorker).to have_received(:perform_async)
+          .with(anything, "user_suspended", [user.id], anything, anything)
+      end
+
+      it "emits user_spam_flagged when the spam role is added" do
+        user.add_role(:spam)
+        expect(Trackable::DispatchWorker).to have_received(:perform_async)
+          .with(anything, "user_spam_flagged", [user.id], anything, anything)
+      end
+
+      it "emits user_unsuspended when the suspended role is removed" do
+        user.add_role(:suspended)
+        user.remove_role(:suspended)
+        expect(Trackable::DispatchWorker).to have_received(:perform_async)
+          .with(anything, "user_unsuspended", [user.id], anything, anything)
+      end
+
+      it "emits user_spam_unflagged when the spam role is removed" do
+        user.add_role(:spam)
+        user.remove_role(:spam)
+        expect(Trackable::DispatchWorker).to have_received(:perform_async)
+          .with(anything, "user_spam_unflagged", [user.id], anything, anything)
+      end
+
+      it "does not emit when adding a role the user already has" do
+        user.add_role(:suspended)
+        user.add_role(:suspended)
+        expect(Trackable::DispatchWorker).to have_received(:perform_async)
+          .with(anything, "user_suspended", anything, anything, anything).once
+      end
+
+      it "does not emit when removing a role the user does not have" do
+        user.remove_role(:suspended)
+        expect(Trackable::DispatchWorker).not_to have_received(:perform_async)
+          .with(anything, "user_unsuspended", anything, anything, anything)
+      end
+
+      it "does not emit moderation events for non-moderation roles" do
+        user.add_role(:warned)
+        user.add_role(:trusted)
+        expect(Trackable::DispatchWorker).not_to have_received(:perform_async)
+          .with(anything, /user_suspended|user_spam/, anything, anything, anything)
+      end
+
+      it "does not emit when the sync gates are off" do
+        Settings::General.customerio_cdp_enabled = false
+        user.add_role(:suspended)
+        expect(Trackable::DispatchWorker).not_to have_received(:perform_async)
+          .with(anything, "user_suspended", anything, anything, anything)
+      end
+    end
+
+    describe "Core trust role events" do
+      let(:user) { create(:user) }
+
+      before { enable_sync(actor: user) }
+
+      def roles_updated_with(roles)
+        have_received(:perform_async)
+          .with(anything, "user_roles_updated", [user.id], hash_including("dev_roles" => roles), anything)
+      end
+
+      it "emits the whole set of trust roles when one is added" do
+        user.add_role(:trusted)
+        user.add_role(:base_subscriber)
+
+        expect(Trackable::DispatchWorker).to roles_updated_with(%w[trusted])
+        expect(Trackable::DispatchWorker).to roles_updated_with(%w[base_subscriber trusted])
+      end
+
+      it "emits when a trust role is removed" do
+        user.add_role(:community_leader_level_1)
+        user.remove_role(:community_leader_level_1)
+
+        expect(Trackable::DispatchWorker).to roles_updated_with([])
+      end
+
+      it "emits once for a tag moderator of several tags, when the first is added" do
+        user.add_role(:tag_moderator, create(:tag))
+        user.add_role(:tag_moderator, create(:tag))
+
+        expect(Trackable::DispatchWorker).to roles_updated_with(%w[tag_moderator]).once
+      end
+
+      it "stamps each reading with when it was taken" do
+        user.add_role(:base_subscriber)
+
+        expect(Trackable::DispatchWorker).to have_received(:perform_async)
+          .with(anything, "user_roles_updated", anything, hash_including("dev_roles_read_at" => String), anything)
+      end
+
+      it "emits only once the surrounding transaction commits" do
+        described_class.transaction do
+          user.add_role(:trusted)
+          expect(Trackable::DispatchWorker).not_to have_received(:perform_async)
+            .with(anything, "user_roles_updated", anything, anything, anything)
+        end
+
+        expect(Trackable::DispatchWorker).to roles_updated_with(%w[trusted])
+      end
+
+      it "does not emit a change that rolls back" do
+        described_class.transaction do
+          user.add_role(:trusted)
+          raise ActiveRecord::Rollback
+        end
+
+        expect(Trackable::DispatchWorker).not_to have_received(:perform_async)
+          .with(anything, "user_roles_updated", anything, anything, anything)
+      end
+
+      it "stamps a reading taken before a revocation earlier than the revocation's, even when it is sent later" do
+        user.add_role(:base_subscriber)
+        stale = user.core_trust_roles_snapshot
+        user.remove_role(:base_subscriber)
+        user.track_core_trust_roles!(stale)
+
+        readings = []
+        expect(Trackable::DispatchWorker).to have_received(:perform_async)
+          .with(anything, "user_roles_updated", anything, anything, anything).exactly(3).times do |*args|
+            readings << args[3].slice("dev_roles", "dev_roles_read_at")
+          end
+        revocation, late = readings.last(2)
+        expect([revocation["dev_roles"], late["dev_roles"]]).to eq([[], %w[base_subscriber]])
+        expect(Time.zone.parse(late["dev_roles_read_at"])).to be < Time.zone.parse(revocation["dev_roles_read_at"])
+      end
+
+      it "takes a fresh reading even with the query cache on" do
+        first, second = described_class.cache { Array.new(2) { user.core_trust_roles_snapshot.first } }
+
+        expect(second).to be > first
+      end
+
+      it "emits nothing when the user is deleted before the change commits" do
+        described_class.transaction do
+          user.add_role(:trusted)
+          user.destroy!
+        end
+
+        expect(Trackable::DispatchWorker).not_to have_received(:perform_async)
+          .with(anything, "user_roles_updated", anything, anything, anything)
+      end
+
+      it "does not emit for a role the user already has or one Core does not count" do
+        user.add_role(:base_subscriber)
+        user.add_role(:base_subscriber)
+        user.add_role(:warned)
+        user.remove_role(:super_moderator)
+
+        expect(Trackable::DispatchWorker).to have_received(:perform_async)
+          .with(anything, "user_roles_updated", anything, anything, anything).once
+      end
     end
   end
 
@@ -325,6 +744,31 @@ RSpec.describe User do
         end
       end
 
+      it "rejects syntactically malformed email addresses" do
+        malformed_emails = [
+          "member@example,com",
+          '"member@example.com"',
+          "user@localhost",
+          "user..name@example.com",
+        ]
+
+        malformed_emails.each do |email|
+          user = build(:user, email: email)
+
+          expect(user).not_to be_valid
+          expect(user.errors[:email]).to include("is invalid")
+        end
+      end
+
+      it "does not invalidate existing persisted accounts with legacy email formats on unrelated updates" do
+        user = create(:user)
+        user.update_column(:email, "member@example,com")
+        user.reload
+
+        expect(user.update(name: "Updated Name")).to be(true)
+        expect(user.errors[:email]).to be_empty
+      end
+
       it { is_expected.not_to allow_value("  ").for(:name) }
 
       it { is_expected.to validate_presence_of(:articles_count) }
@@ -366,6 +810,48 @@ RSpec.describe User do
       user = build(:user, username: "readinglist")
       expect(user).not_to be_valid
       expect(user.errors[:username].to_s).to include("reserved")
+    end
+
+    %w[
+      auth forgot-password forgot_password log-in log-out log_in log_out login logout
+      oauth password passwords register registration reset-password reset_password
+      sign-in sign-out sign-up sign_in sign_out sign_up signin signout signup sso support
+    ].each do |username|
+      it "reserves the protected username #{username}" do
+        user = build(:user, username: username)
+
+        expect(user).not_to be_valid
+        expect(user.errors[:username]).to include("is reserved")
+      end
+    end
+
+    it "reserves protected usernames after case normalization" do
+      user = build(:user, username: "LoGiN")
+
+      expect(user).not_to be_valid
+      expect(user.errors[:username]).to include("is reserved")
+    end
+
+    it "rejects changing an existing username to a protected term" do
+      user = create(:user)
+
+      expect(user.update(username: "signup")).to be(false)
+      expect(user.errors[:username]).to include("is reserved")
+    end
+
+    it "allows unrelated updates for existing accounts with protected usernames" do
+      user = create(:user)
+      user.update_column(:username, "login")
+      user.reload
+
+      expect(user.update(name: "Updated Name")).to be(true)
+      expect(user.errors[:username]).to be_empty
+    end
+
+    it "allows usernames that only contain a protected term" do
+      user = build(:user, username: "login_helper")
+
+      expect(user).to be_valid
     end
 
     it "takes organization slug into account" do
@@ -612,6 +1098,8 @@ RSpec.describe User do
           expect(new_user.username).to match(/valid_username_\w+/)
         when :facebook, :google_oauth2
           expect(new_user.username).to match(/fname_lname_\S*\z/)
+        when :mlh
+          expect(new_user.username).to eq("mlh")
         else
           expect(new_user.username).to eq("valid_username")
         end
@@ -631,6 +1119,8 @@ RSpec.describe User do
           expect(new_user.username).to match(/invalidusername_\w+/)
         when :facebook, :google_oauth2
           expect(new_user.username).to match(/fname_lname_\S*\z/)
+        when :mlh
+          expect(new_user.username).to eq("mlh")
         else
           expect(new_user.username).to eq("invalidusername")
         end
@@ -736,6 +1226,28 @@ RSpec.describe User do
     end
   end
 
+  describe "#moderator_for_tags_not_cached" do
+    let(:tags) { create_list(:tag, 3) }
+
+    it "matches rolify's with_role tag names without joining every tag" do
+      user.add_role(:tag_moderator, tags.first)
+      user.add_role(:tag_moderator, tags.second)
+      user.add_role(:trusted, tags.last)
+      create(:user).add_role(:tag_moderator, tags.last)
+
+      expect(user.moderator_for_tags_not_cached).to contain_exactly(tags.first.name, tags.second.name)
+      expect(user.moderator_for_tags_not_cached)
+        .to match_array(Tag.with_role(:tag_moderator, user).pluck(:name))
+    end
+
+    it "returns every tag name when the user holds a class-wide tag_moderator role" do
+      tags
+      user.add_role(:tag_moderator, Tag)
+
+      expect(user.moderator_for_tags_not_cached).to match_array(Tag.pluck(:name))
+    end
+  end
+
   describe "#followed_articles" do
     let!(:another_user) { create(:user) }
     let!(:articles) { create_list(:article, 2, user: another_user) }
@@ -765,8 +1277,25 @@ RSpec.describe User do
     end
 
     it "returns the count of non-suspended and non-spam followers using the rails cache" do
-      expect(Rails.cache).to receive(:fetch).with("#{user.cache_key_with_version}/good_standing_followers_count", expires_in: 24.hours).and_call_original
+      expect(Rails.cache).to receive(:fetch).with("#{user.cache_key_with_version}/good_standing_followers_count",
+                                                  expires_in: 24.hours).and_call_original
       expect(user.good_standing_followers_count).to eq(1)
+    end
+
+    it "counts a follower with multiple roles once" do
+      create(:user, :trusted, :tag_moderator).follow(user)
+
+      expect(user.good_standing_followers_count).to eq(2)
+    end
+
+    it "counts follower ids so the follows index can serve the query" do
+      queries = []
+      callback = ->(*, payload) { queries << payload[:sql] if payload[:sql].include?("COUNT(") }
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        user.good_standing_followers_count
+      end
+
+      expect(queries).to include(a_string_including('COUNT("follows"."follower_id")'))
     end
   end
 
@@ -776,36 +1305,48 @@ RSpec.describe User do
     end
 
     it "creates proper body class with defaults" do
-      # rubocop:disable Layout/LineLength
-      classes = "light-theme sans-serif-article-body mod-status-#{user.admin? || !user.moderator_for_tags.empty?} trusted-status-#{user.trusted?} #{user.setting.config_navbar}-header"
-      # rubocop:enable Layout/LineLength
+      classes = %W[
+        light-theme sans-serif-article-body
+        mod-status-#{user.admin? || !user.moderator_for_tags.empty?}
+        trusted-status-#{user.trusted?} community-leader-status-#{user.community_leader?}
+        #{user.setting.config_navbar}-header
+      ].join(" ")
       expect(user.decorate.config_body_class).to eq(classes)
     end
 
     it "creates proper body class with sans serif config" do
       user.setting.config_font = "sans_serif"
 
-      # rubocop:disable Layout/LineLength
-      classes = "light-theme sans-serif-article-body mod-status-#{user.admin? || !user.moderator_for_tags.empty?} trusted-status-#{user.trusted?} #{user.setting.config_navbar}-header"
-      # rubocop:enable Layout/LineLength
+      classes = %W[
+        light-theme sans-serif-article-body
+        mod-status-#{user.admin? || !user.moderator_for_tags.empty?}
+        trusted-status-#{user.trusted?} community-leader-status-#{user.community_leader?}
+        #{user.setting.config_navbar}-header
+      ].join(" ")
       expect(user.decorate.config_body_class).to eq(classes)
     end
 
     it "creates proper body class with open dyslexic config" do
       user.setting.config_font = "open_dyslexic"
 
-      # rubocop:disable Layout/LineLength
-      classes = "light-theme open-dyslexic-article-body mod-status-#{user.admin? || !user.moderator_for_tags.empty?} trusted-status-#{user.trusted?} #{user.setting.config_navbar}-header"
-      # rubocop:enable Layout/LineLength
+      classes = %W[
+        light-theme open-dyslexic-article-body
+        mod-status-#{user.admin? || !user.moderator_for_tags.empty?}
+        trusted-status-#{user.trusted?} community-leader-status-#{user.community_leader?}
+        #{user.setting.config_navbar}-header
+      ].join(" ")
       expect(user.decorate.config_body_class).to eq(classes)
     end
 
     it "creates proper body class with dark theme" do
       user.setting.config_theme = "dark_theme"
 
-      # rubocop:disable Layout/LineLength
-      classes = "dark-theme sans-serif-article-body mod-status-#{user.admin? || !user.moderator_for_tags.empty?} trusted-status-#{user.trusted?} #{user.setting.config_navbar}-header ten-x-hacker-theme"
-      # rubocop:enable Layout/LineLength
+      classes = %W[
+        dark-theme sans-serif-article-body
+        mod-status-#{user.admin? || !user.moderator_for_tags.empty?}
+        trusted-status-#{user.trusted?} community-leader-status-#{user.community_leader?}
+        #{user.setting.config_navbar}-header ten-x-hacker-theme
+      ].join(" ")
       expect(user.decorate.config_body_class).to eq(classes)
     end
   end
@@ -821,6 +1362,18 @@ RSpec.describe User do
       expect(user).to be_super_admin
       expect(user).to be_trusted
       expect(user).not_to be_limited
+    end
+
+    it "does not add creator roles from a stale first_user value once the grant is claimed", :aggregate_failures do
+      first = create(:user)
+      first.set_initial_roles!(first_user: true)
+      second = create(:user)
+      second.set_initial_roles!(first_user: true)
+
+      expect(first).to be_super_admin
+      expect(second).not_to be_creator
+      expect(second).not_to be_super_admin
+      expect(second).not_to be_trusted
     end
 
     it "does not add any roles if not waiting on first user" do
@@ -936,6 +1489,29 @@ RSpec.describe User do
     end
   end
 
+  describe "spam role article rescoring" do
+    it "enqueues a score recalculation for each published article when the spam role is added" do
+      published = create(:article, user: user, published: true)
+      draft = create(:article, user: user, published: false)
+      Articles::ScoreCalcWorker.jobs.clear
+
+      user.add_role(:spam)
+
+      enqueued_ids = Articles::ScoreCalcWorker.jobs.map { |job| job["args"].first }
+      expect(enqueued_ids).to include(published.id)
+      expect(enqueued_ids).not_to include(draft.id)
+    end
+
+    it "drops published article scores below the index minimum once the spam role is added" do
+      article = create(:article, user: user, published: true)
+      article.update_columns(score: 50)
+
+      sidekiq_perform_enqueued_jobs(only: Articles::ScoreCalcWorker) { user.add_role(:spam) }
+
+      expect(article.reload.score).to be < Settings::UserExperience.index_minimum_score
+    end
+  end
+
   describe "cache counts" do
     it "has an accurate tag follow count" do
       tag = create(:tag)
@@ -964,7 +1540,70 @@ RSpec.describe User do
 
       Articles::Unpublish.call(article2.user, article2)
 
-      expect(user.cached_reading_list_article_ids).to eq([article3.id, article.id])
+      reaction_queries = []
+      callback = lambda do |*, payload|
+        next if payload[:name] == "SCHEMA"
+
+        reaction_queries << payload[:sql] if payload[:sql].include?('FROM "reactions"')
+      end
+
+      result = nil
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        result = user.cached_reading_list_article_ids
+      end
+
+      expect(result).to eq([article3.id, article.id])
+      expect(reaction_queries.size).to eq(1)
+      expect(reaction_queries.first).to include('SELECT "reactions"."reactable_id" FROM "reactions"')
+      expect(reaction_queries.first).to include("reactions.created_at + INTERVAL '0 seconds' DESC")
+    end
+
+    it "uses user_activity.alltime_reading_list_articles if present before falling back to Reaction query" do
+      article1 = create(:article)
+      article2 = create(:article)
+
+      create(:user_activity, user: user, alltime_reading_list_articles: [article1.id, article2.id])
+
+      expect(Reaction).not_to receive(:readinglist_for_user)
+      expect(user.cached_reading_list_article_ids).to contain_exactly(article1.id, article2.id)
+    end
+
+    it "limits cached_reading_list_article_ids to at most 1000 items" do
+      large_id_list = (1..1005).to_a
+      create(:user_activity, user: user, alltime_reading_list_articles: large_id_list)
+
+      expect(user.cached_reading_list_article_ids.length).to eq(1000)
+      expect(user.cached_reading_list_article_ids).to eq((1..1000).to_a)
+    end
+
+    it "picks only alltime_reading_list_articles without hydrating full user_activities rows" do
+      create(:user_activity, user: user, alltime_reading_list_articles: [42])
+      fresh_user = described_class.find(user.id)
+
+      queries = []
+      callback = ->(_name, _start, _finish, _id, payload) { queries << payload[:sql] unless payload[:name] == "SCHEMA" }
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        expect(fresh_user.cached_reading_list_article_ids).to eq([42])
+      end
+
+      ua_queries = queries.grep(/FROM "user_activities"/)
+      expect(ua_queries.size).to eq(1)
+      expect(ua_queries.first).to include('"user_activities"."alltime_reading_list_articles"')
+      expect(ua_queries.first).not_to include('"user_activities".*')
+      expect(fresh_user.association(:user_activity)).not_to be_loaded
+    end
+
+    it "queries reactions once without hydrating Reaction records and skips articles when empty" do
+      queries = []
+      callback = ->(_name, _start, _finish, _id, payload) { queries << payload[:sql] unless payload[:name] == "SCHEMA" }
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        expect(user.cached_reading_list_article_ids).to eq([])
+      end
+
+      reaction_queries = queries.grep(/FROM "reactions"/)
+      expect(reaction_queries.size).to eq(1)
+      expect(reaction_queries.first).to include("reactions.created_at + INTERVAL '0 seconds' DESC")
+      expect(queries.grep(/FROM "articles"/)).to be_empty
     end
 
     it "has an accurate agent_sessions_count using counter cache" do
@@ -1053,14 +1692,50 @@ RSpec.describe User do
   end
 
   describe ".staff_account" do
-    it "returns nil if the account does not exist" do
+    before { RequestStore.clear! }
+    after { RequestStore.clear! }
+
+    it "returns nil without querying User if staff_user_id is not configured" do
+      allow(Settings::Community).to receive(:staff_user_id).and_return(nil)
+      allow(described_class).to receive(:find_by)
+
       expect(described_class.staff_account).to be_nil
+      expect(described_class).not_to have_received(:find_by)
     end
 
-    it "returns the user if the account exists" do
+    it "returns the user and memoizes the lookup in RequestStore if the account exists" do
       allow(Settings::Community).to receive(:staff_user_id).and_return(user.id)
+      allow(described_class).to receive(:find_by).with(id: user.id).and_call_original
 
       expect(described_class.staff_account).to eq(user)
+      expect(described_class.staff_account).to eq(user)
+      expect(described_class).to have_received(:find_by).with(id: user.id).once
+    end
+  end
+
+  describe "#cached_role_names" do
+    it "uses preloaded roles in memory without reading Rails.cache when roles are loaded" do
+      user.add_role(:base_subscriber)
+      loaded_user = described_class.includes(:roles).find(user.id)
+      allow(Rails.cache).to receive(:fetch)
+
+      expect(loaded_user.cached_role_names).to include("base_subscriber")
+      expect(Rails.cache).not_to have_received(:fetch)
+    end
+
+    it "memoizes role names when Rails.cache is NullStore and invalidates on role change or reload" do
+      unloaded_user = described_class.find(user.id)
+      allow(Rails.cache).to receive(:fetch).and_call_original
+
+      expect(unloaded_user.cached_role_names).to eq([])
+      expect(unloaded_user.cached_role_names).to eq([])
+      expect(Rails.cache).to have_received(:fetch).once
+
+      unloaded_user.add_role(:base_subscriber)
+      expect(unloaded_user.cached_role_names).to include("base_subscriber")
+
+      unloaded_user.reload
+      expect(unloaded_user.cached_role_names).to include("base_subscriber")
     end
   end
 
@@ -1228,21 +1903,26 @@ RSpec.describe User do
 
   describe "#generate_social_images" do
     before do
-      create(:article, user: user)
       allow(Images::SocialImageWorker).to receive(:perform_async)
     end
 
-    context "when the name or profile_image has changed and the user has articles" do
-      it "calls SocialImageWorker.perform_async" do
-        user.name = "New name for this user!"
-        user.save
-        expect(Images::SocialImageWorker).to have_received(:perform_async)
+    context "when name or profile_image changes" do
+      it "enqueues SocialImageWorker for User even when the user has no articles" do
+        user.update!(name: "New name for this user!")
+        expect(Images::SocialImageWorker).to have_received(:perform_async).with(user.id, "User")
       end
     end
 
-    context "when the name or profile_image has not changed or the user has no articles" do
+    context "when only username changes" do
+      it "enqueues SocialImageWorker for Profile so only the profile card regenerates" do
+        user.update!(username: "#{user.username}_new")
+        expect(Images::SocialImageWorker).to have_received(:perform_async).with(user.profile.id, "Profile")
+      end
+    end
+
+    context "when non-displayed attributes change" do
       it "does not call SocialImageWorker.perform_async" do
-        user.save
+        user.update!(twitter_username: "new_handle", last_comment_at: Time.current)
         expect(Images::SocialImageWorker).not_to have_received(:perform_async)
       end
     end
@@ -1455,6 +2135,145 @@ RSpec.describe User do
       expect(result).not_to include(member_bot)
       expect(result).not_to include(regular_user)
       expect(result).not_to include(other_subforem_bot)
+    end
+  end
+
+  describe "#unlimited_favorites?" do
+    it "is true for an admin who curates" do
+      expect(create(:user, :admin, :community_leader_level_1)).to be_unlimited_favorites
+    end
+
+    it "is true for a super admin who curates" do
+      expect(create(:user, :super_admin, :community_leader_level_2)).to be_unlimited_favorites
+    end
+
+    it "is false for an admin who does not curate" do
+      expect(create(:user, :admin)).not_to be_unlimited_favorites
+    end
+
+    it "is false for a curator who is not an admin" do
+      expect(create(:user, :community_leader_level_1)).not_to be_unlimited_favorites
+    end
+  end
+
+  describe "#favorite_base_allowance" do
+    it "is 0 for a non-leader" do
+      expect(create(:user).favorite_base_allowance).to eq(0)
+    end
+
+    it "is infinite for an admin curator" do
+      expect(create(:user, :admin, :community_leader_level_1).favorite_base_allowance)
+        .to eq(Float::INFINITY)
+    end
+
+    it "uses the level 1 setting for a level 1 leader" do
+      allow(Settings::UserExperience).to receive(:community_leader_l1_favorite_allowance).and_return(5)
+      expect(create(:user, :community_leader_level_1).favorite_base_allowance).to eq(5)
+    end
+
+    it "uses the level 2 setting for a level 2 leader" do
+      allow(Settings::UserExperience).to receive(:community_leader_l2_favorite_allowance).and_return(10)
+      expect(create(:user, :community_leader_level_2).favorite_base_allowance).to eq(10)
+    end
+  end
+
+  describe "#favorite_allowance" do
+    it "returns earned_favorites_count for a non-leader" do
+      user = create(:user)
+      user.update!(earned_favorites_count: 3)
+      expect(user.favorite_allowance).to eq(3)
+    end
+
+    it "is the base allowance for a fresh leader" do
+      allow(Settings::UserExperience).to receive(:community_leader_l1_favorite_allowance).and_return(5)
+      expect(create(:user, :community_leader_level_1).favorite_allowance).to eq(5)
+    end
+
+    it "decreases as the leader favorites within the refresh window" do
+      allow(Settings::UserExperience).to receive_messages(
+        community_leader_l1_favorite_allowance: 5, community_leader_favorite_refresh_hours: 24,
+      )
+      leader = create(:user, :community_leader_level_1)
+      create(:article, favorited_by_user: leader, favorited_at: 1.hour.ago)
+
+      expect(leader.favorite_allowance).to eq(4)
+    end
+
+    it "ignores favorites that have aged out of the refresh window" do
+      allow(Settings::UserExperience).to receive_messages(
+        community_leader_l1_favorite_allowance: 5, community_leader_favorite_refresh_hours: 24,
+      )
+      leader = create(:user, :community_leader_level_1)
+      create(:article, favorited_by_user: leader, favorited_at: 2.days.ago)
+
+      expect(leader.favorite_allowance).to eq(5)
+    end
+
+    it "is infinite for an admin curator, no matter what they have spent" do
+      allow(Settings::UserExperience).to receive_messages(
+        community_leader_l1_favorite_allowance: 1, community_leader_favorite_refresh_hours: 24,
+      )
+      admin_curator = create(:user, :admin, :community_leader_level_1)
+      create(:article, favorited_by_user: admin_curator, favorited_at: 1.hour.ago)
+
+      expect(admin_curator.favorite_allowance).to eq(Float::INFINITY)
+    end
+  end
+
+  describe "#favorite_allowance_for_client" do
+    it "returns the numeric allowance for a metered user" do
+      user = create(:user, earned_favorites_count: 2)
+
+      expect(user.favorite_allowance_for_client).to eq(2)
+    end
+
+    it "returns nil for an admin curator" do
+      admin_curator = create(:user, :admin, :community_leader_level_1)
+
+      expect(admin_curator.favorite_allowance_for_client).to be_nil
+    end
+  end
+
+  describe "#confirmation_required?" do
+    before { allow(ForemInstance).to receive(:smtp_enabled?).and_return(true) }
+
+    it "sends no confirmation email to a user confirmed at creation (OAuth signup)" do
+      user = build(:user, confirmed_at: nil)
+      user.skip_confirmation!
+
+      expect { user.save! }.not_to have_enqueued_mail(DeviseMailer, :confirmation_instructions)
+    end
+
+    it "sends a confirmation email to an unconfirmed signup" do
+      expect { create(:user, confirmed_at: nil) }
+        .to have_enqueued_mail(DeviseMailer, :confirmation_instructions)
+    end
+
+    it "short-circuits in memory for an already-confirmed user without checking ForemInstance.smtp_enabled?" do
+      confirmed_user = build(:user, confirmed_at: Time.current)
+
+      expect(confirmed_user.__send__(:confirmation_required?)).to be(false)
+      expect(ForemInstance).not_to have_received(:smtp_enabled?)
+    end
+  end
+
+  describe "#member_of_minimum_indexed_organization?" do
+    let(:indexed_org) { create(:organization, baseline_score: 15) }
+    let(:default_org) { create(:organization, baseline_score: 0) }
+
+    it "returns true when the user is an active member of an organization with baseline_score > 0" do
+      create(:organization_membership, user: user, organization: indexed_org, type_of_user: "member")
+      expect(user.member_of_minimum_indexed_organization?).to be(true)
+    end
+
+    it "returns false when the user's membership in the organization is pending" do
+      create(:organization_membership, user: user, organization: indexed_org, type_of_user: "pending")
+      expect(user.member_of_minimum_indexed_organization?).to be(false)
+    end
+
+    it "returns false when the user belongs only to organizations with baseline_score 0" do
+      create(:organization_membership, user: user, organization: default_org, type_of_user: "member")
+      expect(user.member_of_minimum_indexed_organization?).to be(false)
     end
   end
 end

@@ -1,14 +1,15 @@
 import { h } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import PropTypes from 'prop-types';
 import { useListNavigation } from '../shared/components/useListNavigation';
 import { useKeyboardShortcuts } from '../shared/components/useKeyboardShortcuts';
 import { insertInArrayIf } from '../../javascript/utilities/insertInArrayIf';
+import { FeedConfigVisitTracker } from './feedConfigVisits';
 import { initializeDropdown } from '@utilities/dropdownUtils';
 
 /* global userData sendHapticMessage showLoginModal buttonFormData renderNewSidebarCount */
 
-export const Feed = ({ timeFrame, renderFeed, afterRender }) => {
+export const Feed = ({ timeFrame, feedLocation = '', renderFeed, afterRender }) => {
   const user = userData();
   const { reading_list_ids = [] } = user || {}; // eslint-disable-line camelcase
   const [bookmarkedFeedItems, setBookmarkedFeedItems] = useState(
@@ -19,11 +20,21 @@ export const Feed = ({ timeFrame, renderFeed, afterRender }) => {
   const [feedItems, setFeedItems] = useState([]);
   const [onError, setOnError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [visit, setVisit] = useState(null);
+  const feedRoot = useRef(null);
 
   useEffect(() => {
+    let cancelled = false;
+    const requestPath = window.location.pathname;
     async function fetchFeedItems(timeFrame = '', page = 1) {
       let feedTypeOf = localStorage?.getItem('current_feed');
-      if (feedTypeOf !== 'discover' && feedTypeOf !== 'following') {
+      if (window.location.pathname === '/curated') {
+        feedTypeOf = 'curated';
+      } else if (window.location.pathname === '/following' || window.location.pathname === '/following/latest') {
+        feedTypeOf = 'following';
+      } else if (window.location.pathname === '/discover') {
+        feedTypeOf = 'discover';
+      } else if (feedTypeOf !== 'discover' && feedTypeOf !== 'following' && feedTypeOf !== 'curated') {
         feedTypeOf = 'discover';
       }
       const billboardUrlComponent = document.body.dataset.dynamicUrlComponent || 'bb';
@@ -43,6 +54,9 @@ export const Feed = ({ timeFrame, renderFeed, afterRender }) => {
       ];
 
       const results = await Promise.allSettled(promises);
+      if (results[0].status !== 'fulfilled' || !results[0].value.ok) {
+        throw new Error('Home feed request failed');
+      }
       const feedItems = [];
       for (const result of results) {
         if (result.status === 'fulfilled') {
@@ -62,7 +76,11 @@ export const Feed = ({ timeFrame, renderFeed, afterRender }) => {
           feedItems.push(undefined);
         }
       }
-      return feedItems;
+      const feedResult = results[0];
+      const token = feedResult.status === 'fulfilled' && feedResult.value.ok && timeFrame === '' && feedTypeOf === 'discover'
+        ? feedResult.value.headers.get('X-Feed-Visit-Token')
+        : null;
+      return { feedItems, token };
     }
 
     function setPinnedPostItem(pinnedPost, imagePost) {
@@ -78,79 +96,93 @@ export const Feed = ({ timeFrame, renderFeed, afterRender }) => {
 
     const organizeFeedItems = async () => {
       try {
-        if (onError) setOnError(false);
+        setOnError(false);
         setIsLoading(true);
+        setVisit(null);
 
-        fetchFeedItems(timeFrame).then(
-          ([
-            feedPosts = [],
-            feedFirstBillboard,
-            feedSecondBillboard,
-            feedThirdBillboard,
-          ]) => {
-            // Set feed config if available
-            if (feedPosts.length > 0) {
-              const firstPost = feedPosts[0];
-              if (firstPost.feed_config) {
-                document.getElementById('index-container').dataset.feedConfigId = firstPost.feed_config;
-              }
-            }
+        const { feedItems: results, token } = await fetchFeedItems(timeFrame);
+        if (cancelled) return;
+        const [feedPosts = [], feedFirstBillboard, feedSecondBillboard, feedThirdBillboard] = results;
 
-            const imagePost = getImagePost(feedPosts);
-            const pinnedPost = getPinnedPost(feedPosts);
-            const podcastPost = getPodcastEpisodes();
+        // Set feed config if available
+        const indexContainer = document.getElementById('index-container');
+        if (indexContainer && feedPosts.length > 0) {
+          const firstPost = feedPosts[0];
+          if (firstPost.feed_config) {
+            indexContainer.dataset.feedConfigId = firstPost.feed_config;
+          } else {
+            delete indexContainer.dataset.feedConfigId;
+          }
+        }
 
-            const hasSetPinnedPost = setPinnedPostItem(pinnedPost, imagePost);
-            const hasSetImagePostItem = setImagePostItem(imagePost);
+        const imagePost = getImagePost(feedPosts);
+        const pinnedPost = getPinnedPost(feedPosts);
+        const podcastPost = getPodcastEpisodes();
 
-            const updatedFeedPosts = updateFeedPosts(
-              feedPosts,
-              imagePost,
-              pinnedPost,
-            );
+        const hasSetPinnedPost = setPinnedPostItem(pinnedPost, imagePost);
+        const hasSetImagePostItem = setImagePostItem(imagePost);
 
-            const organizedFeedItems = [
-              ...insertInArrayIf(hasSetPinnedPost, pinnedPost),
-              ...insertInArrayIf(hasSetImagePostItem, imagePost),
-              ...insertInArrayIf(podcastPost.length > 0, podcastPost),
-              ...updatedFeedPosts,
-            ];
-
-            const organizedFeedItemsWithBillboards = insertBillboardsInFeed(
-              organizedFeedItems,
-              feedFirstBillboard,
-              feedSecondBillboard,
-              feedThirdBillboard,
-            );
-
-            // Only set feed items if we have actual content (not just billboards)
-            // This allows the parent component to handle empty states properly
-            const hasActualContent = organizedFeedItemsWithBillboards.some(item => 
-              typeof item === 'object' && item.id && item.id !== 'dummy-story'
-            );
-            
-            if (hasActualContent || organizedFeedItemsWithBillboards.length === 0) {
-              setFeedItems(organizedFeedItemsWithBillboards);
-            } else {
-              // If we only have billboards, still set them but mark as empty content
-              setFeedItems([]);
-            }
-            setIsLoading(false);
-          },
+        const updatedFeedPosts = updateFeedPosts(
+          feedPosts,
+          imagePost,
+          pinnedPost,
         );
+
+        const organizedFeedItems = [
+          ...insertInArrayIf(hasSetPinnedPost, pinnedPost),
+          ...insertInArrayIf(hasSetImagePostItem, imagePost),
+          ...insertInArrayIf(podcastPost.length > 0, podcastPost),
+          ...updatedFeedPosts,
+        ];
+
+        const organizedFeedItemsWithBillboards = insertBillboardsInFeed(
+          organizedFeedItems,
+          feedFirstBillboard,
+          feedSecondBillboard,
+          feedThirdBillboard,
+        );
+
+        // Only set feed items if we have actual content (not just billboards)
+        // This allows the parent component to handle empty states properly
+        const hasActualContent = organizedFeedItemsWithBillboards.some(item =>
+          typeof item === 'object' && item.id && item.id !== 'dummy-story'
+        );
+
+        if (hasActualContent || organizedFeedItemsWithBillboards.length === 0) {
+          setFeedItems(organizedFeedItemsWithBillboards);
+        } else {
+          // If we only have billboards, still set them but mark as empty content
+          setFeedItems([]);
+        }
+        setVisit(hasActualContent && token ? { token, timeFrame, feedLocation, path: requestPath } : null);
+        setIsLoading(false);
       } catch {
-        if (!onError) setOnError(true);
+        if (cancelled) return;
+        setOnError(true);
         setIsLoading(false);
       }
     };
     organizeFeedItems();
-  }, [timeFrame, onError]);
+    return () => { cancelled = true; };
+  }, [timeFrame, feedLocation]);
 
   useEffect(() => {
-    if (feedItems.length > 0) {
+    if (isLoading || !visit || onError || timeFrame !== '' ||
+        visit.timeFrame !== timeFrame || visit.feedLocation !== feedLocation) return undefined;
+
+    const root = feedRoot.current;
+    const tracker = new FeedConfigVisitTracker(visit.token, () =>
+      root?.isConnected && window.location.pathname === visit.path,
+    );
+    tracker.start();
+    return () => tracker.stop();
+  }, [visit, isLoading, onError, timeFrame, feedLocation]);
+
+  useEffect(() => {
+    if (!isLoading && feedItems.length > 0 && typeof afterRender === 'function') {
       afterRender();
     }
-  }, [afterRender, feedItems.length]);
+  }, [afterRender, feedItems, isLoading]);
 
   function getImagePost(feedPosts) {
     return feedPosts.find((post) => post.main_image !== null);
@@ -320,7 +352,7 @@ export const Feed = ({ timeFrame, renderFeed, afterRender }) => {
   });
 
   return (
-    <div id="rendered-article-feed">
+    <div id="rendered-article-feed" ref={feedRoot}>
       {onError ? (
         <div class="crayons-notice crayons-notice--danger">
           There was a problem fetching your feed.

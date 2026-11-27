@@ -13,7 +13,6 @@ RSpec.describe "users/show" do
     assign(:comments, [])
     assign(:pinned_stories, [])
     assign(:profile, user.profile.decorate)
-    assign(:is_user_flagged, false)
   end
 
   context "when signed-in" do
@@ -56,6 +55,12 @@ RSpec.describe "users/show" do
       end
     end
 
+    it "includes signed-in moderation and status check scripts" do
+      render
+      expect(rendered).to include("articleModerationTools")
+      expect(rendered).to include("asyncUserStatusCheck")
+    end
+
     # context "when there are pinned stories" do
     #
     # end
@@ -71,6 +76,17 @@ RSpec.describe "users/show" do
       expect(rendered).not_to have_css(".featured-story-marker")
       expect(rendered).to have_css(".crayons-story__body")
       expect(rendered).not_to have_css("#comments-locked-cta")
+    end
+
+    it "reads the listed stories' tag colors in one cache batch" do
+      allow(Rails.cache).to receive(:fetch).and_call_original
+      allow(Rails.cache).to receive(:fetch_multi).and_call_original
+
+      render
+
+      expect(Rails.cache).to have_received(:fetch_multi).once
+      expect(Rails.cache).not_to have_received(:fetch).with(a_string_ending_with("/tag_colors"), any_args)
+      expect(rendered).to have_css(".crayons-story__tags a.crayons-tag", minimum: 1)
     end
   end
 
@@ -98,6 +114,8 @@ RSpec.describe "users/show" do
   it "renders without exception" do
     render
     expect(rendered).to have_css(".profile-header")
+    expect(rendered).not_to include("articleModerationTools")
+    expect(rendered).not_to include("asyncUserStatusCheck")
     expect(rendered).not_to have_css(".featured-story-marker")
     expect(rendered).not_to have_css(".crayons-story__body")
     expect(rendered).not_to have_css(".profile-comment-row")

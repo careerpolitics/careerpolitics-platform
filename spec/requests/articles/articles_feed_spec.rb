@@ -9,4 +9,201 @@ RSpec.describe "ArticlesFeed" do
     expect(response.body).to include(article.title)
     expect(response.body).to include("<pubDate>#{article.published_at.to_fs(:rfc822)}</pubDate>")
   end
+
+  context "when item descriptions are cached" do
+    let(:memory_store) { ActiveSupport::Cache::MemoryStore.new }
+
+    before { allow(Rails).to receive(:cache).and_return(memory_store) }
+
+    it "renders the same description from cache without sanitizing the body again" do
+      get "/feed/#{article.user.username}"
+      uncached_body = response.body
+
+      allow(Loofah).to receive(:html5_fragment).and_call_original
+      get "/feed/#{article.user.username}"
+
+      expect(response.body).to eq(uncached_body)
+      expect(Loofah).not_to have_received(:html5_fragment)
+    end
+
+    it "re-sanitizes when processed_html changes without touching updated_at" do
+      get "/feed/#{article.user.username}"
+      article.update_column(:processed_html, "<p>Fresh <em>body</em></p>")
+
+      get "/feed/#{article.user.username}"
+
+      expect(response.body).to include("&lt;p&gt;Fresh &lt;em&gt;body&lt;/em&gt;&lt;/p&gt;")
+    end
+  end
+
+  context "with a user feed" do
+    let(:user) { article.user }
+
+    before { create(:article, user: user, tags: "ruby, rails") }
+
+    [nil, "rss-avatar.png"].each do |profile_image|
+      it "preserves the channel and cache tags with a narrow user lookup (image: #{profile_image.inspect})" do
+        user.update_column(:profile_image, profile_image)
+        user.reload
+        queries = []
+        callback = lambda do |*, payload|
+          queries << payload[:sql] if payload[:sql].include?('FROM "users"') && !payload[:cached]
+        end
+
+        ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+          get "/feed/#{user.username}"
+        end
+
+        channel = Nokogiri::XML(response.body).at_xpath("/rss/channel")
+        expect(response).to have_http_status(:ok)
+        expect(channel.at_xpath("title").text).to eq("#{Settings::Community.community_name}: #{user.name}")
+        expect(channel.at_xpath("description").text).to include("#{user.name} (@#{user.username})")
+        expect(channel.at_xpath("link").text).to end_with(user.path)
+        expect(channel.at_xpath("image/url").text).to end_with(user.profile_image_90)
+        expect(response.headers["Surrogate-Key"].split).to include(*user.profile_identity_cache_keys)
+        expect(queries.size).to eq(1)
+        expect(queries.first).not_to include('"users".*')
+      end
+    end
+
+    def article_and_tagging_queries
+      queries = []
+      callback = lambda do |*, payload|
+        sql = payload[:sql]
+        queries << sql if sql.match?(/FROM "(articles|taggings|tags)"/) && !payload[:cached]
+      end
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") { yield }
+      queries
+    end
+
+    it "renders categories from cached_tag_list with a single articles query and no taggings query" do
+      queries = article_and_tagging_queries { get "/feed/#{user.username}" }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("<category>ruby</category>")
+      expect(response.body).to include("<category>rails</category>")
+      expect(queries.count { |sql| sql.include?('FROM "articles"') }).to eq(1)
+      expect(queries.grep(/FROM "taggings"/)).to be_empty
+      expect(queries.grep(/FROM "tags"/)).to be_empty
+    end
+
+    it "returns not found when the requested page is past the last article" do
+      expect { get "/feed/#{user.username}?page=50" }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
+  context "with an organization feed" do
+    let(:organization) { create(:organization) }
+
+    before { article.update!(organization: organization) }
+
+    [nil, "rss-organization.png"].each do |profile_image|
+      it "preserves the channel and cache tag with a narrow organization lookup (image: #{profile_image.inspect})" do
+        organization.update_column(:profile_image, profile_image)
+        organization.reload
+        queries = []
+        callback = lambda do |*, payload|
+          queries << payload[:sql] if payload[:sql].include?('"organizations"."slug" =') && !payload[:cached]
+        end
+
+        ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+          get "/feed/#{organization.slug}"
+        end
+
+        channel = Nokogiri::XML(response.body).at_xpath("/rss/channel")
+        expect(response).to have_http_status(:ok)
+        expect(channel.at_xpath("title").text).to eq("#{Settings::Community.community_name}: #{organization.name}")
+        expect(channel.at_xpath("description").text).to include("#{organization.name} (#{organization.slug})")
+        expect(channel.at_xpath("link").text).to end_with(organization.path)
+        expect(channel.at_xpath("image/url").text).to end_with(organization.profile_image_90)
+        expect(channel.xpath("item/title").map(&:text)).to eq([article.title])
+        expect(response.headers["Surrogate-Key"].split).to include(organization.record_key)
+        expect(queries).to contain_exactly(
+          a_string_starting_with('SELECT "organizations"."id", "organizations"."name", ' \
+                                 '"organizations"."slug", "organizations"."profile_image"'),
+        )
+      end
+    end
+  end
+
+  context "with home and tag feeds" do
+    let(:tag) { create(:tag, name: "rssperf") }
+
+    before { create(:article, user: article.user, tags: tag.name, score: 10) }
+
+    it "renders dc:creator from cached_user_name without querying users on the home feed" do
+      user_queries = []
+      callback = lambda do |*, payload|
+        user_queries << payload[:sql] if payload[:sql].include?('FROM "users"') && !payload[:cached]
+      end
+
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") { get "/feed" }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("<dc:creator>#{article.user.name}</dc:creator>")
+      expect(user_queries).to be_empty
+    end
+
+    it "queries tags only once and skips users queries on a direct tag feed" do
+      queries = []
+      callback = lambda do |*, payload|
+        sql = payload[:sql]
+        queries << sql if sql.match?(/FROM "(tags|users)"/) && !payload[:cached]
+      end
+
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") { get "/feed/tag/#{tag.name}" }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("<dc:creator>#{article.user.name}</dc:creator>")
+      expect(queries.grep(/FROM "tags"/).size).to eq(1)
+      expect(queries.grep(/FROM "users"/)).to be_empty
+    end
+
+    it "produces byte-for-byte identical XML between ForemNative and Builder across feed types", :aggregate_failures do
+      organization = create(:organization, name: "Forem & <Friends>")
+      article.user.update!(name: "Alice & <Co.>")
+      article.update!(
+        title: "Rust & Ruby <3 \"Quotes\" \u0093CP1252\u0094 🚀",
+        organization: organization,
+        score: 10,
+      )
+
+      [
+        "/feed?page=1&sort=a&b=c",
+        "/feed/latest?page=1&sort=a&b=c",
+        "/feed/tag/#{tag.name}?page=1&sort=a&b=c",
+        "/feed/#{article.user.username}?page=1&sort=a&b=c",
+        "/feed/#{organization.slug}?page=1&sort=a&b=c",
+      ].each do |path|
+        native_results = []
+        allow(ForemNative).to receive(:serialize_rss_feed_xml).and_wrap_original do |method, *args|
+          method.call(*args).tap { |res| native_results << res }
+        end
+
+        get path
+        expect(response).to have_http_status(:ok)
+        native_body = response.body
+        native_content_type = response.headers["Content-Type"]
+        expect(native_results.length).to eq(1)
+        expect(native_results.first).to be_a(String)
+        expect(native_body).to include("page=1&amp;sort=a&amp;b=c")
+
+        allow(ForemNative).to receive(:serialize_rss_feed_xml).and_return(nil)
+        get path
+
+        expect(response).to have_http_status(:ok)
+        expect(response.headers["Content-Type"]).to eq(native_content_type)
+        expect(response.body).to eq(native_body)
+      end
+    end
+
+    it "does not bypass format negotiation for non-RSS requests" do
+      allow(ForemNative).to receive(:serialize_rss_feed_xml).and_call_original
+
+      get "/feed.json"
+
+      expect(response).to have_http_status(:not_found)
+      expect(ForemNative).not_to have_received(:serialize_rss_feed_xml)
+    end
+  end
 end

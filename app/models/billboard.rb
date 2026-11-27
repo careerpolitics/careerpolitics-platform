@@ -1,11 +1,14 @@
 class Billboard < ApplicationRecord
+  include LiquidEmbeddable
   include Taggable
+  include ProcessedHtmlFinalizable
   acts_as_taggable_on :tags
   resourcify
   belongs_to :creator, class_name: "User", optional: true
   belongs_to :audience_segment, optional: true
   belongs_to :page, optional: true
   belongs_to :event, optional: true
+  belongs_to :billboard_campaign, optional: true
 
   ALLOWED_PLACEMENT_AREAS = %w[sidebar_left
                                sidebar_left_2
@@ -20,11 +23,15 @@ class Billboard < ApplicationRecord
                                page_fixed_bottom
                                post_fixed_bottom
                                post_body_bottom
+                               post_body_bottom_secondary
                                post_sidebar
+                               post_sidebar_secondary
                                post_comments
+                               post_comments_secondary
                                post_comments_mid
                                digest_first
-                               digest_second].freeze
+                               digest_second
+                               external_feed].freeze
   ALLOWED_PLACEMENT_AREAS_HUMAN_READABLE = ["Sidebar Left (First Position)",
                                             "Sidebar Left (Second Position)",
                                             "Sidebar Right (Home first position)",
@@ -38,13 +45,32 @@ class Billboard < ApplicationRecord
                                             "Fixed Bottom (Page)",
                                             "Fixed Bottom (Individual Post)",
                                             "Below the post body",
+                                            "Below the post body (Secondary)",
                                             "Sidebar Right (Individual Post)",
+                                            "Sidebar Right (Individual Post, Secondary)",
                                             "Below the comment section",
+                                            "Below the comment section (Secondary)",
                                             "Midway through the comment section",
                                             "Digest Email First",
-                                            "Digest Email Second"].freeze
+                                            "Digest Email Second",
+                                            "External Feed"].freeze
+
+  # Placement areas shown on other sites, which load /bb/:placement_area from one of
+  # Billboard.embed_origins and render the billboard in their own markup and styles.
+  EMBEDDED_PLACEMENTS = %w[external_feed].freeze
 
   HOME_FEED_PLACEMENTS = %w[feed_first feed_second feed_third].freeze
+  POST_PLACEMENTS = %w[post_fixed_bottom
+                       post_body_bottom
+                       post_body_bottom_secondary
+                       post_sidebar
+                       post_sidebar_secondary
+                       post_comments
+                       post_comments_secondary
+                       post_comments_mid].freeze
+  # Placement areas that pages load in the context of the article or page they're on
+  # (see BillboardHelper#billboard_async_path)
+  CONTEXTUAL_PLACEMENTS = (["page_fixed_bottom"] + POST_PLACEMENTS).freeze
   HOME_PAGE_PLACEMENTS = %w[feed_first
                             feed_second
                             feed_third
@@ -68,7 +94,7 @@ class Billboard < ApplicationRecord
   enum :type_of, { in_house: 0, community: 1, external: 2 }
   enum :render_mode, { forem_markdown: 0, raw: 1 }
   enum :template, { authorship_box: 0, plain: 1 }
-  enum :special_behavior, { nothing: 0, delayed: 1 }
+  enum :special_behavior, { nothing: 0, delayed: 1, persistent: 2 }
   enum :browser_context, { all_browsers: 0, desktop: 1, mobile_web: 2, mobile_in_app: 3 }
 
   belongs_to :organization, optional: true
@@ -77,8 +103,14 @@ class Billboard < ApplicationRecord
   validates :placement_area, presence: true,
                              inclusion: { in: ALLOWED_PLACEMENT_AREAS }
   validates :body_markdown, presence: true
+  validates :minimized_body_markdown, presence: true, if: :persistent?
   validates :organization, presence: true, if: :community?
+  validates :billboard_campaign, presence: true,
+                                 if: -> { billboard_campaign_id.present? && will_save_change_to_billboard_campaign_id? }
   validates :weight, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 10_000 }
+  validates :max_impressions_count, :max_clicks_count,
+            numericality: { only_integer: true, greater_than_or_equal_to: 0,
+                            less_than_or_equal_to: BillboardCampaign::MAX_CAP }
   validates :audience_segment_type,
             inclusion: { in: AudienceSegment.type_ofs },
             allow_blank: true
@@ -88,23 +120,36 @@ class Billboard < ApplicationRecord
            :valid_manual_audience_segment,
            :validate_tag,
            :validate_geolocations,
-           :validate_expiration_approval
+           :validate_expiration_approval,
+           :validate_delivery_cap_approval
 
-  before_save :process_markdown
+  before_validation :process_markdown
   before_save :update_exclude_article_ids
   before_save :update_content_updated_at_if_needed
   after_save :generate_billboard_name
   after_save :refresh_audience_segment, if: :should_refresh_audience_segment?
   after_save :update_links_with_bb_param
+  after_save :refresh_embedded_markdown_on_activation, if: :should_refresh_embedded_markdown_on_activation?
   after_save :update_event_counts_when_taking_down, if: -> { being_taken_down? }
   after_save :bust_billboard_cache, if: -> { being_taken_down? }
   after_save :bust_home_page_cache, if: -> { should_bust_home_page_cache? }
   after_destroy :bust_billboard_cache, if: -> { approved && published }
   after_destroy :bust_home_page_cache, if: -> { approved && published && HOME_PAGE_PLACEMENTS.include?(placement_area) }
+  after_commit :enforce_delivery_limits_if_changed, on: %i[create update]
+
+  ACTIVE_CAMPAIGN_SQL =
+    "display_ads.billboard_campaign_id IS NULL OR NOT EXISTS (" \
+    "SELECT 1 FROM billboard_campaigns " \
+    "WHERE billboard_campaigns.id = display_ads.billboard_campaign_id " \
+    "AND billboard_campaigns.expires_at IS NOT NULL " \
+    "AND billboard_campaigns.expires_at <= ?)".freeze
 
   scope :approved_and_published, lambda {
-                                   where(approved: true, published: true).where("expires_at IS NULL OR expires_at > ?", Time.current)
-                                 }
+    now = Time.current
+    where(approved: true, published: true)
+      .where("display_ads.expires_at IS NULL OR display_ads.expires_at > ?", now)
+      .where(ACTIVE_CAMPAIGN_SQL, now)
+  }
 
   scope :search_ads, lambda { |term|
                        where "name ILIKE :search OR processed_html ILIKE :search OR placement_area ILIKE :search",
@@ -118,7 +163,7 @@ class Billboard < ApplicationRecord
 
   def self.for_display(area:, user_signed_in:, user_id: nil, article: nil, user_tags: nil,
                        location: nil, cookies_allowed: false, page_id: nil, user_agent: nil,
-                       role_names: nil, prefer_paired_with_billboard_id: nil)
+                       role_names: nil, prefer_paired_with_billboard_id: nil, fully_cached: false)
     # Check delivery rate configuration first - return nil early if rate check fails
     return unless BillboardPlacementAreaConfig.should_fetch_billboard?(
       placement_area: area,
@@ -142,6 +187,7 @@ class Billboard < ApplicationRecord
       cookies_allowed: cookies_allowed,
       user_agent: user_agent,
       role_names: role_names,
+      fully_cached: fully_cached,
     )
 
     # if prefer_paired_with_billboard_id then return
@@ -157,14 +203,14 @@ class Billboard < ApplicationRecord
   end
 
   def self.select_billboard_by_weighted_strategy(billboards_for_display, area, article_id = nil)
-    # Return nil if no billboards available
-    return nil if billboards_for_display.blank? || billboards_for_display.empty?
-    
+    # Return nil if no billboards available without triggering an upfront query on an unloaded Relation
+    return if no_billboards_available?(billboards_for_display)
+
     # Get weights from placement area config
     weights = BillboardPlacementAreaConfig.selection_weights_for(area)
-    
+
     # Calculate total weight, filtering out any nil or negative values
-    total_weight = weights.values.compact.map { |v| [v.to_i, 0].max }.sum
+    total_weight = weights.values.compact.sum { |v| [v.to_i, 0].max }
     return billboards_for_display.sample if total_weight.zero?
 
     # Generate random number and select strategy based on weight
@@ -176,7 +222,7 @@ class Billboard < ApplicationRecord
       # Skip strategies with zero or negative weight
       weight_value = [weight.to_i, 0].max
       next if weight_value.zero?
-      
+
       cumulative_weight += weight_value
       if random_value < cumulative_weight
         selected_strategy = strategy
@@ -186,19 +232,19 @@ class Billboard < ApplicationRecord
 
     # Execute the selected strategy
     case selected_strategy
-    when "random_selection"
+    when "random_selection", "evenly_distributed"
       # We are always showing more of the good stuff — but we are also always testing the system to give any a chance to
       # rise to the top. This gives "not yet evaluated" stuff a chance to get some engagement and start showing up more.
       # If it doesn't get engagement, it stays in this area.
       billboards_for_display.sample
     when "new_and_priority"
-      # Here we sample from only billboards with fewer impressions or priority billboards (with a fallback
-      # if there are none of those, causing an extra query, but that shouldn't happen very often).
-      relation = billboards_for_display.seldom_seen(area)
-      weighted_random_selection(relation, article_id) || billboards_for_display.sample
+      # Sample from billboards with fewer impressions or priority billboards, falling back
+      # to any candidate billboard in the same query if none qualify.
+      weighted_random_selection(billboards_for_display, article_id, area: area)
     when "new_only"
-      # Here we sample from only billboards with fewer impressions (with a fallback)
-      billboards_for_display.new_only(area).sample || billboards_for_display.limit(rand(1..15)).sample
+      # Sample from billboards with fewer impressions, falling back to top-performing
+      # candidate billboards in the same query if none qualify.
+      new_only_random_selection(billboards_for_display, area)
     when "weighted_performance"
       # Ads that get engagement have a higher "success rate", and among this category, we sample from the top 15 that
       # meet that criteria. Within those 15 top "success rates" likely to be clicked, there is a weighting towards the
@@ -207,59 +253,104 @@ class Billboard < ApplicationRecord
       # that". So basically the "limit" logic will result in 15 sets, and then we sample randomly from there. The
       # "first ranked" ad will show up in all 15 sets, where as 15 will only show in 1 of the 15.
       billboards_for_display.limit(rand(1..15)).sample
-    when "evenly_distributed"
-      # Randomly distribute billboards effectively evenly over time.
-      billboards_for_display.sample
     else
       # Fallback to random if strategy is unknown
       billboards_for_display.sample
     end
   end
 
-  def self.weighted_random_selection(relation, target_article_id = nil)
+  def self.no_billboards_available?(billboards_for_display)
+    return true if billboards_for_display.nil? || billboards_for_display.try(:null_relation?)
+    return billboards_for_display.empty? if billboards_for_display.is_a?(Array)
+
+    billboards_for_display.respond_to?(:loaded?) && billboards_for_display.loaded? && billboards_for_display.empty?
+  end
+  private_class_method :no_billboards_available?
+
+  def self.weighted_random_selection(relation, target_article_id = nil, area: nil)
     base_query = relation.to_sql
+    return if base_query.blank?
+
     random_val = rand.to_f
-    if FeatureFlag.enabled?(:article_id_adjusted_weight)
-      condition = target_article_id.blank? ? "FALSE" : "#{target_article_id} = ANY(preferred_article_ids)"
-      query = <<-SQL
-        WITH base AS (#{base_query}),
-        weighted AS (
-          SELECT *,
-            CASE
-              WHEN #{condition} THEN weight * 10
-              ELSE weight
-            END AS adjusted_weight,
-          SUM(CASE
-                WHEN #{condition} THEN weight * 10
-                ELSE weight
-              END) OVER () AS total_weight,
-          SUM(CASE
-                WHEN #{condition} THEN weight * 10
-                ELSE weight
-              END) OVER (ORDER BY id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_weight
-          FROM base
-        )
-        SELECT *, running_weight, ? * total_weight AS random_value FROM weighted
-        WHERE running_weight >= ? * total_weight
-        ORDER BY running_weight ASC
-        LIMIT 1
-      SQL
-    else
-      query = <<-SQL
-        WITH base AS (#{base_query}),
-        weighted AS (
-          SELECT *, weight,
-          SUM(weight) OVER () AS total_weight,
-          SUM(weight) OVER (ORDER BY id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_weight
-          FROM base
-        )
-        SELECT *, running_weight, ? * total_weight AS random_value FROM weighted
-        WHERE running_weight >= ? * total_weight
-        ORDER BY running_weight ASC
-        LIMIT 1
-      SQL
+    adjust_weight = FeatureFlag.enabled?(:article_id_adjusted_weight) && target_article_id.present?
+    low_impressions = low_impression_count(area).to_i if area.present?
+    native_sql = ForemNative.build_billboard_weighted_random_sql(
+      base_query,
+      adjust_weight ? target_article_id.to_i : nil,
+      low_impressions,
+      random_val,
+    )
+    return relation.find_by_sql(native_sql).first if native_sql
+
+    weight_expr = if adjust_weight
+                    "CASE WHEN #{target_article_id.to_i} = ANY(preferred_article_ids) THEN weight * 10 ELSE weight END"
+                  else
+                    "weight"
+                  end
+    if low_impressions
+      seldom_seen_filter = "WHERE impressions_count < #{low_impressions} OR priority = TRUE"
+      fallback_union = "UNION ALL (SELECT * FROM base WHERE NOT EXISTS (SELECT 1 FROM preferred) " \
+                       "ORDER BY RANDOM() LIMIT 1)"
     end
-    relation.find_by_sql([query, random_val, random_val]).first
+
+    query = <<~SQL
+      WITH base AS (#{base_query}),
+      weighted AS (
+        SELECT id,
+          SUM(#{weight_expr}) OVER () AS total_weight,
+          SUM(#{weight_expr}) OVER (ORDER BY id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_weight
+        FROM base
+        #{seldom_seen_filter}
+      ),
+      preferred AS (
+        SELECT id FROM weighted
+        WHERE running_weight >= ? * total_weight
+        ORDER BY running_weight ASC
+        LIMIT 1
+      )
+      SELECT * FROM base
+      WHERE id = (SELECT id FROM preferred)
+      #{fallback_union}
+      LIMIT 1
+    SQL
+    relation.find_by_sql([query, random_val]).first
+  end
+
+  def self.new_only_random_selection(relation, area)
+    base_query = relation.to_sql
+    return if base_query.blank?
+
+    low_impressions = low_impression_count(area).to_i
+    fallback_limit = rand(1..15)
+    native_sql = ForemNative.build_billboard_new_only_sql(base_query, low_impressions, fallback_limit)
+    return relation.find_by_sql(native_sql).first if native_sql
+
+    query = <<~SQL
+      WITH base AS (#{base_query}),
+      preferred AS (SELECT * FROM base WHERE impressions_count < ? ORDER BY RANDOM() LIMIT 1)
+      SELECT * FROM preferred
+      UNION ALL
+      (SELECT * FROM (SELECT * FROM base LIMIT ?) fallback
+       WHERE NOT EXISTS (SELECT 1 FROM preferred) ORDER BY RANDOM() LIMIT 1)
+      LIMIT 1
+    SQL
+    relation.find_by_sql([query, low_impressions, fallback_limit]).first
+  end
+  private_class_method :new_only_random_selection
+
+  # Origins (e.g. "https://embed.example.com") allowed to record billboard events cross-origin.
+  def self.embed_origins
+    ApplicationConfig["BILLBOARD_EMBED_ORIGINS"].to_s.split(",").map(&:strip).reject(&:empty?)
+  end
+
+  def self.embed_origin?(origin)
+    return false if origin.blank?
+
+    raw = ApplicationConfig["BILLBOARD_EMBED_ORIGINS"].to_s
+    return false if raw.blank?
+
+    native = ForemNative.origin_in_comma_list(origin, raw)
+    native.nil? ? embed_origins.include?(origin) : native
   end
 
   # Temporary ENV configs, to eventually be replaced by permanent configurations
@@ -292,16 +383,9 @@ class Billboard < ApplicationRecord
     selected_number.to_i
   end
 
-  def processed_html_final
-    # This is a final non-database-driven step to adjust processed html
-    # It is sort of a hack to avoid having to reprocess all articles
-    # It is currently only for this one cloudflare domain change
-    # It is duplicated across article, bullboard and comment where it is most needed
-    # In the future this could be made more customizable. For now it's just this one thing.
-    return processed_html if ApplicationConfig["PRIOR_CLOUDFLARE_IMAGES_DOMAIN"].blank? || ApplicationConfig["CLOUDFLARE_IMAGES_DOMAIN"].blank?
-
-    processed_html.gsub(ApplicationConfig["PRIOR_CLOUDFLARE_IMAGES_DOMAIN"],
-                        ApplicationConfig["CLOUDFLARE_IMAGES_DOMAIN"])
+  def self.human_readable_placement_area(area)
+    index = ALLOWED_PLACEMENT_AREAS.find_index(area.to_s)
+    index ? ALLOWED_PLACEMENT_AREAS_HUMAN_READABLE[index] : area.to_s
   end
 
   def type_of_display
@@ -309,7 +393,7 @@ class Billboard < ApplicationRecord
   end
 
   def human_readable_placement_area
-    ALLOWED_PLACEMENT_AREAS_HUMAN_READABLE[ALLOWED_PLACEMENT_AREAS.find_index(placement_area)]
+    self.class.human_readable_placement_area(placement_area)
   end
 
   def validate_tag
@@ -334,9 +418,37 @@ class Billboard < ApplicationRecord
   end
 
   def validate_expiration_approval
-    return unless expires_at.present? && expires_at < Time.current && approved?
+    return unless expired? && approved?
 
     errors.add(:approved, "cannot be set to true if billboard has expired")
+  end
+
+  def validate_delivery_cap_approval
+    return unless approved? && will_save_change_to_approved?
+    return unless over_cap? || billboard_campaign&.delivery_limit_reached?(self)
+
+    errors.add(:approved, "cannot be set to true once the billboard or its campaign has ended or reached a cap")
+  end
+
+  def expired?(now: Time.current)
+    expires_at.present? && expires_at <= now
+  end
+
+  def has_delivery_cap?
+    max_impressions_count.to_i.positive? || max_clicks_count.to_i.positive?
+  end
+
+  def delivery_limit_reached?(now: Time.current)
+    expired?(now: now) || over_cap? ||
+      billboard_campaign&.delivery_limit_reached?(self, now: now) == true
+  end
+
+  def over_cap?
+    cap_reached?(max_impressions_count, impressions_count) || cap_reached?(max_clicks_count, clicks_count)
+  end
+
+  def cap_reached?(cap, count)
+    cap.to_i.positive? && count.to_i >= cap.to_i
   end
 
   def audience_segment_type
@@ -409,15 +521,110 @@ class Billboard < ApplicationRecord
   end
 
   def update_links_with_bb_param
-    # Parse the processed_html with Nokogiri
-    full_html = "<html><head></head><body>#{processed_html}</body></html>"
+    modified_html = with_bb_param(processed_html)
+
+    # Early return if the new HTML is the same as the old one
+    return if modified_html == processed_html
+
+    # Update the processed_html column with the new HTML
+    update_column(:processed_html, modified_html)
+  end
+
+  def with_bb_param(html)
+    return html if html.blank?
+
+    ForemNative.billboard_append_bb_param(html, id.to_s) || legacy_with_bb_param(html)
+  end
+
+  def refresh_embedded_markdown!(bust_caches: true, retried: false)
+    return false unless persisted? && forem_markdown?
+
+    snapshot = {
+      body_markdown: body_markdown,
+      minimized_body_markdown: minimized_body_markdown,
+      render_mode: render_mode,
+      placement_area: placement_area
+    }
+    new_html, new_minimized_html = render_embedded_markdown_snapshot(snapshot)
+    return false if embedded_html_unchanged?(new_html, new_minimized_html)
+
+    persist_refreshed_embedded_markdown(
+      snapshot,
+      new_html,
+      new_minimized_html,
+      bust_caches: bust_caches,
+      retried: retried,
+    )
+  rescue ActiveRecord::RecordNotFound
+    false
+  rescue ContentRenderer::ContentParsingError => e
+    clean_error = ErrorMessages::Clean.call(e.message)
+    Rails.logger.warn("Billboard #{id} refresh_embedded_markdown! failed: #{e.class}: #{clean_error}")
+    false
+  end
+
+  def score
+    0 # Just to allow this to repond to .score for abuse reports
+  end
+
+  # Locks the campaigns this save or destroy moves the billboard out of or into, so the campaign
+  # checks in BillboardPolicy can't race a sibling's approval. Call inside the billboard's row lock.
+  def lock_affected_campaigns!
+    ids = [billboard_campaign_id, attribute_in_database(:billboard_campaign_id)].compact.uniq
+    BillboardCampaign.where(id: ids).order(:id).lock.ids if ids.any?
+  end
+
+  # Takes the billboard (or its entire campaign) down once it, or its campaign,
+  # has expired or reached a delivery cap.
+  def check_and_handle_delivery_limits
+    Billboards::EnforceDeliveryLimits.enforce_for_billboard!(self)
+  end
+
+  # Check if a user should be excluded from seeing this billboard based on survey completion
+  def exclude_user_due_to_survey_completion?(user)
+    return false unless exclude_survey_completions?
+    return false if user.blank?
+    return false if exclude_survey_ids.blank?
+
+    SurveyCompletion.user_completed_any?(user: user, survey_ids: exclude_survey_ids)
+  end
+
+  def render_preview_html(markdown)
+    return if markdown.blank?
+
+    if render_mode == "forem_markdown"
+      renderer = ContentRenderer.new(markdown, source: self, user: creator)
+      renderer.process(prefix_images_options: { width: prefix_width,
+                                                quality: 100,
+                                                synchronous_detail_detection: false }).processed_html.delete("\n")
+    else
+      Html::Parser.new(markdown)
+        .prefix_all_images(width: 880, quality: 100, synchronous_detail_detection: false).html
+    end
+  end
+
+  private
+
+  # Billboards never contain legacy `{% runkit %}` embeds, so `processed_html_final` only applies
+  # the Cloudflare Images domain rewrite.
+  def finalize_legacy_code_html?
+    false
+  end
+
+  def legacy_with_bb_param(html)
+    # Parse the html with Nokogiri
+    full_html = "<html><head></head><body>#{html}</body></html>"
     doc = Nokogiri::HTML(full_html)
     # Iterate over all the <a> tags
     doc.css("a").each do |link|
       href = link["href"]
       next unless href.present? && href.start_with?("http", "/")
 
-      uri = URI.parse(href)
+      begin
+        uri = URI.parse(href)
+      rescue URI::InvalidURIError
+        next
+      end
       existing_params = URI.decode_www_form(uri.query || "")
       # Check if 'bb' parameter exists and update it or append if not exists
       bb_param_index = existing_params.find_index { |param| param[0] == "bb" }
@@ -430,44 +637,16 @@ class Billboard < ApplicationRecord
       link["href"] = uri.to_s
     end
 
-    # Extract and save only the inner HTML of the body
+    # Extract and return only the inner HTML of the body
     modified_html = doc.at("body").inner_html
-
     modified_html.gsub!(/href="([^"]*)&amp;([^"]*)"/, 'href="\1&\2"')
-
-    # Early return if the new HTML is the same as the old one
-    return if modified_html == processed_html
-
-    # Update the processed_html column with the new HTML
-    update_column(:processed_html, modified_html)
+    modified_html
   end
-
-  def score
-    0 # Just to allow this to repond to .score for abuse reports
-  end
-
-  def check_and_handle_expiration
-    return unless expires_at.present? && expires_at < Time.current && approved?
-
-    update_column(:approved, false)
-    bust_billboard_cache if published
-    bust_home_page_cache if published && HOME_PAGE_PLACEMENTS.include?(placement_area)
-  end
-
-  # Check if a user should be excluded from seeing this billboard based on survey completion
-  def exclude_user_due_to_survey_completion?(user)
-    return false unless exclude_survey_completions?
-    return false if user.blank?
-    return false if exclude_survey_ids.blank?
-
-    SurveyCompletion.user_completed_any?(user: user, survey_ids: exclude_survey_ids)
-  end
-
-  private
 
   def update_content_updated_at_if_needed
     # Only update content_updated_at when content-related fields change
-    content_fields = %w[body_markdown name placement_area color template render_mode]
+    content_fields = %w[body_markdown minimized_body_markdown name placement_area color template render_mode
+                        isolate_content]
     
     return unless content_fields.any? { |field| will_save_change_to_attribute?(field) }
     
@@ -475,32 +654,47 @@ class Billboard < ApplicationRecord
   end
 
   def update_exclude_article_ids
-    return if body_markdown.blank? || !body_markdown_changed?
+    return unless body_markdown_changed?
 
-    old_paths = extract_internal_article_paths(processed_html_was)
-    new_paths = extract_internal_article_paths(processed_html)
+    self.exclude_article_ids = compute_updated_exclude_article_ids(processed_html_was, processed_html)
+  end
+
+  def compute_updated_exclude_article_ids(previous_html, next_html)
+    old_paths = extract_internal_article_paths(previous_html)
+    new_paths = extract_internal_article_paths(next_html)
+    return exclude_article_ids.to_a if old_paths == new_paths
 
     removed_paths = old_paths - new_paths
     added_paths = new_paths - old_paths
 
-    removed_ids = removed_paths.any? ? Article.where(path: removed_paths).pluck(:id) : []
-    added_ids = added_paths.any? ? Article.where(path: added_paths).pluck(:id) : []
+    removed_ids = removed_paths.any? ? Article.where(path: removed_paths).ids : []
+    added_ids = added_paths.any? ? Article.where(path: added_paths).ids : []
 
-    current_ids = self.exclude_article_ids.to_a
-    self.exclude_article_ids = ((current_ids - removed_ids) + added_ids).uniq
+    ((exclude_article_ids.to_a - removed_ids) + added_ids).uniq
   end
 
   def extract_internal_article_paths(html)
     return [] if html.blank?
+    return [] unless html.include?("<a") || html.include?("<A")
 
+    internal_hosts = normalized_internal_hosts
+    ForemNative.billboard_extract_internal_article_paths(html, internal_hosts) ||
+      legacy_extract_internal_article_paths(html, internal_hosts)
+  end
+
+  def normalized_internal_hosts
+    internal_hosts = [
+      ApplicationConfig["APP_DOMAIN"],
+      Settings::General.app_domain,
+      URI.parse(URL.url).host,
+    ]
+    internal_hosts += Subforem.cached_domains if defined?(Subforem)
+    internal_hosts.compact.map { |h| h.downcase.delete_prefix("www.") }.uniq
+  end
+
+  def legacy_extract_internal_article_paths(html, internal_hosts)
     paths = []
     doc = Nokogiri::HTML("<html><body>#{html}</body></html>")
-    
-    internal_hosts = [
-      nil,
-      ApplicationConfig["APP_DOMAIN"],
-      URI.parse(URL.url).host
-    ].compact.uniq
 
     doc.css("a").each do |link|
       href = link["href"]
@@ -508,7 +702,8 @@ class Billboard < ApplicationRecord
 
       begin
         uri = URI.parse(href)
-        next unless internal_hosts.include?(uri.host)
+        host = uri.host&.downcase&.delete_prefix("www.")
+        next unless host.nil? || internal_hosts.include?(host)
 
         path = uri.path
         paths << path.chomp("/").downcase if path.present? && path != "/"
@@ -534,7 +729,8 @@ class Billboard < ApplicationRecord
   def should_bust_home_page_cache?
     return false unless HOME_PAGE_PLACEMENTS.include?(placement_area) || HOME_PAGE_PLACEMENTS.include?(placement_area_before_last_save)
 
-    content_fields = %w[body_markdown name placement_area color template render_mode]
+    content_fields = %w[body_markdown minimized_body_markdown name placement_area color template render_mode
+                        isolate_content]
 
     was_active = approved_before_last_save && published_before_last_save
     is_active = approved && published
@@ -564,26 +760,118 @@ class Billboard < ApplicationRecord
   end
 
   def process_markdown
-    return unless body_markdown_changed?
-
-    if render_mode == "forem_markdown"
-      extracted_process_markdown
-    else # raw
-      self.processed_html = Html::Parser.new(body_markdown)
-        .prefix_all_images(width: 880, quality: 100, synchronous_detail_detection: true).html
+    if reprocess_body_markdown?
+      self.processed_html = render_markdown_field(body_markdown)
+      @rendered_body_markdown = body_markdown
     end
+
+    if reprocess_minimized_body_markdown?
+      self.minimized_processed_html = render_markdown_field(minimized_body_markdown)
+      @rendered_minimized_body_markdown = minimized_body_markdown
+    end
+  rescue ContentRenderer::ContentParsingError => e
+    errors.add(:base, ErrorMessages::Clean.call(e.message))
   end
 
-  def extracted_process_markdown
-    renderer = ContentRenderer.new(body_markdown || "", source: self, user: creator)
-    self.processed_html = renderer.process(prefix_images_options: { width: prefix_width,
-                                                                    quality: 100,
-                                                                    synchronous_detail_detection: true }).processed_html
-    self.processed_html = processed_html.delete("\n")
+  def reprocess_body_markdown?
+    body_markdown_changed? || render_mode_changed? || placement_area_changed? ||
+      (defined?(@rendered_body_markdown) && @rendered_body_markdown != body_markdown)
+  end
+
+  def reprocess_minimized_body_markdown?
+    minimized_body_markdown_changed? || render_mode_changed? || placement_area_changed? ||
+      (defined?(@rendered_minimized_body_markdown) && @rendered_minimized_body_markdown != minimized_body_markdown)
+  end
+
+  def render_markdown_field(markdown)
+    return if markdown.blank?
+    return extracted_process_markdown(markdown) if render_mode == "forem_markdown"
+
+    Html::Parser.new(markdown)
+      .prefix_all_images(width: 880, quality: 100, synchronous_detail_detection: true).html
+  end
+
+  def extracted_process_markdown(markdown)
+    renderer = ContentRenderer.new(markdown || "", source: self, user: creator)
+    processed = renderer.process(prefix_images_options: { width: prefix_width,
+                                                           quality: 100,
+                                                           synchronous_detail_detection: true }).processed_html
+    processed.delete("\n")
+  end
+
+  def render_embedded_markdown_snapshot(snapshot)
+    new_html = with_bb_param(render_markdown_field(snapshot[:body_markdown]))
+    new_minimized_html = if snapshot[:minimized_body_markdown].present?
+                           render_markdown_field(snapshot[:minimized_body_markdown])
+                         end
+    [new_html, new_minimized_html]
+  end
+
+  def embedded_html_unchanged?(new_html, new_minimized_html)
+    LiquidEmbedReference.semantically_equal_html?(new_html, processed_html) &&
+      LiquidEmbedReference.semantically_equal_html?(new_minimized_html, minimized_processed_html)
+  end
+
+  def persist_refreshed_embedded_markdown(snapshot, new_html, new_minimized_html, bust_caches:, retried:)
+    now = Time.current
+    attrs = {
+      processed_html: new_html,
+      minimized_processed_html: new_minimized_html,
+      exclude_article_ids: compute_updated_exclude_article_ids(processed_html, new_html),
+      content_updated_at: now,
+      updated_at: now
+    }
+
+    if self.class.where(id: id, **snapshot).update_all(attrs).zero?
+      return false if retried
+
+      reload
+      return refresh_embedded_markdown!(bust_caches: bust_caches, retried: true)
+    end
+
+    assign_attributes(attrs)
+    clear_attribute_changes(attrs.keys)
+    bust_active_billboard_caches(now) if bust_caches
+    true
+  end
+
+  def bust_active_billboard_caches(now)
+    return unless approved? && published? && (expires_at.nil? || expires_at > now)
+
+    bust_billboard_cache
+    bust_home_page_cache if HOME_PAGE_PLACEMENTS.include?(placement_area)
+  end
+
+  def should_refresh_embedded_markdown_on_activation?
+    return false unless forem_markdown? && current_markdown_has_liquid_tag?
+    return false if markdown_or_placement_saved_change?
+
+    now = Time.current
+    is_active = billboard_active_at?(approved?, published?, expires_at, now)
+    was_active = billboard_active_at?(
+      approved_before_last_save,
+      published_before_last_save,
+      expires_at_before_last_save,
+      now,
+    )
+    is_active && !was_active
+  end
+
+  def markdown_or_placement_saved_change?
+    saved_change_to_body_markdown? || saved_change_to_minimized_body_markdown? ||
+      saved_change_to_render_mode? || saved_change_to_placement_area?
+  end
+
+  def billboard_active_at?(is_approved, is_published, expiration, now)
+    (is_approved == true) && (is_published == true) && (expiration.nil? || expiration > now)
+  end
+
+  def refresh_embedded_markdown_on_activation
+    bust_billboard_cache if refresh_embedded_markdown!(bust_caches: false)
   end
 
   def prefix_width
-    placement_area.include?("sidebar") ? SIDEBAR_WIDTH : POST_WIDTH
+    placement_area&.include?("sidebar") ? SIDEBAR_WIDTH : POST_WIDTH
   end
 
   def refresh_audience_segment
@@ -610,5 +898,16 @@ class Billboard < ApplicationRecord
     return if audience_segment_type != "manual"
 
     errors.add(:audience_segment_type) if audience_segment.blank?
+  end
+
+  def enforce_delivery_limits_if_changed
+    if previously_new_record?
+      return unless billboard_campaign_id.present? && (impressions_count.to_i.positive? || clicks_count.to_i.positive?)
+    else
+      return unless saved_change_to_max_impressions_count? || saved_change_to_max_clicks_count? ||
+        saved_change_to_expires_at? || saved_change_to_billboard_campaign_id?
+    end
+
+    check_and_handle_delivery_limits
   end
 end

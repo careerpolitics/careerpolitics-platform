@@ -4,53 +4,31 @@ RSpec.describe "Api::V0::Videos" do
   let(:user) { create(:user, created_at: 1.month.ago) }
 
   def create_article(article_params = {})
-    article = create(:article, :video, user: user, title: "video-#{rand(10_000)}")
+    article = create(:article, :video, user: user, title: "video-#{SecureRandom.hex(8)}")
     article.update_columns(article_params) if article_params.any?
     article
   end
 
   describe "GET /api/videos" do
-    it "returns articles with videos" do
-      create_article
+    it "returns only eligible video articles with the correct json representation and surrogate key",
+       :aggregate_failures do
+      video_article = create_article
+      create_article(published: false)
+      create_article(video: "")
+      create(:article, user: user)
+      create_article(score: -4)
+
+      expect(Article.with_video.to_sql).to include("articles.video > ''")
+      expect(Article.with_video.to_sql).not_to include("IS NULL")
 
       get api_videos_path
 
       expect(response.parsed_body.size).to eq(1)
-    end
-
-    it "does not return unpublished video articles" do
-      article = create_article
-      article.update_columns(published: false)
-
-      get api_videos_path
-
-      expect(response.parsed_body.size).to eq(0)
-    end
-
-    it "does not return regular articles without videos" do
-      create(:article)
-
-      get api_videos_path
-
-      expect(response.parsed_body.size).to eq(0)
-    end
-
-    it "does not return video articles with a score that is too low" do
-      create_article(score: -4)
-
-      get api_videos_path
-
-      expect(response.parsed_body.size).to eq(0)
-    end
-
-    it "returns video articles with the correct json representation", :aggregate_failures do
-      video_article = create_article
-
-      get api_videos_path
 
       response_video = response.parsed_body.first
-      expected_keys = %w[type_of id path cloudinary_video_url title user_id video video_duration_in_minutes video_source_url
-                         user]
+      expected_keys = %w[
+        type_of id path cloudinary_video_url title user_id video video_duration_in_minutes video_source_url user
+      ]
       expect(response_video.keys).to match_array(expected_keys)
 
       %w[id path cloudinary_video_url title user_id video video_duration_in_minutes video_source_url].each do |attr|
@@ -58,6 +36,9 @@ RSpec.describe "Api::V0::Videos" do
       end
 
       expect(response_video["user"]["name"]).to eq(video_article.user.name)
+
+      expected_key = ["videos", "articles", video_article.record_key].to_set
+      expect(response.headers["surrogate-key"].split.to_set).to eq(expected_key)
     end
 
     it "orders video articles by descending hotness score" do
@@ -71,7 +52,7 @@ RSpec.describe "Api::V0::Videos" do
     end
 
     it "supports pagination" do
-      3.times { create(:article, :video, user: user, title: "video-#{rand(10_000)}") }
+      3.times { create_article }
 
       get api_videos_path, params: { page: 1, per_page: 2 }
       expect(response.parsed_body.length).to eq(2)
@@ -85,19 +66,29 @@ RSpec.describe "Api::V0::Videos" do
       allow(ApplicationConfig).to receive(:[]).with("APP_PROTOCOL").and_return("http://")
       allow(ApplicationConfig).to receive(:[]).with("API_PER_PAGE_MAX").and_return(2)
 
-      3.times { create(:article, :video, user: user, title: "video-#{rand(10_000)}") }
+      3.times { create_article }
 
       get api_videos_path, params: { per_page: 10 }
       expect(response.parsed_body.count).to eq(2)
     end
 
-    it "sets the correct edge caching surrogate key for all video articles" do
-      video_article = create_article
+    it "matches Jbuilder byte-for-byte via ForemNative with Float durations", :aggregate_failures do
+      create_article(title: "Video <1> & Demo 🚀", video_duration_in_seconds: 125.9)
+
+      native_results = []
+      allow(ForemNative).to receive(:serialize_api_videos_json).and_wrap_original do |method, *args|
+        method.call(*args).tap { |res| native_results << res }
+      end
 
       get api_videos_path
+      native_body = response.body
+      expect(native_results.length).to eq(1)
+      expect(native_results.first).to be_a(String)
+      expect(response.parsed_body.first["video_duration_in_minutes"]).to eq("02:05")
 
-      expected_key = ["videos", "articles", video_article.record_key].to_set
-      expect(response.headers["surrogate-key"].split.to_set).to eq(expected_key)
+      allow(ForemNative).to receive(:serialize_api_videos_json).and_return(nil)
+      get api_videos_path
+      expect(native_body).to eq(response.body)
     end
   end
 end

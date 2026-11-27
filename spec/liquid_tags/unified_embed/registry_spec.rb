@@ -109,6 +109,8 @@ RSpec.describe UnifiedEmbed::Registry do
       "https://player.twitch.tv/?video=1222841752",
       "https://www.twitch.tv/videos/1250164963",
       "https://www.twitch.tv/monchi_tv/clip/CrepuscularSparklingGalagoBudBlast-ij3jvc4r437D4L4L",
+      "https://player.twitch.tv/?parent=www.example.com&video=1222841752",
+      "https://player.twitch.tv/?parent=www.example.com&video=1222841752&autoplay=false",
     ]
 
     valid_vimeo_url_formats = [
@@ -126,6 +128,11 @@ RSpec.describe UnifiedEmbed::Registry do
     it "returns AsciinemaTag for an asciinema url" do
       expect(described_class.find_liquid_tag_for(link: "https://asciinema.org/a/330532"))
         .to eq(AsciinemaTag)
+    end
+
+    it "returns TrecsTag for a trecs watch url" do
+      expect(described_class.find_liquid_tag_for(link: "https://trecs.run/watch/9f66b056-dee1-460b-a2a0-fb45df6461d2"))
+        .to eq(TrecsTag)
     end
 
     it "returns BlogcastTag for a valid blogcast url", :aggregate_failures do
@@ -275,9 +282,15 @@ RSpec.describe UnifiedEmbed::Registry do
         .to eq(NextTechTag)
     end
 
-    it "returns RedditTag for a reddit url" do
+    it "returns RedditTag for a reddit url", :aggregate_failures do
       expect(described_class.find_liquid_tag_for(link: "https://www.reddit.com/r/Cricket/comments/qrkwol/match_thread_2nd_semifinal_australia_vs_pakistan/"))
         .to eq(RedditTag)
+      expect(described_class.find_liquid_tag_for(link: "https://www.reddit.com:443/r/Cricket/comments/123"))
+        .to eq(RedditTag)
+      expect(described_class.find_liquid_tag_for(link: "https://www.reddit.com"))
+        .to eq(OpenGraphTag)
+      expect(described_class.find_liquid_tag_for(link: "https://reddit.com.example.com/r/Cricket/comments/123"))
+        .to eq(OpenGraphTag)
     end
 
     it "returns ReplitTag for a valid replit url", :aggregate_failures do

@@ -20,7 +20,7 @@ class QuoteTag < Liquid::Block
   end
 
   def render(context)
-    content = super
+    content = sanitize_block_content(super)
     html = ApplicationController.render(
       partial: PARTIAL,
       locals: {
@@ -35,9 +35,9 @@ class QuoteTag < Liquid::Block
     )
     # Collapse whitespace between HTML tags so the second Redcarpet pass in
     # MarkdownProcessor::Parser#finalize treats the output as one HTML block
-    # instead of interpreting indented SVG paths as code blocks and blank
-    # lines from ERB conditionals as block breaks. Only collapses whitespace
-    # between tags (template-introduced), preserving newlines within text content.
+    # instead of treating blank lines from ERB conditionals as block breaks.
+    # Only collapse template-introduced whitespace between tags, preserving
+    # newlines within text content.
     html.gsub(/>\s*\n\s*</, "> <").gsub(/\A\s+/, "").gsub(/\s+\z/, "")
   end
 

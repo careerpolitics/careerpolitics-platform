@@ -20,7 +20,7 @@ RSpec.describe Authentication::Authenticator, type: :service do
   end
 
   shared_examples "preserves existing user roles" do
-    it "does not make any changes to roles if the user already exists" do
+    it "does not make any changes to roles if the user already exists", :aggregate_failures do
       existing_user = create(:user, :trusted)
       auth_payload.info.email = existing_user.email
 
@@ -29,17 +29,28 @@ RSpec.describe Authentication::Authenticator, type: :service do
         expect(user).to eq(existing_user)
         expect(user).to be_trusted
         expect(user).not_to be_limited
+        allow(Settings::Authentication).to receive(:new_user_status).and_return("limited")
+        expect(described_class.call(auth_payload)).to eq(existing_user).and be_trusted
+        expect(existing_user.reload).not_to be_limited
       end.not_to change(existing_user.roles, :count)
     end
   end
 
   shared_examples "appropriate new user status" do
-    it "registers a user in good standing by default" do
-      user = service.call
+    it "registers a user in good standing by default", :aggregate_failures do
+      user = nil
+      expect { user = service.call }.to change(User, :count).by(1).and change(Identity, :count).by(1)
 
       expect(user.registered).to be(true)
       expect(user.registered_at).not_to be_nil
       expect(user).not_to be_limited
+      expect(user.password).to be_present
+      expect(user.signup_cta_variant).to be_nil
+      expect(user.saw_onboarding).to be(false)
+      expect(user.setting.editor_version).to eq("v2")
+      expect(user.remember_me).to be(true)
+      expect(user.remember_token).to be_present
+      expect(user.remember_created_at).to be_present
     end
 
     include_examples "preserves existing user roles"
@@ -49,15 +60,14 @@ RSpec.describe Authentication::Authenticator, type: :service do
         allow(Settings::Authentication).to receive(:new_user_status).and_return("limited")
       end
 
-      it "registers the user as limited" do
-        user = service.call
+      it "registers the user as limited and applies cta_variant", :aggregate_failures do
+        user = described_class.call(auth_payload, cta_variant: "awesome")
 
         expect(user.registered).to be(true)
         expect(user.registered_at).not_to be_nil
         expect(user).to be_limited
+        expect(user.signup_cta_variant).to eq("awesome")
       end
-
-      include_examples "preserves existing user roles"
     end
   end
 
@@ -79,18 +89,6 @@ RSpec.describe Authentication::Authenticator, type: :service do
     include_context "appropriate new user status"
 
     describe "new user" do
-      it "creates a new user" do
-        expect do
-          service.call
-        end.to change(User, :count).by(1)
-      end
-
-      it "creates a new identity" do
-        expect do
-          service.call
-        end.to change(Identity, :count).by(1)
-      end
-
       it "extracts the proper data from the auth payload" do
         user = service.call
 
@@ -100,29 +98,6 @@ RSpec.describe Authentication::Authenticator, type: :service do
         expect(user.name).to eq("#{info.first_name} #{info.last_name}")
         expect(user.profile_image).not_to be_nil
         expect(user.apple_username).to match(/#{info.first_name.downcase}_\w+/)
-      end
-
-      it "sets default fields" do
-        user = service.call
-
-        expect(user.password).to be_present
-        expect(user.signup_cta_variant).to be_nil
-        expect(user.saw_onboarding).to be(false)
-        expect(user.setting.editor_version).to eq("v2")
-      end
-
-      it "sets the correct sign up cta variant" do
-        user = described_class.call(auth_payload, cta_variant: "awesome")
-
-        expect(user.signup_cta_variant).to eq("awesome")
-      end
-
-      it "sets remember_me for the new user" do
-        user = service.call
-
-        expect(user.remember_me).to be(true)
-        expect(user.remember_token).to be_present
-        expect(user.remember_created_at).to be_present
       end
 
       it "queues a slack message to be sent for a user whose identity is brand new" do
@@ -141,6 +116,22 @@ RSpec.describe Authentication::Authenticator, type: :service do
           "identity.created", tags: ["provider:apple"]
         )
       end
+
+      it "does not match an existing user by a colliding apple_username when uid and email do not match" do
+        auth_payload.info.email = nil
+        colliding_nickname = Authentication::Providers::Apple.new(auth_payload).user_nickname
+        existing_user = create(:user, apple_username: colliding_nickname)
+
+        authenticated_user = nil
+        expect do
+          authenticated_user = service.call
+        end.to change(User, :count).by(1).and change(Identity, :count).by(1)
+
+        expect(authenticated_user).not_to eq(existing_user)
+        expect(authenticated_user.apple_username).to be_present
+        expect(authenticated_user.apple_username).not_to eq(colliding_nickname)
+        expect(Identity.find_by(provider: "apple", uid: auth_payload.uid)&.user).to eq(authenticated_user)
+      end
     end
 
     describe "existing user" do
@@ -157,9 +148,7 @@ RSpec.describe Authentication::Authenticator, type: :service do
       end
 
       it "creates a new identity if the user doesn't have one" do
-        user = create(:user)
-        auth_payload.info.email = user.email
-        auth_payload.uid = "#{user.email}-#{rand(10_000)}"
+        user.identities.delete_all
 
         expect do
           described_class.call(auth_payload)
@@ -276,18 +265,6 @@ RSpec.describe Authentication::Authenticator, type: :service do
     include_context "appropriate new user status"
 
     describe "new user" do
-      it "creates a new user" do
-        expect do
-          service.call
-        end.to change(User, :count).by(1)
-      end
-
-      it "creates a new identity" do
-        expect do
-          service.call
-        end.to change(Identity, :count).by(1)
-      end
-
       it "extracts the proper data from the auth payload" do
         user = service.call
 
@@ -300,27 +277,45 @@ RSpec.describe Authentication::Authenticator, type: :service do
         expect(user.github_username).to eq(info.nickname)
       end
 
-      it "sets default fields" do
+      # On a fresh production database the setting is never stored, so it falls
+      # back to `!User.exists?`, which turns false once the first user is saved.
+      it "grants creator roles to the first user when the setting falls back to its default",
+         :aggregate_failures do
+        allow(Settings::General).to receive(:waiting_on_first_user).and_call_original
+        expect(Settings::General.where(var: "waiting_on_first_user")).not_to exist
+        expect(User).not_to exist
+
         user = service.call
 
-        expect(user.password).to be_present
-        expect(user.signup_cta_variant).to be_nil
-        expect(user.saw_onboarding).to be(false)
-        expect(user.setting.editor_version).to eq("v2")
+        expect(user).to be_creator
+        expect(user).to be_super_admin
+        expect(user).to be_trusted
+        expect(Settings::General.mascot_user_id).to eq(User.mascot_account.id)
       end
 
-      it "sets the correct sign up cta variant" do
-        user = described_class.call(auth_payload, cta_variant: "awesome")
+      it "does not grant creator roles from a stale setting value once another signup claimed them",
+         :aggregate_failures do
+        create(:user)
+        Settings::General.unscoped.create!(var: "waiting_on_first_user", value: false)
+        allow(Settings::General).to receive(:waiting_on_first_user).and_return(true)
 
-        expect(user.signup_cta_variant).to eq("awesome")
-      end
-
-      it "sets remember_me for the new user" do
         user = service.call
 
-        expect(user.remember_me).to be(true)
-        expect(user.remember_token).to be_present
-        expect(user.remember_created_at).to be_present
+        expect(user).not_to be_creator
+        expect(user).not_to be_super_admin
+        expect(user).not_to be_trusted
+      end
+
+      %w[LoGiN signup].each do |nickname|
+        it "registers a GitHub user with the reserved nickname #{nickname}" do
+          auth_payload.info.nickname = nickname
+
+          user = service.call
+
+          expect(user).to be_persisted
+          expect(user.username).to match(/\A#{nickname.downcase}_\d+\z/)
+          expect(user.github_username).to eq(nickname)
+        end
       end
 
       it "queues a slack message to be sent for a user whose identity is brand new" do
@@ -384,9 +379,7 @@ RSpec.describe Authentication::Authenticator, type: :service do
       end
 
       it "creates a new identity if the user doesn't have one" do
-        user = create(:user)
-        auth_payload.info.email = user.email
-        auth_payload.uid = "#{user.email}-#{rand(10_000)}"
+        user.identities.delete_all
 
         expect do
           described_class.call(auth_payload)
@@ -488,18 +481,6 @@ RSpec.describe Authentication::Authenticator, type: :service do
     include_context "appropriate new user status"
 
     describe "new user" do
-      it "creates a new user" do
-        expect do
-          service.call
-        end.to change(User, :count).by(1)
-      end
-
-      it "creates a new identity" do
-        expect do
-          service.call
-        end.to change(Identity, :count).by(1)
-      end
-
       it "extracts the proper data from the auth payload" do
         user = service.call
 
@@ -510,29 +491,6 @@ RSpec.describe Authentication::Authenticator, type: :service do
         expect(user.name).to eq(raw_info.name)
         expect(user.remote_profile_image_url).to eq(info.image)
         expect(user.facebook_username).to match(/#{info.name.sub(' ', '_')}_\S*\z/)
-      end
-
-      it "sets default fields" do
-        user = service.call
-
-        expect(user.password).to be_present
-        expect(user.signup_cta_variant).to be_nil
-        expect(user.saw_onboarding).to be(false)
-        expect(user.setting.editor_version).to eq("v2")
-      end
-
-      it "sets the correct sign up cta variant" do
-        user = described_class.call(auth_payload, cta_variant: "awesome")
-
-        expect(user.signup_cta_variant).to eq("awesome")
-      end
-
-      it "sets remember_me for the new user" do
-        user = service.call
-
-        expect(user.remember_me).to be(true)
-        expect(user.remember_token).to be_present
-        expect(user.remember_created_at).to be_present
       end
 
       it "queues a slack message to be sent for a user whose identity is brand new" do
@@ -575,18 +533,6 @@ RSpec.describe Authentication::Authenticator, type: :service do
     include_context "appropriate new user status"
 
     describe "new user" do
-      it "creates a new user" do
-        expect do
-          service.call
-        end.to change(User, :count).by(1)
-      end
-
-      it "creates a new identity" do
-        expect do
-          service.call
-        end.to change(Identity, :count).by(1)
-      end
-
       it "extracts the proper data from the auth payload" do
         user = service.call
 
@@ -597,29 +543,6 @@ RSpec.describe Authentication::Authenticator, type: :service do
         expect(user.name).to eq(raw_info.name)
         expect(user.remote_profile_image_url).to eq(info.image.to_s.gsub("_normal", ""))
         expect(user.twitter_username).to eq(info.nickname)
-      end
-
-      it "sets default fields" do
-        user = service.call
-
-        expect(user.password).to be_present
-        expect(user.signup_cta_variant).to be_nil
-        expect(user.saw_onboarding).to be(false)
-        expect(user.setting.editor_version).to eq("v2")
-      end
-
-      it "sets the correct sign up cta variant" do
-        user = described_class.call(auth_payload, cta_variant: "awesome")
-
-        expect(user.signup_cta_variant).to eq("awesome")
-      end
-
-      it "sets remember_me for the new user" do
-        user = service.call
-
-        expect(user.remember_me).to be(true)
-        expect(user.remember_token).to be_present
-        expect(user.remember_created_at).to be_present
       end
 
       it "queues a slack message to be sent for a user whose identity is brand new" do
@@ -654,9 +577,7 @@ RSpec.describe Authentication::Authenticator, type: :service do
       end
 
       it "creates a new identity if the user doesn't have one" do
-        user = create(:user)
-        auth_payload.info.email = user.email
-        auth_payload.uid = "#{user.email}-#{rand(10_000)}"
+        user.identities.delete_all
 
         expect do
           described_class.call(auth_payload)
@@ -755,18 +676,6 @@ RSpec.describe Authentication::Authenticator, type: :service do
     include_context "appropriate new user status"
 
     describe "new user" do
-      it "creates a new user" do
-        expect do
-          service.call
-        end.to change(User, :count).by(1)
-      end
-
-      it "creates a new identity" do
-        expect do
-          service.call
-        end.to change(Identity, :count).by(1)
-      end
-
       it "persists the user as confirmed when SMTP isn't enabled" do
         allow(ForemInstance).to receive(:smtp_enabled?).and_return(false)
         user = service.call
@@ -789,29 +698,6 @@ RSpec.describe Authentication::Authenticator, type: :service do
         expect(user.name).to eq(raw_info.name)
         expect(user.remote_profile_image_url).to eq(info.image)
         expect(user.forem_username).to eq(info.user_nickname)
-      end
-
-      it "sets default fields", :aggregate_failures do
-        user = service.call
-
-        expect(user.password).to be_present
-        expect(user.signup_cta_variant).to be_nil
-        expect(user.saw_onboarding).to be(false)
-        expect(user.setting.editor_version).to eq("v2")
-      end
-
-      it "sets the correct sign up cta variant" do
-        user = described_class.call(auth_payload, cta_variant: "awesome")
-
-        expect(user.signup_cta_variant).to eq("awesome")
-      end
-
-      it "sets remember_me for the new user", :aggregate_failures do
-        user = service.call
-
-        expect(user.remember_me).to be(true)
-        expect(user.remember_token).to be_present
-        expect(user.remember_created_at).to be_present
       end
 
       it "queues a slack message to be sent for a user whose identity is brand new" do
@@ -858,9 +744,7 @@ RSpec.describe Authentication::Authenticator, type: :service do
       end
 
       it "creates a new identity if the user doesn't have one" do
-        user = create(:user)
-        auth_payload.info.email = user.email
-        auth_payload.uid = "#{user.email}-#{rand(10_000)}"
+        user.identities.delete_all
 
         expect do
           described_class.call(auth_payload)
@@ -950,6 +834,519 @@ RSpec.describe Authentication::Authenticator, type: :service do
           described_class.call(auth_payload, current_user: user)
         end.to change(Identity, :count).by(1)
       end
+    end
+  end
+
+  context "when authenticating through MLH" do
+    let!(:auth_payload) { omniauth_mock_mlh_payload }
+
+    it "assigns a generated profile_image when creating a new user via MLH" do
+      user = described_class.call(auth_payload)
+
+      expect(user.attributes["profile_image"]).to be_present
+      expect(user.profile_image_url).not_to eq(Images::Profile::BACKUP_LINK)
+    end
+
+    it "backfills a generated profile_image when an existing user has a nil profile_image" do
+      user = create(:user, email: auth_payload.info.email)
+      user.update_column(:profile_image, nil)
+
+      described_class.call(auth_payload)
+
+      expect(user.reload.attributes["profile_image"]).to be_present
+    end
+
+    it "converts a fallback File in remote_profile_image_url into profile_image on signup" do
+      github_payload = OmniAuth.config.mock_auth[:github].deep_dup
+      github_payload.info.image = nil
+
+      user = described_class.call(github_payload)
+
+      expect(user).to be_persisted
+      expect(user.attributes["profile_image"]).to be_present
+    end
+
+    # The mlh identity carries the Core user id (uid), which rides along in
+    # User#trackable_payload — so linking it must surface a user_updated to the
+    # DEV → Core sync, which keys off profile_updated_at.
+    it "touches profile_updated_at when linking a new mlh identity to an existing account", :aggregate_failures do
+      user = create(:user, email: auth_payload.info.email, profile_updated_at: 2.years.ago)
+
+      expect do
+        described_class.call(auth_payload, current_user: user)
+      end.to change(Users::PrefillMlhProfileWorker.jobs, :size).by(1)
+
+      expect(user.reload.profile_updated_at).to be_within(5.seconds).of(Time.current)
+    end
+
+    it "does not touch profile_updated_at when the mlh identity already exists", :aggregate_failures do
+      user = create(:user, email: auth_payload.info.email)
+      described_class.call(auth_payload, current_user: user)
+      user.update_column(:profile_updated_at, 2.years.ago)
+
+      expect do
+        described_class.call(auth_payload, current_user: user)
+      end.not_to change(Users::PrefillMlhProfileWorker.jobs, :size)
+
+      expect(user.reload.profile_updated_at).to be < 1.year.ago
+    end
+
+    # Identities created through the admin API carry only a uid: no token, no
+    # payload. A completed re-auth is the only opportunity to backfill them.
+    describe "relinking a uid-only identity" do
+      let(:user) { create(:user, email: auth_payload.info.email) }
+
+      it "refreshes the stored payload and token" do
+        identity = Identity.create!(user: user, provider: "mlh", uid: auth_payload.uid)
+
+        expect do
+          described_class.call(auth_payload, current_user: user)
+        end.not_to change(Identity, :count)
+
+        identity.reload
+        expect(identity.auth_data_dump.info.email).to eq(auth_payload.info.email)
+        expect(identity.token).to eq(auth_payload.credentials.token)
+      end
+
+      # The seeded uid points at a placeholder account, so the person almost
+      # always authenticates as a different, real one. Completing OAuth proves
+      # they own the incoming uid, and the link being replaced was never
+      # established by a person, so the row moves onto the new uid.
+      it "repoints the link when the incoming uid is unclaimed" do
+        identity = Identity.create!(user: user, provider: "mlh", uid: "a-placeholder-id")
+
+        result = nil
+        expect do
+          result = described_class.call(auth_payload, current_user: user)
+        end.not_to change(Identity, :count)
+
+        expect(result).to eq(user)
+        identity.reload
+        expect(identity.uid).to eq(auth_payload.uid)
+        expect(identity.auth_data_dump.info.email).to eq(auth_payload.info.email)
+        expect(identity.token).to eq(auth_payload.credentials.token)
+      end
+
+      it "touches the user when the link is repointed so the sync sees the new uid" do
+        Identity.create!(user: user, provider: "mlh", uid: "a-placeholder-id")
+        user.update_column(:profile_updated_at, 2.years.ago)
+
+        expect do
+          described_class.call(auth_payload, current_user: user)
+        end.to change { user.reload.profile_updated_at }
+
+        expect(user.profile_updated_at).to be_within(5.seconds).of(Time.current)
+      end
+
+      it "emits user_updated carrying the new uid" do
+        Identity.create!(user: user, provider: "mlh", uid: "a-placeholder-id")
+        allow(Trackable::Registry).to receive(:active_names).and_return([:any])
+        allow(Trackable::DispatchWorker).to receive(:perform_async)
+        Settings::General.customerio_cdp_enabled = true
+        FeatureFlag.enable(:dev_core_user_sync, FeatureFlag::Actor[user])
+
+        with_trackable_events do
+          described_class.call(auth_payload, current_user: user)
+        end
+
+        expect(Trackable::DispatchWorker).to have_received(:perform_async)
+          .with(anything, "user_updated", [user.id], hash_including("mlh_user_id" => auth_payload.uid), anything)
+      ensure
+        FeatureFlag.remove(:dev_core_user_sync)
+      end
+
+      it "leaves the link alone when the uid is claimed concurrently" do
+        identity = Identity.create!(user: user, provider: "mlh", uid: "a-placeholder-id")
+        # rubocop:disable RSpec/AnyInstance
+        allow_any_instance_of(Identity).to receive(:update!).and_raise(ActiveRecord::RecordNotUnique)
+        # rubocop:enable RSpec/AnyInstance
+        allow(ForemStatsClient).to receive(:increment)
+
+        expect(described_class.call(auth_payload, current_user: user)).to eq(user)
+
+        identity.reload
+        expect(identity.uid).to eq("a-placeholder-id")
+        expect(ForemStatsClient).to have_received(:increment)
+          .with("identity.errors", tags: contain_exactly("error:ActiveRecord::RecordNotUnique", "provider:mlh"))
+      end
+
+      it "does not repoint a link the user established themselves" do
+        established_payload = auth_payload.dup
+        established_payload.uid = "an-established-id"
+        identity = Identity.create!(user: user, provider: "mlh", uid: "an-established-id",
+                                    auth_data_dump: established_payload)
+
+        result = nil
+        expect do
+          result = described_class.call(auth_payload, current_user: user)
+        end.not_to change(Identity, :count)
+
+        expect(result).to eq(user)
+        identity.reload
+        expect(identity.uid).to eq("an-established-id")
+        expect(identity.auth_data_dump.uid).to eq("an-established-id")
+      end
+
+      it "returns the current user when the identity is refreshed" do
+        Identity.create!(user: user, provider: "mlh", uid: auth_payload.uid)
+
+        expect(described_class.call(auth_payload, current_user: user)).to eq(user)
+      end
+
+      it "leaves both rows alone when the incoming uid belongs to another user" do
+        other_user = create(:user)
+        other_identity = Identity.create!(user: other_user, provider: "mlh", uid: auth_payload.uid)
+        identity = Identity.create!(user: user, provider: "mlh", uid: "yet-another-placeholder-id")
+
+        described_class.call(auth_payload, current_user: user)
+
+        other_identity.reload
+        expect(other_identity.user_id).to eq(other_user.id)
+        expect(other_identity.auth_data_dump).to be_nil
+
+        identity.reload
+        expect(identity.uid).to eq("yet-another-placeholder-id")
+        expect(identity.auth_data_dump).to be_nil
+      end
+
+      it "still links a brand new identity when the user has none" do
+        expect do
+          described_class.call(auth_payload, current_user: user)
+        end.to change(Identity, :count).by(1)
+
+        identity = user.identities.find_by(provider: "mlh")
+        expect(identity.uid).to eq(auth_payload.uid)
+        expect(identity.auth_data_dump.info.email).to eq(auth_payload.info.email)
+      end
+    end
+  end
+
+  describe "concurrent signup and email normalization" do
+    let(:auth_payload) { OmniAuth.config.mock_auth[:github].deep_dup }
+
+    it "matches an existing user when the provider returns an uppercase or padded email", :aggregate_failures do
+      existing_user = create(:user, email: "mixedcase@example.com")
+      auth_payload.info.email = "  MixedCase@Example.com "
+
+      authenticated_user = nil
+      expect do
+        authenticated_user = described_class.call(auth_payload)
+      end.to not_change(User, :count).and change(Identity, :count).by(1)
+
+      expect(authenticated_user).to eq(existing_user)
+      expect(Identity.find_by(provider: "github", uid: auth_payload.uid)&.user).to eq(existing_user)
+    end
+
+    it "recovers when a concurrent callback inserts the user and raises RecordNotUnique", :aggregate_failures do
+      allow(ForemStatsClient).to receive(:increment)
+      concurrent_user = create(:user, email: auth_payload.info.email, github_username: auth_payload.info.nickname)
+      create(:identity, user: concurrent_user, provider: "github", uid: auth_payload.uid)
+
+      unpersisted_identity = Identity.new(
+        provider: auth_payload.provider,
+        uid: auth_payload.uid,
+        token: auth_payload.credentials.token,
+        secret: auth_payload.credentials.secret,
+        auth_data_dump: auth_payload,
+      )
+      first_lookup = true
+      allow(Identity).to receive(:build_from_omniauth).and_wrap_original do |original, *args|
+        if first_lookup
+          first_lookup = false
+          unpersisted_identity
+        else
+          original.call(*args)
+        end
+      end
+
+      service = described_class.new(auth_payload)
+      first_proper_user = true
+      allow(service).to receive(:proper_user).and_wrap_original do |original, *args|
+        if first_proper_user
+          first_proper_user = false
+          nil
+        else
+          original.call(*args)
+        end
+      end
+
+      first_save = true
+      allow(User).to receive(:new).and_wrap_original do |original, *args|
+        user_instance = original.call(*args)
+        if first_save
+          first_save = false
+          allow(user_instance).to receive(:save!).and_raise(
+            ActiveRecord::RecordNotUnique,
+            'PG::UniqueViolation: ERROR: duplicate key value violates unique constraint "index_users_on_email"',
+          )
+        end
+        user_instance
+      end
+
+      authenticated_user = service.call
+
+      expect(authenticated_user).to eq(concurrent_user)
+      expect(User.where(email: auth_payload.info.email).count).to eq(1)
+      expect(Identity.where(provider: "github", uid: auth_payload.uid).count).to eq(1)
+      expect(ForemStatsClient).not_to have_received(:increment).with("identity.errors", anything)
+    end
+
+    it "recovers when a concurrent callback commits the user before validation runs", :aggregate_failures do
+      allow(ForemStatsClient).to receive(:increment)
+      concurrent_user = create(:user, email: auth_payload.info.email, github_username: auth_payload.info.nickname)
+      create(:identity, user: concurrent_user, provider: "github", uid: auth_payload.uid)
+
+      unpersisted_identity = Identity.new(
+        provider: auth_payload.provider,
+        uid: auth_payload.uid,
+        token: auth_payload.credentials.token,
+        secret: auth_payload.credentials.secret,
+        auth_data_dump: auth_payload,
+      )
+      first_lookup = true
+      allow(Identity).to receive(:build_from_omniauth).and_wrap_original do |original, *args|
+        if first_lookup
+          first_lookup = false
+          unpersisted_identity
+        else
+          original.call(*args)
+        end
+      end
+
+      service = described_class.new(auth_payload)
+      first_proper_user = true
+      allow(service).to receive(:proper_user).and_wrap_original do |original, *args|
+        if first_proper_user
+          first_proper_user = false
+          nil
+        else
+          original.call(*args)
+        end
+      end
+
+      authenticated_user = service.call
+
+      expect(authenticated_user).to eq(concurrent_user)
+      expect(User.where(email: auth_payload.info.email).count).to eq(1)
+      expect(Identity.where(provider: "github", uid: auth_payload.uid).count).to eq(1)
+      expect(ForemStatsClient).not_to have_received(:increment).with("identity.errors", anything)
+    end
+
+    it "re-raises RecordNotUnique and records identity.errors if the conflict persists", :aggregate_failures do
+      allow(ForemStatsClient).to receive(:increment)
+      # rubocop:disable RSpec/AnyInstance
+      allow_any_instance_of(User).to receive(:save!).and_raise(ActiveRecord::RecordNotUnique, "duplicate key")
+      # rubocop:enable RSpec/AnyInstance
+
+      expect do
+        described_class.call(auth_payload)
+      end.to raise_error(ActiveRecord::RecordNotUnique)
+
+      tags = hash_including(tags: array_including("error:ActiveRecord::RecordNotUnique"))
+      expect(ForemStatsClient).to have_received(:increment).with("identity.errors", tags).once
+    end
+  end
+
+  describe "colliding provider usernames" do
+    let(:long_display_name) { "Alexandria Montgomery-Smith" }
+
+    it "does not match an existing user by colliding google_oauth2_username when uid and email do not match",
+       :aggregate_failures do
+      auth_payload = OmniAuth.config.mock_auth[:google_oauth2].deep_dup
+      auth_payload.uid = "google-new-uid-999"
+      auth_payload.info.name = long_display_name
+      auth_payload.info.email = "new-google@example.com"
+
+      colliding_username = Authentication::Providers::GoogleOauth2.new(auth_payload).user_nickname
+      existing_user = create(:user, email: "existing-google@example.com", google_oauth2_username: colliding_username)
+
+      authenticated_user = nil
+      expect do
+        authenticated_user = described_class.call(auth_payload)
+      end.to change(User, :count).by(1).and change(Identity, :count).by(1)
+
+      expect(authenticated_user).not_to eq(existing_user)
+      expect(authenticated_user.google_oauth2_username).to be_present
+      expect(authenticated_user.google_oauth2_username).not_to eq(colliding_username)
+      expect(Identity.find_by(provider: "google_oauth2", uid: auth_payload.uid)&.user).to eq(authenticated_user)
+      expect(existing_user.identities.where(provider: "google_oauth2")).to be_empty
+
+      disambiguated_username = authenticated_user.google_oauth2_username
+      expect(described_class.call(auth_payload)).to eq(authenticated_user)
+      expect(authenticated_user.reload.google_oauth2_username).to eq(disambiguated_username)
+      expect(existing_user.reload.google_oauth2_username).to eq(colliding_username)
+    end
+
+    it "does not match an existing user by colliding facebook_username when uid and email do not match",
+       :aggregate_failures do
+      auth_payload = OmniAuth.config.mock_auth[:facebook].deep_dup
+      auth_payload.uid = "facebook-new-uid-999"
+      auth_payload.extra.raw_info.id = "facebook-new-uid-999"
+      auth_payload.info.name = long_display_name
+      auth_payload.info.email = "new-facebook@example.com"
+
+      colliding_username = Authentication::Providers::Facebook.new(auth_payload).user_nickname
+      existing_user = create(:user, email: "existing-facebook@example.com", facebook_username: colliding_username)
+      create(:user, email: "other-facebook@example.com", facebook_username: long_display_name)
+
+      authenticated_user = nil
+      expect do
+        authenticated_user = described_class.call(auth_payload)
+      end.to change(User, :count).by(1).and change(Identity, :count).by(1)
+
+      expect(authenticated_user).not_to eq(existing_user)
+      expect(authenticated_user.facebook_username).to be_present
+      expect(authenticated_user.facebook_username).not_to eq(colliding_username)
+      expect(Identity.find_by(provider: "facebook", uid: auth_payload.uid)&.user).to eq(authenticated_user)
+      expect(existing_user.identities.where(provider: "facebook")).to be_empty
+
+      disambiguated_username = authenticated_user.facebook_username
+      expect(described_class.call(auth_payload)).to eq(authenticated_user)
+      expect(authenticated_user.reload.facebook_username).to eq(disambiguated_username)
+    end
+
+    it "does not match an existing user by colliding github_username when uid and email do not match",
+       :aggregate_failures do
+      auth_payload = OmniAuth.config.mock_auth[:github].deep_dup
+      auth_payload.uid = "github-new-uid-999"
+      auth_payload.info.nickname = "shared_gh_handle"
+      auth_payload.info.email = "new-github@example.com"
+
+      existing_user = create(:user, email: "existing-github@example.com", github_username: "shared_gh_handle")
+
+      authenticated_user = nil
+      expect do
+        authenticated_user = described_class.call(auth_payload)
+      end.to change(User, :count).by(1).and change(Identity, :count).by(1)
+
+      expect(authenticated_user).not_to eq(existing_user)
+      expect(authenticated_user.github_username).to be_nil
+      expect(Identity.find_by(provider: "github", uid: auth_payload.uid)&.user).to eq(authenticated_user)
+      expect(existing_user.identities.where(provider: "github")).to be_empty
+
+      reauthenticated_user = described_class.call(auth_payload)
+      expect(reauthenticated_user).to eq(authenticated_user)
+      expect(reauthenticated_user.reload.github_username).to be_nil
+      expect(existing_user.reload.github_username).to eq("shared_gh_handle")
+    end
+
+    it "preserves an existing user's github_username when a refreshed handle collides with another user",
+       :aggregate_failures do
+      other_user = create(:user, email: "other-github@example.com", github_username: "taken_gh_handle")
+      auth_payload = OmniAuth.config.mock_auth[:github].deep_dup
+      auth_payload.uid = "github-linked-uid-123"
+      auth_payload.info.nickname = "original_gh_handle"
+      auth_payload.info.email = "linked-github@example.com"
+
+      linked_user = described_class.call(auth_payload)
+      expect(linked_user.github_username).to eq("original_gh_handle")
+
+      linked_user.update_column(:profile_updated_at, 2.years.ago)
+      auth_payload.info.nickname = "taken_gh_handle"
+      reauthenticated_user = described_class.call(auth_payload)
+
+      expect(reauthenticated_user).to eq(linked_user)
+      expect(reauthenticated_user.reload.github_username).to eq("original_gh_handle")
+      expect(reauthenticated_user.profile_updated_at).to be < 1.year.ago
+      expect(other_user.reload.github_username).to eq("taken_gh_handle")
+    end
+
+    it "skips collision lookups on returning sign-ins when the provider username is unchanged" do
+      auth_payload = OmniAuth.config.mock_auth[:github].deep_dup
+      auth_payload.uid = "github-unchanged-uid-123"
+      auth_payload.info.nickname = "unchanged_gh_handle"
+      auth_payload.info.email = "unchanged-github@example.com"
+
+      linked_user = described_class.call(auth_payload)
+      service = described_class.new(auth_payload)
+      allow(service).to receive(:provider_username_taken?).and_call_original
+
+      expect(service.call).to eq(linked_user)
+      expect(service).not_to have_received(:provider_username_taken?)
+    end
+
+    it "disambiguates a colliding apple_username when linking Apple to an existing account",
+       :aggregate_failures do
+      create(:user, email: "other-apple@example.com", apple_username: "alex")
+      existing_user = create(:user, email: "existing-apple@example.com", apple_username: nil)
+
+      auth_payload = OmniAuth.config.mock_auth[:apple].deep_dup
+      auth_payload.uid = "apple-linked-uid-123"
+      auth_payload.info.email = existing_user.email
+      auth_payload.info.first_name = "Alex"
+
+      authenticated_user = described_class.call(auth_payload)
+
+      expect(authenticated_user).to eq(existing_user)
+      expect(authenticated_user.reload.apple_username).to eq("alex_1")
+    end
+
+    it "does not match an existing user by colliding twitter_username when uid and email do not match",
+       :aggregate_failures do
+      auth_payload = OmniAuth.config.mock_auth[:twitter].deep_dup
+      auth_payload.uid = "twitter-new-uid-999"
+      auth_payload.info.nickname = "shared_tw_handle"
+      auth_payload.info.email = "new-twitter@example.com"
+
+      existing_user = create(:user, email: "existing-twitter@example.com", twitter_username: "shared_tw_handle")
+
+      authenticated_user = nil
+      expect do
+        authenticated_user = described_class.call(auth_payload)
+      end.to change(User, :count).by(1).and change(Identity, :count).by(1)
+
+      expect(authenticated_user).not_to eq(existing_user)
+      expect(authenticated_user.twitter_username).to be_nil
+      expect(Identity.find_by(provider: "twitter", uid: auth_payload.uid)&.user).to eq(authenticated_user)
+      expect(existing_user.identities.where(provider: "twitter")).to be_empty
+
+      reauthenticated_user = described_class.call(auth_payload)
+      expect(reauthenticated_user).to eq(authenticated_user)
+      expect(reauthenticated_user.reload.twitter_username).to be_nil
+      expect(existing_user.reload.twitter_username).to eq("shared_tw_handle")
+    end
+
+    it "does not match an existing user by colliding forem_username when uid and email do not match",
+       :aggregate_failures do
+      auth_payload = OmniAuth.config.mock_auth[:forem].deep_dup
+      auth_payload.uid = "forem-new-uid-999"
+      auth_payload.info.user_nickname = "shared_forem_handle"
+      auth_payload.info.email = "new-forem@example.com"
+
+      existing_user = create(:user, email: "existing-forem@example.com", forem_username: "shared_forem_handle")
+
+      authenticated_user = nil
+      expect do
+        authenticated_user = described_class.call(auth_payload)
+      end.to change(User, :count).by(1).and change(Identity, :count).by(1)
+
+      expect(authenticated_user).not_to eq(existing_user)
+      expect(authenticated_user.forem_username).to be_nil
+      expect(Identity.find_by(provider: "forem", uid: auth_payload.uid)&.user).to eq(authenticated_user)
+      expect(existing_user.identities.where(provider: "forem")).to be_empty
+
+      reauthenticated_user = described_class.call(auth_payload)
+      expect(reauthenticated_user).to eq(authenticated_user)
+      expect(reauthenticated_user.reload.forem_username).to be_nil
+      expect(existing_user.reload.forem_username).to eq("shared_forem_handle")
+    end
+
+    it "does not match an existing user by colliding mlh_username when uid and email do not match",
+       :aggregate_failures do
+      auth_payload = OmniAuth.config.mock_auth[:mlh].deep_dup
+      auth_payload.uid = "mlh-new-uid-999"
+      auth_payload.info.email = "shared_mlh@example.org"
+
+      existing_user = create(:user, email: "existing-mlh@example.com", mlh_username: "shared_mlh")
+
+      authenticated_user = nil
+      expect do
+        authenticated_user = described_class.call(auth_payload)
+      end.to change(User, :count).by(1).and change(Identity, :count).by(1)
+
+      expect(authenticated_user).not_to eq(existing_user)
+      expect(Identity.find_by(provider: "mlh", uid: auth_payload.uid)&.user).to eq(authenticated_user)
+      expect(existing_user.identities.where(provider: "mlh")).to be_empty
     end
   end
 end

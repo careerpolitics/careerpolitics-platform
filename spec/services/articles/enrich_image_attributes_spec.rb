@@ -30,6 +30,13 @@ RSpec.describe Articles::EnrichImageAttributes, type: :service do
     it "does not alter the processed HTML" do
       assert_unchanged(article)
     end
+
+    it "skips Nokogiri HTML fragment parsing when the body has no images" do
+      target_article = article
+      allow(Nokogiri::HTML).to receive(:fragment).and_call_original
+      described_class.call(target_article)
+      expect(Nokogiri::HTML).not_to have_received(:fragment)
+    end
   end
 
   context "when the body has a main image" do
@@ -41,7 +48,7 @@ RSpec.describe Articles::EnrichImageAttributes, type: :service do
 
     it "sets image height when settings are limit" do
       allow(Settings::UserExperience).to receive(:cover_image_fit).and_return("limit")
-      allow(FastImage).to receive(:size).and_return([100, 50])
+      allow(SafeFastImage).to receive(:size).and_return([100, 50])
       body_markdown = file_fixture("article_published_cover_image.txt").read
       article.update(body_markdown: body_markdown)
       described_class.call(article)
@@ -50,16 +57,16 @@ RSpec.describe Articles::EnrichImageAttributes, type: :service do
 
     it "defaults to image height when settings are crop" do
       allow(Settings::UserExperience).to receive_messages(cover_image_fit: "crop", cover_image_height: 680)
-      allow(FastImage).to receive(:size).and_return([100, 50])
+      allow(SafeFastImage).to receive(:size).and_return([100, 50])
       body_markdown = file_fixture("article_published_cover_image.txt").read
       article.update(body_markdown: body_markdown)
       described_class.call(article)
       expect(article.reload.main_image_height).to be 680
     end
 
-    it "falls back to 300 when FastImage times out and cover_image_fit is set to limit" do
+    it "falls back to 300 when SafeFastImage times out and cover_image_fit is set to limit" do
       allow(Settings::UserExperience).to receive_messages(cover_image_fit: "limit", cover_image_height: 2_000)
-      allow(FastImage).to receive(:size).and_return(nil)
+      allow(SafeFastImage).to receive(:size).and_return(nil)
       body_markdown = file_fixture("article_published_cover_image.txt").read
       article.update(body_markdown: body_markdown)
       described_class.call(article)
@@ -117,6 +124,11 @@ RSpec.describe Articles::EnrichImageAttributes, type: :service do
     end
 
     it "does not alter the processed HTML using RedditTag", vcr: { cassette_name: "reddit_liquid_tag" } do
+      allow(Addrinfo).to receive(:getaddrinfo).and_call_original
+      allow(Addrinfo).to receive(:getaddrinfo)
+        .with("www.reddit.com", nil, nil, :STREAM)
+        .and_return([instance_double(Addrinfo, ip_address: "203.0.113.10")])
+
       url = "https://www.reddit.com/r/IAmA/comments/afvl2w/im_scott_from_scotts_cheap_flights_my_profession"
       article.update(body_markdown: "{% reddit #{url} %}")
 
@@ -207,9 +219,64 @@ RSpec.describe Articles::EnrichImageAttributes, type: :service do
     end
   end
 
+  context "when uploaded images are stored remotely with fog" do
+    let(:image_key) { "uploads/articles/fog_image.gif" }
+    let(:image_url) { "https://test-bucket.s3.amazonaws.com/#{image_key}" }
+    let(:image_bytes) { Rails.root.join("spec/support/fixtures/images/image.gif").binread }
+
+    around do |example|
+      original_storage = ArticleImageUploader.storage
+      original_fog_credentials = ArticleImageUploader.fog_credentials
+      original_fog_directory = ArticleImageUploader.fog_directory
+
+      Fog.mock!
+      Fog::Mock.reset
+      credentials = {
+        provider: "AWS",
+        aws_access_key_id: "test-key",
+        aws_secret_access_key: "test-secret",
+        region: "us-east-1"
+      }
+      Fog::Storage.new(credentials).directories.create(key: "test-bucket")
+      Fog::Storage.new(credentials).put_object("test-bucket", image_key, image_bytes)
+
+      ArticleImageUploader.storage = :fog
+      ArticleImageUploader.fog_credentials = credentials
+      ArticleImageUploader.fog_directory = "test-bucket"
+
+      example.run
+    ensure
+      ArticleImageUploader.storage = original_storage
+      ArticleImageUploader.fog_credentials = original_fog_credentials
+      ArticleImageUploader.fog_directory = original_fog_directory
+      Fog.unmock!
+    end
+
+    it "reads the image attributes from the stored file's url" do
+      allow(Addrinfo).to receive(:getaddrinfo).and_call_original
+      allow(Addrinfo).to receive(:getaddrinfo)
+        .with(URI.parse(image_url).hostname, nil, nil, :STREAM)
+        .and_return([instance_double(Addrinfo, ip_address: "203.0.113.10")])
+      stub_request(:get, image_url).to_return(status: 200, body: image_bytes)
+      article.update_column(:processed_html, "<p><img src=\"/#{image_key}\"></p>")
+
+      assert_has_data_animated_attribute(article)
+      assert_has_data_width_height_attributes(article)
+    end
+  end
+
   context "when the body contains remote images" do
     let(:static_image_url) { "https://dummyimage.com/600.jpg" }
     let(:animated_image_url) { "https://i.giphy.com/media/kHTMgZ3PeK6wJsqy2s/source.gif" }
+
+    before do
+      allow(Addrinfo).to receive(:getaddrinfo).and_call_original
+      %w[dummyimage.com i.giphy.com via.placeholder.com].each do |host|
+        allow(Addrinfo).to receive(:getaddrinfo)
+          .with(host, nil, nil, :STREAM)
+          .and_return([instance_double(Addrinfo, ip_address: "203.0.113.10")])
+      end
+    end
 
     it "does not set data-animated to true with a static image" do
       article.update(body_markdown: "![image](#{static_image_url})")
@@ -256,6 +323,83 @@ RSpec.describe Articles::EnrichImageAttributes, type: :service do
       assert_has_data_width_height_attributes(article, 2)
       expect(article.processed_html).to include('width="350"')
       expect(article.processed_html).to include('height="150"')
+    end
+
+    it "strips markdown image title suffixes and skips regional S3 bucket URLs when storing images" do
+      allow(ApplicationConfig).to receive(:[]).and_call_original
+      allow(ApplicationConfig).to receive(:[]).with("AWS_BUCKET_NAME").and_return("dev-to-uploads")
+      allow(ArticleImageUploader).to receive(:resolve_public_ip).and_call_original
+      allow(ArticleImageUploader).to receive(:resolve_public_ip).with("example.com").and_return("192.0.2.10")
+      allow(ArticleImageUploader).to receive(:resolve_public_ip)
+        .with("dev-to-uploads.s3.us-east-2.amazonaws.com").and_return("192.0.2.11")
+
+      stored_file = instance_double(CarrierWave::SanitizedFile, exists?: false)
+      uploader = instance_double(
+        ArticleImageUploader,
+        upload_from_url: "https://dev-to-uploads.s3.amazonaws.com/out.png",
+        retrieve_from_store!: nil,
+        file: stored_file,
+      )
+      allow(ArticleImageUploader).to receive(:new).and_return(uploader)
+      allow(SafeFastImage).to receive(:new).and_return(instance_double(SafeFastImage, size: [100, 100], type: :png))
+
+      article.update(
+        body_markdown: <<~MD,
+          ![arch](https://example.com/diagram.png "Architecture Overview")
+          ![already](https://dev-to-uploads.s3.us-east-2.amazonaws.com/uploads/articles/existing.png)
+          ![private](http://127.0.0.1/secret.png)
+          ![metadata](http://169.254.169.254/latest/meta-data/iam)
+          ![relative](./local-diagram.png)
+        MD
+      )
+
+      described_class.call(article)
+
+      expect(MediaStore.pluck(:original_url)).to eq(["https://example.com/diagram.png"])
+    end
+
+    it "binds Net::HTTP#ipaddr to the validated public IP and blocks redirects to private hosts" do
+      uploader = ArticleImageUploader.new
+      allow(ArticleImageUploader).to receive(:resolve_public_ip).and_call_original
+      allow(ArticleImageUploader).to receive(:resolve_public_ip).with("cdn.example.com").and_return("192.0.2.10")
+
+      redirect_response = Net::HTTPFound.new("1.1", "302", "Found")
+      redirect_response["location"] = "http://169.254.169.254/latest/meta-data/"
+      http_double = instance_double(
+        Net::HTTP,
+        :use_ssl= => nil,
+        :open_timeout= => nil,
+        :read_timeout= => nil,
+        :ipaddr= => nil,
+      )
+      allow(Net::HTTP).to receive(:new).with("cdn.example.com", 443).and_return(http_double)
+      allow(http_double).to receive(:start).and_return(redirect_response)
+
+      expect(uploader.upload_from_url("https://cdn.example.com/image.png")).to be_nil
+      expect(http_double).to have_received(:ipaddr=).with("192.0.2.10")
+    end
+
+    it "skips malformed img src attributes without raising URI::InvalidURIError" do
+      article.update_column(:processed_html, '<p><img src="http://example.com/bad uri with spaces.png"></p>')
+
+      expect { described_class.call(article) }.not_to raise_error
+    end
+
+    it "blocks SSRF to private and metadata URLs in processed_html, main_image, and redirects" do
+      metadata_url = "http://169.254.169.254/latest/meta-data/"
+      redirect_url = "https://dummyimage.com/redirect.png"
+      allow(Settings::UserExperience).to receive(:cover_image_fit).and_return("limit")
+      stub_request(:get, metadata_url).to_return(status: 200, body: "secret")
+      stub_request(:get, redirect_url).to_return(status: 302, headers: { "Location" => metadata_url })
+
+      article.update_columns(
+        processed_html: %(<p><img src="#{metadata_url}"><img src="#{redirect_url}"></p>),
+        main_image: metadata_url,
+      )
+
+      described_class.call(article)
+
+      expect(a_request(:get, metadata_url)).not_to have_been_made
     end
   end
 end

@@ -15,6 +15,112 @@ RSpec.describe "Stories::Feeds" do
     let(:response_json) { response.parsed_body }
     let(:response_article) { response_json.first }
 
+    it "sets feed and article Surrogate-Key headers on signed-out edge-cached feeds", :aggregate_failures do
+      article.update_column(:score, 25)
+
+      get stories_feed_path
+      expect(response.headers["Surrogate-Key"].split).to include("main_app_home_page", article.record_key)
+
+      get stories_feed_path, params: { timeframe: "week" }
+      expect(response.headers["Surrogate-Key"].split).to include("stories-top-week", article.record_key)
+
+      get stories_feed_path, params: { tag: "alpha", timeframe: "latest" }
+      expect(response.headers["Surrogate-Key"].split).to include("tag-alpha-latest", article.record_key)
+
+      get stories_feed_path, params: { tag: "bad\r\ntag", timeframe: "latest" }
+      expect(response).to have_http_status(:ok)
+      expect(response.headers["Surrogate-Key"]).not_to include("bad")
+    end
+
+    context "with sticky configured home feeds" do
+      let!(:feed_config) { create(:feed_config) }
+
+      before do
+        sign_in user
+        allow(Settings::UserExperience).to receive_messages(
+          feed_strategy: "configured", feed_config_sticky_percentage: 100,
+        )
+      end
+
+      it "serves a signed token on preloads without recording a visible visit" do
+        get stories_feed_path
+        token = response.headers["X-Feed-Visit-Token"]
+        expect(token).to be_present
+        expect(response_article["feed_config"]).to eq(feed_config.id)
+        expect(response.headers["Cache-Control"]).to eq("private, no-store")
+        expect(response.headers["Surrogate-Control"]).to be_nil
+        expect(FeedConfigAssignment.find_by!(user: user).last_rewarded_at).to be_nil
+        expect(feed_config.reload.feed_repeat_visits_count).to eq(0)
+
+        Timecop.travel(30.minutes.from_now) do
+          get stories_feed_path
+          expect(feed_config.reload.feed_repeat_visits_count).to eq(0)
+        end
+      end
+
+      it "issues a token that acknowledges visibility and immediately scores a subsequent return" do
+        Timecop.freeze do
+          get stories_feed_path
+          token = response.headers["X-Feed-Visit-Token"]
+          create(:feed_event, article: article, user: user, feed_config: feed_config, category: :impression)
+          post feed_config_visits_path, params: { visit_token: token, event_id: SecureRandom.uuid }
+          expect(response).to have_http_status(:ok)
+          expect(feed_config.reload.feed_repeat_visits_count).to eq(0)
+
+          Timecop.travel(30.minutes.from_now) do
+            post feed_config_visits_path, params: { visit_token: token, event_id: SecureRandom.uuid }
+            expect(response).to have_http_status(:ok)
+            expect(feed_config.reload.feed_repeat_visits_count).to eq(1)
+            expect(feed_config.feed_success_score).to eq(1.0)
+          end
+        end
+      end
+
+      [
+        { page: 2 }, { tag: "alpha" }, { passed_domain: "forem.test" },
+        { type_of: "following" }, { type_of: "curated" }, { timeframe: "latest" }
+      ].each do |feed_params|
+        it "does not issue a visibility token for another surface: #{feed_params}" do
+          expect do
+            get stories_feed_path, params: feed_params
+          end.not_to change(FeedConfigAssignment, :count)
+          expect(response.headers["X-Feed-Visit-Token"]).to be_nil
+        end
+      end
+
+      it "preserves explicit config previews without issuing a visibility token" do
+        get stories_feed_path, params: { item: feed_config.id }
+        expect(response_article["feed_config"]).to eq(feed_config.id)
+        expect(response.headers["X-Feed-Visit-Token"]).to be_nil
+      end
+
+      it "does not issue a visibility token for an empty feed" do
+        article.destroy!
+        get stories_feed_path
+        expect(response.parsed_body).to eq([])
+        expect(response.headers["X-Feed-Visit-Token"]).to be_nil
+      end
+
+      it "keeps signed-out requests edge cached without a token" do
+        sign_out user
+        expect { get stories_feed_path }.not_to change(FeedConfigAssignment, :count)
+        expect(response.headers["Surrogate-Control"]).to include("max-age=60")
+        expect(response.headers["X-Feed-Visit-Token"]).to be_nil
+      end
+
+      it "does not issue a token for the basic feed strategy" do
+        allow(Settings::UserExperience).to receive(:feed_strategy).and_return("basic")
+        expect { get stories_feed_path }.not_to change(FeedConfigAssignment, :count)
+        expect(response.headers["X-Feed-Visit-Token"]).to be_nil
+      end
+
+      it "does not issue a token for the exploration half of requests" do
+        allow(Settings::UserExperience).to receive(:feed_config_sticky_percentage).and_return(0)
+        get stories_feed_path
+        expect(response.headers["X-Feed-Visit-Token"]).to be_nil
+      end
+    end
+
     it "renders article list as json" do
       get stories_feed_path
 
@@ -28,6 +134,30 @@ RSpec.describe "Stories::Feeds" do
         "organization" => hash_including("name" => organization.name),
         "tag_list" => article.decorate.cached_tag_list_array,
       )
+    end
+
+    context "when article belongs to an organization with a custom domain" do
+      let(:custom_org) { create(:organization, name: "MLH", slug: "mlh", custom_domain: "blog.mlh.com") }
+      let!(:custom_org_article) { create(:article, title: "MLH Post", slug: "mlh-post", organization: custom_org, featured: true) }
+
+      before do
+        FeatureFlag.enable(:org_custom_domain, FeatureFlag::Actor.new(custom_org))
+      end
+
+      it "returns the custom domain url for anonymous users" do
+        get stories_feed_path
+
+        found = response_json.find { |a| a["id"] == custom_org_article.id }
+        expect(found["url"]).to eq(URL.url("/mlh-post", "blog.mlh.com"))
+      end
+
+      it "returns the platform dev.to url for signed-in users" do
+        sign_in user
+        get stories_feed_path
+
+        found = response_json.find { |a| a["id"] == custom_org_article.id }
+        expect(found["url"]).to eq("http://forem.test/mlh/mlh-post")
+      end
     end
 
     context "when there are no params passed (base feed) and user is NOT signed in" do
@@ -254,6 +384,19 @@ RSpec.describe "Stories::Feeds" do
         )
       end
 
+      it "excludes articles by blocked authors when feed_strategy is basic", :aggregate_failures do
+        allow(Settings::UserExperience).to receive(:feed_strategy).and_return("basic")
+        hot_story = create(:article, :past, hotness_score: 1000, score: 1000, past_published_at: 3.hours.ago)
+
+        get stories_feed_path
+        expect(response.parsed_body.pluck("id")).to include(hot_story.id, article.id)
+
+        create(:user_block, blocker: user, blocked: hot_story.user)
+        get stories_feed_path
+        expect(response.parsed_body.pluck("id")).to include(article.id)
+        expect(response.parsed_body.pluck("id")).not_to include(hot_story.id)
+      end
+
       it "does not set cache control headers for edge caching" do
         get stories_feed_path
 
@@ -344,96 +487,20 @@ RSpec.describe "Stories::Feeds" do
         quickie_article
       end
 
-      it "includes title_finalized_for_feed in the response" do
+      it "serializes quickie formatting and story card fields in a single response", :aggregate_failures do
         get stories_feed_path
 
         quickie_response = response.parsed_body.find { |item| item["id"] == quickie_article.id }
-        expect(quickie_response).to include("title_finalized_for_feed")
         expect(quickie_response["title_finalized_for_feed"]).to include("<br>")
         expect(quickie_response["title_finalized_for_feed"]).to include("quickie-paragraph")
-      end
-
-      it "includes title_for_metadata in the response" do
-        get stories_feed_path
-
-        quickie_response = response.parsed_body.find { |item| item["id"] == quickie_article.id }
-        expect(quickie_response).to include("title_for_metadata")
         expect(quickie_response["title_for_metadata"]).not_to include("\n")
         expect(quickie_response["title_for_metadata"]).to include("Line one Line two")
-      end
-
-      it "includes readable_publish_date in the response" do
-        get stories_feed_path
-
-        quickie_response = response.parsed_body.find { |item| item["id"] == quickie_article.id }
-        expect(quickie_response).to include("readable_publish_date")
         expect(quickie_response["readable_publish_date"]).to be_present
-      end
-
-      it "includes video_duration_in_minutes in the response" do
-        get stories_feed_path
-
-        quickie_response = response.parsed_body.find { |item| item["id"] == quickie_article.id }
-        expect(quickie_response).to include("video_duration_in_minutes")
-      end
-
-      it "includes flare_tag in the response" do
-        get stories_feed_path
-
-        quickie_response = response.parsed_body.find { |item| item["id"] == quickie_article.id }
-        expect(quickie_response).to include("flare_tag")
-      end
-
-      it "includes class_name in the response" do
-        get stories_feed_path
-
-        quickie_response = response.parsed_body.find { |item| item["id"] == quickie_article.id }
-        expect(quickie_response).to include("class_name")
         expect(quickie_response["class_name"]).to eq("Article")
-      end
-
-      it "includes cloudinary_video_url in the response" do
-        get stories_feed_path
-
-        quickie_response = response.parsed_body.find { |item| item["id"] == quickie_article.id }
-        expect(quickie_response).to include("cloudinary_video_url")
-      end
-
-      it "includes published_timestamp in the response" do
-        get stories_feed_path
-
-        quickie_response = response.parsed_body.find { |item| item["id"] == quickie_article.id }
-        expect(quickie_response).to include("published_timestamp")
-      end
-
-      it "includes main_image_background_hex_color in the response" do
-        get stories_feed_path
-
-        quickie_response = response.parsed_body.find { |item| item["id"] == quickie_article.id }
-        expect(quickie_response).to include("main_image_background_hex_color")
-      end
-
-      it "includes public_reaction_categories in the response" do
-        get stories_feed_path
-
-        quickie_response = response.parsed_body.find { |item| item["id"] == quickie_article.id }
-        expect(quickie_response).to include("public_reaction_categories")
-      end
-
-      it "includes body_preview in the response" do
-        get stories_feed_path
-
-        quickie_response = response.parsed_body.find { |item| item["id"] == quickie_article.id }
-        expect(quickie_response).to include("body_preview")
-      end
-
-      it "includes title_finalized in the response" do
-        get stories_feed_path
-
-        quickie_response = response.parsed_body.find { |item| item["id"] == quickie_article.id }
-        expect(quickie_response).to include("title_finalized_for_feed")
-        expect(quickie_response["title_finalized_for_feed"]).to include("<br>")
-        expect(quickie_response["title_finalized_for_feed"]).to include("quickie-paragraph")
+        expect(quickie_response).to include(
+          "video_duration_in_minutes", "flare_tag", "cloudinary_video_url", "published_timestamp",
+          "main_image_background_hex_color", "public_reaction_categories", "body_preview"
+        )
       end
     end
 
@@ -450,20 +517,12 @@ RSpec.describe "Stories::Feeds" do
         long_quickie_article
       end
 
-      it "truncates title_finalized_for_feed with read more indicator" do
+      it "truncates title_finalized_for_feed but not title_for_metadata", :aggregate_failures do
         get stories_feed_path
 
         long_quickie_response = response.parsed_body.find { |item| item["id"] == long_quickie_article.id }
-        expect(long_quickie_response).to include("title_finalized_for_feed")
         expect(long_quickie_response["title_finalized_for_feed"]).to include("quickie-read-more")
         expect(long_quickie_response["title_finalized_for_feed"]).to include("read more")
-      end
-
-      it "includes title_for_metadata without truncation" do
-        get stories_feed_path
-
-        long_quickie_response = response.parsed_body.find { |item| item["id"] == long_quickie_article.id }
-        expect(long_quickie_response).to include("title_for_metadata")
         expect(long_quickie_response["title_for_metadata"]).not_to include("read more")
         expect(long_quickie_response["title_for_metadata"]).to include("Line 1 Line 2")
       end
@@ -593,6 +652,20 @@ RSpec.describe "Stories::Feeds" do
       end
     end
 
+    context "when requesting 'curated' feed" do
+      let(:leader) { create(:user) }
+      let!(:favorited_article) { create(:article, favorited_by_user: leader, favorited_at: Time.current) }
+      let!(:unfavorited_article) { create(:article) }
+
+      it "returns only favorited articles" do
+        get stories_feed_path(type_of: "curated")
+
+        response_article_ids = response.parsed_body.map { |a| a["id"] }
+        expect(response_article_ids).to include(favorited_article.id)
+        expect(response_article_ids).not_to include(unfavorited_article.id)
+      end
+    end
+
     context "when user is not signed in and requests 'following' feed" do
       let(:followed_user) { create(:user) }
       let!(:followed_article) { create(:article, user: followed_user) }
@@ -640,17 +713,19 @@ RSpec.describe "Stories::Feeds" do
     end
 
     it "does not cache articles on page 3" do
-      # Create enough articles to reach page 3
-      create_list(:article, 50, user: user)
-      
-      # Call the endpoint - on page 3, no article-level caching should occur
-      # But we can't prevent all Rails.cache.fetch calls (e.g., Settings), so we just 
-      # verify the response is successful
+      # Shrink the page size so a handful of articles reaches page 3
+      stub_const("Article::DEFAULT_FEED_PAGINATION_WINDOW_SIZE", 1)
+      create_list(:article, 2, user: user)
+
+      allow(Rails.cache).to receive(:write).and_call_original
+
       get stories_feed_path(page: 3)
-      
+
       expect(response).to have_http_status(:ok)
-      # Response should still include articles even without caching
       expect(response.parsed_body).not_to be_empty
+      expect(Rails.cache).not_to have_received(:write).with(
+        a_string_starting_with("jbuilder/"), any_args
+      )
     end
 
     it "invalidates cache when article is edited" do
@@ -786,6 +861,64 @@ RSpec.describe "Stories::Feeds" do
       response_article = response.parsed_body.find { |item| item["id"] == article.id }
       expect(response_article["feed_config"]).to eq(feed_config.id)
     end
+
+    it "does not select archived feed configs when feed_strategy is configured" do
+      archived_config = create(:feed_config, archived: true, feed_success_score: 1000.0)
+      active_config = create(:feed_config, archived: false, feed_success_score: 10.0)
+      sign_in user
+
+      allow(Settings::UserExperience).to receive(:feed_strategy).and_return("configured")
+      get stories_feed_path(page: 1, item: archived_config.id)
+      response_article = response.parsed_body.detect { |item| item["id"] == article.id }
+      expect(response_article["feed_config"]).to eq(active_config.id)
+    end
+
+    it "selects a feed config matching the user's targeting_bucket and ignores digest configs" do
+      create(
+        :feed_config,
+        targeting_bucket: FeedConfig::BUCKET_DIGEST,
+        feed_success_score: 999.0,
+        feed_impressions_count: 500,
+      )
+      new_user_config = create(
+        :feed_config,
+        targeting_bucket: FeedConfig::BUCKET_FEED_NEW_USER,
+        feed_success_score: 10.0,
+        feed_impressions_count: 100,
+      )
+      user.update!(registered_at: 1.day.ago)
+      sign_in user
+
+      allow(Settings::UserExperience).to receive(:feed_strategy).and_return("configured")
+      get stories_feed_path(page: 1)
+      response_article = response.parsed_body.detect { |item| item["id"] == article.id }
+      expect(response_article["feed_config"]).to eq(new_user_config.id)
+    end
+
+    it "renders configured feed payload using limited_column_select with preloaded comments" do
+      feed_config = create(:feed_config)
+      sign_in user
+      create(:comment, commentable: article, user: user, score: 5)
+      article.update_columns(comments_count: 1)
+
+      allow(Settings::UserExperience).to receive(:feed_strategy).and_return("configured")
+      get stories_feed_path(page: 1, item: feed_config.id)
+
+      expect(response).to have_http_status(:ok)
+      response_article = response.parsed_body.find { |item| item["id"] == article.id }
+      expect(response_article).to include(
+        "id" => article.id,
+        "title" => article.title,
+        "path" => article.path,
+        "comments_count" => 1,
+        "feed_config" => feed_config.id,
+      )
+      expect(response_article["top_comments"]).not_to be_empty
+      expect(response_article["top_comments"].first).to include(
+        "user_id" => user.id,
+        "username" => user.username,
+      )
+    end
   end
 
   describe "public_reaction_categories cache invalidation" do
@@ -834,9 +967,18 @@ RSpec.describe "Stories::Feeds" do
       # Remove all public reactions
       article.reactions.public_category.destroy_all
 
-      get stories_feed_path
+      reaction_queries = []
+      callback = lambda do |*, payload|
+        sql = payload[:sql].to_s
+        reaction_queries << sql if sql.include?('FROM "reactions"')
+      end
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        get stories_feed_path
+      end
+
       response_article = response.parsed_body.find { |item| item["id"] == article.id }
       expect(response_article["public_reaction_categories"]).to eq([])
+      expect(reaction_queries).to be_empty
     end
 
     it "does not return stale cached data" do
@@ -857,6 +999,114 @@ RSpec.describe "Stories::Feeds" do
       get stories_feed_path
       response_article = response.parsed_body.find { |item| item["id"] == article.id }
       expect(response_article["public_reaction_categories"].map { |cat| cat["slug"] }).to match_array(%w[like unicorn fire])
+    end
+  end
+
+  describe "favorited_by_user_id cache invalidation" do
+    let(:user) { create(:user) }
+    let(:article) { create(:article, user: user) }
+    let(:leader) { create(:user) }
+
+    def make_favorite(favoritable, by:)
+      favoritable.update_columns(favorited_by_user_id: by.id, favorited_at: Time.current)
+    end
+
+    def response_article
+      response.parsed_body.detect { |item| item["id"] == article.id }
+    end
+
+    it "serializes favorited_by_user_id so the feed can mark the card" do
+      get stories_feed_path
+      expect(response_article).to include("favorited_by_user_id" => nil)
+
+      make_favorite(article, by: leader)
+
+      get stories_feed_path
+      expect(response_article).to include("favorited_by_user_id" => leader.id)
+    end
+
+    context "with fragment caching enabled" do
+      around do |example|
+        original_perform_caching = ActionController::Base.perform_caching
+        ActionController::Base.perform_caching = true
+
+        example.run
+      ensure
+        ActionController::Base.perform_caching = original_perform_caching
+      end
+
+      before do
+        allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new)
+        allow(Images::Optimizer).to receive_messages(imgproxy_enabled?: false, cloudinary_enabled?: false)
+      end
+
+      it "returns a fresh card after the article is favorited" do
+        get stories_feed_path
+        expect(response_article).to include("favorited_by_user_id" => nil)
+
+        make_favorite(article, by: leader)
+
+        get stories_feed_path
+        expect(response_article).to include("favorited_by_user_id" => leader.id)
+      end
+
+      it "returns a fresh card after the favorite is released" do
+        make_favorite(article, by: leader)
+        get stories_feed_path
+        expect(response_article).to include("favorited_by_user_id" => leader.id)
+
+        article.update_columns(favorited_by_user_id: nil, favorited_at: nil)
+
+        get stories_feed_path
+        expect(response_article).to include("favorited_by_user_id" => nil)
+      end
+
+      it "reuses story fragments from read_multi without per-story cache.read round-trips" do
+        get stories_feed_path
+        first_payload = response_article
+
+        allow(Rails.cache).to receive(:read_multi).and_call_original
+        allow(Rails.cache).to receive(:read).and_call_original
+
+        get stories_feed_path
+        expect(response_article).to eq(first_payload)
+        expect(Rails.cache).to have_received(:read_multi).once
+        expect(Rails.cache).not_to have_received(:read).with(a_string_starting_with("jbuilder/"), anything)
+      end
+
+      it "serves per-request fields when a fragment warmed signed in is read signed out", :aggregate_failures do
+        sign_in leader
+        get timeframe_stories_feed_path(:latest)
+        signed_in_article = response_article
+        expect(response.headers["Cache-Control"]).to eq("private, no-store")
+        expect(signed_in_article).to include("current_user_signed_in" => true, "feed_config" => nil)
+        expect(Rails.cache.exist?(Stories::FeedSerializer.cache_key_for(article.reload))).to be(true)
+
+        sign_out leader
+        get timeframe_stories_feed_path(:latest)
+        signed_out_article = response_article
+        expect(response.headers["Cache-Control"]).not_to include("private")
+        expect(signed_out_article).to include(
+          "url" => URL.article(article), "current_user_signed_in" => false, "feed_config" => nil,
+        )
+        expect(signed_out_article.except("current_user_signed_in"))
+          .to eq(signed_in_article.except("current_user_signed_in"))
+      end
+
+      it "restores batched Jbuilder read_multi when native serialization declines", :aggregate_failures do
+        allow(Stories::FeedSerializer).to receive(:call).and_return(nil)
+
+        get stories_feed_path
+        first_payload = response_article
+
+        allow(Rails.cache).to receive(:read_multi).and_call_original
+        allow(Rails.cache).to receive(:read).and_call_original
+
+        get stories_feed_path
+        expect(response_article).to eq(first_payload)
+        expect(Rails.cache).to have_received(:read_multi).at_least(:twice)
+        expect(Rails.cache).not_to have_received(:read).with(a_string_starting_with("jbuilder/"), anything)
+      end
     end
   end
 
@@ -895,6 +1145,33 @@ RSpec.describe "Stories::Feeds" do
         get stories_feed_path(type_of: "discover")
         expect(response).to have_http_status(:ok)
       end
+    end
+  end
+
+  describe "N+1 query prevention" do
+    it "batch-preloads context_notes, comments, reaction counts, and caches org custom domains across stories" do
+      org_two = create(:organization, name: "OrgTwo")
+      second_article = create(:article, featured: true, user: user, organization: org_two)
+      create(:comment, commentable: article, user: user, score: 10)
+      create(:comment, commentable: second_article, user: user, score: 10)
+      create(:reaction, reactable: article, category: "like", user: user)
+      create(:reaction, reactable: second_article, category: "unicorn", user: user)
+
+      # Warm host and org custom domain caches with an initial request
+      get stories_feed_path(timeframe: "latest")
+
+      queries = []
+      callback = ->(_name, _start, _finish, _id, payload) { queries << payload[:sql] unless payload[:name] == "SCHEMA" }
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        get stories_feed_path(timeframe: "latest")
+      end
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.map { |a| a["id"] }).to include(article.id, second_article.id)
+      expect(queries.grep(/FROM "organizations"/).size).to eq(0)
+      expect(queries.grep(/FROM "context_notes"/).size).to eq(1)
+      expect(queries.grep(/FROM "comments"/).size).to eq(1)
+      expect(queries.grep(/FROM "reactions"/).size).to be <= 1
     end
   end
 end

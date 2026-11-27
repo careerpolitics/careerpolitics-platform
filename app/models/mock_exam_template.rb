@@ -9,7 +9,7 @@ class MockExamTemplate < ApplicationRecord
   has_many :mock_exam_attempts, dependent: :destroy
   has_one :mock_exam_template_stat, dependent: :destroy
 
-  enum exam_category: {
+  enum :exam_category, {
     upsc_prelims: 0,
     upsc_mains: 1,
     upsc_csat: 2,
@@ -21,8 +21,8 @@ class MockExamTemplate < ApplicationRecord
     custom: 8,
   }
 
-  enum question_display_mode: { one_at_a_time: 0, all_at_once: 1 }
-  enum difficulty_level: { easy: 0, medium: 1, hard: 2, mixed: 3 }
+  enum :question_display_mode, { one_at_a_time: 0, all_at_once: 1 }
+  enum :difficulty_level, { easy: 0, medium: 1, hard: 2, mixed: 3 }
 
   validates :title, presence: true, length: { maximum: 200 }
   validates :slug, presence: true, uniqueness: true

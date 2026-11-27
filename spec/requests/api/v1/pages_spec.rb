@@ -68,10 +68,142 @@ RSpec.describe "Api::V1::Pages" do
     include_context "when user is authorized"
 
     let(:post_params) do
-      attributes_for(:page)
+      # Fixed title so find_by(title:) can never collide with the let!(:page)
+      # record — Faker::Book.title draws from a small pool and duplicates.
+      attributes_for(:page, title: "Api V1 Pages Spec Page")
     end
     let(:body_html) { "<div>hi, folks</div>" }
     let(:body_css) { "h1 {font-size: 120px}" }
+
+    it "allows site admins to create hidden custom organization pages and restore their visibility" do
+      organization = create(:organization)
+      create(:page, organization: organization, position: 0)
+
+      post api_pages_path,
+           params: post_params.merge(organization_id: organization.id, position: 1,
+                                     show_in_navigation: false).to_json, headers: auth_header
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["show_in_navigation"]).to be(false)
+      custom_page = Page.find(response.parsed_body["id"])
+      expect(custom_page.show_in_navigation?).to be(false)
+
+      put api_page_path(custom_page), params: { show_in_navigation: true }.to_json, headers: auth_header
+
+      expect(response).to have_http_status(:ok)
+      expect(custom_page.reload.show_in_navigation?).to be(true)
+    end
+
+    it "allows site admins to filter and create event pages including optional readme showcase" do
+      event = create(:event, event_name_slug: "api-conf", event_variation_slug: "2026")
+
+      post api_pages_path,
+           params: post_params.merge(
+             event_id: event.id,
+             slug: event.page_slug_for("readme"),
+             position: 0,
+           ).to_json,
+           headers: auth_header
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["event_id"]).to eq(event.id)
+      expect(event.main_page&.slug).to eq("events/api-conf/2026/readme")
+
+      get api_pages_path, params: { event_id: event.id }, headers: v1_headers
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.pluck("slug")).to eq(["events/api-conf/2026/readme"])
+    end
+
+    it "rejects non-embed event pages with invalid slug prefix or multiple suffix segments" do
+      event = create(:event, event_name_slug: "api-conf-slug", event_variation_slug: "2026")
+
+      post api_pages_path,
+           params: post_params.merge(event_id: event.id, slug: "schedule").to_json,
+           headers: auth_header
+      expect(response).to have_http_status(:unprocessable_entity)
+
+      post api_pages_path,
+           params: post_params.merge(event_id: event.id, slug: "events/api-conf-slug/2026/a/b").to_json,
+           headers: auth_header
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it "hides draft event pages from unauthenticated and non-admin callers" do
+      draft_event = create(:event, :unpublished, event_name_slug: "secret-api-evt", event_variation_slug: "2026")
+      draft_page = create(
+        :page,
+        event: draft_event,
+        slug: draft_event.page_slug_for("notes"),
+        title: "Secret Draft Notes",
+        body_markdown: "Top secret draft body",
+      )
+
+      get api_pages_path, params: { event_id: draft_event.id }, headers: v1_headers
+      expect(response.parsed_body).to eq([])
+
+      get api_pages_path, headers: v1_headers
+      expect(response.parsed_body.pluck("id")).not_to include(draft_page.id)
+
+      get api_page_path(draft_page), headers: v1_headers
+      expect(response).to have_http_status(:not_found)
+
+      regular_headers = v1_headers.merge("api-key" => create(:api_secret).secret)
+      get api_pages_path, params: { event_id: draft_event.id }, headers: regular_headers
+      expect(response.parsed_body).to eq([])
+
+      get api_page_path(draft_page), headers: regular_headers
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "allows admins to read draft event pages via index and show without caching" do
+      draft_event = create(:event, :unpublished, event_name_slug: "admin-api-evt", event_variation_slug: "2026")
+      draft_page = create(
+        :page,
+        event: draft_event,
+        slug: draft_event.page_slug_for("notes"),
+        title: "Admin Draft Notes",
+        body_markdown: "Draft body",
+      )
+
+      get api_pages_path, params: { event_id: draft_event.id }, headers: auth_header
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.pluck("id")).to eq([draft_page.id])
+      expect(response.headers["Cache-Control"]).to eq("private, no-store")
+      expect(response.headers["Surrogate-Control"]).to eq("no-store")
+
+      get api_page_path(draft_page), headers: auth_header
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["id"]).to eq(draft_page.id)
+      expect(response.headers["Cache-Control"]).to eq("private, no-store")
+      expect(response.headers["Surrogate-Control"]).to eq("no-store")
+    end
+
+    it "keeps event embed_html pages hidden from GET /api/pages and GET /api/pages/:id" do
+      event = create(:event, event_name_slug: "embed-api-evt", event_variation_slug: "2026")
+      event_embed = create(
+        :page,
+        event: event,
+        slug: event.embed_page_slug_for("widget"),
+        title: "Event Widget",
+        template: Page::EMBED_HTML_TEMPLATE,
+        body_markdown: nil,
+        body_html: "<div>Widget</div>",
+      )
+
+      get api_pages_path, params: { event_id: event.id }, headers: auth_header
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.pluck("id")).not_to include(event_embed.id)
+
+      get api_page_path(event_embed), headers: auth_header
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "rejects hiding a site page through the API" do
+      put api_page_path(page), params: { show_in_navigation: false }.to_json, headers: auth_header
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(page.reload.show_in_navigation?).to be(true)
+    end
 
     it "can create a new page via post" do
       post api_pages_path, params: post_params.to_json, headers: auth_header
@@ -217,7 +349,20 @@ RSpec.describe "Api::V1::Pages" do
       match_array(%w[id title slug description is_top_level_path
                      landing_page body_html body_json body_markdown
                      processed_html social_image template subforem_id
-                     page_template_id template_data redirect_to_url])
+                     page_template_id template_data redirect_to_url
+                     organization_id event_id position show_in_navigation])
+  end
+
+  it "filters pages by organization_id ordered by position" do
+    org = create(:organization)
+    other_org = create(:organization)
+    second_page = create(:page, organization: org, slug: "#{org.slug}/second", position: 2)
+    first_page = create(:page, organization: org, slug: "#{org.slug}/readme", position: 0)
+    create(:page, organization: other_org, slug: "#{other_org.slug}/readme", position: 0)
+
+    get api_pages_path(organization_id: org.id), headers: v1_headers
+    expect(response).to have_http_status(:success)
+    expect(response.parsed_body.pluck("id")).to eq([first_page.id, second_page.id])
   end
 
   it "retrieves a page and renders it as json" do
@@ -227,6 +372,310 @@ RSpec.describe "Api::V1::Pages" do
       match_array(%w[id title slug description is_top_level_path
                      landing_page body_html body_json body_markdown
                      processed_html social_image template subforem_id
-                     page_template_id template_data redirect_to_url])
+                     page_template_id template_data redirect_to_url
+                     organization_id event_id position show_in_navigation])
+  end
+
+  context "when authenticated as an organization admin" do
+    let(:org_admin) { create(:user, :org_admin) }
+    let(:organization) { org_admin.organizations.first }
+    let(:api_secret) { create(:api_secret, user: org_admin) }
+    let(:org_auth_header) { v1_headers.merge({ "api-key" => api_secret.secret }) }
+
+    before do
+      FeatureFlag.add(:org_readme)
+      FeatureFlag.enable(:org_readme, FeatureFlag::Actor[organization])
+    end
+
+    after do
+      FeatureFlag.disable(:org_readme, FeatureFlag::Actor[organization])
+    end
+
+    context "when org_readme feature flag is disabled" do
+      before { FeatureFlag.disable(:org_readme, FeatureFlag::Actor[organization]) }
+
+      it "returns unauthorized from create" do
+        post api_pages_path,
+             params: { organization_id: organization.id, title: "Welcome", body_markdown: "# Hi" }.to_json,
+             headers: org_auth_header
+        expect(response).to have_http_status(:unauthorized)
+      end
+
+      it "returns unauthorized from update and destroy" do
+        org_page = create(:page, organization: organization, slug: "#{organization.slug}/readme")
+
+        put api_page_path(org_page.id),
+            params: { title: "Updated" }.to_json,
+            headers: org_auth_header
+        expect(response).to have_http_status(:unauthorized)
+
+        delete api_page_path(org_page.id), headers: org_auth_header
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    it "creates the first page as the readme Showcase page and enforces org page constraints", :aggregate_failures do
+      expect do
+        post api_pages_path,
+             params: {
+               organization_id: organization.id,
+               title: "",
+               body_markdown: "# Hello org",
+               body_html: "<script>alert(1)</script>",
+               is_top_level_path: true,
+               landing_page: true,
+               template: "contained"
+             }.to_json,
+             headers: org_auth_header
+      end.to change(Page, :count).by(1)
+
+      expect(response).to have_http_status(:ok)
+      created_page = organization.pages.last
+      expect(created_page).to have_attributes(
+        slug: "#{organization.slug}/readme",
+        title: I18n.t("views.organizations.showcase"),
+        description: organization.summary.presence || organization.name,
+        template: "full_within_layout",
+        position: 0,
+        is_top_level_path: false,
+        landing_page: false,
+        body_html: nil,
+      )
+      expect(created_page.processed_html).to include("Hello org")
+    end
+
+    context "when the organization already has a readme page" do
+      let!(:readme_page) do
+        create(:page, organization: organization, slug: "#{organization.slug}/readme",
+                      template: "full_within_layout", position: 0)
+      end
+
+      it "creates a hidden custom page, exposes it publicly, and restores its tab visibility" do
+        post api_pages_path,
+             params: { organization_id: organization.id, title: "Talk", slug: "talk",
+                       body_markdown: "# Talk", show_in_navigation: false }.to_json,
+             headers: org_auth_header
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body["show_in_navigation"]).to be(false)
+        custom_page = organization.pages.find_by!(slug: "#{organization.slug}/talk")
+
+        get api_page_path(custom_page), headers: v1_headers
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body["show_in_navigation"]).to be(false)
+
+        get api_pages_path(organization_id: organization.id), headers: v1_headers
+        expect(response.parsed_body.pluck("id")).to include(custom_page.id)
+
+        put api_page_path(custom_page), params: { show_in_navigation: true }.to_json, headers: org_auth_header
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body["show_in_navigation"]).to be(true)
+        expect(custom_page.reload.show_in_navigation?).to be(true)
+      end
+
+      it "rejects hiding the Showcase through the API" do
+        put api_page_path(readme_page), params: { show_in_navigation: false }.to_json, headers: org_auth_header
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.headers["X-Error-Text"]).to include(I18n.t("models.page.navigation_showcase_required"))
+        expect(readme_page.reload.show_in_navigation?).to be(true)
+      end
+
+      it "creates subsequent pages with a slug suffix or full org slug and auto-increments position" do
+        post api_pages_path,
+             params: {
+               organization_id: organization.id,
+               title: "About Us",
+               slug: "about",
+               body_markdown: "# About"
+             }.to_json,
+             headers: org_auth_header
+
+        expect(response).to have_http_status(:ok)
+        about_page = organization.pages.find_by(slug: "#{organization.slug}/about")
+        expect(about_page).to be_present
+        expect(about_page.position).to eq(1)
+
+        post api_pages_path,
+             params: {
+               organization_id: organization.id,
+               title: "Team",
+               slug: "#{organization.slug}/team",
+               body_markdown: "# Team",
+               position: 5
+             }.to_json,
+             headers: org_auth_header
+
+        expect(response).to have_http_status(:ok)
+        team_page = organization.pages.find_by(slug: "#{organization.slug}/team")
+        expect(team_page).to be_present
+        expect(team_page.position).to eq(5)
+      end
+
+      it "rejects invalid slug suffixes or another organization's slug prefix on create" do
+        post api_pages_path,
+             params: {
+               organization_id: organization.id,
+               title: "Invalid",
+               slug: "!!!",
+               body_markdown: "# Invalid"
+             }.to_json,
+             headers: org_auth_header
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.headers["X-Error-Text"]).to include("Slug suffix is required")
+
+        post api_pages_path,
+             params: {
+               organization_id: organization.id,
+               title: "Wrong Org Prefix",
+               slug: "some-other-org/about",
+               body_markdown: "# Invalid"
+             }.to_json,
+             headers: org_auth_header
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it "updates the readme page while keeping slug and position locked" do
+        put api_page_path(readme_page.id),
+            params: {
+              title: "Updated Showcase",
+              slug: "custom-slug",
+              position: 3,
+              body_markdown: "# Updated markdown"
+            }.to_json,
+            headers: org_auth_header
+
+        expect(response).to have_http_status(:ok)
+        readme_page.reload
+        expect(readme_page.title).to eq("Updated Showcase")
+        expect(readme_page.slug).to eq("#{organization.slug}/readme")
+        expect(readme_page.position).to eq(0)
+        expect(readme_page.processed_html).to include("Updated markdown")
+      end
+
+      it "updates a custom org page's title, markdown, slug, and position" do
+        custom_page = create(:page, organization: organization, slug: "#{organization.slug}/about",
+                                    template: "full_within_layout", position: 1)
+
+        put api_page_path(custom_page.id),
+            params: {
+              title: "Our Story",
+              slug: "story",
+              position: 2,
+              body_markdown: "# Story"
+            }.to_json,
+            headers: org_auth_header
+
+        expect(response).to have_http_status(:ok)
+        custom_page.reload
+        expect(custom_page.title).to eq("Our Story")
+        expect(custom_page.slug).to eq("#{organization.slug}/story")
+        expect(custom_page.position).to eq(2)
+      end
+
+      it "deletes an organization page" do
+        expect do
+          delete api_page_path(readme_page.id), headers: org_auth_header
+        end.to change(Page, :count).by(-1)
+
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    it "forbids creating, updating, or deleting pages for another organization or global pages" do
+      other_org = create(:organization)
+      FeatureFlag.enable(:org_readme, FeatureFlag::Actor[other_org])
+      other_org_page = create(:page, organization: other_org, slug: "#{other_org.slug}/readme")
+
+      post api_pages_path,
+           params: { organization_id: other_org.id, title: "Nope", body_markdown: "# Nope" }.to_json,
+           headers: org_auth_header
+      expect(response).to have_http_status(:unauthorized)
+
+      put api_page_path(other_org_page.id),
+          params: { title: "Nope" }.to_json,
+          headers: org_auth_header
+      expect(response).to have_http_status(:unauthorized)
+
+      put api_page_path(page.id),
+          params: { title: "Nope" }.to_json,
+          headers: org_auth_header
+      expect(response).to have_http_status(:unauthorized)
+
+      delete api_page_path(other_org_page.id), headers: org_auth_header
+      expect(response).to have_http_status(:unauthorized)
+
+      delete api_page_path(page.id), headers: org_auth_header
+      expect(response).to have_http_status(:unauthorized)
+    ensure
+      FeatureFlag.disable(:org_readme, FeatureFlag::Actor[other_org])
+    end
+
+    it "previews an organization page with organization liquid tags without saving" do
+      expect do
+        post preview_api_pages_path,
+             params: {
+               organization_id: organization.id,
+               body_markdown: "# Welcome to #{organization.name}\n\n{% org_team #{organization.slug} %}"
+             }.to_json,
+             headers: org_auth_header
+      end.not_to change(Page, :count)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["processed_html"]).to include("Welcome to #{organization.name}")
+      expect(response.parsed_body["processed_html"]).to include("org-team")
+    end
+
+    it "returns 422 when previewing invalid liquid syntax on an organization page" do
+      post preview_api_pages_path,
+           params: {
+             organization_id: organization.id,
+             body_markdown: "{% org_lead_form invalid %}"
+           }.to_json,
+           headers: org_auth_header
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body["error"]).to be_present
+    end
+
+    it "forbids previewing a page without organization_id or for another organization" do
+      other_org = create(:organization)
+      FeatureFlag.enable(:org_readme, FeatureFlag::Actor[other_org])
+
+      post preview_api_pages_path,
+           params: { body_markdown: "# Global" }.to_json,
+           headers: org_auth_header
+      expect(response).to have_http_status(:unauthorized)
+
+      post preview_api_pages_path,
+           params: { organization_id: other_org.id, body_markdown: "# Other Org" }.to_json,
+           headers: org_auth_header
+      expect(response).to have_http_status(:unauthorized)
+    ensure
+      FeatureFlag.disable(:org_readme, FeatureFlag::Actor[other_org])
+    end
+  end
+
+  describe "POST /api/pages/preview" do
+    include_context "when user is authorized"
+
+    it "renders markdown preview for a site admin without persisting a page" do
+      expect do
+        post preview_api_pages_path,
+             params: { body_markdown: "## Custom Page Preview" }.to_json,
+             headers: auth_header
+      end.not_to change(Page, :count)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["processed_html"]).to include("Custom Page Preview")
+    end
+
+    it "returns 401 when unauthenticated" do
+      post preview_api_pages_path,
+           params: { body_markdown: "## Custom Page Preview" }.to_json,
+           headers: v1_headers
+
+      expect(response).to have_http_status(:unauthorized)
+    end
   end
 end

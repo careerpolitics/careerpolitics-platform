@@ -1,10 +1,12 @@
 class PagesController < ApplicationController
   # No authorization required for entirely public controller
-  before_action :set_cache_control_headers, only: %i[show badge bounty faq robots]
+  before_action :set_cache_control_headers, only: %i[show badge bounty faq robots llms openapi]
 
   def show
     params[:slug] = combined_fragmented_slug if params[:slug_0].present?
     @page = proper_page_by_slug
+    set_surrogate_key_header "show-page-#{params[:slug]}", "show-page-#{@page.slug}", @page.organization&.record_key
+
     redirect_page_if_different_subforem
     return if performed?
 
@@ -16,8 +18,6 @@ class PagesController < ApplicationController
       redirect_to @page.redirect_to_url, **redirect_options
       return
     end
-
-    set_surrogate_key_header "show-page-#{params[:slug]}"
 
 
     case @page.template
@@ -53,7 +53,7 @@ class PagesController < ApplicationController
   def bounty
     @page = Page.find_by(slug: "security")
     render :show if @page
-    set_surrogate_key_header "bounty_page"
+    set_surrogate_key_header "bounty_page", "show-page-security"
   end
 
   def code_of_conduct
@@ -77,7 +77,7 @@ class PagesController < ApplicationController
   def faq
     @page = Page.find_by(slug: "faq")
     render :show if @page
-    set_surrogate_key_header "faq_page"
+    set_surrogate_key_header "faq_page", "show-page-faq"
   end
 
   def post_a_job
@@ -105,18 +105,39 @@ class PagesController < ApplicationController
   end
 
   def report_abuse
-    billboard_url = admin_billboard_path(params[:billboard]) if params[:billboard].present?
-    reported_url = params[:reported_url] || params[:url] || request.referer.presence
+    reported_url =
+      valid_utf8_string(params[:reported_url]) ||
+      valid_utf8_string(params[:url]) ||
+      valid_utf8_string(request.referer)
     @feedback_message = FeedbackMessage.new(
-      reported_url: billboard_url || reported_url&.chomp("?i=i"),
+      reported_url: billboard_abuse_url || reported_url&.chomp("?i=i"),
     )
     render "pages/report_abuse"
   end
 
   def robots
     # dynamically-generated static page
+    custom_domain_org
     respond_to :text
     set_surrogate_key_header "robots_page"
+  end
+
+  def llms
+    # Machine-readable guidance for AI agents and other automated clients.
+    # Served at /llms.txt, mirroring the robots.txt convention.
+    custom_domain_org
+    respond_to :text
+    set_surrogate_key_header "llms_page"
+  end
+
+  def openapi
+    # The generated OpenAPI description of the public API. Served over HTTP so that
+    # automated clients can discover the contract instead of guessing at it.
+    spec = Rails.root.join("swagger/v1/api_v1.json")
+    return not_found unless spec.exist?
+
+    set_surrogate_key_header "openapi_spec"
+    render plain: spec.read, content_type: "application/json"
   end
 
   def welcome
@@ -145,7 +166,12 @@ class PagesController < ApplicationController
   private
 
   def proper_page_by_slug
-    Page.from_subforem.find_by(slug: params[:slug]) || Page.find_by!(slug: params[:slug])
+    subforem_pages = Page.from_subforem
+    # When subforem filtering is off, the scoped lookup is the same query as the fallback,
+    # so a missing slug would otherwise hit the database twice before raising.
+    return Page.find_by!(slug: params[:slug]) if subforem_pages.where_clause.empty?
+
+    subforem_pages.find_by(slug: params[:slug]) || Page.find_by!(slug: params[:slug])
   end
 
   def redirect_daily_thread_request(daily_thread)
@@ -157,11 +183,29 @@ class PagesController < ApplicationController
   end
 
   def not_found_conditions
+    not_found if @page.embed_html?
+    not_found if @page.event_id.present?
     not_found unless FeatureFlag.accessible?(@page.feature_flag_name, current_user)
     not_found if params[:format] == "txt" && @page.template != "txt"
   end
 
   def combined_fragmented_slug
     (0..5).filter_map { |i| params["slug_#{i}"] }.join("/")
+  end
+
+  def billboard_abuse_url
+    billboard_id = valid_utf8_string(params[:billboard])
+    admin_billboard_path(billboard_id) if billboard_id
+  rescue ActionController::UrlGenerationError
+    nil
+  end
+
+  def valid_utf8_string(value)
+    return unless value.is_a?(String)
+
+    utf8 = value.encoding == Encoding::UTF_8 ? value : value.dup.force_encoding(Encoding::UTF_8)
+    return unless utf8.valid_encoding?
+
+    utf8.presence
   end
 end

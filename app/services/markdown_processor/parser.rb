@@ -1,13 +1,18 @@
 module MarkdownProcessor
   class Parser
+    include Instrumentation
+
     BAD_XSS_REGEX = [
-      /src=["'](data|&)/i,
+/src=["'](data|&)/i,
       %r{data:text/html[,;][\sa-z0-9]*}i,
     ].freeze
 
     CODE_BLOCKS_REGEX = /(~{3}|`{3}|`{2}|`)[\s\S]*?\1/
 
     WORDS_READ_PER_MINUTE = 275.0
+
+    # Redcarpet drops list item text beyond this indentation depth
+    MAX_LIST_INDENT_SPACES = 16
 
     # @param content [String] The user input, mix of markdown and liquid.  This might be an
     #        article's markdown body.
@@ -22,55 +27,53 @@ module MarkdownProcessor
 
     def initialize(content, source: nil, user: nil,
                    liquid_tag_options: {})
-      @content = (content || "").gsub(/!\[Image Description\]/i, "![ ]")
+      content ||= ""
+      @content = ForemNative.strip_default_image_alt_text(content) ||
+        legacy_strip_default_image_alt_text(content)
       @source = source
       @user = user
       @liquid_tag_options = liquid_tag_options.merge({ source: @source, user: @user })
     end
 
     def finalize(link_attributes: {}, prefix_images_options: { width: 800, synchronous_detail_detection: false })
-      options = { hard_wrap: true, filter_html: false, link_attributes: link_attributes }
-      renderer = Redcarpet::Render::HTMLRouge.new(options)
-      markdown = Redcarpet::Markdown.new(renderer, Constants::Redcarpet::CONFIG)
-      catch_xss_attempts(@content)
-      
-      # Workaround for Redcarpet dropping link text at nesting levels >= 5 (16+ spaces)
-      content_with_fixed_links = convert_deeply_nested_links_to_html(@content)
-      # Workaround for Redcarpet not honouring \| as an escaped pipe inside tables (issue #18111)
-      content_with_fixed_pipes = convert_escaped_pipes_outside_codeblocks(content_with_fixed_links)
+      instrument("markdown_processor.finalize", tags: { source_type: @source&.class&.name }) do
+        options = { hard_wrap: true, filter_html: false, link_attributes: link_attributes }
+        renderer = Redcarpet::Render::HTMLRouge.new(options)
+        markdown = Redcarpet::Markdown.new(renderer, Constants::Redcarpet::CONFIG)
+        escaped_content = preprocess_for_finalize(@content)
+        html = markdown.render(escaped_content)
+        sanitized_content = ActionController::Base.helpers.sanitize html, { scrubber: RenderedMarkdownScrubber.new }
 
-      code_tag_content = convert_code_tags_to_triple_backticks(content_with_fixed_pipes)
-      escaped_content = escape_liquid_tags_in_codeblock(code_tag_content)
-      html = markdown.render(escaped_content)
-      sanitized_content = ActionController::Base.helpers.sanitize html, { scrubber: RenderedMarkdownScrubber.new }
+        begin
+          # NOTE: [@rhymes] liquid 5.0.0 does not support ActiveSupport::SafeBuffer,
+          # a String substitute, hence we force the conversion before passing it to Liquid::Template.
+          # See <https://github.com/Shopify/liquid/issues/1390>
+          parsed_liquid = Liquid::Template.parse(sanitized_content.to_str, @liquid_tag_options)
 
-      begin
-        # NOTE: [@rhymes] liquid 5.0.0 does not support ActiveSupport::SafeBuffer,
-        # a String substitute, hence we force the conversion before passing it to Liquid::Template.
-        # See <https://github.com/Shopify/liquid/issues/1390>
-        parsed_liquid = Liquid::Template.parse(sanitized_content.to_str, @liquid_tag_options)
+          html = markdown.render(parsed_liquid.render)
+        rescue NoMethodError => e
+          raise e unless e.message.include?("line_number")
 
-        html = markdown.render(parsed_liquid.render)
-      rescue NoMethodError => e
-        raise e unless e.message.include?("line_number")
+          # Handle the specific NoMethodError
+          Rails.logger.error("Liquid rendering error: #{e.message}")
+          html = sanitized_content.to_str
+        rescue Liquid::SyntaxError => e
+          html = e.message
+        end
 
-        # Handle the specific NoMethodError
-        Rails.logger.error("Liquid rendering error: #{e.message}")
-        html = sanitized_content.to_str
-      rescue Liquid::SyntaxError => e
-        html = e.message
+        finalize_html(html, prefix_images_options)
       end
+    end
 
-      html = add_target_blank_to_outbound_links(html)
-      parse_html(html, prefix_images_options)
+    # Prevent Redcarpet from dropping text in deeply nested lists
+    def normalize_overly_nested_lists(content)
+      ForemNative.normalize_overly_nested_lists(content) ||
+        legacy_normalize_overly_nested_lists(content)
     end
 
     def convert_deeply_nested_links_to_html(content)
-      content.gsub(/^(?: {16,}|\t{4,})[-*+ \d.]* .*$/) do |line|
-        line.gsub(/\[([^\]]*)\]\(([^)]*)\)/) do
-          "<a href=\"#{$2}\">#{$1}</a>"
-        end
-      end
+      ForemNative.convert_deeply_nested_links_to_html(content) ||
+        legacy_convert_deeply_nested_links_to_html(content)
     end
 
     # Note: This preserves fenced code blocks opened with either ``` or ~~~, but
@@ -96,63 +99,29 @@ module MarkdownProcessor
     def convert_escaped_pipes_outside_codeblocks(content)
       return content unless content.include?('\|')
 
-      placeholder = "\x00FOREM_ESC_PIPE\x00"
-      current_fence_marker = nil
-
-      content.each_line.map do |line|
-        if current_fence_marker
-          current_fence_marker = nil if fenced_code_block_closing_marker?(line, current_fence_marker)
-          next line
-        end
-
-        opening_marker = fenced_code_block_opening_marker(line)
-        if opening_marker
-          current_fence_marker = opening_marker
-          next line
-        end
-
-        line.gsub!(/(`+)([^`\n]*?(?:`(?!\1)[^`\n]*?)*)\1/) { |span| span.gsub('\|') { placeholder } }
-        line.gsub!(/(?<!\\)\\\|/, "&#124;")
-        line.gsub!(placeholder) { '\|' }
-        
-        line
-      end.join
+      ForemNative.convert_escaped_pipes_outside_codeblocks(content) ||
+        legacy_convert_escaped_pipes_outside_codeblocks(content)
     end
 
     def add_target_blank_to_outbound_links(html)
       app_domain = Settings::General.app_domain
-      doc = Nokogiri::HTML.fragment(html)
-      doc.css('a[href^="http"]').each do |link|
-        href = link["href"]
-        next unless href&.exclude?(app_domain)
-
-        link[:target] = "_blank"
-        existing_rel = link[:rel]
-        new_rel = %w[noopener noreferrer]
-        if existing_rel
-          existing_rel_values = existing_rel.split
-          new_rel = (existing_rel_values + new_rel).uniq.join(" ")
-        else
-          new_rel = new_rel.join(" ")
-        end
-        link[:rel] = new_rel
-      end
-      doc.to_html
+      ForemNative.add_target_blank_to_outbound_links(html, app_domain) ||
+        legacy_add_target_blank_to_outbound_links(html, app_domain)
     end
 
     def calculate_reading_time
-      word_count = @content.split(/\W+/).count
-      (word_count / WORDS_READ_PER_MINUTE).ceil
+      MarkdownProcessor::ReadingTime.calculate(@content)
     end
 
-    def evaluate_markdown(allowed_tags: MarkdownProcessor::AllowedTags::MARKDOWN_PROCESSOR_DEFAULT)
+    def evaluate_markdown(allowed_tags: MarkdownProcessor::AllowedTags::MARKDOWN_PROCESSOR_DEFAULT,
+                          allowed_attributes: MarkdownProcessor::AllowedAttributes::MARKDOWN_PROCESSOR)
       return if @content.blank?
 
       renderer = Redcarpet::Render::HTMLRouge.new(hard_wrap: true, filter_html: false)
       markdown = Redcarpet::Markdown.new(renderer, Constants::Redcarpet::CONFIG)
       ActionController::Base.helpers.sanitize(markdown.render(@content),
                                               tags: allowed_tags,
-                                              attributes: MarkdownProcessor::AllowedAttributes::MARKDOWN_PROCESSOR)
+                                              attributes: allowed_attributes)
     end
 
     def evaluate_limited_markdown(allowed_tags: MarkdownProcessor::AllowedTags::MARKDOWN_PROCESSOR_LIMITED)
@@ -184,14 +153,127 @@ module MarkdownProcessor
     end
 
     def catch_xss_attempts(markdown)
-      markdown_without_code_blocks = markdown.gsub(CODE_BLOCKS_REGEX, "")
-      return unless markdown_without_code_blocks.match?(Regexp.union(BAD_XSS_REGEX))
+      xss_attempt = ForemNative.markdown_xss_attempt(markdown)
+      xss_attempt = legacy_xss_attempt?(markdown) if xss_attempt.nil?
+      return unless xss_attempt
 
       raise ArgumentError, I18n.t("services.markdown_processor.parser.invalid_markdown_detected")
     end
 
+    # Escape codeblocks, code spans, and inline code
     def escape_liquid_tags_in_codeblock(content)
-      # Escape codeblocks, code spans, and inline code
+      ForemNative.escape_liquid_tags_in_codeblock(content) ||
+        legacy_escape_liquid_tags_in_codeblock(content)
+    end
+
+    def convert_code_tags_to_triple_backticks(content)
+      ForemNative.convert_code_tags_to_triple_backticks(content) ||
+        legacy_convert_code_tags_to_triple_backticks(content)
+    end
+
+    def preprocess_for_finalize(content)
+      # Cap excessive list indentation before the fused preprocessing chain so the
+      # normalization reaches Redcarpet on BOTH the native
+      # (ForemNative.preprocess_markdown_for_finalize) and legacy paths. Without this,
+      # normal UTF-8 article/comment rendering (the native path) would still drop the
+      # text of list items nested beyond MAX_LIST_INDENT_SPACES.
+      normalized_content = normalize_overly_nested_lists(content)
+
+      result = ForemNative.preprocess_markdown_for_finalize(normalized_content)
+      if result == :xss_attempt
+        raise ArgumentError, I18n.t("services.markdown_processor.parser.invalid_markdown_detected")
+      end
+
+      result || legacy_preprocess_for_finalize(normalized_content)
+    end
+
+    private
+
+    def legacy_preprocess_for_finalize(content)
+      catch_xss_attempts(content)
+
+      # Workaround for Redcarpet dropping link text at nesting levels >= 5 (16+ spaces)
+      content_with_fixed_links = convert_deeply_nested_links_to_html(content)
+      # Workaround for Redcarpet not honouring \| as an escaped pipe inside tables (issue #18111)
+      content_with_fixed_pipes = convert_escaped_pipes_outside_codeblocks(content_with_fixed_links)
+
+      code_tag_content = convert_code_tags_to_triple_backticks(content_with_fixed_pipes)
+      escape_liquid_tags_in_codeblock(code_tag_content)
+    end
+
+    # Handles the inputs ForemNative declines (non-UTF-8 encodings, String subclasses,
+    # invalid byte sequences).
+    def legacy_normalize_overly_nested_lists(content)
+      current_fence_marker = nil
+
+      content.each_line.map do |line|
+        if current_fence_marker
+          current_fence_marker = nil if fenced_code_block_closing_marker?(line, current_fence_marker)
+          next line
+        end
+
+        opening_marker = fenced_code_block_opening_marker(line)
+        if opening_marker
+          current_fence_marker = opening_marker
+          next line
+        end
+
+        line.gsub(/^([ \t]+)([-*+]|\d+\.)[ \t]+(.*)$/) do
+          indent = Regexp.last_match(1)
+          marker = Regexp.last_match(2)
+          text   = Regexp.last_match(3)
+
+          normalized_indent =
+            if indent.include?("\t")
+              indent[0, 4]
+            else
+              indent[0, MAX_LIST_INDENT_SPACES]
+            end
+
+          "#{normalized_indent}#{marker} #{text}"
+        end
+      end.join
+    end
+
+    # Handles the inputs ForemNative declines (non-UTF-8 encodings, String subclasses,
+    # invalid byte sequences).
+    def legacy_strip_default_image_alt_text(content)
+      content.gsub(/!\[Image Description\]/i, "![ ]")
+    end
+
+    # Handles the inputs ForemNative declines (non-UTF-8 encodings, String subclasses,
+    # invalid byte sequences).
+    def legacy_xss_attempt?(markdown)
+      markdown_without_code_blocks = markdown.gsub(CODE_BLOCKS_REGEX, "")
+      markdown_without_code_blocks.match?(Regexp.union(BAD_XSS_REGEX))
+    end
+
+    # Handles the inputs ForemNative declines (non-UTF-8 encodings, String subclasses,
+    # invalid byte sequences).
+    def legacy_convert_code_tags_to_triple_backticks(content)
+      # return content if there is not a <code> tag
+      return content unless /^<code>$/.match?(content)
+
+      # return content if there is a <pre> and <code> tag
+      return content if content.include?("<code>") && content.include?("<pre>")
+
+      # Convert all multiline code tags to triple backticks
+      content.gsub(%r{^</?code>$}, "\n```\n")
+    end
+
+    # Handles the inputs ForemNative declines (non-UTF-8 encodings, String subclasses,
+    # invalid byte sequences).
+    def legacy_convert_deeply_nested_links_to_html(content)
+      content.gsub(/^(?: {16,}|\t{4,})[-*+ \d.]* .*$/) do |line|
+        line.gsub(/\[([^\]]*)\]\(([^)]*)\)/) do
+          "<a href=\"#{Regexp.last_match(2)}\">#{Regexp.last_match(1)}</a>"
+        end
+      end
+    end
+
+    # Handles the inputs ForemNative declines (non-UTF-8 encodings, String subclasses,
+    # invalid byte sequences).
+    def legacy_escape_liquid_tags_in_codeblock(content)
       content.gsub(/([[:space:]]*(`{3,}|~{3,}))[\s\S]*?\2|`{2}.+?`{2}|`{1}.+?`{1}/m) do |codeblock|
         codeblock.gsub!("{% endraw %}", "{----% endraw %----}")
         codeblock.gsub!("{% raw %}", "{----% raw %----}")
@@ -203,38 +285,175 @@ module MarkdownProcessor
       end
     end
 
-    def convert_code_tags_to_triple_backticks(content)
-      # return content if there is not a <code> tag
-      return content unless /^<code>$/.match?(content)
+    # Handles the inputs ForemNative declines (non-UTF-8 encodings, String subclasses,
+    # invalid byte sequences).
+    def legacy_convert_escaped_pipes_outside_codeblocks(content)
+      placeholder = "\x00FOREM_ESC_PIPE\x00"
+      current_fence_marker = nil
 
-      # return content if there is a <pre> and <code> tag
-      return content if content.include?("<code>") && content.include?("<pre>")
+      content.each_line.map do |line|
+        if current_fence_marker
+          current_fence_marker = nil if fenced_code_block_closing_marker?(line, current_fence_marker)
+          next line
+        end
 
-      # Convert all multiline code tags to triple backticks
-      content.gsub(%r{^</?code>$}, "\n```\n")
+        opening_marker = fenced_code_block_opening_marker(line)
+        if opening_marker
+          current_fence_marker = opening_marker
+          next line
+        end
+
+        line.gsub!(/(`+)([^`\n]*?(?:`(?!\1)[^`\n]*?)*)\1/) { |span| span.gsub('\|') { placeholder } }
+        line.gsub!(/(?<!\\)\\\|/, "&#124;")
+        line.gsub!(placeholder) { '\|' }
+
+        line
+      end.join
     end
 
-    private
+    def finalize_html(html, prefix_images_options)
+      return html if html.blank?
+
+      has_img = html.match?(/<img/i)
+      prefix_config = if has_img
+                        Html::Parser.native_prefix_images_config(
+                          width: prefix_images_options.fetch(:width, 880),
+                          synchronous_detail_detection: prefix_images_options.fetch(
+                            :synchronous_detail_detection, false
+                          ),
+                        )
+                      end
+
+      if !has_img || prefix_config
+        result = native_postprocess_rendered_html(
+          html,
+          run_target_blank: true,
+          prefix_images_config: prefix_config,
+        )
+        return result if result
+      else
+        linked = add_target_blank_to_outbound_links(html)
+        prefixed = Html::Parser.new(linked).prefix_all_images(**prefix_images_options).html
+        result = native_postprocess_rendered_html(prefixed, run_target_blank: false)
+        return result if result
+
+        return parse_post_prefix_html(Html::Parser.new(prefixed).remove_nested_linebreak_in_list).html
+      end
+
+      parse_html(add_target_blank_to_outbound_links(html), prefix_images_options)
+    end
+
+    def native_postprocess_rendered_html(html, run_target_blank:, prefix_images_config: nil)
+      prepared_html = html
+      if html.include?("@") && html.include?("<br")
+        prepared_html = ForemNative.remove_nested_linebreak_in_list_fragment(html)
+        return unless prepared_html
+      end
+
+      alert_labels = native_alert_labels(prepared_html)
+      usernames = extract_native_mention_usernames(prepared_html, alert_labels)
+      return unless usernames
+
+      existing_usernames = Html::Parser.resolve_existing_usernames(usernames)
+      action_html = prepared_html.include?("highlight") ? Html::Parser.new("").fullscreen_action_html : ""
+      app_domain = Settings::General.app_domain
+      base_url = "#{ApplicationConfig['APP_PROTOCOL']}#{app_domain}"
+
+      ForemNative.postprocess_rendered_html(
+        prepared_html,
+        app_domain: app_domain,
+        fullscreen_action_html: action_html,
+        existing_usernames: existing_usernames,
+        base_url: base_url,
+        run_target_blank: run_target_blank,
+        normalize_document: true,
+        prefix_images_config: prefix_images_config,
+        alert_labels: alert_labels,
+      )
+    end
+
+    def native_alert_labels(prepared_html)
+      return unless prepared_html.include?("<blockquote")
+      return unless prepared_html.include?("[!") || prepared_html.include?("&")
+
+      Html::Parser.alert_labels
+    end
+
+    def extract_native_mention_usernames(prepared_html, alert_labels)
+      usernames = prepared_html.include?("@") ? ForemNative.extract_mention_usernames(prepared_html) : []
+      return unless usernames
+
+      mention_labels = alert_labels&.select { |label| label.include?("@") }
+      return usernames if mention_labels.blank?
+
+      label_html = mention_labels.map { |label| "<p>#{ERB::Util.html_escape(label)}</p>" }.join
+      label_usernames = ForemNative.extract_mention_usernames(label_html)
+      return unless label_usernames
+
+      (usernames + label_usernames).uniq
+    end
+
+    def legacy_add_target_blank_to_outbound_links(html, app_domain = Settings::General.app_domain)
+      doc = Nokogiri::HTML.fragment(html)
+      scrub_unsafe_uris(doc)
+      doc.css('a[href^="http"]').each do |link|
+        href = link["href"]
+        next unless href&.exclude?(app_domain)
+
+        link[:target] = "_blank"
+        existing_rel = link[:rel]
+        new_rel = %w[noopener noreferrer]
+        link[:rel] =
+          if existing_rel
+            (existing_rel.split + new_rel).uniq.join(" ")
+          else
+            new_rel.join(" ")
+          end
+      end
+      doc.to_html
+    end
 
     def parse_html(html, prefix_images_options)
       return html if html.blank?
 
-      Html::Parser
+      parser = Html::Parser
         .new(html)
         .remove_nested_linebreak_in_list
         .prefix_all_images(**prefix_images_options)
+
+      parse_post_prefix_html(parser).html
+    end
+
+    def parse_post_prefix_html(parser)
+      parser
         .wrap_all_images_in_links
         .enforce_gif_like_videos
         .add_control_class_to_codeblock
         .add_control_panel_to_codeblock
         .add_fullscreen_button_to_panel
         .wrap_all_tables
+        .transform_markdown_alerts
         .remove_empty_paragraphs
         .escape_colon_emojis_in_codeblock
         .unescape_raw_tag_in_codeblocks
         .wrap_all_figures_with_tags
         .wrap_mentions_with_links
-        .html
+    end
+
+    URI_ATTRIBUTES = %w[href src].freeze
+
+    def scrub_unsafe_uris(doc)
+      doc.css("[href], [src]").each do |node|
+        node.attribute_nodes.each do |attr|
+          next unless URI_ATTRIBUTES.include?(attr.name)
+
+          if node.name == "a" && attr.name == "href" && attr.value.to_s.gsub(/[\x00-\x20]+/, "").match?(/\Adata:/i)
+            attr.remove
+          else
+            Loofah::HTML5::Scrub.scrub_uri_attribute(attr)
+          end
+        end
+      end
     end
   end
 end

@@ -13,6 +13,8 @@ module Admin
       max_score
       tag_name
       email
+      password
+      password_confirmation
     ].freeze
 
     ADMIN_PROFILE_USER_PARAMS = %i[name username].freeze
@@ -67,9 +69,15 @@ module Admin
       set_feedback_messages
       set_related_reactions
       set_audit_logs
-      @articles = @user.articles.order(created_at: :desc)
-      # Remove the .includes(:commentable)
-      @comments = @user.comments.order(created_at: :desc)
+      set_identities
+      set_badges
+      set_reactions
+      set_agent_sessions
+      set_collections
+      set_follows
+      set_blocks
+      set_articles
+      set_comments
       set_user_details
     end
 
@@ -122,36 +130,64 @@ module Admin
     def update_email
       @user = User.find(params[:id])
       old_email = @user.email
-      new_email = user_params[:email]
-      if @user.update_columns(email: new_email)
-        Note.create(
-          author_id: current_user.id,
-          noteable_id: @user.id,
-          noteable_type: "User",
-          reason: "Update Email",
-          content: "Updated email from #{old_email} to #{new_email}",
-        )
-        Audit::Logger.log(:moderator, current_user, {
-                            "action" => params[:action],
-                            "controller" => params[:controller],
-                            "target_user_id" => @user.id,
-                            "old_email" => old_email,
-                            "new_email" => new_email
-                          })
-        flash[:success] = I18n.t("views.admin.users.update_email.success")
-      else
-        flash[:error] = I18n.t("views.admin.users.update_email.error")
+new_email = user_params[:email].to_s.strip.presence
+
+      # Validate email using a temp User object to avoid rate limit checks and other model side-effects
+      temp_user = User.new(email: new_email)
+      temp_user.valid?
+
+      email_errors = temp_user.errors.where(:email)
+      if new_email.present? && old_email.present? && new_email.casecmp?(old_email)
+        email_errors = email_errors.reject { |e| e.type == :taken }
+      end
+
+      if email_errors.any?
+        flash[:error] = email_errors.map(&:full_message).to_sentence
+        redirect_to admin_user_path(@user)
+        return
+      end
+
+      begin
+        downcased_email = new_email&.downcase
+        # Bypassing validations/callbacks is intentional here to match the behavior of updating
+        # user emails via the admin UI directly and immediately without sending confirmation emails.
+        if @user.update_columns(email: downcased_email, unconfirmed_email: nil)
+          # update_columns bypasses the Trackable after_commit, so tell the
+          # DEV -> Core sync about the new address explicitly.
+          @user.track!("user_updated")
+          Note.create(
+            author_id: current_user.id,
+            noteable_id: @user.id,
+            noteable_type: "User",
+            reason: "Update Email",
+            content: "Updated email from #{old_email} to #{downcased_email}",
+          )
+          Audit::Logger.log(:moderator, current_user, {
+                              "action" => params[:action],
+                              "controller" => params[:controller],
+                              "target_user_id" => @user.id,
+                              "old_email" => old_email,
+                              "new_email" => downcased_email
+                            })
+          Users::BustCacheWorker.perform_async(@user.id)
+          flash[:success] = I18n.t("views.admin.users.update_email.success")
+        else
+          flash[:error] = I18n.t("views.admin.users.update_email.error")
+        end
+      rescue ActiveRecord::RecordNotUnique
+        flash[:error] = I18n.t("errors.messages.taken")
       end
       redirect_to admin_user_path(@user)
     end
 
     def update_profile
       @user = User.find(params[:id])
-      previous_user_values = @user.slice(*ADMIN_PROFILE_USER_PARAMS)
+      attributes = admin_profile_user_params
+      previous_user_values = @user.slice(*ADMIN_PROFILE_USER_PARAMS).merge("profile_image" => @user[:profile_image])
       previous_profile_values = (@user.profile || @user.build_profile).slice(*ADMIN_PROFILE_PROFILE_PARAMS)
 
       update_result = Users::Update.call(@user,
-                                         user: admin_profile_user_params,
+                                         user: attributes,
                                          profile: admin_profile_params)
 
       if update_result.success?
@@ -216,8 +252,8 @@ module Admin
       response = ::Users::RemoveRole.call(
         user: @user,
         role: role.name,
-        resource_type: params[:resource_type],
-        resource_id: params[:resource_id],
+        resource_type: role.resource_type,
+        resource_id: role.resource_id,
       )
 
       if response.success
@@ -226,8 +262,8 @@ module Admin
                             "controller" => params[:controller],
                             "target_user_id" => @user.id,
                             "role" => role.name,
-                            "resource_type" => params[:resource_type],
-                            "resource_id" => params[:resource_id]
+                            "resource_type" => role.resource_type,
+                            "resource_id" => role.resource_id
                           })
         flash[:success] =
           I18n.t("admin.users_controller.role_removed",
@@ -241,7 +277,8 @@ module Admin
     end
 
     def export
-      @users = User.registered.select(ATTRIBUTES_FOR_CSV + ATTRIBUTES_FOR_LAST_ACTIVITY).includes(:organizations)
+      @users = User.registered.select(ATTRIBUTES_FOR_CSV + ATTRIBUTES_FOR_LAST_ACTIVITY)
+        .preload(:organizations, :roles)
 
       respond_to do |format|
         format.csv do
@@ -338,6 +375,8 @@ module Admin
 
     def full_delete
       @user = User.find(params[:id])
+      authorize(@user, :admin_delete?)
+
       begin
         Moderator::DeleteUser.call(user: @user)
         link = helpers.tag.a(I18n.t("admin.users_controller.the_page"), href: admin_gdpr_delete_requests_path,
@@ -459,6 +498,55 @@ module Admin
       end
     end
 
+    def update_password
+      @user = User.find(params[:id])
+
+      if @user.update(password_params)
+        Note.create(
+          author_id: current_user.id,
+          noteable_id: @user.id,
+          noteable_type: "User",
+          reason: "admin_password_update",
+          content: "Password manually updated by #{current_user.username}",
+        )
+        Audit::Logger.log(:moderator, current_user, {
+                            "action" => params[:action],
+                            "controller" => params[:controller],
+                            "target_user_id" => @user.id
+                          })
+        flash[:success] = I18n.t("views.admin.users.password.success")
+      else
+        flash[:error] = @user.errors.full_messages.to_sentence
+      end
+
+      redirect_to admin_user_path(@user, tab: :security)
+    end
+
+    def send_password_reset
+      @user = User.find(params[:id])
+      opts = { admin_triggered_by: current_user.name.presence || current_user.username }
+
+      if @user.send_reset_password_instructions(opts)
+        Note.create(
+          author_id: current_user.id,
+          noteable_id: @user.id,
+          noteable_type: "User",
+          reason: "admin_password_reset",
+          content: "Password reset email sent by #{current_user.username}",
+        )
+        Audit::Logger.log(:moderator, current_user, {
+                            "action" => params[:action],
+                            "controller" => params[:controller],
+                            "target_user_id" => @user.id
+                          })
+        flash[:success] = I18n.t("views.admin.users.password.reset_sent")
+      else
+        flash[:error] = I18n.t("views.admin.users.password.reset_error")
+      end
+
+      redirect_to admin_user_path(@user, tab: :security)
+    end
+
     def send_email_confirmation
       @user = User.find(params[:id])
       if @user.send_confirmation_instructions
@@ -558,6 +646,9 @@ module Admin
       new_email = @user.unconfirmed_email
 
       if new_email.present? && @user.update_columns(email: new_email, unconfirmed_email: nil, confirmed_at: Time.current)
+        # update_columns bypasses the Trackable after_commit, so tell the
+        # DEV -> Core sync about the swapped address explicitly.
+        @user.track!("user_updated")
         Note.create(
           author_id: current_user.id,
           noteable_id: @user.id,
@@ -617,7 +708,7 @@ module Admin
         joining_end: params[:joining_end],
         date_format: params[:date_format],
         organizations: params[:organizations],
-      ).page(params[:page]).per(50)
+      ).preload(:roles).page(params[:page]).per(50)
 
       @organization_limit = 3
       @organizations = Organization.order(name: :desc)
@@ -636,13 +727,15 @@ module Admin
     end
 
     def set_user_details
-      @organizations = @user.organizations.order(:name)
-      @notes = @user.notes.includes(:author).order(created_at: :desc).limit(10)
-      @organization_memberships = @user.organization_memberships
-        .joins(:organization)
-        .order("organizations.name" => :asc)
-        .includes(:organization)
-      @last_email_verification_date = EmailAuthorization.last_verification_date(@user)
+      if @current_tab == "overview"
+        @organizations = @user.organizations.order(:name)
+        @organization_memberships = @user.organization_memberships
+          .joins(:organization)
+          .order("organizations.name" => :asc)
+          .includes(:organization)
+      elsif @current_tab == "notes"
+        @notes = @user.notes.includes(:author).order(created_at: :desc).limit(10)
+      end
 
       render :show
     end
@@ -657,7 +750,13 @@ module Admin
       )
     end
 
+    def password_params
+      user_params.slice(:password, :password_confirmation)
+    end
+
     def set_feedback_messages
+      return if action_name == "show" && @current_tab != "reports"
+
       @related_reports = FeedbackMessage.where(id: @user.reporter_feedback_messages.ids)
         .or(FeedbackMessage.where(id: @user.affected_feedback_messages.ids))
         .or(FeedbackMessage.where(id: @user.offender_feedback_messages.ids))
@@ -665,14 +764,17 @@ module Admin
     end
 
     def set_related_reactions
+      return if action_name == "show" && @current_tab != "flags"
+
       user_article_ids = @user.articles.ids
       user_comment_ids = @user.comments.ids
       @related_vomit_reactions =
-        Reaction.where(reactable_type: "Comment", reactable_id: user_comment_ids, category: "vomit")
-          .or(Reaction.where(reactable_type: "Article", reactable_id: user_article_ids, category: "vomit"))
-          .or(Reaction.where(reactable_type: "User", reactable_id: @user.id, category: "vomit"))
-          .includes(:user)
-          .order(created_at: :desc).limit(15)
+        Reaction.where(reactable_type: "Comment", reactable_id: user_comment_ids)
+          .or(Reaction.where(reactable_type: "Article", reactable_id: user_article_ids))
+          .where("reactions.category || '' = ?", "vomit")
+          .includes(:user, :reactable)
+          .order(Arel.sql("(reactions.created_at + interval '0 seconds') DESC"))
+          .limit(15)
 
       @user_vomit_reactions =
         Reaction.where(reactable_type: "User", reactable_id: @user.id, category: "vomit")
@@ -707,7 +809,17 @@ module Admin
     end
 
     def admin_profile_user_params
-      params.require(:user).permit(ADMIN_PROFILE_USER_PARAMS)
+      attributes = params.require(:user).permit(*ADMIN_PROFILE_USER_PARAMS, :profile_image, :remove_profile_image)
+      attributes.delete(:profile_image) if attributes[:profile_image].blank?
+      if ActiveModel::Type::Boolean.new.cast(attributes[:remove_profile_image])
+        attributes[:remove_profile_image] = true
+      else
+        attributes.delete(:remove_profile_image)
+      end
+      if attributes.key?(:profile_image) || attributes.key?(:remove_profile_image)
+        authorize @user, :admin_update_profile_image?
+      end
+      attributes
     end
 
     def admin_profile_params
@@ -721,6 +833,7 @@ module Admin
 
       append_profile_change(changes, "name", previous_user_values["name"], updated_user_values["name"])
       append_profile_change(changes, "username", previous_user_values["username"], updated_user_values["username"])
+      append_profile_change(changes, "profile_image", previous_user_values["profile_image"], @user[:profile_image])
       append_profile_change(changes, "summary", previous_profile_values["summary"], updated_profile_values["summary"])
       append_profile_change(changes, "location", previous_profile_values["location"], updated_profile_values["location"])
       append_profile_change(changes, "website_url", previous_profile_values["website_url"], updated_profile_values["website_url"])
@@ -751,8 +864,26 @@ module Admin
     end
 
     def set_banishable_user
-      @banishable_user = (@user.comments.where("created_at < ?", 100.days.ago).empty? &&
-        @user.created_at < 100.days.ago) || current_user.super_admin? || current_user.support_admin?
+      @banishable_user = current_user.super_admin? || current_user.support_admin? ||
+        (@user.created_at < 100.days.ago && @user.comments.where("created_at < ?", 100.days.ago).empty?)
+    end
+
+    def set_articles
+      return unless @current_tab == "articles"
+
+      @articles = @user.articles
+        .select(:id, :title, :path, :published_at, :created_at)
+        .order(created_at: :desc)
+        .limit(100)
+    end
+
+    def set_comments
+      return unless @current_tab == "comments"
+
+      @comments = @user.comments
+        .select(:id, :user_id, :body_markdown, :created_at)
+        .order(created_at: :desc)
+        .limit(100)
     end
 
     def set_audit_logs
@@ -770,6 +901,74 @@ module Admin
         .order(created_at: :desc)
         .page(params[:page])
         .per(25)
+    end
+
+    def set_identities
+      return unless @current_tab == "identities"
+
+      @identities = @user.identities.order(created_at: :desc)
+    end
+
+    def set_badges
+      return unless @current_tab == "badges"
+
+      @badge_achievements = @user.badge_achievements
+        .includes(:badge, :rewarder)
+        .order(created_at: :desc)
+    end
+
+    def set_reactions
+      return unless @current_tab == "reactions"
+
+      @reactions = @user.reactions
+        .includes(:reactable)
+        .order(created_at: :desc)
+        .page(params[:page])
+        .per(25)
+    end
+
+    def set_agent_sessions
+      return unless @current_tab == "agent_sessions"
+
+      @agent_sessions = @user.agent_sessions
+        .order(created_at: :desc)
+        .page(params[:page])
+        .per(25)
+    end
+
+    def set_collections
+      return unless @current_tab == "collections"
+
+      @collections = @user.collections
+        .order(created_at: :desc)
+        .page(params[:page])
+        .per(25)
+    end
+
+    def set_follows
+      return unless @current_tab == "follows"
+
+      @follows_filter = %w[followers following].include?(params[:filter]) ? params[:filter] : "followers"
+      scope = case @follows_filter
+              when "following"
+                Follow.where(follower: @user, followable_type: "User").includes(:followable)
+              else
+                Follow.where(followable: @user, followable_type: "User").includes(:follower)
+              end
+      @follows = scope.order(created_at: :desc).page(params[:page]).per(25)
+    end
+
+    def set_blocks
+      return unless @current_tab == "blocks"
+
+      @blocks_filter = %w[blocked_by blocking].include?(params[:filter]) ? params[:filter] : "blocking"
+      scope = case @blocks_filter
+              when "blocked_by"
+                @user.blocked_blocks.includes(:blocker)
+              else
+                @user.blocker_blocks.includes(:blocked)
+              end
+      @blocks = scope.order(created_at: :desc).page(params[:page]).per(25)
     end
 
     def set_unpublish_all_log

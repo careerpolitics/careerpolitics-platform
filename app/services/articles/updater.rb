@@ -1,22 +1,27 @@
 module Articles
   class Updater
+    include Articles::DeadlockRetry
     Result = Struct.new(:success, :article, keyword_init: true)
 
     def self.call(...)
       new(...).call
     end
 
-    def initialize(user, article, article_params)
+    # @param co_author_invitee_ids [Array<Integer>, nil] users to invite as co-authors; nil leaves
+    #   the article's invitations untouched (see CoAuthorInvitations::Sync)
+    def initialize(user, article, article_params, co_author_invitee_ids: nil)
       @user = user
       @article = article
       @article_params = normalize_params(article_params)
+      @co_author_invitee_ids = co_author_invitee_ids
     end
 
     def call
       user.rate_limiter.check_limit!(:article_update)
-      success = article.update(article_params)
+      success = save_article
 
       if success
+        co_author_invitations&.apply
         user.rate_limiter.track_limit_by_action(:article_update)
 
         if became_unpublished?
@@ -34,7 +39,27 @@ module Articles
 
     private
 
-    attr_reader :user, :article, :article_params
+    attr_reader :user, :article, :article_params, :co_author_invitee_ids
+
+    # Updates and saves the article after validating any co-author invitations,
+    # retrying transient PostgreSQL deadlocks via Articles::DeadlockRetry.
+    def save_article
+      return with_deadlock_retry { article.update(article_params) } if co_author_invitations.nil?
+
+      # Assign first so the invitations are checked against the post as it will be saved
+      # (e.g. its organization).
+      article.assign_attributes(article_params)
+      return with_deadlock_retry { article.save } if co_author_invitations.prepare
+
+      co_author_invitations.errors.each { |message| article.errors.add(:base, message) }
+      false
+    end
+
+    def co_author_invitations
+      return if co_author_invitee_ids.nil?
+
+      @co_author_invitations ||= CoAuthorInvitations::Sync.new(article, co_author_invitee_ids)
+    end
 
     def normalize_params(original_params)
       article_params = original_params.dup
@@ -83,6 +108,8 @@ module Articles
     def remove_all_notifications
       Notification.remove_all_by_action_without_delay(notifiable_ids: article.id, notifiable_type: "Article",
                                                       action: "Published")
+      Notification.remove_all_by_action_without_delay(notifiable_ids: article.id, notifiable_type: "Article",
+                                                      action: "CoAuthor")
       ContextNotification.delete_by(context_id: article.id, context_type: "Article",
                                     action: "Published")
 
