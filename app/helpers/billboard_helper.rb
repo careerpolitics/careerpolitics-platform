@@ -6,6 +6,12 @@ module BillboardHelper
     Billboard::ALLOWED_PLACEMENT_AREAS_HUMAN_READABLE.zip(Billboard::ALLOWED_PLACEMENT_AREAS)
   end
 
+  def post_billboard_placement_area_options
+    Billboard::POST_PLACEMENTS.map do |area|
+      [Billboard.human_readable_placement_area(area), area]
+    end
+  end
+
   def automatic_audience_segments_options_array
     AudienceSegment.not_manual.pluck(:id, :type_of)
       .map { |(id, type)| [AudienceSegment.human_readable_description_for(type), id] }
@@ -27,6 +33,48 @@ module BillboardHelper
   # whilst an area of "feed_first" will return false.
   def feed_targeted_tag_placement?(area)
     Billboard::HOME_FEED_PLACEMENTS.include?(area)
+  end
+
+  # The URL a page loads a placement area's billboard from.
+  #
+  # Fully cached placement areas use one URL everywhere, so a single edge-cached response (per
+  # location) is shared by every article and page. Articles whose authors opt out of sponsors
+  # next to their posts keep their own URL so that choice is still honored.
+  #
+  # @see BillboardPlacementAreaConfig.fully_cached_for
+  def billboard_async_path(placement_area, article: nil, page_id: nil)
+    decorated_article = article.is_a?(ArticleDecorator) ? article : article&.decorate
+    if BillboardPlacementAreaConfig.fully_cached_for(placement_area.to_s) &&
+        (decorated_article.nil? || decorated_article.permit_adjacent_sponsors?)
+      billboard_path(placement_area: placement_area)
+    elsif article
+      article_billboard_path(username: article.username, slug: article.slug, placement_area: placement_area)
+    else
+      billboard_path(page_id: page_id, placement_area: placement_area)
+    end
+  end
+
+  def billboard_shadow_isolated?(billboard, allow_embed_passthrough: true)
+    return false unless billboard&.raw? && billboard&.isolate_content?
+    return false if allow_embed_passthrough && Billboard::EMBEDDED_PLACEMENTS.include?(billboard.placement_area)
+
+    true
+  end
+
+  def billboard_body_html(billboard, html = billboard.processed_html_final, allow_embed_passthrough: true)
+    return "".html_safe if html.blank?
+
+    if billboard_shadow_isolated?(billboard, allow_embed_passthrough: allow_embed_passthrough)
+      Billboards::ShadowDomWrapper.call(
+        html,
+        billboard_id: billboard.id,
+        template: billboard.template,
+      )
+    else
+      # rubocop:disable Rails/OutputSafety
+      html.html_safe
+      # rubocop:enable Rails/OutputSafety
+    end
   end
 
   # Including here because multiple controllers render this in different contexts

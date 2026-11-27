@@ -40,11 +40,13 @@
     display: var(--layout-sidebar-left-display);
     grid-row-end: var(--layout-sidebar-left-row-end);
     width: var(--layout-sidebar-left-width);
+    min-width: 0;
   }
 
   &__sidebar-right {
     display: var(--layout-sidebar-right-display);
     width: var(--layout-sidebar-right-width);
+    min-width: 0;
   }
 
   &__content {
@@ -97,6 +99,17 @@
       max-width: $breakpoint-s;
     }
   }
+}
+
+// Prevent direct children of grid-enabled layout columns and sticky sidebars
+// from forcing implicit `auto` grid tracks to expand to unscaled child widths.
+:where(
+  .crayons-layout__content,
+  .crayons-layout__sidebar-left,
+  .crayons-layout__sidebar-right,
+  .sidebar-sticky-container
+) > :where(*) {
+  min-width: 0;
 }
 
 .crayons-layout--2-cols {
@@ -204,6 +217,26 @@
     --layout-sidebar-left-width: 240px;
     --layout-content-width: 1fr;
     --layout-gap: var(--su-4);
+  }
+}
+
+// Sidebar whose `.sidebar-sticky-element` child sticks below the header while the
+// page scrolls (like `.crayons-article-sticky` on article pages). Sticky elements
+// can only travel within their parent, so the container has to fill the whole
+// grid column rather than just wrapping its content.
+@media (min-width: $breakpoint-l) {
+  .sidebar-sticky-container {
+    min-height: 100%;
+    align-content: start;
+  }
+
+  .sidebar-sticky-element {
+    position: sticky;
+    top: calc(var(--header-height) + var(--layout-padding));
+
+    .static-header & {
+      top: var(--layout-padding);
+    }
   }
 }
 

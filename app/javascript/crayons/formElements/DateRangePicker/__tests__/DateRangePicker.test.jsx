@@ -9,7 +9,7 @@ import {
   LAST_FULL_MONTH,
   LAST_FULL_QUARTER,
   LAST_FULL_YEAR,
-} from '@crayons';
+} from '@crayons/formElements/DateRangePicker';
 import '@testing-library/jest-dom';
 
 const windowNavigator = window.navigator;
@@ -89,6 +89,27 @@ describe('<DateRangePicker />', () => {
 
     expect(yearPickers[1]).toHaveDisplayValue('2022');
     expect(yearPickers[2]).toHaveDisplayValue('2022');
+  });
+
+  it('lists every year in range when the max date falls earlier in its year than the min date', () => {
+    const { getAllByRole } = render(
+      <DateRangePicker
+        startDateId="start-date"
+        endDateId="end-date"
+        defaultStartDate={new Date('2022-01-01')}
+        todaysDate={todayMock}
+        minStartDate={new Date('2021-06-01')}
+        maxEndDate={new Date('2022-03-01')}
+      />,
+    );
+
+    const yearPickers = getAllByRole('combobox', { name: 'Navigate to year' });
+    const years = within(yearPickers[1])
+      .getAllByRole('option')
+      .map((option) => option.value);
+
+    expect(years).toContain('2022');
+    expect(years).toContain('2021');
   });
 
   it('renders with a default end date', () => {

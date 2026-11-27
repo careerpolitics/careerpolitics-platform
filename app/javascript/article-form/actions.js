@@ -1,7 +1,11 @@
 import { validateFileInputs } from '../packs/validateFileInputs';
 
 function getCsrfToken() {
-  return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || window.csrfToken;
+  return (
+    document
+      .querySelector('meta[name="csrf-token"]')
+      ?.getAttribute('content') || window.csrfToken
+  );
 }
 
 export function previewArticle(payload, successCb, failureCb) {
@@ -45,10 +49,32 @@ export function processPayload(payload) {
     organizations,
     authorId,
     coAuthorsData,
+    coAuthorInvitations,
+    coAuthorInvitationsMax,
     /* eslint-enable no-unused-vars */
+    coAuthorInvitationsEnabled,
+    coAuthorInvitees,
     ...neededPayload
   } = payload;
+
+  // Invitations only apply to personal posts. Leaving the list out (rather than sending it
+  // empty) tells the server not to touch the post's invitations.
+  if (coAuthorInvitationsEnabled && !neededPayload.organizationId) {
+    neededPayload.coAuthorInviteeIds = (coAuthorInvitees || []).map(
+      ({ id }) => id,
+    );
+  }
+
   return neededPayload;
+}
+
+export function acceptedCoAuthorInvitees(invitations, invitees) {
+  const acceptedIds = new Set(
+    (invitations || [])
+      .filter(({ status }) => status === 'accepted')
+      .map(({ user }) => user.id),
+  );
+  return (invitees || []).filter(({ id }) => acceptedIds.has(id));
 }
 
 export function submitArticle({ payload, onSuccess, onError }) {
@@ -123,10 +149,24 @@ export function generateMainImage({ payload, successCb, failureCb, signal }) {
  * @param {AbortSignal} options.signal - Optional abort signal for canceling the request.
  */
 export function generateAiImage({ prompt, successCb, failureCb, signal }) {
+  const genericError = 'An error occurred, please try again later';
+  // Report only the first outcome, so a late response can't override a timeout
+  // (or the reverse).
+  let settled = false;
+  const settle = (callback, value) => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timeoutId);
+    callback(value);
+  };
+
   // Set a client-side timeout of 35 seconds (slightly longer than server timeout)
   const timeoutId = setTimeout(() => {
     if (signal && !signal.aborted) {
-      failureCb(new Error('Image generation timed out. Please try again.'));
+      settle(
+        failureCb,
+        new Error('Image generation timed out. Please try again.'),
+      );
     }
   }, 35000);
 
@@ -143,28 +183,35 @@ export function generateAiImage({ prompt, successCb, failureCb, signal }) {
     signal,
   })
     .then((response) => {
-      // Check if response is ok before parsing
       if (!response.ok) {
-        // For non-2xx responses, throw a generic error instead of trying to parse HTML
-        throw new Error('An error occurred, please try again later');
+        // Error responses carry a user-facing { error } message, which tells
+        // the user whether to rephrase or retry. Fall back to a generic message
+        // for HTML error pages and anything else that isn't that JSON.
+        return response
+          .json()
+          .catch(() => ({}))
+          .then((json) => {
+            throw new Error(
+              typeof json.error === 'string' ? json.error : genericError,
+            );
+          });
       }
       return response.json();
     })
     .then((json) => {
-      clearTimeout(timeoutId);
       if (json.error) {
         throw new Error(json.error);
       }
       const { url } = json;
-      return successCb({ links: [url] });
+      settle(successCb, { links: [url] });
     })
     .catch((error) => {
-      clearTimeout(timeoutId);
       // Ensure the error message is a clean string, not HTML
-      const errorMessage = error.message && !error.message.includes('<html') 
-        ? error.message 
-        : 'An error occurred, please try again later';
-      failureCb(new Error(errorMessage));
+      const errorMessage =
+        error.message && !error.message.includes('<html')
+          ? error.message
+          : genericError;
+      settle(failureCb, new Error(errorMessage));
     });
 }
 

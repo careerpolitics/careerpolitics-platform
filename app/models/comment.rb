@@ -7,6 +7,9 @@ class Comment < ApplicationRecord
   include PgSearch::Model
   include Reactable
   include AlgoliaSearchable
+  include ActivityTrackable
+  include ProcessedHtmlFinalizable
+  include AiDisclosable
 
   BODY_MARKDOWN_SIZE_RANGE = (1..25_000)
 
@@ -16,6 +19,19 @@ class Comment < ApplicationRecord
   HIDE_THRESHOLD = -400 # hide comments below this threshold
 
   VALID_SORT_OPTIONS = %w[top latest oldest].freeze
+
+  def ai_disclosure_label
+    case ai_disclosure_level
+    when "some_ai"
+      I18n.t("models.comment.ai_disclosure.some_ai")
+    when "fully_autonomous"
+      I18n.t("models.comment.ai_disclosure.fully_autonomous")
+    when "no_ai"
+      I18n.t("models.comment.ai_disclosure.no_ai")
+    else
+      I18n.t("models.comment.ai_disclosure.not_disclosed")
+    end
+  end
 
   URI_REGEXP = %r{
     \A
@@ -31,8 +47,12 @@ class Comment < ApplicationRecord
   belongs_to :commentable, polymorphic: true, optional: true
   belongs_to :user
 
-  counter_culture :commentable
+  counter_culture :commentable,
+                  column_name: proc { |comment| comment.deleted? ? nil : :comments_count }
+
   counter_culture :user
+
+  belongs_to :favorited_by_user, class_name: "User", optional: true
 
   has_many :mentions, as: :mentionable, inverse_of: :mentionable, dependent: :delete_all
   has_many :notifications, as: :notifiable, inverse_of: :notifiable, dependent: :delete_all
@@ -51,6 +71,7 @@ class Comment < ApplicationRecord
   before_validation :evaluate_markdown, if: -> { body_markdown }
   before_save :set_markdown_character_count, if: :body_markdown
   before_save :synchronous_spam_score_check
+  before_save :reserve_hourly_mention_capacity
   before_create :adjust_comment_parent_based_on_depth
   after_create :after_create_checks
   after_create :notify_slack_channel_about_warned_users
@@ -59,9 +80,11 @@ class Comment < ApplicationRecord
   before_destroy :before_destroy_actions
   after_destroy :after_destroy_actions
 
+  after_save :commit_hourly_mention_reservation
   after_save :create_conditional_autovomits
   after_save :synchronous_bust
   after_save :bust_cache
+  after_rollback :release_hourly_mention_reservation
 
   validate :discussion_not_locked, if: :commentable, on: :create
   validate :published_article, if: :commentable
@@ -88,6 +111,9 @@ class Comment < ApplicationRecord
 
   after_commit :calculate_score, on: %i[create update]
   after_commit :enqueue_article_activity_update, on: :destroy, if: :commentable_is_article?
+  after_commit :enqueue_article_dependent_embeds_update,
+               on: %i[create update destroy],
+               if: :should_update_article_dependent_embeds?
 
   after_update_commit :update_notifications, if: proc { |comment| comment.saved_changes.include? "body_markdown" }
 
@@ -105,6 +131,12 @@ class Comment < ApplicationRecord
                   }
 
   scope :eager_load_serialized_data, -> { includes(:user, :commentable) }
+  scope :favorited, -> { where.not(favorited_by_user_id: nil) }
+
+  def favorited?
+    favorited_by_user_id.present?
+  end
+
   scope :good_quality, -> { where("comments.score > ?", LOW_QUALITY_THRESHOLD) }
 
   alias touch_by_reaction save
@@ -165,11 +197,9 @@ class Comment < ApplicationRecord
     return self.class.title_deleted if deleted
     return self.class.title_hidden if hidden_by_commentable_user
 
-    text = ActionController::Base.helpers.strip_tags(processed_html).strip
-    return self.class.title_image_only if only_contains_image?(text)
-
-    truncated_text = ActionController::Base.helpers.truncate(text, length: length).gsub("&#39;", "'").gsub("&amp;", "&")
-    Nokogiri::HTML.fragment(truncated_text).text # unescapes all HTML entities
+    # Single-pass Rust kernel; nil (blank text, references cut by the truncation, ...) defers to
+    # the Loofah + Nokogiri pipeline below.
+    ForemNative.comment_title(processed_html, length) || legacy_title(length)
   end
 
   def video
@@ -196,6 +226,20 @@ class Comment < ApplicationRecord
     ancestry && Comment.exists?(id: ancestry)
   end
 
+  def descendants(depth_options = {})
+    scope = super
+    return scope unless commentable_id && commentable_type
+
+    scope.where(commentable_id: commentable_id, commentable_type: commentable_type)
+  end
+
+  def subtree(depth_options = {})
+    scope = super
+    return scope unless commentable_id && commentable_type
+
+    scope.where(commentable_id: commentable_id, commentable_type: commentable_type)
+  end
+
   def by_staff_account?
     user == User.staff_account
   end
@@ -207,47 +251,63 @@ class Comment < ApplicationRecord
   def calculate_score
     Comments::CalculateScoreWorker.perform_async(id)
   end
-
-  def processed_html_final
-    processed_html = replace_legacy_code_html(self.processed_html)
-
-    return processed_html if ApplicationConfig["PRIOR_CLOUDFLARE_IMAGES_DOMAIN"].blank? || ApplicationConfig["CLOUDFLARE_IMAGES_DOMAIN"].blank?
-
-    processed_html.gsub(ApplicationConfig["PRIOR_CLOUDFLARE_IMAGES_DOMAIN"],
-                        ApplicationConfig["CLOUDFLARE_IMAGES_DOMAIN"])
-  end
-
-  def replace_legacy_code_html(html)
-    return html if html.blank?
-    return html unless html.include?("runkit-element")
-
-    fragment = Nokogiri::HTML.fragment(html)
-    fragment.css('.runkit-element').each do |element|
-      preamble = element.at_css('code:nth-of-type(1)')&.text.to_s
-      content = element.at_css('code:nth-of-type(2)')&.text.to_s
-
-      replacement_html = LegacyCodeTag.fallback_html(
-        preamble: preamble,
-        parsed_content: content,
-      )
-
-      element.replace(Nokogiri::HTML.fragment(replacement_html))
-    end
-
-    fragment.to_html
-  rescue StandardError
-    html
-  end
-  private :replace_legacy_code_html
+  alias async_score_calc calculate_score
 
   def subforem_id
     commentable&.subforem_id
   end
 
+  # === ActivityTrackable (Customer.io CDP activity events) ===
+  # comment_created / _updated / _deleted. No draft state, so create publishes.
+
+  # The body is deliberately absent; the CDP consumer keys off the ids.
+  def trackable_activity_payload
+    {
+      "commentable_type" => commentable_type,
+      "commentable_id" => commentable_id,
+      "commentable_user_id" => commentable.try(:user_id),
+      "parent_id" => parent_id,
+      "path" => path
+    }
+  end
+
+  # CommentsController#destroy soft deletes a comment with replies and hard
+  # destroys one without, so removal is caught on both paths.
+  def trackable_activity_event(phase)
+    case phase
+    when :created then "comment_created"
+    when :updated then trackable_update_event
+    when :destroyed then "comment_deleted"
+    end
+  end
+
+  # Only a body edit counts; rows churn on scores, counters and embeddings.
+  def trackable_update_event
+    changed_keys = trackable_changed_keys
+    return (deleted? ? "comment_deleted" : nil) if changed_keys.include?("deleted")
+
+    "comment_updated" if changed_keys.include?("body_markdown")
+  end
+  private :trackable_activity_payload, :trackable_activity_event, :trackable_update_event
+
   private
 
   def commentable_is_article?
     commentable_type == "Article"
+  end
+
+  def should_update_article_dependent_embeds?
+    return false unless commentable_is_article? && commentable_id.present?
+
+    if destroyed? || previously_new_record?
+      !deleted?
+    else
+      saved_change_to_deleted?
+    end
+  end
+
+  def enqueue_article_dependent_embeds_update
+    Articles::UpdateDependentEmbedsWorker.schedule_for_engagement(commentable_id)
   end
 
   def enqueue_update_user_interest_embedding
@@ -300,7 +360,10 @@ class Comment < ApplicationRecord
   end
 
   def adjust_comment_parent_based_on_depth
-    self.parent_id = parent.descendant_ids.last if parent_exists? && (parent.depth > 1 && parent.has_children?)
+    return unless parent_exists? && (parent.depth > 1 && parent.has_children?)
+
+    last_descendant_id = parent.descendant_ids.last
+    self.parent_id = last_descendant_id if last_descendant_id
   end
 
   def wrap_timestamps_if_video_present!
@@ -328,32 +391,30 @@ class Comment < ApplicationRecord
 
   def after_create_checks
     create_id_code
-    touch_user
   end
 
   def create_id_code
     update_column(:id_code, id.to_s(26))
   end
 
-  def touch_user
-    user&.touch(:updated_at, :last_comment_at)
-  end
-
   def expire_root_fragment
     if root_exists?
-      root.touch
-    else
+      root_record = root
+      root_record.touch if root_record&.persisted? && !root_record.destroyed?
+    elsif persisted? && !destroyed? && !saved_changes?
       touch
     end
   end
 
   def after_destroy_actions
     Users::BustCacheWorker.perform_async(user_id)
-    user.touch(:last_comment_at)
+    user.touch(:last_comment_at) if user&.persisted?
   end
 
   def before_destroy_actions
-    commentable.touch(:last_comment_at) if commentable.respond_to?(:last_comment_at)
+    if commentable&.persisted? && commentable.respond_to?(:last_comment_at)
+      commentable.touch(:last_comment_at)
+    end
     ancestors.update_all(updated_at: Time.current)
     Comments::BustCacheWorker.new.perform(id)
   end
@@ -363,9 +424,12 @@ class Comment < ApplicationRecord
   end
 
   def synchronous_bust
-    commentable.touch(:last_comment_at) if commentable.respond_to?(:last_comment_at)
-    user.touch(:last_comment_at)
-    commentable.purge if commentable
+    if commentable&.persisted? && !commentable.destroyed?
+      commentable.reload
+      commentable.touch(:last_comment_at) if commentable.respond_to?(:last_comment_at)
+      commentable.purge
+    end
+    user.touch(:last_comment_at) if user&.persisted?
     expire_root_fragment
   end
 
@@ -420,16 +484,78 @@ class Comment < ApplicationRecord
     errors.add(:commentable_id, I18n.t("models.comment.published_article"))
   end
 
+  # Validates per-comment and hourly @-mention rate limits based on the commenter's trust tier.
   def user_mentions_in_markdown
     return if created_at.present? && created_at.before?(MAX_USER_MENTION_LIVE_AT)
 
-    # The "mentioned-user" css is added by Html::Parser#user_link_if_exists
-    mentions_count = Nokogiri::HTML(processed_html).css(".mentioned-user").size
-    return if mentions_count <= Settings::RateLimit.mention_creation
+    mentions_count = mentioned_user_link_count
+    if mentions_count > Settings::RateLimit.mention_creation
+      errors.add(:base,
+                 I18n.t("models.comment.mention_too_many",
+                        count: Settings::RateLimit.mention_creation))
+      return
+    end
 
-    errors.add(:base,
-               I18n.t("models.comment.mention_too_many",
-                      count: Settings::RateLimit.mention_creation))
+    return unless mentions_count.positive? && user.present?
+
+    other_mentioned_usernames = RateLimitChecker.extract_other_mentioned_usernames(
+      processed_html,
+      author_username: user.username,
+    )
+    return if other_mentioned_usernames.empty?
+
+    max_for_user = user.rate_limiter.max_mentions_per_post
+    if other_mentioned_usernames.size > max_for_user
+      errors.add(:base, I18n.t("models.comment.mention_too_many", count: max_for_user))
+      return
+    end
+
+    return unless user.rate_limiter.mention_rate_limit_reached?(
+      new_mentions_count: other_mentioned_usernames.size,
+      exclude_notifiable: self,
+    )
+
+    errors.add(:base, I18n.t("models.comment.mention_rate_limit_reached"))
+  end
+
+  # Atomically reserves hourly mention capacity under a user lock before saving.
+  def reserve_hourly_mention_capacity
+    @hourly_mention_reservation = nil
+    return if created_at.present? && created_at.before?(MAX_USER_MENTION_LIVE_AT)
+    return unless processed_html.present? && user.present?
+
+    other_mentioned_usernames = RateLimitChecker.extract_other_mentioned_usernames(
+      processed_html,
+      author_username: user.username,
+    )
+    return if other_mentioned_usernames.empty?
+
+    reservation = user.rate_limiter.reserve_mentions!(
+      new_mentions_count: other_mentioned_usernames.size,
+      exclude_notifiable: self,
+    )
+    if reservation.nil?
+      errors.add(:base, I18n.t("models.comment.mention_rate_limit_reached"))
+      throw(:abort)
+    end
+
+    @hourly_mention_reservation = reservation
+  end
+
+  # Records the comment's persisted ID against the hourly mention cache after save.
+  def commit_hourly_mention_reservation
+    return unless @hourly_mention_reservation && user.present?
+
+    user.rate_limiter.record_notifiable_mentions(self, @hourly_mention_reservation[:count])
+    @hourly_mention_reservation = nil
+  end
+
+  # Releases any reserved hourly mention capacity if the save transaction rolls back.
+  def release_hourly_mention_reservation
+    return unless @hourly_mention_reservation && user.present?
+
+    user.rate_limiter.release_mentions(@hourly_mention_reservation, notifiable: self)
+    @hourly_mention_reservation = nil
   end
 
   def body_has_content
@@ -473,6 +599,33 @@ class Comment < ApplicationRecord
 
   def parent_exists?
     parent_id && Comment.exists?(id: parent_id)
+  end
+
+  def legacy_title(length)
+    text = ActionController::Base.helpers.strip_tags(processed_html).strip
+    return self.class.title_image_only if only_contains_image?(text)
+
+    truncated_text = ActionController::Base.helpers.truncate(text, length: length).gsub("&#39;", "'").gsub("&amp;", "&")
+    Nokogiri::HTML.fragment(truncated_text).text # unescapes all HTML entities
+  end
+
+  # Matches any numeric character reference other than `&#39;` (the apostrophe escape emitted in
+  # inline code spans), since a numeric entity could spell `mentioned-user` inside a class attribute.
+  NON_APOSTROPHE_NUMERIC_ENTITY_REGEX = /&#(?!39;)/
+  private_constant :NON_APOSTROPHE_NUMERIC_ENTITY_REGEX
+
+  # Counts `.mentioned-user` links (added by Html::Parser#user_link_if_exists). Most comments
+  # mention nobody, so skip building a full libxml2 document unless the class name (or a numeric
+  # character reference other than `&#39;` that could spell it inside an attribute) appears in the
+  # HTML at all.
+  def mentioned_user_link_count
+    html = processed_html.to_s
+    unless html.include?("mentioned-user") ||
+        (html.include?("&#") && html.match?(NON_APOSTROPHE_NUMERIC_ENTITY_REGEX))
+      return 0
+    end
+
+    Nokogiri::HTML(html).css(".mentioned-user").size
   end
 
   def only_contains_image?(stripped_text)

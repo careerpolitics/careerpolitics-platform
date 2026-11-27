@@ -17,10 +17,13 @@ class Podcast < ApplicationRecord
   validates :main_color_hex, :title, :feed_url, :image, presence: true
   validates :main_color_hex, format: /\A([a-fA-F]|[0-9]){6}\Z/
   validates :feed_url, uniqueness: true, url: { schemes: %w[https http] }
+  validates :website_url, :itunes_url, :overcast_url, :android_url, :soundcloud_url,
+            url: { allow_blank: true, schemes: %w[https http] }
 
   extend UniqueAcrossModels
   unique_across_models :slug
 
+  after_destroy :bust_cache
   after_save :bust_cache
 
   scope :reachable, -> { where(id: PodcastEpisode.reachable.select(:podcast_id)) }
@@ -54,8 +57,11 @@ class Podcast < ApplicationRecord
   private
 
   def bust_cache
-    return unless path
+    Podcasts::BustCacheWorker.perform_async(path) if path.present?
 
-    Podcasts::BustCacheWorker.perform_async(path)
+    previous_slug = saved_change_to_slug&.first
+    return if previous_slug.blank? || previous_slug == slug
+
+    Podcasts::BustCacheWorker.perform_async(previous_slug)
   end
 end

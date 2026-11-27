@@ -14,10 +14,12 @@
   <div class="articles-list" id="articles-list">
     <div class="substories" id="substories">
       <% if @articles.present? %>
-        <% @articles.each do |article| %>
-          <%= render "articles/single_story", story: article.decorate, featured: article.main_image.present? %>
-        <% end %>
-        <%= javascript_include_tag "feedPreviewCards", "hideBookmarkButtons", "localizeArticleDates", defer: true %>
+        <% stories = @articles.map(&:decorate) %>
+        <% preload_tag_colors(stories) %>
+        <% Article.preload_reaction_counts_for_reactable(@articles.select { |article| article.public_reactions_count.positive? }) %>
+        <%= render_story_cards(stories, featured_for: ->(story) { story.main_image.present? }) %>
+        <%= paginate @articles %>
+        <%= javascript_include_tag "feedPreviewCards", "localizeArticleDates", defer: true %>
       <% else %>
         <p><%= t("views.series.list.empty") %></p>
       <% end %>

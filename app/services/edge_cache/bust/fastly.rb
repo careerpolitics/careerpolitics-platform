@@ -1,5 +1,8 @@
 module EdgeCache
   class Bust
+    # Retained strictly for manual dead-link URL purges (`/admin/tools`), where a
+    # removed URL now 404s and no longer has an associated surrogate key. All
+    # automated edge invalidations should use `EdgeCache::PurgeByKey`.
     class Fastly
       # [@forem/systems] Fastly-enabled Forems don't need "flexible" domains.
       def self.call(path)
@@ -11,7 +14,10 @@ module EdgeCache
                     "User-Agent" => "#{Settings::Community.community_name} (#{URL.url})" }
 
         urls(path).map do |url|
-          HTTParty.post("https://api.fastly.com/purge/#{url}", headers: headers)
+          clean_url = url.to_s.sub(%r{\Ahttps?://}, "")
+          response = HTTParty.post("https://api.fastly.com/purge/#{clean_url}", headers: headers)
+          log_failed_purge(path, url, response) if response && !response.success?
+          response
         rescue HTTParty::Error, SocketError, Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNREFUSED, Timeout::Error => e
           ForemStatsClient.increment(
             "edgecache_bust.provider_error",
@@ -31,18 +37,49 @@ module EdgeCache
       end
       private_class_method :fastly_purge
 
+      # Fastly answers some purges with an error instead of raising, e.g. 404 "Cannot find
+      # service" for a host it can't map to a service. Record those so they don't go unnoticed.
+      def self.log_failed_purge(path, url, response)
+        ForemStatsClient.increment(
+          "edgecache_bust.provider_error",
+          tags: ["provider_class:EdgeCache::Bust::Fastly", "status:#{response.code}"],
+        )
+        Rails.logger.warn(
+          {
+            message: "EdgeCache::Bust::Fastly purge was rejected",
+            path: path,
+            url: url,
+            status: response.code,
+            response_body: response.body.to_s.truncate(200)
+          },
+        )
+      end
+      private_class_method :log_failed_purge
+
       def self.urls(path)
-        urls = [URL.url(path)]
+        urls = [formatted_url(path)]
         urls << if path.include?("?")
-                  URL.url("#{path}&i=i")
+                  formatted_url("#{path}&i=i")
                 else
-                  URL.url("#{path}?i=i")
+                  formatted_url("#{path}?i=i")
                 end
         urls
       rescue Addressable::URI::InvalidURIError
         []
       end
       private_class_method :urls
+
+      def self.formatted_url(path)
+        if path.to_s.start_with?("http://", "https://")
+          uri = Addressable::URI.parse(path)
+          raise Addressable::URI::InvalidURIError if uri.host.blank?
+
+          uri.normalize.to_s
+        else
+          URL.url(path)
+        end
+      end
+      private_class_method :formatted_url
     end
   end
 end

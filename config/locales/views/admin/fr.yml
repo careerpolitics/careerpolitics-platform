@@ -160,7 +160,10 @@ fr:
           heading: Delete %{user}'s account
           onsubmit: Are you sure? This action is irreversible.
           desc2: Once deleted, all data relating to %{user} will be removed from our database.
-          notice: Only Super Admins are allowed to delete users.
+          notice: Seuls les administrateurs peuvent supprimer des utilisateurs.
+          activity_threshold_notice: Seuls les Super Admins peuvent supprimer les utilisateurs ayant %{count} publications et commentaires publiés ou plus.
+          super_admin_notice: Seuls les Super Admins peuvent supprimer des comptes administrateur.
+          self_delete_notice: Vous ne pouvez pas supprimer votre propre compte depuis le panneau d'administration.
           submit: Delete now
         export:
           heading: Export %{user}'s data
@@ -316,6 +319,7 @@ fr:
               resource_admin_billboard: Billboard Admin
               resource_admin_data_update_script: Data Update Script Admin
               resource_admin_feedback_message: Feedback Message Admin
+              resource_admin_flag_appeal: Flag Appeal Admin
               resource_admin_html_variant: HTML Variant Admin
               resource_admin_listing_category: Listing Category Admin
               resource_admin_page: Page Admin
@@ -323,6 +327,7 @@ fr:
               resource_admin_event: Event Admin
               resource_admin_survey: Survey Admin
               resource_admin_organization: Organization Admin
+              resource_admin_organization_page_management: Organization Page Management Admin
               resource_admin_podcast: Podcast Admin
               resource_admin_navigation_link: Navigation Link Admin
               resource_admin_request_redirect: Request Redirect Admin
@@ -338,6 +343,8 @@ fr:
               tech_admin: Tech Admin
               trusted: Trusted
               warned: Warned
+              community_leader_level_1: Community Leader Level 1
+              community_leader_level_2: Community Leader Level 2
           tag_mod:
             subtitle: Tags
             aria_learn: Learn more about tag moderation
@@ -350,6 +357,10 @@ fr:
           description: The user flags affect the scores of articles and comments. Each valid or open user flag further reduces the score of the article and comment.
           no_flags: No flags received against this user yet.
           title: Flags received
+        content_flags:
+          description: Signalements laissés sur les publications et commentaires de ce membre, y compris ceux émis automatiquement par la modération. Marquer un signalement comme invalide restaure le score du contenu.
+          no_flags: Aucun signalement reçu sur les publications ou commentaires de cet utilisateur pour le moment.
+          title: Signalements sur les publications et commentaires
         profile:
           locked:
             icon: Access locked
@@ -373,6 +384,18 @@ fr:
             remove_social: Remove social accounts
             banish: Banish user
             delete: Delete user
+        password:
+          title: Accès au mot de passe
+          description: Définissez directement un nouveau mot de passe ou envoyez à l’utilisateur un e-mail de réinitialisation précisant qu’il a été déclenché par un administrateur.
+          new_password: Nouveau mot de passe
+          password_confirmation: Confirmer le nouveau mot de passe
+          submit: Mettre à jour le mot de passe
+          success: Mot de passe mis à jour avec succès.
+          reset_title: Envoyer un e-mail de réinitialisation du mot de passe
+          reset_description: Envoyez à l’utilisateur un lien de réinitialisation qui explique qu’il a été initié par un administrateur pour l’aider.
+          reset_submit: Envoyer l’e-mail de réinitialisation du mot de passe
+          reset_sent: E-mail de réinitialisation du mot de passe envoyé avec succès.
+          reset_error: Échec de l’envoi de l’e-mail de réinitialisation du mot de passe.
         edit_profile:
           heading: Modifier le profil de %{user}
           desc_html: Les changements faits ici sont immédiatement publics sur le profil de l'utilisateur.
@@ -438,13 +461,24 @@ fr:
           commentable: commentable
           created: "Created at: %{time}"
         tabs:
-          overview: Overview
+          overview: Aperçu
           notes: Notes
-          emails: Emails
-          reports: Reports
-          flags: Flags
+          emails: E-mails
+          security: Sécurité
+          reports: Signalements
+          flags: Drapeaux
+          articles: Articles
+          comments: Commentaires
+          identities: Identités d'authentification
+          badges: Badges
+          reactions: Réactions
+          agent_sessions: Sessions d'agent
+          collections: Séries
+          follows: Abonnements
+          blocks: Blocages
           audit_log: Journal d'audit
-          unpublish_logs: Unpublish All History
+          unpublish_logs: Historique de dépublication
+          more_details: Plus de détails
         status_title: Current status
         status_reader: "Current status:"
         more_orgs:
@@ -464,6 +498,7 @@ fr:
           "Resource Admin: Billboard": "Resource Admin: Billboard"
           "Resource Admin: DataUpdateScript": "Resource Admin: DataUpdateScript"
           "Resource Admin: FeedbackMessage": "Resource Admin: FeedbackMessage"
+          "Resource Admin: FlagAppeal": "Resource Admin: FlagAppeal"
           "Resource Admin: HtmlVariant": "Resource Admin: HtmlVariant"
           "Resource Admin: ListingCategory": "Resource Admin: ListingCategory"
           "Resource Admin: Page": "Resource Admin: Page"
@@ -471,6 +506,7 @@ fr:
           "Resource Admin: Event": "Resource Admin: Event"
           "Resource Admin: Survey": "Resource Admin: Survey"
           "Resource Admin: Organization": "Resource Admin: Organization"
+          "Resource Admin: OrganizationPageManagement": "Resource Admin: OrganizationPageManagement"
           "Resource Admin: Podcast": "Resource Admin: Podcast"
           "Resource Admin: NavigationLink": "Resource Admin: NavigationLink"
           "Resource Admin: RequestRedirect": "Resource Admin: RequestRedirect"
@@ -480,6 +516,8 @@ fr:
           "Resource Admin: ProfileField": "Resource Admin: ProfileField"
           "Resource Admin: ProfileFieldGroup": "Resource Admin: ProfileFieldGroup"
           Super Moderator: Super Moderator
+          Community Leader Level 1: Curateur communautaire niveau 1
+          Community Leader Level 2: Curateur communautaire niveau 2
         statuses:
           Warned: Warned
           Comment Suspended: Comment Suspended
@@ -496,7 +534,83 @@ fr:
           facebook: Facebook
           github: GitHub
           twitter: Twitter
+        identities_tab:
+          title: Identités d'authentification
+          empty: Aucune identité d'authentification associée à cet utilisateur.
+          remove: Supprimer l'identité
+          table:
+            provider: Fournisseur
+            uid: UID
+            username: Nom d'utilisateur / Nom
+            email: E-mail
+            created_at: Associé le
+            actions: Actions
+        collections_tab:
+          title: Séries et collections
+          empty: Aucune série ou collection trouvée pour cet utilisateur.
+          table:
+            title: Titre
+            description: Description
+            articles_count: Articles
+            created_at: Créé le
+        follows_tab:
+          title: Abonnements et abonnés
+          followers: Abonnés
+          following: Abonnements
+          empty: Aucun abonnement trouvé.
+          table:
+            user: Utilisateur
+            username: Nom d'utilisateur
+            followed_at: Suivi le
+        blocks_tab:
+          title: Blocages
+          blocking: Bloqués
+          blocked_by: Bloqué par
+          empty: Aucun blocage trouvé.
+          table:
+            user: Utilisateur
+            username: Nom d'utilisateur
+            blocked_at: Bloqué le
+        badges_tab:
+          title: Badges et accomplissements
+          empty: Aucun badge obtenu ou attribué pour le moment.
+          manage_badges: Gérer les badges
+          system: Attribué par le système
+          table:
+            badge: Badge
+            description: Description
+            awarded_by: Attribué par
+            awarded_at: Attribué le
+        reactions_tab:
+          title: Réactions de l'utilisateur
+          empty: Aucune réaction trouvée pour cet utilisateur.
+          deleted_target: Contenu supprimé
+          table:
+            category: Catégorie
+            target_type: Type
+            target: Contenu
+            status: Statut
+            created_at: Créé le
+        agent_sessions_tab:
+          title: Sessions d'agent
+          empty: Aucune session d'agent trouvée pour cet utilisateur.
+          published: Publié
+          draft: Brouillon
+          view: Voir
+          curate: Organiser
+          table:
+            title: Titre
+            tool: Outil
+            status: Statut
+            messages: Messages
+            created_at: Créé le
+            actions: Actions
       organizations:
+        name:
+          heading: Nom de l'organisation
+          description: Mettre à jour le nom affiché de cette organisation.
+          label: Nom de l'organisation
+          submit: Mettre à jour le nom
         profile:
           id: ID %{organizationid}
           since_html: Organization since %{time}
@@ -549,6 +663,39 @@ fr:
             enable: Activer Dofollow
             disable: Désactiver Dofollow
             enabled_notice: Les liens dofollow sont activés pour la page readme de cette organisation.
+          related_articles:
+            label: API Articles Associés
+            description: Lorsque activé, les membres de cette organisation peuvent appeler l'API des articles associés pour trouver des écrits publics de la communauté sur leur technologie.
+            enable: Activer Articles Associés
+            disable: Désactiver Articles Associés
+            enabled_notice: L'API des articles associés est activée pour cette organisation.
+          article_analytics:
+            label: API Analytique des Articles
+            description: Lorsque activé, les membres de cette organisation peuvent exporter les performances de leurs propres articles via l'API analytique.
+            enable: Activer Analytique des Articles
+            disable: Désactiver Analytique des Articles
+            enabled_notice: L'API analytique des articles est activée pour cette organisation.
+        bulk_add_users:
+          heading: Ajouter des membres en bloc
+          description: "Ajoutez plusieurs utilisateurs à cette organisation en une seule fois. Entrez une liste de noms d'utilisateur séparés par des virgules (avec ou sans @ et espaces). Les membres existants seront ignorés."
+          usernames_label: Noms d'utilisateur
+          usernames_placeholder: "utilisateur1, @utilisateur2, utilisateur3"
+          role_label: Rôle
+          roles:
+            member: Membre
+            admin: Administrateur
+          submit: Ajouter des membres en bloc
+      favorites:
+        leaderboard:
+          heading: Classement d'impact
+          description: Classement des utilisateurs selon l'engagement généré par leurs pépites.
+          empty: Aucune pépite pour le moment.
+          rank: Rang
+          leader: Curateur
+          favorites: Pépites
+          articles: Articles
+          comments: Commentaires
+          impact: Impact
       org_features:
         heading: Fonctionnalités Org
         description: Gérer les fonctionnalités des organisations globalement ou par organisation.
@@ -596,9 +743,203 @@ fr:
           lookback_button: "Déclencher"
           similarity_threshold: "Seuil de similitude"
         form:
+          score: "Score du concept"
+          score_placeholder: "ex. 1.0 (optionnel)"
+          score_help: "Ajustement manuel du score/poids utilisé pour le classement."
           similarity_threshold: "Seuil de similitude"
           similarity_threshold_placeholder: "ex. 0.25 (optionnel)"
           similarity_threshold_help: "Optionnel. Nombre décimal entre 0,0 et 1,0. Si laissé vide, la valeur par défaut du système (0,28) est utilisée."
         index:
           threshold: "Seuil"
           default: "défaut"
+      events:
+        fork: "Dupliquer"
+        fork_event: "Dupliquer l'événement"
+        status:
+          published: "Publié"
+          draft: "Brouillon"
+        index:
+          subtitle: "Gérez les conférences, diffusions en direct, défis et sous-événements imbriqués."
+          total_events: "événements au total"
+          matching_events: "événements correspondants"
+          top_level_events: "événements principaux"
+          hierarchy_links: "liens parent–enfant"
+          search_placeholder: "Rechercher un titre ou slug..."
+          search_label: "Rechercher des événements par titre ou slug"
+          filter_by_type: "Filtrer les événements par type"
+          filter_by_status: "Filtrer les événements par statut"
+          all_types: "Tous les types"
+          all_statuses: "Tous les statuts"
+          filter: "Filtrer"
+          reset: "Réinitialiser"
+          collapse_all: "Tout réduire"
+          expand_all: "Tout développer"
+          hierarchy_view: "Hiérarchie"
+          flat_view: "Liste plate"
+          no_matching_events: "Aucun événement ne correspond aux filtres actuels."
+          toggle_sub_events: "Afficher ou masquer les sous-événements de %{title}"
+          sub_event_live: "Sous-événement EN DIRECT"
+          sub_events_count:
+            one: "1 sous-événement"
+            other: "%{count} sous-événements"
+          nested_collapsed:
+            one: "+1 imbriqué (voir l'événement)"
+            other: "+%{count} imbriqués (voir l'événement)"
+          featured: "À la une"
+          shared_parents:
+            one: "Dans 1 parent"
+            other: "Partagé dans %{count} parents"
+          sub_event_badge: "Sous-événement"
+          pages_count:
+            one: "1 page"
+            other: "%{count} pages"
+          add_sub_event: "+ Sous-événement"
+          manage: "Gérer"
+          more_actions: "Plus d'actions"
+        form:
+          back_to_events: "Tous les événements"
+          back_to_event: "Retour à l'événement"
+          public_url_label: "URL publique"
+          host_organization: "ID de l'organisation hôte"
+          host_organization_description: "ID optionnel de l'organisation hébergeant cet événement (lien vers /<org_slug> sur la page)."
+          host_organization_placeholder: "ID d'organisation (ex. 42)"
+          current_organization: "Actuellement liée : %{name} (/%{slug})"
+          allow_articles: "Autoriser les articles"
+          allow_articles_description: "Permettre d'associer directement des articles à cet événement et de les afficher sur la page de l'événement une fois celui-ci commencé."
+          time_zone: "Fuseau horaire d'affichage"
+          time_zone_description: "Fuseau IANA optionnel (ex. 'America/New_York', 'UTC')."
+          registration_url: "URL d'inscription externe"
+          registration_url_description: "Lien optionnel pour l'inscription à la conférence ou au meetup."
+          website_url: "URL du site de l'événement"
+          website_url_description: "Lien externe optionnel vers le site de l'événement."
+          banner_image: "Bannière large de la page"
+          banner_image_description: "Image d'en-tête panoramique pour les pages d'événement (1600×320, ratio 5:1). Distincte de la carte sociale."
+          banner_image_preview_alt: "Aperçu de la bannière large"
+          banner_image_empty: "Aucune bannière large téléversée — la page utilisera un en-tête sobre"
+          remove_banner_image: "Supprimer la bannière actuelle"
+          banner_image_url_fallback: "URL externe de bannière (secours optionnel)"
+          external_banner_configured: "URL de bannière externe configurée :"
+          social_image: "Image sociale et de carte"
+          social_image_description: "Carte OpenGraph standard (og:image) et miniature du répertoire /events (1200×630, ratio 1,91:1)."
+          social_image_preview_alt: "Aperçu de l'image sociale"
+          social_image_empty: "Aucune image sociale téléversée pour le moment"
+          remove_social_image: "Supprimer l'image sociale actuelle"
+          brand_accent_color: "Couleur d'accent de la marque"
+          brand_accent_color_description: "Code hexadécimal à 6 caractères utilisé pour la ligne d'en-tête, le point de navigation et le style de secours."
+          brand_color_picker_aria: "Sélecteur de couleur de la marque"
+          brand_color_preset_aria: "Définir la couleur de la marque sur %{color}"
+          parent_events: "Événements parents (optionnel)"
+          parent_events_description: "Associez cet événement comme sous-événement d'un ou plusieurs événements parents (ex. une diffusion en direct appartenant à une conférence)."
+          search_parent_events: "Filtrer les événements parents disponibles..."
+          no_parent_events_available: "Aucun événement parent éligible disponible pour le moment."
+          selected_parents_count: "Sélectionnés (%{count})"
+          selected_parents_label: "Sélectionnés"
+          top_level_hint: "Aucun — événement principal autonome"
+          advanced_delegation: "Avancé : délégation vers une page"
+          cancel: "Annuler"
+          sections:
+            basics: "Informations générales et identité"
+            basics_subtitle: "Titre, type d'événement, slugs d'URL, organisation hôte et tags."
+            schedule: "Horaire et lieu"
+            schedule_subtitle: "Horaires en UTC, fuseau d'affichage, lieu et liens externes."
+            branding: "Identité visuelle et médias"
+            branding_subtitle: "Configurez séparément la bannière large (5:1) et la carte sociale (1200×630), ainsi que la couleur d'accent."
+            content: "Contenu de la page et contexte agent"
+            content_subtitle: "Contenu Markdown public et contexte complet optionnel pour l'API et les agents."
+            publishing: "Diffusion en direct, annonces et publication"
+            publishing_subtitle: "URL du flux vidéo, diffusion des bannières sur le site et visibilité."
+        show:
+          back_to_events: "Tous les événements"
+          manage_button: "Tableau de bord"
+          media_heading: "Identité visuelle et médias"
+          edit_media: "Modifier les médias"
+          banner_image: "Bannière large"
+          social_image: "Image sociale et de carte"
+          not_configured: "Non configuré"
+          using_site_default_social: "Non configuré (utilise l'image sociale par défaut du site)"
+          jump_overview: "Aperçu"
+          jump_hierarchy: "Hiérarchie"
+          jump_pages: "Pages"
+          jump_billboards: "Bannières"
+          jump_signups: "Inscriptions"
+          allow_articles: "Articles autorisés"
+          enabled: "Activé"
+          disabled: "Désactivé"
+          tagged_articles_count:
+            one: "1 article associé"
+            other: "%{count} articles associés"
+          signups_title: "Inscriptions à l'événement"
+          no_signups: "Aucune inscription pour cet événement pour le moment."
+          headers:
+            user: "Utilisateur"
+            signed_up_at: "Inscrit le"
+            notifications: "Notifications envoyées"
+          notifications:
+            day_before: "1 jour avant"
+            hour_before: "1 heure avant"
+            none: "Aucune"
+      event_memberships:
+        heading: "Hiérarchie de l'événement (Parents et sous-événements)"
+        subtitle: "Associez des sous-événements tels que des diffusions en direct, ateliers ou défis. Les sous-événements en direct sont mis en avant automatiquement."
+        create_sub_event: "+ Créer un sous-événement"
+        belongs_to_heading: "Appartient à (Événements parents)"
+        view_parent: "Voir le parent"
+        sub_events_heading: "Sous-événements programmés"
+        detach: "Détacher"
+        detach_confirm: "Détacher ce sous-événement de son parent ? Les deux événements seront conservés."
+        headers:
+          order: "Ordre"
+          sub_event: "Sous-événement"
+          schedule: "Horaire"
+          membership_settings: "Piste / Rôle et À la une"
+          actions: "Actions"
+        move_up: "Monter"
+        move_down: "Descendre"
+        role_placeholder: "ex. Keynote, Piste A"
+        save: "Enregistrer"
+        no_sub_events: "Aucun sous-événement associé pour le moment. Associez un événement existant ci-dessous ou créez-en un nouveau."
+        attach_existing: "Associer un événement existant comme sous-événement"
+        filter_candidates_placeholder: "Filtrer les événements à associer..."
+        select_event: "Événement"
+        choose_event_prompt: "Choisir un événement..."
+        role_label: "Piste / Rôle (optionnel)"
+        attach_button: "Associer le sous-événement"
+        child_not_found: "Impossible de trouver le sous-événement sélectionné."
+        created: "'%{title}' associé comme sous-événement."
+        updated: "Appartenance du sous-événement mise à jour."
+        destroyed: "'%{title}' détaché de l'événement parent."
+        reordered: "Ordre des sous-événements mis à jour."
+      event_pages:
+        heading: Pages de l'événement
+        manage_pages: Gérer les pages
+        pages_button: Pages
+        back_to_event: Retour à l'événement
+        new_page: Créer une nouvelle page
+        new_showcase: Créer une page Showcase / README
+        your_pages: Vos pages
+        order_help: Utilisez les flèches pour définir l'ordre des onglets de l'événement. Si une page Showcase / README existe, elle reste épinglée en premier.
+        showcase: Showcase
+        showcase_slug_help: La page Showcase / README utilise le slug readme et devient la vue d'accueil par défaut de cet événement, tandis que la vue standard reste accessible via un onglet.
+        show_in_navigation: Afficher dans les onglets de navigation de l'événement
+        navigation_hint: Les pages masquées restent accessibles via leur URL directe.
+        no_pages: Aucune page créée pour cet événement pour le moment.
+        embed_section_description: Créez des widgets HTML isolés et des intégrations interactives pour cet événement, utilisables dans n'importe quelle page d'événement ou article via la balise Liquid embed.
+        markdown_placeholder: "Utilisez Markdown et les balises Liquid pour composer votre page d'événement."
+        created: Page d'événement créée avec succès.
+        updated: Page d'événement mise à jour avec succès.
+        deleted: Page d'événement supprimée avec succès.
+        reordered: Ordre des pages mis à jour.
+      billboard_placement_area_configs:
+        index:
+          subtitle: Configurez les taux de diffusion, la mise en cache, la visibilité et les poids des stratégies de sélection par emplacement.
+          visibility: Visibilité
+          hidden_by_default: Masqué par défaut
+          visible: Visible
+          caching: Mise en cache
+          fully_cached: Entièrement en cache
+          standard_caching: Standard
+        edit:
+          hidden_by_default: Masqué par défaut
+          hidden_by_default_desc_html: Les panneaux publicitaires sont toujours diffusés dans cet emplacement, mais s'affichent masqués et n'enregistrent aucune impression jusqu'à ce que la logique frontend les révèle avec %{reveal_call}. Les panneaux affichés portent %{placement_attribute}.
+          fully_cached: Entièrement en cache
+          fully_cached_desc: Sert une seule réponse en cache par localisation du visiteur pour cet emplacement, partagée par tous les articles et pages ainsi que par les visiteurs connectés, avec la durée de cache ci-dessus. Seuls les panneaux qui ne ciblent ni tags, ni articles, ni pages, ni segments d'audience, ni rôles, ni réponses à des sondages, ni types de navigateur sont affichés ici. Les articles dont les auteurs refusent les sponsors à proximité conservent le comportement standard. Ne s'applique qu'aux panneaux chargés séparément de la page, pas à ceux intégrés dans la page (comme la barre latérale de la page d'accueil).

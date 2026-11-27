@@ -247,6 +247,49 @@ RSpec.describe Articles::QualityReactionWorker, type: :worker do
                                                                                                                              ]).select(:reactable_id)).count} eligible articles, skipping max_score)",
         )
       end
+
+      it "includes articles with nil subforem_id when processing the default subforem" do
+        allow(Subforem).to receive(:cached_default_id).and_return(1)
+        nil_subforem_article = create(:article, :past,
+                                      user: user,
+                                      title: "Legacy Nil Subforem Article",
+                                      body_markdown: "---\ntitle: Legacy Nil Subforem Article\n" \
+                                                     "published: true\n---\n\nContent.",
+                                      score: 40,
+                                      past_published_at: 4.hours.ago)
+        nil_subforem_article.update_column(:subforem_id, nil)
+
+        assessed_articles = nil
+        allow(Ai::ArticleQualityAssessor).to receive(:new) do |articles_arg, **_kwargs|
+          assessed_articles = articles_arg.to_a
+          instance_double(
+            Ai::ArticleQualityAssessor,
+            assess: { best: nil_subforem_article, worst: low_quality_article },
+          )
+        end
+
+        described_class.new.perform
+
+        expect(assessed_articles).to include(nil_subforem_article)
+      end
+
+      it "uses a correlated NOT EXISTS anti-join and avoids duplicate post-reaction COUNT queries" do
+        count_queries = []
+        callback = lambda do |_name, _start, _finish, _id, payload|
+          next if payload[:name] == "SCHEMA"
+
+          sql = payload[:sql]
+          count_queries << sql if sql.include?("SELECT COUNT(*) FROM (SELECT 1 AS one FROM \"articles\"")
+        end
+
+        ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+          described_class.new.perform
+        end
+
+        expect(count_queries.size).to eq(2)
+        expect(count_queries).to all(include("NOT (EXISTS (SELECT 1 FROM \"reactions\""))
+        expect(count_queries).to all(include("reactions.reactable_id = articles.id"))
+      end
     end
 
     context "when articles are older than 1 day" do

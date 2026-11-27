@@ -1,9 +1,16 @@
 import { h, Fragment } from 'preact';
 import { useState, useCallback, useRef, useEffect } from 'preact/hooks';
 import PropTypes from 'prop-types';
-import moment from 'moment';
+import {
+  parseArticleDate,
+  formatYYYYMMDD,
+  format12HourTime,
+  formatLongDate,
+  formatScheduleDateTime,
+} from '../dateHelpers';
 import { SeriesSelector } from './SeriesSelector';
 import { CoAuthorSelector } from './CoAuthorSelector';
+import { CoAuthorInvitationSelector } from './CoAuthorInvitationSelector';
 import { Modal, ButtonNew as Button } from '@crayons';
 import CogIcon from '@images/cog.svg';
 
@@ -30,6 +37,10 @@ export const Options = ({
     organizations = [],
     authorId = null,
     coAuthorIdsList = '',
+    coAuthorInvitationsEnabled = false,
+    coAuthorInvitations = [],
+    coAuthorInvitees = [],
+    coAuthorInvitationsMax = 4,
   },
   schedulingEnabled: _schedulingEnabled, // Deprecated - scheduling is always enabled now
   onSaveDraft,
@@ -68,7 +79,9 @@ export const Options = ({
   let publishedField = '';
   let publishedAtField = '';
 
-  const wasScheduled = publishedAtWas && moment(publishedAtWas) > moment();
+  const now = new Date();
+  const wasScheduled =
+    Boolean(publishedAtWas) && parseArticleDate(publishedAtWas) > now;
   const editablePublishedAt = !publishedAtWas || wasScheduled;
 
   if (published) {
@@ -110,12 +123,14 @@ export const Options = ({
 
   // Always show scheduling (removed feature flag check)
   if (editablePublishedAt) {
-    const currentDate = moment().format('YYYY-MM-DD');
-    const localTime = moment().format('h:mm A');
-    const localDate = moment().format('MMMM D, YYYY');
+    const currentDate = formatYYYYMMDD(now);
+    const localTime = format12HourTime(now);
+    const localDate = formatLongDate(now);
     const hasSchedule = publishedAtDate && publishedAtTime;
-    const scheduleMoment = hasSchedule ? moment(`${publishedAtDate} ${publishedAtTime}`) : null;
-    const isFutureSchedule = scheduleMoment && scheduleMoment > moment();
+    const scheduleDate = hasSchedule
+      ? parseArticleDate(`${publishedAtDate} ${publishedAtTime}`)
+      : null;
+    const isFutureSchedule = scheduleDate && scheduleDate > now;
 
     publishedAtField = (
       <div className={`crayons-field mb-6 ${hasSchedule ? 'post-options-scheduling--active' : ''}`}>
@@ -163,7 +178,7 @@ export const Options = ({
         {hasSchedule && isFutureSchedule && (
           <div className="py-3 rounded-lg border border-accent-brand bg-accent-brand-bg mb-3">
             <p className="crayons-field__description mb-0">
-              <strong>Post will be published:</strong> {scheduleMoment.format('MMMM D, YYYY [at] h:mm A')}
+              <strong>Post will be published:</strong> {formatScheduleDateTime(scheduleDate)}
             </p>
           </div>
         )}
@@ -211,16 +226,16 @@ export const Options = ({
 
   return (
     <Fragment>
-      <span className="mx-2 color-base-30" aria-hidden="true">|</span>
       <Button
         id="post-options-btn"
+        variant="ghost"
         icon={CogIcon}
         title="Advanced Post options"
         aria-label="Advanced Post options"
         disabled={previewLoading}
         onClick={() => setIsOptionsModalOpen(true)}
       >
-        <span className="hidden l:inline-block ml-1">Advanced Options</span>
+        <span className="hidden xl:inline-block ml-1">Advanced Options</span>
       </Button>
       {isOptionsModalOpen && (
         <Modal
@@ -284,6 +299,16 @@ export const Options = ({
                 onConfigChange={handleConfigChangeWithModalOpen}
               />
 
+              {/* Follower invitations are for personal posts; org posts use the org co-author picker above. */}
+              {coAuthorInvitationsEnabled && !organizationId && (
+                <CoAuthorInvitationSelector
+                  invitees={coAuthorInvitees}
+                  invitations={coAuthorInvitations}
+                  maxSelections={coAuthorInvitationsMax}
+                  onConfigChange={handleConfigChangeWithModalOpen}
+                />
+              )}
+
               {publishedField}
             </div>
             <div className="post-options-modal__footer">
@@ -318,6 +343,10 @@ Options.propTypes = {
     organizations: PropTypes.array.isRequired,
     authorId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     coAuthorIdsList: PropTypes.string,
+    coAuthorInvitationsEnabled: PropTypes.bool,
+    coAuthorInvitations: PropTypes.array,
+    coAuthorInvitees: PropTypes.array,
+    coAuthorInvitationsMax: PropTypes.number,
     organizationId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   }).isRequired,
   schedulingEnabled: PropTypes.bool, // Kept for backward compatibility but no longer used

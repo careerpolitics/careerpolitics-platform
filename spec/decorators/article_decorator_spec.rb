@@ -6,7 +6,9 @@ RSpec.describe ArticleDecorator, type: :decorator do
     article.decorate
   end
 
-  let(:article) { build(:article) }
+  # The article factory otherwise creates its author even with the build strategy.
+  let(:user) { build_stubbed(:user) }
+  let(:article) { build(:article, user: user) }
   let(:published_article) { create_article(published: true) }
   let(:organization) { build(:organization) }
 
@@ -80,6 +82,40 @@ RSpec.describe ArticleDecorator, type: :decorator do
       article.canonical_url = ""
       expected_url = "#{ApplicationConfig['APP_PROTOCOL']}#{ApplicationConfig['APP_DOMAIN']}#{article.path}"
       expect(article.decorate.processed_canonical_url).to eq(expected_url)
+    end
+  end
+
+  describe "#processed_canonical_url for an organization with a custom domain" do
+    let(:organization) { create(:organization, custom_domain: "blog.example.com") }
+    let(:article) { create(:article, organization: organization) }
+
+    context "when the org_custom_domain feature flag is enabled" do
+      before do
+        FeatureFlag.enable(:org_custom_domain, FeatureFlag::Actor.new(organization))
+      end
+
+      it "returns the custom domain URL" do
+        article.canonical_url = ""
+        expected_url = "#{ApplicationConfig['APP_PROTOCOL']}blog.example.com/#{article.slug}"
+        expect(article.decorate.processed_canonical_url).to eq(expected_url)
+      end
+
+      it "returns the custom user override canonical URL if present" do
+        article.canonical_url = "http://google.com"
+        expect(article.decorate.processed_canonical_url).to eq("http://google.com")
+      end
+    end
+
+    context "when the org_custom_domain feature flag is disabled" do
+      before do
+        FeatureFlag.disable(:org_custom_domain, FeatureFlag::Actor.new(organization))
+      end
+
+      it "returns the default app domain URL" do
+        article.canonical_url = ""
+        expected_url = "#{ApplicationConfig['APP_PROTOCOL']}#{ApplicationConfig['APP_DOMAIN']}#{article.path}"
+        expect(article.decorate.processed_canonical_url).to eq(expected_url)
+      end
     end
   end
 
@@ -245,6 +281,8 @@ RSpec.describe ArticleDecorator, type: :decorator do
   end
 
   describe "#permit_adjacent_sponsors" do
+    let(:user) { create(:user) }
+
     it "returns true if there is a no user id" do
       expect(described_class.new(nil).permit_adjacent_sponsors?).to be(true)
     end
@@ -252,6 +290,65 @@ RSpec.describe ArticleDecorator, type: :decorator do
     it "returns the false if the author of the article has their setting set to false" do
       article.user.setting.update(permit_adjacent_sponsors: false)
       expect(article.decorate.permit_adjacent_sponsors?).to be(false)
+    end
+
+    it "returns false if the author's permit_adjacent_sponsors setting is nil" do
+      article.save!
+      article.user.setting.update_column(:permit_adjacent_sponsors, nil)
+      expect(article.decorate.permit_adjacent_sponsors?).to be(false)
+    end
+
+    it "returns false if a co-author's permit_adjacent_sponsors setting is nil" do
+      co_author = create(:user)
+      co_author.setting.update_column(:permit_adjacent_sponsors, nil)
+      article.co_author_ids = [co_author.id]
+      article.save!
+      expect(article.decorate.permit_adjacent_sponsors?).to be(false)
+    end
+
+    it "memoizes the result across repeated calls on the same decorated instance" do
+      article.save!
+      article.user.setting.update!(permit_adjacent_sponsors: false)
+      decorated = Article.find(article.id).decorate
+      allow(Users::Setting).to receive(:exists?).and_call_original
+
+      expect(decorated.permit_adjacent_sponsors?).to be(false)
+      expect(decorated.permit_adjacent_sponsors?).to be(false)
+      expect(Users::Setting).to have_received(:exists?).once
+    end
+
+    context "when the author's setting is preloaded" do
+      def preloaded_decorated_article
+        Article.includes(user: :setting).find(article.id).decorate
+      end
+
+      before do
+        article.save!
+        allow(Users::Setting).to receive(:exists?).and_call_original
+      end
+
+      it "returns true without querying when the author permits adjacent sponsors" do
+        expect(preloaded_decorated_article.permit_adjacent_sponsors?).to be(true)
+        expect(Users::Setting).not_to have_received(:exists?)
+      end
+
+      it "returns false without querying when the author's setting is false or nil" do
+        article.user.setting.update_column(:permit_adjacent_sponsors, false)
+        expect(preloaded_decorated_article.permit_adjacent_sponsors?).to be(false)
+
+        article.user.setting.update_column(:permit_adjacent_sponsors, nil)
+        expect(preloaded_decorated_article.permit_adjacent_sponsors?).to be(false)
+        expect(Users::Setting).not_to have_received(:exists?)
+      end
+
+      it "still queries co-authors' settings" do
+        co_author = create(:user)
+        co_author.setting.update_column(:permit_adjacent_sponsors, nil)
+        article.update!(co_author_ids: [co_author.id])
+
+        expect(preloaded_decorated_article.permit_adjacent_sponsors?).to be(false)
+        expect(Users::Setting).to have_received(:exists?).once
+      end
     end
   end
 
@@ -355,6 +452,34 @@ RSpec.describe ArticleDecorator, type: :decorator do
       it "delegates to the underlying article" do
         expect(decorated_article.body_preview).to eq(article.body_preview)
       end
+    end
+  end
+
+  describe "#co_author_name_and_path" do
+    it "HTML-escapes co-author names to prevent stored XSS", :aggregate_failures do
+      xss_payload = '<img src=x onerror="alert(1)">'
+      co_author = create(:user, name: xss_payload)
+      article = create_article(published: true, co_author_ids: [co_author.id])
+
+      result = article.co_author_name_and_path
+
+      expect(result).to be_html_safe
+      expect(result).not_to include(xss_payload)
+      expect(result).to include(ERB::Util.html_escape(xss_payload))
+      expect(result).to include(%(href="#{co_author.path}"))
+    end
+
+    it "preserves co_author_ids order and formats multiple co-authors as a sentence" do
+      first = create(:user, name: "Alice & Co")
+      second = create(:user, name: "Bob")
+      article = create_article(published: true, co_author_ids: [second.id, first.id])
+
+      result = article.co_author_name_and_path
+
+      expect(result).to eq(
+        %(<a class="crayons-link" href="#{second.path}">Bob</a> and ) +
+        %(<a class="crayons-link" href="#{first.path}">Alice &amp; Co</a>),
+      )
     end
   end
 end

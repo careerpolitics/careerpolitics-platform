@@ -5,6 +5,7 @@ RSpec.describe "Api::V1::AgentSessions" do
   let(:api_secret) { create(:api_secret, user: user) }
   let(:headers) { { "content-type" => "application/json", "Accept" => "application/vnd.forem.api-v1+json" } }
   let(:auth_headers) { headers.merge({ "api-key" => api_secret.secret }) }
+  let(:valid_s3_key) { "agent_sessions/#{user.id}/#{SecureRandom.uuid}.jsonl" }
 
   let(:curated_data) do
     {
@@ -28,20 +29,32 @@ RSpec.describe "Api::V1::AgentSessions" do
       it "creates a session from curated_data with s3_key" do
         post api_agent_sessions_path,
              params: { title: "S3 Session", tool_name: "claude_code",
-                        curated_data: curated_data.to_json,
-                        s3_key: "agent_sessions/#{user.id}/test.jsonl" }.to_json,
+                       curated_data: curated_data.to_json,
+                       s3_key: valid_s3_key }.to_json,
              headers: auth_headers
 
         expect(response).to have_http_status(:created)
         session = AgentSession.last
         expect(session.curated_data["messages"].size).to eq(2)
-        expect(session.s3_key).to eq("agent_sessions/#{user.id}/test.jsonl")
+        expect(session.s3_key).to eq(valid_s3_key)
+      end
+
+      it "rejects session with invalid or foreign s3_key" do
+        other_user = create(:user)
+        post api_agent_sessions_path,
+             params: { title: "Bad S3 Session", tool_name: "claude_code",
+                       curated_data: curated_data.to_json,
+                       s3_key: "agent_sessions/#{other_user.id}/#{SecureRandom.uuid}.jsonl" }.to_json,
+             headers: auth_headers
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body["error"]).to include("S3 key is invalid or does not belong to this user")
       end
 
       it "creates a session from curated_data without s3_key" do
         post api_agent_sessions_path,
              params: { title: "No S3", tool_name: "claude_code",
-                        curated_data: curated_data.to_json }.to_json,
+                       curated_data: curated_data.to_json }.to_json,
              headers: auth_headers
 
         expect(response).to have_http_status(:created)
@@ -56,7 +69,7 @@ RSpec.describe "Api::V1::AgentSessions" do
 
         post api_agent_sessions_path,
              params: { title: "Scrubbed", tool_name: "claude_code",
-                        curated_data: data_with_secret.to_json }.to_json,
+                       curated_data: data_with_secret.to_json }.to_json,
              headers: auth_headers
 
         expect(response).to have_http_status(:created)
@@ -95,7 +108,7 @@ RSpec.describe "Api::V1::AgentSessions" do
       it "returns 422 for invalid tool_name" do
         post api_agent_sessions_path,
              params: { title: "Bad Tool", tool_name: "invalid_tool",
-                        curated_data: curated_data.to_json }.to_json,
+                       curated_data: curated_data.to_json }.to_json,
              headers: auth_headers
 
         expect(response).to have_http_status(:unprocessable_entity)
@@ -106,13 +119,24 @@ RSpec.describe "Api::V1::AgentSessions" do
       it "creates a draft session with just s3_key" do
         post api_agent_sessions_path,
              params: { title: "CLI Draft", tool_name: "claude_code",
-                        s3_key: "agent_sessions/#{user.id}/test.jsonl" }.to_json,
+                       s3_key: valid_s3_key }.to_json,
              headers: auth_headers
 
         expect(response).to have_http_status(:created)
         session = AgentSession.last
-        expect(session.s3_key).to eq("agent_sessions/#{user.id}/test.jsonl")
+        expect(session.s3_key).to eq(valid_s3_key)
         expect(session.curated_data).to eq({})
+      end
+
+      it "rejects draft session with foreign or invalid s3_key" do
+        other_user = create(:user)
+        post api_agent_sessions_path,
+             params: { title: "Bad CLI Draft", tool_name: "claude_code",
+                       s3_key: "agent_sessions/#{other_user.id}/#{SecureRandom.uuid}.jsonl" }.to_json,
+             headers: auth_headers
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body["error"]).to include("S3 key is invalid or does not belong to this user")
       end
     end
 
@@ -137,22 +161,95 @@ RSpec.describe "Api::V1::AgentSessions" do
   end
 
   describe "POST /api/agent_sessions/presign" do
+    let(:cache) { ActiveSupport::Cache::MemoryStore.new }
+
+    before { allow(Rails).to receive(:cache).and_return(cache) }
+
+    def presign(params = { content_length: 1024 })
+      post presign_api_agent_sessions_path, params: params.to_json, headers: auth_headers
+    end
+
     context "when S3 is enabled" do
       before do
-        allow(AgentSessions::S3Storage).to receive(:enabled?).and_return(true)
-        allow(AgentSessions::S3Storage).to receive(:generate_key).and_return("agent_sessions/1/test.jsonl")
-        allow(AgentSessions::S3Storage).to receive(:presigned_put_url).and_return("https://s3.example.com/presigned")
+        allow(AgentSessions::S3Storage).to receive_messages(
+          enabled?: true,
+          generate_key: "agent_sessions/1/test.jsonl",
+          presigned_put_url: "https://s3.example.com/presigned",
+        )
       end
 
-      it "returns presigned URL and s3_key" do
-        post presign_api_agent_sessions_path,
-             params: {}.to_json,
-             headers: auth_headers
+      it "returns presigned URL, s3_key and the headers to send with the upload" do
+        presign
 
         expect(response).to have_http_status(:ok)
         json = response.parsed_body
         expect(json["s3_key"]).to eq("agent_sessions/1/test.jsonl")
         expect(json["presigned_url"]).to eq("https://s3.example.com/presigned")
+        expect(json["headers"]).to eq(
+          "Content-Type" => "application/x-jsonlines",
+          "Content-Length" => "1024",
+          "x-amz-acl" => "private",
+        )
+      end
+
+      it "signs the URL for the declared content length" do
+        presign
+
+        expect(AgentSessions::S3Storage).to have_received(:presigned_put_url)
+          .with("agent_sessions/1/test.jsonl", content_length: 1024)
+      end
+
+      it "returns 422 when content_length is missing" do
+        presign({})
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body["error"]).to include("content_length")
+        expect(AgentSessions::S3Storage).not_to have_received(:presigned_put_url)
+      end
+
+      it "returns 422 when content_length exceeds the session size limit" do
+        presign({ content_length: AgentSession::MAX_CURATED_DATA_SIZE + 1 })
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(AgentSessions::S3Storage).not_to have_received(:presigned_put_url)
+      end
+
+      it "accepts content_length at the session size limit" do
+        presign({ content_length: AgentSession::MAX_CURATED_DATA_SIZE })
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "returns 429 with Retry-After once the presign limit is reached, even without session creation" do
+        allow(Settings::RateLimit).to receive_messages(agent_session_presign: 2,
+                                                       agent_session_presign_window_seconds: 600)
+
+        2.times do
+          presign
+          expect(response).to have_http_status(:ok)
+        end
+
+        presign
+        expect(response).to have_http_status(:too_many_requests)
+        expect(response.headers["Retry-After"].to_s).to eq("600")
+        expect(AgentSessions::S3Storage).to have_received(:presigned_put_url).twice
+      end
+
+      it "does not count invalid requests against the presign limit" do
+        allow(Settings::RateLimit).to receive(:agent_session_presign).and_return(1)
+
+        presign({ content_length: 0 })
+        presign
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "is disabled when the presign limit is set to 0" do
+        allow(Settings::RateLimit).to receive(:agent_session_presign).and_return(0)
+
+        presign
+
+        expect(response).to have_http_status(:too_many_requests)
       end
     end
 
@@ -162,9 +259,7 @@ RSpec.describe "Api::V1::AgentSessions" do
       end
 
       it "returns 503" do
-        post presign_api_agent_sessions_path,
-             params: {}.to_json,
-             headers: auth_headers
+        presign
         expect(response).to have_http_status(:service_unavailable)
       end
     end
@@ -182,14 +277,13 @@ RSpec.describe "Api::V1::AgentSessions" do
       AgentSession.create!(
         user: user, title: "Test", tool_name: "claude_code",
         curated_data: curated_data,
-        s3_key: "agent_sessions/#{user.id}/test.jsonl",
+        s3_key: valid_s3_key
       )
     end
 
     context "when S3 is enabled" do
       before do
-        allow(AgentSessions::S3Storage).to receive(:enabled?).and_return(true)
-        allow(AgentSessions::S3Storage).to receive(:presigned_get_url).and_return("https://s3.example.com/get")
+        allow(AgentSessions::S3Storage).to receive_messages(enabled?: true, presigned_get_url: "https://s3.example.com/get")
       end
 
       it "returns a presigned GET URL" do
@@ -204,7 +298,7 @@ RSpec.describe "Api::V1::AgentSessions" do
     it "returns 404 when session has no s3_key" do
       session_without_s3 = AgentSession.create!(
         user: user, title: "No S3", tool_name: "claude_code",
-        curated_data: curated_data,
+        curated_data: curated_data
       )
       get raw_url_api_agent_session_path(session_without_s3), headers: auth_headers
       expect(response).to have_http_status(:not_found)

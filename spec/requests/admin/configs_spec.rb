@@ -1,9 +1,9 @@
 require "rails_helper"
 
 RSpec.describe "/admin/customization/config" do
-  let(:user) { create(:user) }
-  let(:admin) { create(:user, :admin) }
-  let(:super_admin) { create(:user, :super_admin) }
+  let(:user) { create(:user, :without_profile, profile_image: nil) }
+  let(:admin) { create(:user, :admin, :without_profile, profile_image: nil) }
+  let(:super_admin) { create(:user, :super_admin, :without_profile, profile_image: nil) }
 
   describe "POST /admin/customization/config as a user" do
     before do
@@ -37,27 +37,25 @@ RSpec.describe "/admin/customization/config" do
         sign_in(super_admin)
       end
 
-      it "updates settings admin action taken" do
+      it "updates settings admin action taken and expires cached agent guidance", :aggregate_failures do
+        allow(EdgeCache::PurgeByKey).to receive(:call)
+
         expect do
           post admin_settings_general_settings_path, params: {
             settings_general: { health_check_token: "token" }
           }
         end.to change(Settings::General, :admin_action_taken_at)
+
+        expect(EdgeCache::PurgeByKey).to have_received(:call).with("llms_page", fallback_paths: "/llms.txt")
       end
 
       describe "API tokens" do
-        it "updates the health_check_token" do
+        it "updates health_check_token and video_encoder_key", :aggregate_failures do
           token = rand(20).to_s
           post admin_settings_general_settings_path, params: {
-            settings_general: { health_check_token: token }
+            settings_general: { health_check_token: token, video_encoder_key: "123abc" }
           }
-          expect(Settings::General.health_check_token).to eq token
-        end
-
-        it "sets video_encoder_key" do
-          post admin_settings_general_settings_path, params: {
-            settings_general: { video_encoder_key: "123abc" }
-          }
+          expect(Settings::General.health_check_token).to eq(token)
           expect(Settings::General.video_encoder_key).to eq("123abc")
         end
       end
@@ -169,51 +167,30 @@ RSpec.describe "/admin/customization/config" do
       end
 
       describe "Community Content" do
-        it "updates the community_description" do
+        it "updates community settings and expires cached agent guidance", :aggregate_failures do
+          allow(EdgeCache::PurgeByKey).to receive(:call)
           allow(Settings::Community).to receive(:community_description).and_call_original
           description = "Hey hey #{rand(100)}"
-          post admin_settings_communities_path, params: {
-            settings_community: { community_description: description }
-          }
-          expect(Settings::Community.community_description).to eq(description)
-        end
-
-        it "updates the community_name" do
           name_magoo = "Hey hey #{rand(100)}"
+          tagline = "Hey hey #{rand(100)}"
+
           post admin_settings_communities_path, params: {
-            settings_community: { community_name: name_magoo }
+            settings_community: {
+              community_description: description,
+              community_name: name_magoo,
+              member_label: "developer",
+              copyright_start_year: "2018",
+              tagline: tagline,
+              staff_user_id: 22
+            }
           }
+
+          expect(EdgeCache::PurgeByKey).to have_received(:call).with("llms_page", fallback_paths: "/llms.txt")
+          expect(Settings::Community.community_description).to eq(description)
           expect(Settings::Community.community_name).to eq(name_magoo)
-        end
-
-        it "updates the community_member_label" do
-          name = "developer"
-          post admin_settings_communities_path, params: {
-            settings_community: { member_label: name }
-          }
-          expect(Settings::Community.member_label).to eq(name)
-        end
-
-        it "updates the copyright_start_year" do
-          year = "2018"
-          post admin_settings_communities_path, params: {
-            settings_community: { copyright_start_year: year }
-          }
+          expect(Settings::Community.member_label).to eq("developer")
           expect(Settings::Community.copyright_start_year).to eq(2018)
-        end
-
-        it "updates the tagline" do
-          description = "Hey hey #{rand(100)}"
-          post admin_settings_communities_path, params: {
-            settings_community: { tagline: description }
-          }
-          expect(Settings::Community.tagline).to eq(description)
-        end
-
-        it "updates the staff_user_id" do
-          post admin_settings_communities_path, params: {
-            settings_community: { staff_user_id: 22 }
-          }
+          expect(Settings::Community.tagline).to eq(tagline)
           expect(Settings::Community.staff_user_id).to eq(22)
         end
       end
@@ -237,21 +214,13 @@ RSpec.describe "/admin/customization/config" do
         end
       end
 
-      describe "Google Universal Analytics Reporting" do
-        it "updates ga_tracking_id" do
+      describe "Google Analytics Reporting" do
+        it "updates ga_tracking_id and ga_analytics_4_id", :aggregate_failures do
           post admin_settings_general_settings_path, params: {
-            settings_general: { ga_tracking_id: "abc" }
+            settings_general: { ga_tracking_id: "abc", ga_analytics_4_id: "def" }
           }
           expect(Settings::General.ga_tracking_id).to eq("abc")
-        end
-      end
-
-      describe "Google Analytics 4 Reporting" do
-        it "updates ga_analytics_4_id" do
-          post admin_settings_general_settings_path, params: {
-            settings_general: { ga_analytics_4_id: "abc" }
-          }
-          expect(Settings::General.ga_analytics_4_id).to eq("abc")
+          expect(Settings::General.ga_analytics_4_id).to eq("def")
         end
       end
 
@@ -365,62 +334,55 @@ RSpec.describe "/admin/customization/config" do
           expect(Settings::General.razorpay_key_id).to eq("rzp_live_yo")
           expect(Settings::General.razorpay_key_secret).to eq("rzp_live_secret")
         end
+
+        it "updates the regions that allow anonymous tracking and purges cached billboard responses" do
+          allow(EdgeCache::PurgeByKey).to receive(:call)
+          expect(Settings::General.geos_with_allowed_anonymous_tracking).to eq([])
+
+          post admin_settings_general_settings_path, params: {
+            settings_general: { geos_with_allowed_anonymous_tracking: "US, CA-ON" }
+          }
+          expect(Settings::General.geos_with_allowed_anonymous_tracking).to eq(%w[US CA-ON])
+          expect(EdgeCache::PurgeByKey).to have_received(:call).with("billboard_responses").once
+
+          post admin_settings_general_settings_path, params: {
+            settings_general: { geos_with_allowed_anonymous_tracking: "US, CA-ON", stripe_api_key: "sk_live_yo" }
+          }
+          expect(EdgeCache::PurgeByKey).to have_received(:call).with("billboard_responses").once
+        end
       end
 
       describe "Newsletter" do
-        it "updates mailchimp_api_key" do
+        it "updates mailchimp settings", :aggregate_failures do
           post admin_settings_general_settings_path, params: {
-            settings_general: { mailchimp_api_key: "abc" }
+            settings_general: {
+              mailchimp_api_key: "api-key",
+              mailchimp_newsletter_id: "news-id",
+              mailchimp_tag_moderators_id: "tag-mod-id",
+              mailchimp_community_moderators_id: "comm-mod-id"
+            }
           }
-          expect(Settings::General.mailchimp_api_key).to eq("abc")
-        end
-
-        it "updates mailchimp_newsletter_id" do
-          post admin_settings_general_settings_path, params: {
-            settings_general: { mailchimp_newsletter_id: "abc" }
-          }
-          expect(Settings::General.mailchimp_newsletter_id).to eq("abc")
-        end
-
-        it "updates mailchimp_tag_moderators_id" do
-          post admin_settings_general_settings_path, params: {
-            settings_general: { mailchimp_tag_moderators_id: "abc" }
-          }
-          expect(Settings::General.mailchimp_tag_moderators_id).to eq("abc")
-        end
-
-        it "updates mailchimp_community_moderators_id" do
-          post admin_settings_general_settings_path, params: {
-            settings_general: { mailchimp_community_moderators_id: "abc" }
-          }
-          expect(Settings::General.mailchimp_community_moderators_id).to eq("abc")
+          expect(Settings::General.mailchimp_api_key).to eq("api-key")
+          expect(Settings::General.mailchimp_newsletter_id).to eq("news-id")
+          expect(Settings::General.mailchimp_tag_moderators_id).to eq("tag-mod-id")
+          expect(Settings::General.mailchimp_community_moderators_id).to eq("comm-mod-id")
         end
       end
 
       describe "Onboarding" do
-        it "removes space suggested_tags" do
-          post admin_settings_general_settings_path, params: {
-            settings_general: { suggested_tags: "hey, haha,hoho, bobo fofo" }
-          }
-          expect(Settings::General.suggested_tags).to eq(%w[hey haha hoho bobofofo])
-        end
-
-        it "downcases suggested_tags" do
+        it "removes spaces and downcases suggested_tags" do
           post admin_settings_general_settings_path, params: {
             settings_general: { suggested_tags: "hey, haha,hoHo, Bobo Fofo" }
           }
           expect(Settings::General.suggested_tags).to eq(%w[hey haha hoho bobofofo])
         end
 
-        it "enables display_sidebar_onboarding_checklist" do
+        it "enables and disables display_sidebar_onboarding_checklist", :aggregate_failures do
           post admin_settings_general_settings_path, params: {
             settings_general: { display_sidebar_onboarding_checklist: "1" }
           }
           expect(Settings::General.display_sidebar_onboarding_checklist).to be(true)
-        end
 
-        it "disables display_sidebar_onboarding_checklist" do
-          Settings::General.display_sidebar_onboarding_checklist = true
           post admin_settings_general_settings_path, params: {
             settings_general: { display_sidebar_onboarding_checklist: "0" }
           }
@@ -429,145 +391,24 @@ RSpec.describe "/admin/customization/config" do
       end
 
       describe "Rate Limits and spam" do
-        it "updates follow_count_daily" do
-          default_value = Settings::RateLimit.get_default(:follow_count_daily)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { follow_count_daily: 3 }
-            }
-          end.to change(Settings::RateLimit, :follow_count_daily).from(default_value).to(3)
-        end
-
-        it "updates comment_creation" do
-          default_value = Settings::RateLimit.get_default(:comment_creation)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { comment_creation: 3 }
-            }
-          end.to change(Settings::RateLimit, :comment_creation).from(default_value).to(3)
-        end
-
-        it "updates mention_creation" do
-          default_value = Settings::RateLimit.get_default(:mention_creation)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { mention_creation: 10 }
-            }
-          end.to change(Settings::RateLimit, :mention_creation).from(default_value).to(10)
-        end
-
-        it "updates published_article_creation" do
-          default_value = Settings::RateLimit.get_default(:published_article_creation)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { published_article_creation: 3 }
-            }
-          end.to change(Settings::RateLimit, :published_article_creation).from(default_value).to(3)
-        end
-
-        it "updates published_article_antispam_creation" do
-          default_value = Settings::RateLimit.get_default(:published_article_antispam_creation)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { published_article_antispam_creation: 3 }
-            }
-          end.to change(Settings::RateLimit, :published_article_antispam_creation).from(default_value).to(3)
-        end
-
-        it "updates organization_creation" do
-          default_value = Settings::RateLimit.get_default(:organization_creation)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { organization_creation: 3 }
-            }
-          end.to change(Settings::RateLimit, :organization_creation).from(default_value).to(3)
-        end
-
-        it "updates image_upload" do
-          default_value = Settings::RateLimit.get_default(:image_upload)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { image_upload: 3 }
-            }
-          end.to change(Settings::RateLimit, :image_upload).from(default_value).to(3)
-        end
-
-        it "updates email_recipient" do
-          default_value = Settings::RateLimit.get_default(:email_recipient)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { email_recipient: 3 }
-            }
-          end.to change(Settings::RateLimit, :email_recipient).from(default_value).to(3)
-        end
-
-        it "updates user_subscription_creation" do
-          default_value = Settings::RateLimit.get_default(:user_subscription_creation)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { user_subscription_creation: 1 }
-            }
-          end.to change(Settings::RateLimit, :user_subscription_creation).from(default_value).to(1)
-        end
-
-        it "updates article_update" do
-          default_value = Settings::RateLimit.get_default(:article_update)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { article_update: 3 }
-            }
-          end.to change(Settings::RateLimit, :article_update).from(default_value).to(3)
-        end
-
-        it "updates user_update" do
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { user_update: 3 }
-            }
-          end.to change(Settings::RateLimit, :user_update).to(3)
-        end
-
-        it "updates feedback_message_creation" do
-          default_value = Settings::RateLimit.get_default(:feedback_message_creation)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { feedback_message_creation: 3 }
-            }
-          end.to change(Settings::RateLimit, :feedback_message_creation).from(default_value).to(3)
-        end
-
-        it "updates listing_creation" do
-          default_value = Settings::RateLimit.get_default(:listing_creation)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { listing_creation: 3 }
-            }
-          end.to change(Settings::RateLimit, :listing_creation).from(default_value).to(3)
-        end
-
-        it "updates reaction_creation" do
-          default_value = Settings::RateLimit.get_default(:reaction_creation)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { reaction_creation: 3 }
-            }
-          end.to change(Settings::RateLimit, :reaction_creation).from(default_value).to(3)
-        end
-
-        it "updates send_email_confirmation" do
-          default_value = Settings::RateLimit.get_default(:send_email_confirmation)
-          expect do
-            post admin_settings_rate_limits_path, params: {
-              settings_rate_limit: { send_email_confirmation: 3 }
-            }
-          end.to change(Settings::RateLimit, :send_email_confirmation).from(default_value).to(3)
-        end
-
-        it "updates spam_trigger_terms" do
-          spam_trigger_terms = "hey, pokemon go hack"
-          post admin_settings_rate_limits_path, params: {
-            settings_rate_limit: { spam_trigger_terms: spam_trigger_terms }
+        it "updates rate limits and spam_trigger_terms", :aggregate_failures do
+          updates = {
+            follow_count_daily: 3, comment_creation: 3, mention_creation: 10,
+            published_article_creation: 3, published_article_antispam_creation: 3,
+            organization_creation: 3, image_upload: 3, email_recipient: 3,
+            user_subscription_creation: 1, article_update: 3, user_update: 3,
+            feedback_message_creation: 3, listing_creation: 3, reaction_creation: 3,
+            send_email_confirmation: 3
           }
+          (updates.keys - [:user_update]).each do |key|
+            expect(Settings::RateLimit.public_send(key)).to eq(Settings::RateLimit.get_default(key))
+          end
+
+          post admin_settings_rate_limits_path, params: {
+            settings_rate_limit: updates.merge(spam_trigger_terms: "hey, pokemon go hack")
+          }
+
+          updates.each { |key, value| expect(Settings::RateLimit.public_send(key)).to eq(value) }
           expect(Settings::RateLimit.spam_trigger_terms).to eq(["hey", "pokemon go hack"])
         end
 
@@ -632,29 +473,30 @@ RSpec.describe "/admin/customization/config" do
       end
 
       describe "Tags" do
-        it "removes space sidebar_tags" do
-          post admin_settings_general_settings_path, params: {
-            settings_general: { sidebar_tags: "hey, haha,hoho, bobo fofo" }
-          }
-          expect(Settings::General.sidebar_tags).to eq(%w[hey haha hoho bobofofo])
-        end
-
-        it "downcases sidebar_tags" do
+        it "removes spaces, downcases, and creates missing sidebar_tags", :aggregate_failures do
           post admin_settings_general_settings_path, params: {
             settings_general: { sidebar_tags: "hey, haha,hoHo, Bobo Fofo" }
           }
           expect(Settings::General.sidebar_tags).to eq(%w[hey haha hoho bobofofo])
-        end
-
-        it "creates tags if they do not exist" do
-          post admin_settings_general_settings_path, params: {
-            settings_general: { sidebar_tags: "bobofogololo, spla, bla" }
-          }
-          expect(Tag.find_by(name: "bobofogololo")).to be_valid
+          expect(Tag.find_by(name: "bobofofo")).to be_valid
         end
       end
 
       describe "User Experience" do
+        it "updates the sticky feed duration, traffic percentage, and repeat interval" do
+          post admin_settings_user_experiences_path, params: {
+            settings_user_experience: {
+              feed_config_sticky_hours: 24,
+              feed_config_sticky_percentage: 75,
+              feed_config_repeat_visit_minutes: 45
+            }
+          }
+          expect(response).to have_http_status(:ok)
+          expect(Settings::UserExperience.feed_config_sticky_hours).to eq(24)
+          expect(Settings::UserExperience.feed_config_sticky_percentage).to eq(75)
+          expect(Settings::UserExperience.feed_config_repeat_visit_minutes).to eq(45)
+        end
+
         it "updates the feed_style" do
           feed_style = "basic"
           post admin_settings_user_experiences_path, params: {
@@ -762,6 +604,34 @@ RSpec.describe "/admin/customization/config" do
               }
             end.to change { Settings::General.credit_prices_in_cents[size] }.from(original_prices[size.to_sym]).to(123)
           end
+        end
+      end
+
+      describe "AI Disclosure" do
+        it "defaults enable_ai_disclosure to false and updates it to true", :aggregate_failures do
+          expect(Settings::General.enable_ai_disclosure).to be(false)
+
+          post admin_settings_general_settings_path, params: {
+            settings_general: { enable_ai_disclosure: "1" }
+          }
+          expect(Settings::General.enable_ai_disclosure).to be(true)
+        end
+      end
+
+      describe "Post Permissions" do
+        it "defaults limit_post_creation_to_admins to false and updates it to true", :aggregate_failures do
+          expect(Settings::General.limit_post_creation_to_admins).to be(false)
+
+          post admin_settings_general_settings_path, params: {
+            settings_general: { limit_post_creation_to_admins: "1" }
+          }
+          expect(Settings::General.limit_post_creation_to_admins).to be(true)
+          expect(FeatureFlag.enabled?(:limit_post_creation_to_admins)).to be(true)
+        end
+
+        it "redirects legacy /admin/content_manager/spaces path to /admin/customization/config" do
+          get "/admin/content_manager/spaces"
+          expect(response).to redirect_to("/admin/customization/config")
         end
       end
     end

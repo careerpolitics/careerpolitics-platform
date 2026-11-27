@@ -12,6 +12,14 @@ module Authentication
   # 2. update an existing user and align it to its authentication identity
   # 3. return the current user if a user is given (already logged in scenario)
   class Authenticator
+    MAX_RETRIES = 1
+    SYNTHETIC_USERNAME_FIELDS = %i[
+      apple_username
+      facebook_username
+      google_oauth2_username
+    ].freeze
+    private_constant :SYNTHETIC_USERNAME_FIELDS
+
     # @api public
     #
     # @see #initialize method for parameters
@@ -25,54 +33,17 @@ module Authentication
     end
 
     # auth_payload is the payload schema, see https://github.com/omniauth/omniauth/wiki/Auth-Hash-Schema
-    def initialize(auth_payload, current_user: nil, cta_variant: nil)
+    def initialize(auth_payload, current_user: nil, cta_variant: nil, expected_user: nil)
       @provider = load_authentication_provider(auth_payload)
 
       @current_user = current_user
+      @expected_user = expected_user
       @cta_variant = cta_variant
     end
 
     # @api private
     def call
-      identity = Identity.build_from_omniauth(provider)
-      guard_against_spam_from!(identity: identity)
-      return current_user if current_user_identity_exists?
-
-      # These variables need to be set outside of the scope of the
-      # transaction in order to be used after the transaction is completed.
-      log_to_datadog = false
-      id_provider, authed_user = nil
-
-      ActiveRecord::Base.transaction do
-        user = proper_user(identity)
-
-        user = if user.nil?
-                 find_or_create_user!
-               else
-                 update_user(user)
-               end
-        user.set_initial_roles!
-
-        identity.user = user if identity.user_id.blank?
-        new_identity = identity.new_record?
-        successful_save = identity.save!
-
-        log_to_datadog = new_identity && successful_save
-        id_provider = identity.provider
-
-        flag_spam_user(user) if account_less_than_a_week_old?(user, identity)
-
-        user.save!
-        authed_user = user
-      end
-
-      if log_to_datadog
-        # Notify DataDog if a new identity was successfully created.
-        ForemStatsClient.increment("identity.created", tags: ["provider:#{id_provider}"])
-      end
-
-      # Return the successfully-authed used from the transaction.
-      authed_user
+      with_uniqueness_retry { authenticate! }
     rescue StandardError => e
       # Notify DataDog if something goes wrong in the transaction,
       # and then ensure that we re-raise and bubble up the error.
@@ -81,6 +52,63 @@ module Authentication
     end
 
     private
+
+    def authenticate!
+      identity = Identity.build_from_omniauth(provider)
+      guard_against_spam_from!(identity: identity)
+
+      if (linked_identity = current_user_identity)
+        refresh_identity(identity, linked_identity)
+        return current_user
+      end
+      guard_account_switch!(identity) if current_user
+
+      # These variables need to be set outside of the scope of the
+      # transaction in order to be used after the transaction is completed.
+      log_to_datadog = false
+      new_mlh_identity = false
+      id_provider, authed_user = nil
+
+      ActiveRecord::Base.transaction(requires_new: true) do
+        user = proper_user(identity)
+        verify_expected_user!(user)
+
+        first_user = Settings::General.waiting_on_first_user
+        user = if user.nil?
+                 find_or_create_user!
+               else
+                 update_user(user)
+               end
+        user.set_initial_roles!(first_user: first_user)
+
+        identity.user = user if identity.user_id.blank?
+        new_identity = identity.new_record?
+        successful_save = identity.save!
+
+        log_to_datadog = new_identity && successful_save
+        id_provider = identity.provider
+
+        # A newly linked mlh identity puts the MLH Core user id (its uid) into
+        # User#trackable_payload, so surface a user_updated to the DEV → Core
+        # sync — which keys off profile_updated_at.
+        new_mlh_identity = new_identity && identity.provider == "mlh"
+        user.profile_updated_at = Time.current if new_mlh_identity
+
+        user.save!
+        flag_spam_user(user) if account_less_than_a_week_old?(user, identity)
+        authed_user = user
+      end
+
+      Users::PrefillMlhProfileWorker.perform_async(authed_user.id) if new_mlh_identity
+
+      if log_to_datadog
+        # Notify DataDog if a new identity was successfully created.
+        ForemStatsClient.increment("identity.created", tags: ["provider:#{id_provider}"])
+      end
+
+      # Return the successfully-authed used from the transaction.
+      authed_user
+    end
 
     def guard_against_spam_from!(identity:)
       domain = identity.email.split("@")[-1]
@@ -100,8 +128,84 @@ module Authentication
       provider_class.new(auth_payload)
     end
 
-    def current_user_identity_exists?
-      current_user&.identities&.exists?(provider: provider.name)
+    def current_user_identity
+      current_user&.identities&.find_by(provider: provider.name)
+    end
+
+    # A completed re-auth always refreshes the linked row's token and stored
+    # auth payload with the just-received data. This matters most for an
+    # identity created through the admin API rather than a completed OAuth
+    # flow, which starts with no token and no payload at all.
+    #
+    # `incoming_identity` is built by `Identity.build_from_omniauth`, so it is
+    # only persisted when the payload's provider + uid already exist in the
+    # database. That gives three cases:
+    #
+    #   1. the payload is the row the user is already linked through: refresh
+    #      it in place.
+    #   2. the payload's uid is unclaimed and the linked row has no stored auth
+    #      payload: that link was machine-created, and completing OAuth as the
+    #      new uid proves the user owns it, so move the link onto it.
+    #   3. anything else: no-op. A uid held by some other identity is never
+    #      taken over, and a link the user established themselves is never
+    #      silently moved.
+    def refresh_identity(incoming_identity, linked_identity)
+      if incoming_identity.persisted?
+        return unless incoming_identity.id == linked_identity.id
+
+        incoming_identity.save!
+      elsif linked_identity.auth_data_dump.nil?
+        repoint_identity(incoming_identity, linked_identity)
+      end
+    end
+
+    # Moves a payload-less link onto the uid the user just authenticated as.
+    # Touching the user afterwards is what surfaces the new uid to the outbound
+    # sync, the same profile_updated_at signal a freshly linked identity sends.
+    def repoint_identity(incoming_identity, linked_identity)
+      ActiveRecord::Base.transaction do
+        linked_identity.update!(
+          uid: incoming_identity.uid,
+          token: incoming_identity.token,
+          secret: incoming_identity.secret,
+          auth_data_dump: incoming_identity.auth_data_dump,
+        )
+
+        current_user.profile_updated_at = Time.current
+        current_user.save!
+      end
+    rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => e
+      # A concurrent request can claim the same provider + uid first. Leave the
+      # existing link as it was rather than failing the whole callback.
+      ForemStatsClient.increment(
+        "identity.errors",
+        tags: ["error:#{e.class}", "provider:#{linked_identity.provider}"],
+      )
+      nil
+    end
+
+    def guard_account_switch!(identity)
+      candidate = identity.user || verified_email_user
+      return if candidate.nil? || candidate == current_user
+
+      raise ::Authentication::Errors::Ineligible if candidate.spam_or_suspended?
+
+      raise ::Authentication::Errors::AccountSwitchConfirmation, candidate
+    end
+
+    def verified_email_user
+      email = normalized_user_email
+      return if email.blank?
+
+      user = User.find_by(email: email)
+      user&.confirmed? ? user : nil
+    end
+
+    def verify_expected_user!(user)
+      return unless @expected_user
+      return if user == @expected_user && user.confirmed? && !user.spam_or_suspended?
+
+      raise ::Authentication::Errors::Ineligible
     end
 
     def proper_user(identity)
@@ -111,10 +215,38 @@ module Authentication
       elsif identity.user
         Rails.logger.debug { "Identity user found: #{identity.user.id}" }
         identity.user
-      elsif provider.user_email.present?
-        user = User.find_by(email: provider.user_email)
+      elsif normalized_user_email.present?
+        user = User.find_by(email: normalized_user_email)
         Rails.logger.debug { "User found by email: #{user&.id}" }
         user
+      end
+    end
+
+    def normalized_user_email
+      provider.user_email.to_s.strip.downcase.presence
+    end
+
+    def with_uniqueness_retry
+      retries = 0
+      begin
+        yield
+      rescue ActiveRecord::RecordNotUnique
+        raise unless retries < MAX_RETRIES
+
+        retries += 1
+        retry
+      rescue ActiveRecord::RecordInvalid => e
+        raise unless retries < MAX_RETRIES && uniqueness_error?(e)
+
+        retries += 1
+        retry
+      end
+    end
+
+    def uniqueness_error?(error)
+      taken_message = I18n.t("validators.cross_model_slug_validator.is_taken")
+      error.record&.errors&.details&.values&.flatten&.any? do |detail|
+        detail[:error] == :taken || detail[:error] == taken_message
       end
     end
 
@@ -123,13 +255,10 @@ module Authentication
       suspended_user = Users::SuspendedUsername.previously_suspended?(username)
       raise ::Authentication::Errors::PreviouslySuspended if suspended_user
 
-      existing_user = User.find_by(
-        provider.user_username_field => username,
-      )
-      return existing_user if existing_user
-
       User.new.tap do |user|
-        user.assign_attributes(provider.new_user_data)
+        user.assign_attributes(normalize_user_data(provider.new_user_data))
+        ensure_profile_image(user)
+        resolve_colliding_provider_username(user)
         user.assign_attributes(default_user_fields)
         user.onboarding_subforem_id = RequestStore.store[:subforem_id] if RequestStore.store[:subforem_id].present?
 
@@ -139,6 +268,60 @@ module Authentication
         # The user must be saved in the database before
         # we assign the user to a new identity.
         user.new_record? ? user.save! : user.save # Throw excption if new record.
+      end
+    end
+
+    def normalize_user_data(data)
+      normalized = data.dup
+      if normalized[:remote_profile_image_url].is_a?(File)
+        normalized[:profile_image] = normalized.delete(:remote_profile_image_url)
+      end
+      normalized
+    end
+
+    def ensure_profile_image(user)
+      return if user.profile_image.present? || user.remote_profile_image_url.present?
+
+      user.profile_image = Images::ProfileImageGenerator.call
+    end
+
+    # Resolve collisions on provider username columns so signup and subsequent
+    # sign-ins succeed without hitting unique indexes or overwriting another
+    # account's handle. Synthetic columns (Apple/Facebook/Google) truncate and
+    # are disambiguated with a numeric suffix; external handles preserve their
+    # previous value or stay unset until available.
+    def resolve_colliding_provider_username(user)
+      field = provider.user_username_field
+      return if user.persisted? && !user.will_save_change_to_attribute?(field)
+
+      provider_username = user.public_send(field).presence
+      return unless provider_username && provider_username_taken?(user, field, provider_username)
+
+      replacement = colliding_provider_username_replacement(user, field, provider_username)
+      user.public_send(:"#{field}=", replacement)
+    end
+
+    def colliding_provider_username_replacement(user, field, provider_username)
+      previous_username = user.persisted? ? user.attribute_in_database(field) : nil
+      return previous_username if previous_username.present?
+      return available_provider_username(field, provider_username) if SYNTHETIC_USERNAME_FIELDS.include?(field)
+
+      nil
+    end
+
+    def provider_username_taken?(user, field, provider_username)
+      scope = user.persisted? ? User.where.not(id: user.id) : User.all
+      scope.exists?(field => provider_username)
+    end
+
+    def available_provider_username(field, base_username)
+      suffix = 1
+      loop do
+        suffix_str = "_#{suffix}"
+        candidate = "#{base_username[0...(25 - suffix_str.length)]}#{suffix_str}"
+        return candidate unless User.exists?(field => candidate)
+
+        suffix += 1
       end
     end
 
@@ -169,6 +352,8 @@ module Authentication
           model.assign_attributes(provider.existing_user_data)
         end
 
+        resolve_colliding_provider_username(model)
+        ensure_profile_image(model)
         update_profile_updated_at(model)
 
         model.set_remember_fields

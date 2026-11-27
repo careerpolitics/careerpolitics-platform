@@ -27,6 +27,18 @@ pt:
         settings: Configurações
       event:
         reminder_html: "Lembrete: %{event_link} começa em %{time}!"
+      co_author:
+        if_org_html: " em %{org}"
+        verb_html: "%{user} publicou um post em que você é coautor%{if_org}"
+      co_author_invitation:
+        accept: Aceitar
+        accepted_html: "%{user} aceitou seu convite para ser coautor de %{title}"
+        credited: Você está creditado como coautor desta publicação.
+        decline: Recusar
+        declined: Você recusou este convite.
+        invited_html: "%{user} convidou você para ser coautor de %{title}"
+        pending: Se você aceitar, será creditado como coautor desta publicação.
+        remove: Remover-me como coautor
       comment:
         commented_html: "%{user} comentou em %{title}"
         first_html: "%{user} escreveu seu primeiro comentário em %{title}"
@@ -91,6 +103,13 @@ pt:
         deverification_heading: Verificação revogada
         deverification_html: "A verificação de %{org} foi revogada porque não encontramos mais um link para sua página de organização na URL verificada anteriormente."
         reverify: Re-verificar sua organização
+      organization_invitation:
+        accept: Aceitar
+        decline: Recusar
+        invited_by_html: "%{user} convidou você para participar da organização %{org}"
+        invited_html: "Você foi convidado para participar da organização %{org}"
+        joined: Você entrou nesta organização.
+        pending: Se você aceitar, se tornará membro desta organização.
       settings: Configurações
       tag:
         heading: "Olá 👋"

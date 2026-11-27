@@ -11,7 +11,70 @@ RSpec.describe "OrganizationSettings" do
       it "renders the settings page" do
         get "/#{organization.slug}/settings"
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("Page")
+        expect(response.body).to include("Organization details")
+      end
+
+      context "when org_readme is enabled" do
+        before do
+          FeatureFlag.add(:org_readme)
+          FeatureFlag.enable(:org_readme, FeatureFlag::Actor[organization])
+        end
+
+        it "renders the organization pages section link and list block" do
+          get "/#{organization.slug}/settings"
+          expect(response.body).to include("section-pages-list")
+          expect(response.body).to include("No custom pages created yet.")
+        end
+
+        it "renders the list of pages if pages exist" do
+          create(:page, organization: organization, title: "Our Custom Page Title", slug: "#{organization.slug}/readme", template: "full_within_layout")
+          get "/#{organization.slug}/settings"
+          expect(response.body).to include("Our Custom Page Title")
+          expect(response.body).to include("Showcase")
+        end
+      end
+
+      it "shows the remove cover image control when a cover image exists" do
+        FeatureFlag.add(:org_readme)
+        FeatureFlag.enable(:org_readme, FeatureFlag::Actor[organization])
+        organization.update!(cover_image: fixture_file_upload("800x600.png", "image/png"))
+
+        get "/#{organization.slug}/settings"
+
+        expect(response.body).to include("organization_remove_cover_image")
+      end
+
+      it "escapes apostrophes in member and organization names inside confirmation handlers", :aggregate_failures do
+        member = create(:user, name: "Pat O'Connor")
+        pending_user = create(:user, name: "Sam D'Angelo")
+        other_admin = create(:user, name: "Alex O'Brien")
+        create(:organization_membership, organization: organization, user: member, type_of_user: "member")
+        create(:organization_membership, organization: organization, user: pending_user, type_of_user: "pending")
+        create(:organization_membership, organization: organization, user: other_admin, type_of_user: "admin")
+
+        get "/#{organization.slug}/settings"
+
+        doc = Nokogiri::HTML(response.body)
+        onsubmit_values = doc.css("form[onsubmit]").pluck("onsubmit")
+
+        expect(onsubmit_values).to include(a_string_including("Pat O\\'Connor"))
+        expect(onsubmit_values).to include(a_string_including("Sam D\\'Angelo"))
+        expect(onsubmit_values).to include(a_string_including("Alex O\\'Brien"))
+        expect(onsubmit_values).not_to include(a_string_including("Pat O'Connor"))
+        expect(onsubmit_values).not_to include(a_string_including("Sam D'Angelo"))
+        expect(onsubmit_values).not_to include(a_string_including("Alex O'Brien"))
+      end
+
+      it "escapes apostrophes in the organization name inside the delete confirmation handler", :aggregate_failures do
+        organization.update!(name: "O'Reilly Dev")
+
+        get "/#{organization.slug}/settings"
+
+        doc = Nokogiri::HTML(response.body)
+        delete_form = doc.at_css("form[action='/organizations/#{organization.id}']")
+
+        expect(delete_form["onsubmit"]).to include("O\\'Reilly Dev")
+        expect(delete_form["onsubmit"]).not_to include("O'Reilly Dev")
       end
     end
 
@@ -43,87 +106,35 @@ RSpec.describe "OrganizationSettings" do
 
     context "when org_readme is enabled" do
       before do
-        allow(FeatureFlag).to receive(:enabled?).and_return(false) # Default
-        allow(FeatureFlag).to receive(:enabled?).with(:org_readme, anything).and_return(true)
+        FeatureFlag.add(:org_readme)
+        FeatureFlag.enable(:org_readme, FeatureFlag::Actor[organization])
       end
 
-      it "creates a Page record when submitting page_markdown" do
-        expect {
-          patch "/#{organization.slug}/settings", params: {
-            organization: { page_markdown: "# Welcome to our org" }
-          }
-        }.to change(Page, :count).by(1)
+      it "removes an existing cover image" do
+        organization.update!(cover_image: fixture_file_upload("800x600.png", "image/png"))
 
-        page = organization.pages.first
-        expect(page.body_markdown).to eq("# Welcome to our org")
-        expect(page.title).to eq(organization.name)
-        expect(page.slug).to eq("#{organization.slug}/readme")
-      end
-
-      it "processes page_markdown into HTML via Page record" do
         patch "/#{organization.slug}/settings", params: {
-          organization: { page_markdown: "**bold**" }
+          organization: { remove_cover_image: "1" }
         }
-        page = organization.pages.first
-        expect(page.processed_html).to include("<strong>bold</strong>")
-      end
 
-      it "ignores organization_id spoofing via parameters" do
-        other_org = create(:organization)
-        expect {
-          patch "/#{organization.slug}/settings", params: {
-            organization: { 
-              page_markdown: "# Welcome to our org",
-              organization_id: other_org.id
-            }
-          }
-        }.to change(Page, :count).by(1)
-
-        page = organization.pages.last
-        expect(page.organization_id).to eq(organization.id)
-        expect(page.organization_id).not_to eq(other_org.id)
-      end
-
-      it "updates existing Page record on subsequent edits" do
-        patch "/#{organization.slug}/settings", params: {
-          organization: { page_markdown: "# First" }
-        }
-        expect {
-          patch "/#{organization.slug}/settings", params: {
-            organization: { page_markdown: "# Updated" }
-          }
-        }.not_to change(Page, :count)
-        expect(organization.pages.first.body_markdown).to eq("# Updated")
-      end
-
-      it "destroys Page record when page_markdown is cleared" do
-        patch "/#{organization.slug}/settings", params: {
-          organization: { page_markdown: "# Hello" }
-        }
-        expect {
-          patch "/#{organization.slug}/settings", params: {
-            organization: { page_markdown: "" }
-          }
-        }.to change(Page, :count).by(-1)
+        expect(organization.reload.cover_image).to be_blank
       end
     end
 
     context "when org_readme is disabled" do
       before do
-        allow(FeatureFlag).to receive(:enabled?).and_return(false)
-        allow(FeatureFlag).to receive(:enabled?).with(:org_readme, anything).and_return(false)
+        FeatureFlag.add(:org_readme)
+        FeatureFlag.disable(:org_readme, FeatureFlag::Actor[organization])
       end
 
-      it "does not process page_markdown" do
-        expect {
-          patch "/#{organization.slug}/settings", params: {
-            organization: { 
-              page_markdown: "# Attempted page update"
-            }
-          }
-        }.not_to change(Page, :count)
+      it "does not remove a cover image" do
+        organization.update!(cover_image: fixture_file_upload("800x600.png", "image/png"))
 
-        organization.reload
+        patch "/#{organization.slug}/settings", params: {
+          organization: { remove_cover_image: "1" }
+        }
+
+        expect(organization.reload.cover_image).to be_present
       end
     end
 
@@ -149,6 +160,33 @@ RSpec.describe "OrganizationSettings" do
           }
         end.to raise_error(Pundit::NotAuthorizedError)
       end
+    end
+  end
+
+  describe "POST /:slug/settings/verify" do
+    before do
+      FeatureFlag.add(:org_verification)
+      FeatureFlag.enable(:org_verification, FeatureFlag::Actor[organization])
+      organization.update!(url: "https://example.com")
+      sign_in user
+    end
+
+    it "rejects non-http(s) schemes in verification_url" do
+      post organization_request_verification_path(organization.slug), params: {
+        verification_url: "javascript://example.com/%0aalert(1)"
+      }
+
+      expect(organization.reload.verification_url).to be_nil
+    end
+
+    it "normalizes a domain-only verification_url to https://" do
+      allow(Organizations::VerifyLinkbackWorker).to receive(:perform_async)
+
+      post organization_request_verification_path(organization.slug), params: {
+        verification_url: "example.com/about"
+      }
+
+      expect(organization.reload.verification_url).to eq("https://example.com/about")
     end
   end
 end

@@ -20,6 +20,7 @@ module Admin
       end
       
       @configs = BillboardPlacementAreaConfig.order(:placement_area) if missing_areas.any?
+      @live_counts_by_area = Billboard.approved_and_published.group(:placement_area).count
     end
 
     def edit
@@ -46,6 +47,8 @@ module Admin
         :signed_in_rate,
         :signed_out_rate,
         :cache_expiry_seconds,
+        :hidden_by_default,
+        :fully_cached,
         selection_weights: [
           :random_selection,
           :new_and_priority,

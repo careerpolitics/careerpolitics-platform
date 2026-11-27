@@ -28,8 +28,24 @@
     </div>
 
     <div class="crayons-field">
+      <%= label_tag :special_behavior, "Special Behavior:", class: "crayons-field__label" %>
+      <%= select_tag :special_behavior, options_for_select([["None", "nothing"], ["Delayed (10s delay)", "delayed"], ["Persistent (Minimizes to sidebar)", "persistent"]], selected: @billboard.special_behavior), class: "crayons-select" %>
+    </div>
+
+    <div class="crayons-field">
+      <%= label_tag :minimized_body_markdown, "Minimized Body Content (required for Persistent billboards):", class: "crayons-field__label" %>
+      <%= text_area_tag :minimized_body_markdown, @billboard.minimized_body_markdown, size: "100x5", class: "crayons-textfield" %>
+    </div>
+
+    <div class="crayons-field">
       <%= label_tag :render_mode, "Render Mode:", class: "crayons-field__label" %>
       <%= select_tag :render_mode, options_for_select([["Forem Markdown", "forem_markdown"], ["Raw", "raw"]], selected: @billboard.render_mode), class: "crayons-select" %>
+    </div>
+
+    <div class="crayons-field">
+      <%= label_tag :isolate_content, "Isolate Content (Shadow DOM):", class: "crayons-field__label" %>
+      <%= select_tag :isolate_content, options_for_select([["Off (Default)", false], ["On (Shadow DOM & JS Sandbox)", true]], selected: @billboard.isolate_content), class: "crayons-select" %>
+      <p class="crayons-field__description">Wraps Raw HTML billboards in an open Shadow DOM and scoped JS sandbox so styles, DOM IDs, and scripts cannot leak onto the page.</p>
     </div>
 
     <div class="crayons-field">
@@ -80,7 +96,7 @@
     </div>
 
     <div class="crayons-field">
-      <fieldset aria-describedby="section-description" aria-describedby="display-to-description">
+      <fieldset aria-describedby="display-to-description">
         <legend class="crayons-field crayons-field__label pl-0">Display to user group</legend>
         <p id="display-to-description" class="crayons-field__description mb-2">Determines which user group will be able to see the Billboard</p>
 
@@ -127,7 +143,7 @@
     </div>
 
     <div class="crayons-field">
-      <fieldset aria-describedby="section-description" aria-describedby="type-of-description">
+      <fieldset>
         <legend class="crayons-field crayons-field__label pl-0">Type</legend>
 
         <label class="crayons-field crayons-field--radio mb-2">
@@ -163,15 +179,49 @@
       <p class="crayons-field__description">Billboard will automatically be marked as not approved after this time</p>
     </div>
 
+    <fieldset class="flex flex-col gap-4">
+      <legend class="crayons-field__label mb-2"><%= t("views.admin.billboard_campaigns.delivery_controls") %></legend>
+      <div class="crayons-field">
+        <%= label_tag :billboard_campaign_id, t("views.admin.billboard_campaigns.campaign"), class: "crayons-field__label" %>
+        <% campaign_select_options = (@campaigns_for_select || []).map { |c| ["#{c.name} (##{c.id})", c.id] } %>
+        <%= select_tag :billboard_campaign_id,
+                       options_for_select(campaign_select_options, selected: @billboard.billboard_campaign_id),
+                       include_blank: t("views.admin.billboards.filters.standalone"),
+                       class: "crayons-select",
+                       aria: { describedby: "billboard-campaign-help" } %>
+        <p id="billboard-campaign-help" class="crayons-field__description">
+          <%= t("views.admin.billboard_campaigns.membership_help_html", campaigns: link_to(t("views.admin.billboard_campaigns.title"), admin_billboard_campaigns_path, class: "c-link")) %>
+        </p>
+      </div>
+      <p id="billboard-caps-help" class="crayons-field__description"><%= t("views.admin.billboard_campaigns.billboard_limits") %></p>
+      <% %i[max_impressions_count max_clicks_count].each do |attribute| %>
+        <div class="crayons-field">
+          <%= label_tag attribute, t("views.admin.billboard_campaigns.#{attribute}"), class: "crayons-field__label" %>
+          <%= number_field_tag attribute, @billboard.public_send(attribute), min: 0, max: BillboardCampaign::MAX_CAP, required: true, class: "crayons-textfield", autocomplete: "off", aria: { describedby: "billboard-caps-help" } %>
+        </div>
+      <% end %>
+    </fieldset>
+
     <div class="crayons-field">
       <%= label_tag :priority, "Prioritized:", class: "crayons-field__label" %>
       <%= select_tag :priority, options_for_select([false, true], selected: @billboard.priority), class: "crayons-select" %>
+    </div>
+
+    <div class="crayons-field">
+      <%= label_tag :weight, t("views.admin.billboards.form.weight"), class: "crayons-field__label" %>
+      <%= number_field_tag :weight, @billboard.weight, min: 0, max: 10_000, step: "any", class: "crayons-textfield", autocomplete: "off" %>
+      <p class="crayons-field__description"><%= t("views.admin.billboards.form.weight_help") %></p>
+    </div>
+
+    <div class="crayons-field">
+      <%= label_tag :dismissal_sku, t("views.admin.billboards.form.dismissal_sku"), class: "crayons-field__label" %>
+      <%= text_field_tag :dismissal_sku, @billboard.dismissal_sku, class: "crayons-textfield", placeholder: "e.g. spring-promo-2026", autocomplete: "off" %>
     </div>
   </div>
   <div>
     <div class="crayons-card crayons-card--secondary crayons-bb text-styles text-styles--billboard" style="<%= @billboard.style_string %>">
       <% if @billboard.persisted? %>
-        <%= @billboard.processed_html.html_safe %>
+        <%= billboard_body_html(@billboard, @billboard.processed_html, allow_embed_passthrough: false) %>
       <% else %>
         <div class="flex flex-col gap-3">
           <p>

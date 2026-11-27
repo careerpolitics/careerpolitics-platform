@@ -31,7 +31,10 @@ RSpec.describe RateLimitChecker, type: :service do
     described_class::ACTION_LIMITERS
       .except(:published_article_creation,
               :published_article_antispam_creation,
-              :comment_antispam_creation).each do |action, _options|
+              :comment_creation,
+              :comment_antispam_creation,
+              :mention_creation,
+              :mention_antispam_creation).each do |action, _options|
       it "returns true if #{action} limit has been reached" do
         allow(Rails.cache).to receive(:read).with(
           cache_key(action), raw: true
@@ -46,6 +49,22 @@ RSpec.describe RateLimitChecker, type: :service do
         ).and_return(Settings::RateLimit.public_send(action))
 
         expect(rate_limit_checker.limit_by_action(action)).to be(false)
+      end
+    end
+
+    context "when filing flag appeals" do
+      it "limits with Settings::RateLimit.flag_appeal_creation and a five minute retry window" do
+        allow(Settings::RateLimit).to receive(:flag_appeal_creation).and_return(3)
+        allow(Rails.cache).to receive(:read).with(cache_key(:flag_appeal_creation), raw: true).and_return(4)
+
+        expect(described_class::ACTION_LIMITERS.dig(:flag_appeal_creation, :retry_after)).to eq(300)
+        expect(rate_limit_checker.limit_by_action(:flag_appeal_creation)).to be(true)
+        expect { rate_limit_checker.check_limit!(:flag_appeal_creation) }
+          .to raise_error(described_class::LimitReached) { |error| expect(error.retry_after).to eq(300) }
+      end
+
+      it "defaults to 3 appeals per window" do
+        expect(Settings::RateLimit.flag_appeal_creation).to eq(3)
       end
     end
 
@@ -142,10 +161,22 @@ RSpec.describe RateLimitChecker, type: :service do
       expect { rate_limit_checker.check_limit!(:image_upload) }.to raise_error(described_class::LimitReached)
     end
 
+    it "raises LimitReached with retry_after for comment_creation" do
+      allow(rate_limit_checker).to receive(:limit_by_action).with(:comment_creation).and_return(true)
+      expect { rate_limit_checker.check_limit!(:comment_creation) }
+        .to raise_error(described_class::LimitReached) { |error| expect(error.retry_after).to eq(30) }
+    end
+
     it "returns nil if running in end to end tests" do
       allow(ApplicationConfig).to receive(:[]).with("E2E").and_return("true")
 
       expect(rate_limit_checker.check_limit!(:image_upload)).to be_nil
+    end
+
+    it "raises LimitReached for an action without a retry_after entry" do
+      allow(rate_limit_checker).to receive(:limit_by_action).and_return(true)
+
+      expect { rate_limit_checker.check_limit!(:comment_creation) }.to raise_error(described_class::LimitReached)
     end
   end
 
@@ -161,6 +192,52 @@ RSpec.describe RateLimitChecker, type: :service do
     end
   end
 
+  describe "#consume!" do
+    let(:cache) { ActiveSupport::Cache::MemoryStore.new }
+
+    before { allow(Rails).to receive(:cache).and_return(cache) }
+
+    it "allows exactly the configured number of attempts per window" do
+      allow(Settings::RateLimit).to receive(:api_image_upload).and_return(2)
+
+      2.times { expect(rate_limit_checker.consume!(:api_image_upload)).to be_nil }
+      expect { rate_limit_checker.consume!(:api_image_upload) }
+        .to raise_error(described_class::LimitReached)
+    end
+
+    it "blocks every attempt when the limit is 0" do
+      allow(Settings::RateLimit).to receive(:api_ai_image_generation).and_return(0)
+
+      expect { rate_limit_checker.consume!(:api_ai_image_generation) }
+        .to raise_error(described_class::LimitReached)
+    end
+
+    it "uses the configured window for the cache expiry and retry_after" do
+      allow(Settings::RateLimit).to receive_messages(api_ai_image_generation: 0,
+                                                     api_ai_image_generation_window_seconds: 7200)
+      allow(cache).to receive(:increment).and_call_original
+
+      expect { rate_limit_checker.consume!(:api_ai_image_generation) }
+        .to raise_error(described_class::LimitReached) { |error| expect(error.retry_after).to eq(7200) }
+      expect(cache).to have_received(:increment)
+        .with(cache_key(:api_ai_image_generation), 1, expires_in: 7200.seconds, raw: true)
+    end
+
+    it "tracks limits separately per action" do
+      allow(Settings::RateLimit).to receive_messages(api_image_upload: 1, api_ai_image_generation: 1)
+
+      rate_limit_checker.consume!(:api_image_upload)
+      expect(rate_limit_checker.consume!(:api_ai_image_generation)).to be_nil
+    end
+
+    it "does nothing when running in end to end tests" do
+      allow(ApplicationConfig).to receive(:[]).with("E2E").and_return("true")
+      allow(Settings::RateLimit).to receive(:api_image_upload).and_return(0)
+
+      expect(rate_limit_checker.consume!(:api_image_upload)).to be_nil
+    end
+  end
+
   describe "#limit_by_email_recipient_address" do
     before do
       allow(Settings::RateLimit).to receive(:email_recipient).and_return(1)
@@ -173,6 +250,116 @@ RSpec.describe RateLimitChecker, type: :service do
 
     it "returns false if we are below the message limit for this recipient" do
       expect(described_class.new.limit_by_email_recipient_address(user.email)).to be(false)
+    end
+  end
+
+  describe "trust-tiered mention rate limits" do
+    let(:cache) { ActiveSupport::Cache::MemoryStore.new }
+
+    before do
+      allow(Rails).to receive(:cache).and_return(cache)
+    end
+
+    it "applies strict per-post and hourly limits to brand-new or 0-badge users" do
+      new_user = create(:user, created_at: 1.hour.ago, badge_achievements_count: 0)
+      checker = described_class.new(new_user)
+
+      expect(checker.untrusted_mentioner?).to be(true)
+      expect(checker.max_mentions_per_post).to eq(Settings::RateLimit.mention_antispam_creation)
+      expect(checker.hourly_mention_limit).to eq(Settings::RateLimit.mention_antispam_hourly_limit)
+    end
+
+    it "applies intermediate per-post and hourly limits to low-trust users (1-3 badges, not new)" do
+      low_trust = create(:user, created_at: 10.days.ago, badge_achievements_count: 2)
+      checker = described_class.new(low_trust)
+
+      expect(checker.low_trust_mentioner?).to be(true)
+      expect(checker.max_mentions_per_post).to eq(3)
+      expect(checker.hourly_mention_limit).to eq(Settings::RateLimit.mention_antispam_hourly_limit * 2)
+    end
+
+    it "applies standard limits to established users (4-6 badges, not new)" do
+      established = create(:user, created_at: 10.days.ago, badge_achievements_count: 4)
+      checker = described_class.new(established)
+
+      expect(checker.established_mentioner?).to be(true)
+      expect(checker.max_mentions_per_post).to eq(Settings::RateLimit.mention_creation)
+      expect(checker.hourly_mention_limit).to eq(Settings::RateLimit.mention_hourly_limit)
+    end
+
+    it "applies generous hourly limits to trusted users" do
+      trusted = create(:user, :trusted, created_at: 10.days.ago)
+      checker = described_class.new(trusted)
+
+      expect(checker.trusted_mentioner?).to be(true)
+      expect(checker.max_mentions_per_post).to eq(Settings::RateLimit.mention_creation)
+      expect(checker.hourly_mention_limit).to eq(Settings::RateLimit.mention_hourly_limit * 3)
+    end
+
+    it "tracks hourly mentions and flags when the user's hourly mention limit is exceeded" do
+      new_user = create(:user, created_at: 1.hour.ago, badge_achievements_count: 0)
+      checker = described_class.new(new_user)
+      allow(ForemStatsClient).to receive(:increment)
+
+      checker.track_mentions(3)
+      expect(checker.mention_rate_limit_reached?(new_mentions_count: 1)).to be(false)
+      expect(checker.mention_rate_limit_reached?(new_mentions_count: 2)).to be(true)
+      expect(ForemStatsClient).to have_received(:increment).with(
+        "rate_limit.limit_reached",
+        tags: ["user:#{new_user.id}", "action:mention_antispam_creation"],
+      )
+    end
+
+    it "preserves cached mentions from other content while excluding only the current persisted record" do
+      new_user = create(:user, created_at: 1.hour.ago, badge_achievements_count: 0)
+      old_article_a = create(:published_article, user: new_user)
+      old_article_b = create(:published_article, user: new_user)
+      old_article_a.update_column(:published_at, 2.days.ago)
+      old_article_b.update_column(:published_at, 3.days.ago)
+      checker = described_class.new(new_user)
+
+      checker.track_mentions(3, notifiable: old_article_a)
+
+      expect(checker.recent_mention_count(exclude_notifiable: old_article_a)).to eq(0)
+      expect(checker.recent_mention_count(exclude_notifiable: old_article_b)).to eq(3)
+      expect(checker.mention_rate_limit_reached?(new_mentions_count: 2, exclude_notifiable: old_article_b)).to be(true)
+      expect(checker.mention_rate_limit_reached?(new_mentions_count: 3, exclude_notifiable: old_article_a)).to be(false)
+    end
+
+    it "atomically reserves mention capacity and releases it when rolled back" do
+      new_user = create(:user, created_at: 1.hour.ago, badge_achievements_count: 0)
+      checker = described_class.new(new_user)
+
+      reservation = checker.reserve_mentions!(new_mentions_count: 3)
+      expect(reservation).to include(delta: 3, count: 3)
+      expect(checker.reserve_mentions!(new_mentions_count: 2)).to be_nil
+
+      checker.release_mentions(reservation)
+      expect(checker.recent_mention_count).to eq(0)
+      expect(checker.reserve_mentions!(new_mentions_count: 2)).to include(delta: 2, count: 2)
+    end
+
+    it "counts recent persisted mentions across comments and articles with UNION ALL and excludes the target" do
+      new_user = create(:user, created_at: 30.minutes.ago, badge_achievements_count: 0)
+      mentioned_a = create(:user)
+      mentioned_b = create(:user)
+      mentioned_c = create(:user)
+      article = create(:published_article, user: new_user)
+      unpublished = create(:article, user: new_user, published: false)
+      comment = create(:comment, user: new_user, commentable: article)
+      other_comment = create(:comment, commentable: article)
+
+      create(:mention, user: mentioned_a, mentionable: article, created_at: 10.minutes.ago)
+      create(:mention, user: mentioned_b, mentionable: comment, created_at: 10.minutes.ago)
+      create(:mention, user: mentioned_c, mentionable: comment, created_at: 2.hours.ago)
+      create(:mention, user: mentioned_c, mentionable: unpublished, created_at: 10.minutes.ago)
+      create(:mention, user: mentioned_c, mentionable: other_comment, created_at: 10.minutes.ago)
+
+      checker = described_class.new(new_user)
+
+      expect(checker.recent_mention_count).to eq(2)
+      expect(checker.recent_mention_count(exclude_notifiable: article)).to eq(1)
+      expect(checker.recent_mention_count(exclude_notifiable: comment)).to eq(1)
     end
   end
 end

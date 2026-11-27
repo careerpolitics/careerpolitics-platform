@@ -160,7 +160,10 @@ en:
           heading: Delete %{user}'s account
           onsubmit: Are you sure? This action is irreversible.
           desc2: Once deleted, all data relating to %{user} will be removed from our database.
-          notice: Only Super Admins are allowed to delete users.
+          notice: Only admins are allowed to delete users.
+          activity_threshold_notice: Only Super Admins are allowed to delete users with %{count} or more published posts and comments.
+          super_admin_notice: Only Super Admins are allowed to delete admin accounts.
+          self_delete_notice: You cannot delete your own account from the admin panel.
           submit: Delete now
         update_email:
           heading: Update User Email
@@ -324,6 +327,7 @@ en:
               resource_admin_billboard: Billboard Admin
               resource_admin_data_update_script: Data Update Script Admin
               resource_admin_feedback_message: Feedback Message Admin
+              resource_admin_flag_appeal: Flag Appeal Admin
               resource_admin_html_variant: HTML Variant Admin
               resource_admin_listing_category: Listing Category Admin
               resource_admin_page: Page Admin
@@ -331,6 +335,7 @@ en:
               resource_admin_event: Event Admin
               resource_admin_survey: Survey Admin
               resource_admin_organization: Organization Admin
+              resource_admin_organization_page_management: Organization Page Management Admin
               resource_admin_podcast: Podcast Admin
               resource_admin_navigation_link: Navigation Link Admin
               resource_admin_request_redirect: Request Redirect Admin
@@ -346,6 +351,8 @@ en:
               tech_admin: Tech Admin
               trusted: Trusted
               warned: Warned
+              community_leader_level_1: Community Leader Level 1
+              community_leader_level_2: Community Leader Level 2
           tag_mod:
             subtitle: Tags
             aria_learn: Learn more about tag moderation
@@ -358,6 +365,10 @@ en:
           description: The user flags affect the scores of articles and comments. Each valid or open user flag further reduces the score of the article and comment.
           no_flags: No flags received against this user yet.
           title: Flags received
+        content_flags:
+          description: Flags left on this member's posts and comments, including flags raised automatically by moderation. Marking one invalid restores the content's score.
+          no_flags: No flags received against this user's posts or comments yet.
+          title: Flags on posts and comments
         profile:
           locked:
             icon: Access locked
@@ -382,6 +393,18 @@ en:
             remove_social: Remove social accounts
             banish: Banish user
             delete: Delete user
+        password:
+          title: Password access
+          description: Set a new password directly or send the user a password reset email with context that it was triggered by an admin.
+          new_password: New password
+          password_confirmation: Confirm new password
+          submit: Update password
+          success: Password updated successfully.
+          reset_title: Send password reset email
+          reset_description: Send the user a reset link that explains it was initiated by an admin for their benefit.
+          reset_submit: Send password reset email
+          reset_sent: Password reset email sent successfully.
+          reset_error: Failed to send password reset email.
         edit_profile:
           heading: Edit %{user}'s profile
           desc_html: Changes you make here are immediately public on the user's profile.
@@ -450,12 +473,21 @@ en:
           overview: Overview
           notes: Notes
           emails: Emails
+          security: Security
           reports: Reports
           flags: Flags
           articles: Articles
           comments: Comments
+          identities: Auth Identities
+          badges: Badges
+          reactions: Reactions
+          agent_sessions: Agent Sessions
+          collections: Series
+          follows: Follows
+          blocks: Blocks
           audit_log: Audit Log
           unpublish_logs: Unpublish All History
+          more_details: More Details
         status_title: Current status
         status_reader: "Current status:"
         more_orgs:
@@ -475,6 +507,7 @@ en:
           "Resource Admin: Billboard": "Resource Admin: Billboard"
           "Resource Admin: DataUpdateScript": "Resource Admin: DataUpdateScript"
           "Resource Admin: FeedbackMessage": "Resource Admin: FeedbackMessage"
+          "Resource Admin: FlagAppeal": "Resource Admin: FlagAppeal"
           "Resource Admin: HtmlVariant": "Resource Admin: HtmlVariant"
           "Resource Admin: ListingCategory": "Resource Admin: ListingCategory"
           "Resource Admin: Page": "Resource Admin: Page"
@@ -482,6 +515,7 @@ en:
           "Resource Admin: Event": "Resource Admin: Event"
           "Resource Admin: Survey": "Resource Admin: Survey"
           "Resource Admin: Organization": "Resource Admin: Organization"
+          "Resource Admin: OrganizationPageManagement": "Resource Admin: OrganizationPageManagement"
           "Resource Admin: Podcast": "Resource Admin: Podcast"
           "Resource Admin: NavigationLink": "Resource Admin: NavigationLink"
           "Resource Admin: RequestRedirect": "Resource Admin: RequestRedirect"
@@ -491,6 +525,8 @@ en:
           "Resource Admin: ProfileField": "Resource Admin: ProfileField"
           "Resource Admin: ProfileFieldGroup": "Resource Admin: ProfileFieldGroup"
           Super Moderator: Super Moderator
+          Community Leader Level 1: Community Curator Level 1
+          Community Leader Level 2: Community Curator Level 2
         statuses:
           Warned: Warned
           Comment Suspended: Comment Suspended
@@ -507,7 +543,83 @@ en:
           facebook: Facebook
           github: GitHub
           twitter: Twitter
+        identities_tab:
+          title: Connected Auth Identities
+          empty: No auth identities associated with this user.
+          remove: Remove Auth Identity
+          table:
+            provider: Provider
+            uid: UID
+            username: Username / Name
+            email: Email
+            created_at: Linked At
+            actions: Actions
+        collections_tab:
+          title: Series & Collections
+          empty: No series or collections found for this user.
+          table:
+            title: Title
+            description: Description
+            articles_count: Articles
+            created_at: Created At
+        follows_tab:
+          title: Follows & Followers
+          followers: Followers
+          following: Following
+          empty: No follows found.
+          table:
+            user: User
+            username: Username
+            followed_at: Followed At
+        blocks_tab:
+          title: User Blocks
+          blocking: Blocking
+          blocked_by: Blocked By
+          empty: No user blocks found.
+          table:
+            user: User
+            username: Username
+            blocked_at: Blocked At
+        badges_tab:
+          title: Badges & Achievements
+          empty: No badges earned or awarded yet.
+          manage_badges: Manage Badges
+          system: System Awarded
+          table:
+            badge: Badge
+            description: Description
+            awarded_by: Awarded By
+            awarded_at: Awarded At
+        reactions_tab:
+          title: User Reactions
+          empty: No reactions found for this user.
+          deleted_target: Deleted Content
+          table:
+            category: Category
+            target_type: Type
+            target: Content
+            status: Status
+            created_at: Created At
+        agent_sessions_tab:
+          title: Agent Sessions
+          empty: No agent sessions found for this user.
+          published: Published
+          draft: Draft
+          view: View
+          curate: Curate
+          table:
+            title: Title
+            tool: Tool
+            status: Status
+            messages: Messages
+            created_at: Created At
+            actions: Actions
       organizations:
+        name:
+          heading: Organization Name
+          description: Update this organization's display name.
+          label: Organization name
+          submit: Update Name
         profile:
           id: ID %{organizationid}
           since_html: Organization since %{time}
@@ -560,6 +672,39 @@ en:
             enable: Enable Dofollow
             disable: Disable Dofollow
             enabled_notice: Dofollow links are enabled for this organization's readme page.
+          related_articles:
+            label: Related Articles API
+            description: When enabled, members of this organization can call the related articles API to find public community writing about their technology.
+            enable: Enable Related Articles
+            disable: Disable Related Articles
+            enabled_notice: The related articles API is enabled for this organization.
+          article_analytics:
+            label: Article Analytics API
+            description: When enabled, members of this organization can export their own articles' performance through the analytics API.
+            enable: Enable Article Analytics
+            disable: Disable Article Analytics
+            enabled_notice: The article analytics API is enabled for this organization.
+        bulk_add_users:
+          heading: Bulk Add Members
+          description: "Add multiple users to this organization at once. Enter a comma-separated list of usernames (with or without @ and spaces). Existing members will be skipped."
+          usernames_label: Usernames
+          usernames_placeholder: "username1, @username2, username3"
+          role_label: Role
+          roles:
+            member: Member
+            admin: Admin
+          submit: Bulk Add Members
+      favorites:
+        leaderboard:
+          heading: Impact Leaderboard
+          description: User ranking by downstream engagement of their gem content.
+          empty: No gem content yet.
+          rank: Rank
+          leader: Curator
+          favorites: Gems
+          articles: Articles
+          comments: Comments
+          impact: Impact
       org_features:
         heading: Org Features
         description: Manage organization feature flags globally or per-organization.
@@ -607,9 +752,203 @@ en:
           lookback_button: "Trigger Lookback"
           similarity_threshold: "Similarity Threshold"
         form:
+          score: "Concept Score"
+          score_placeholder: "e.g. 1.0 (optional)"
+          score_help: "Manual score/weight adjustment used for ranking."
           similarity_threshold: "Similarity Threshold"
           similarity_threshold_placeholder: "e.g. 0.25 (optional)"
           similarity_threshold_help: "Optional. Float between 0.0 and 1.0. If left blank, the system default (0.28) is used."
         index:
           threshold: "Threshold"
           default: "default"
+      events:
+        fork: "Fork"
+        fork_event: "Fork Event"
+        status:
+          published: "Published"
+          draft: "Draft"
+        index:
+          subtitle: "Manage conferences, livestreams, challenges, and nested sub-events."
+          total_events: "total events"
+          matching_events: "matching events"
+          top_level_events: "top-level events"
+          hierarchy_links: "parent–child links"
+          search_placeholder: "Search title or slug..."
+          search_label: "Search events by title or slug"
+          filter_by_type: "Filter events by type"
+          filter_by_status: "Filter events by status"
+          all_types: "All types"
+          all_statuses: "All statuses"
+          filter: "Filter"
+          reset: "Reset"
+          collapse_all: "Collapse All"
+          expand_all: "Expand All"
+          hierarchy_view: "Hierarchy"
+          flat_view: "Flat"
+          no_matching_events: "No events match the current filters."
+          toggle_sub_events: "Toggle sub-events for %{title}"
+          sub_event_live: "Sub-event LIVE"
+          sub_events_count:
+            one: "1 sub-event"
+            other: "%{count} sub-events"
+          nested_collapsed:
+            one: "+1 nested (view event)"
+            other: "+%{count} nested (view event)"
+          featured: "Featured"
+          shared_parents:
+            one: "In 1 parent"
+            other: "Shared in %{count} parents"
+          sub_event_badge: "Sub-event"
+          pages_count:
+            one: "1 page"
+            other: "%{count} pages"
+          add_sub_event: "+ Sub-event"
+          manage: "Manage"
+          more_actions: "More actions"
+        form:
+          back_to_events: "All Events"
+          back_to_event: "Back to Event"
+          public_url_label: "Public URL"
+          host_organization: "Host Organization ID"
+          host_organization_description: "Optional organization ID hosting this event (links to /<org_slug> on the event page)."
+          host_organization_placeholder: "Organization ID (e.g. 42)"
+          current_organization: "Currently linked: %{name} (/%{slug})"
+          allow_articles: "Allow Articles"
+          allow_articles_description: "Allow articles to be tagged directly to this event and displayed on the event page once the event starts."
+          time_zone: "Display Time Zone"
+          time_zone_description: "Optional IANA zone (e.g. 'America/New_York', 'UTC')."
+          registration_url: "External Registration URL"
+          registration_url_description: "Optional link for conference/meetup registration."
+          website_url: "Event Website URL"
+          website_url_description: "Optional external website link."
+          banner_image: "Wide Page Banner Image"
+          banner_image_description: "Ultra-wide hero header image for conference/event pages (1600×320, 5:1 aspect ratio). Distinct from the social sharing card."
+          banner_image_preview_alt: "Wide page banner preview"
+          banner_image_empty: "No wide banner uploaded — event page will use a clean solid header"
+          remove_banner_image: "Remove current banner image"
+          banner_image_url_fallback: "External Banner Image URL (optional fallback)"
+          external_banner_configured: "External banner URL configured:"
+          social_image: "Social & Card Image"
+          social_image_description: "Standard OpenGraph social card (og:image) and /events directory thumbnail (1200×630, 1.91:1 aspect ratio)."
+          social_image_preview_alt: "Social and card image preview"
+          social_image_empty: "No social image uploaded yet"
+          remove_social_image: "Remove current social image"
+          brand_accent_color: "Brand Accent Color"
+          brand_accent_color_description: "6-digit hex color used for the top brand line, navigation dot, and fallback card styling."
+          brand_color_picker_aria: "Brand color picker"
+          brand_color_preset_aria: "Set brand color to %{color}"
+          parent_events: "Parent Events (Optional)"
+          parent_events_description: "Assign this event as a sub-event of one or more parent events (e.g. a live stream session belonging to a conference)."
+          search_parent_events: "Filter available parent events..."
+          no_parent_events_available: "No eligible parent events available yet."
+          selected_parents_count: "Selected (%{count})"
+          selected_parents_label: "Selected"
+          top_level_hint: "None — standalone top-level event"
+          advanced_delegation: "Advanced: Page Delegation"
+          cancel: "Cancel"
+          sections:
+            basics: "Basics & Identity"
+            basics_subtitle: "Title, event type, URL slugs, host organization, and discovery tags."
+            schedule: "Schedule & Location"
+            schedule_subtitle: "Event timing in UTC, display time zone, venue, and external links."
+            branding: "Visual Branding & Media"
+            branding_subtitle: "Configure distinct wide page banners (5:1) and social sharing cards (1200×630), plus your brand accent color."
+            content: "Page Content & Agent Context"
+            content_subtitle: "Public Markdown body and optional full-text context for API and agent integrations."
+            publishing: "Livestream, Broadcast & Publishing"
+            publishing_subtitle: "Stream player URL, site-wide billboard broadcast behavior, and publication visibility."
+        show:
+          back_to_events: "All Events"
+          manage_button: "Manage Dashboard"
+          media_heading: "Branding & Media"
+          edit_media: "Edit Media"
+          banner_image: "Wide Page Banner"
+          social_image: "Social & Card Image"
+          not_configured: "Not configured"
+          using_site_default_social: "Not configured (falls back to site default social image)"
+          jump_overview: "Overview"
+          jump_hierarchy: "Hierarchy"
+          jump_pages: "Pages"
+          jump_billboards: "Billboards"
+          jump_signups: "Signups"
+          allow_articles: "Allow Articles"
+          enabled: "Enabled"
+          disabled: "Disabled"
+          tagged_articles_count:
+            one: "1 tagged article"
+            other: "%{count} tagged articles"
+          signups_title: "Event Signups"
+          no_signups: "No signups for this event yet."
+          headers:
+            user: "User"
+            signed_up_at: "Signed Up At"
+            notifications: "Notifications Sent"
+          notifications:
+            day_before: "1 Day Before"
+            hour_before: "1 Hour Before"
+            none: "None"
+      event_memberships:
+        heading: "Event Hierarchy (Parent & Sub-Events)"
+        subtitle: "Attach sub-events like livestreams, workshops, or challenges. Live sub-events are automatically promoted in the hero."
+        create_sub_event: "+ Create New Sub-Event"
+        belongs_to_heading: "Belongs To (Parent Events)"
+        view_parent: "View Parent"
+        sub_events_heading: "Scheduled Sub-Events"
+        detach: "Detach"
+        detach_confirm: "Detach this sub-event from the parent? Both events will remain intact."
+        headers:
+          order: "Order"
+          sub_event: "Sub-Event"
+          schedule: "Schedule"
+          membership_settings: "Track / Role & Featured"
+          actions: "Actions"
+        move_up: "Move up"
+        move_down: "Move down"
+        role_placeholder: "e.g. Keynote, Track A"
+        save: "Save"
+        no_sub_events: "No sub-events attached yet. Attach an existing event below or create a new sub-event."
+        attach_existing: "Attach Existing Event as Sub-Event"
+        filter_candidates_placeholder: "Filter events to attach..."
+        select_event: "Event"
+        choose_event_prompt: "Choose an event..."
+        role_label: "Track / Role (Optional)"
+        attach_button: "Attach Sub-Event"
+        child_not_found: "Could not find the selected sub-event."
+        created: "Attached '%{title}' as a sub-event."
+        updated: "Sub-event membership updated."
+        destroyed: "Detached '%{title}' from parent event."
+        reordered: "Sub-event order updated."
+      event_pages:
+        heading: Event Pages
+        manage_pages: Manage Pages
+        pages_button: Pages
+        back_to_event: Back to event
+        new_page: Create new page
+        new_showcase: Create Showcase / README
+        your_pages: Your Pages
+        order_help: Use the arrows to set the order of custom event tabs. If a Showcase / README page exists, it stays pinned first.
+        showcase: Showcase
+        showcase_slug_help: The Showcase / README page uses the readme slug and renders as the default landing view for this event, while the standard event view remains accessible as a tab.
+        show_in_navigation: Show in event navigation tabs
+        navigation_hint: Hidden pages remain accessible at their direct URL.
+        no_pages: No pages created for this event yet.
+        embed_section_description: Create sandboxed HTML widgets and interactive embeds scoped to this event. They can be embedded into any event page or article using the Liquid embed tag.
+        markdown_placeholder: "Use Markdown and Liquid tags to compose your event page.\n\nExample:\n## Schedule\n\n- 10:00 AM — Opening Keynote\n\n{% embed https://example.com/events/my-event/2026/embed/schedule %}"
+        created: Event page created successfully.
+        updated: Event page updated successfully.
+        deleted: Event page deleted successfully.
+        reordered: Event page order updated.
+      billboard_placement_area_configs:
+        index:
+          subtitle: Configure delivery rates, caching, visibility, and selection strategy weights per placement slot.
+          visibility: Visibility
+          hidden_by_default: Hidden by default
+          visible: Visible
+          caching: Caching
+          fully_cached: Fully cached
+          standard_caching: Standard
+        edit:
+          hidden_by_default: Hidden by default
+          hidden_by_default_desc_html: Billboards are still delivered to this placement area but render hidden, and record no impressions, until frontend logic reveals them with %{reveal_call}. Rendered billboards carry %{placement_attribute}.
+          fully_cached: Fully cached
+          fully_cached_desc: Serve one cached response per visitor location for this placement area, shared by every article and page and by signed-in visitors too, using the cache expiry above. Only billboards that don't target tags, articles, pages, audience segments, roles, survey completions or browser types are shown here. Articles whose authors opt out of nearby sponsors keep the standard behavior. Only affects billboards loaded separately from the page, not ones rendered into it (such as the home page sidebar).

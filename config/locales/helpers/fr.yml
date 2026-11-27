@@ -423,6 +423,15 @@ fr:
         mention:
           title: Titre de mention
           description: Description de mention
+        mention_antispam:
+          title: Titre de mention antispam
+          description: Description de mention antispam
+        mention_hourly:
+          title: Titre de mention horaire
+          description: Description de mention horaire
+        mention_antispam_hourly:
+          title: Titre de mention horaire antispam
+          description: Description de mention horaire antispam
         organization:
           title: Titre d'organisation
           description: Description d'organisation
@@ -595,6 +604,33 @@ fr:
         title: Limiter le nombre d'images téléchargées
         description: Combien d'images peut-on télécharger sur une période de 30 secondes
           ?
+      api_upload:
+        title: Limiter le nombre d'images téléchargées via l'API
+        description: Combien d'images peut-on télécharger via l'API pendant la fenêtre
+          de téléchargement d'images de l'API ? Mettre à 0 pour désactiver le téléchargement
+          d'images via l'API.
+      api_upload_window:
+        title: Fenêtre de téléchargement d'images de l'API (secondes)
+        description: Durée de la fenêtre, en secondes, pour la limite de téléchargement
+          d'images via l'API (par ex. 3600 pour une heure).
+      api_generation:
+        title: Limiter le nombre d'images IA générées via l'API
+        description: Combien d'images IA peut-on générer via l'API pendant la fenêtre
+          de génération d'images de l'API ? Les tentatives échouées sont aussi comptées.
+          Mettre à 0 pour désactiver la génération d'images via l'API.
+      api_generation_window:
+        title: Fenêtre de génération d'images IA de l'API (secondes)
+        description: Durée de la fenêtre, en secondes, pour la limite de génération
+          d'images IA via l'API (par ex. 86400 pour un jour).
+      agent_session_presign:
+        title: Limiter le nombre d'URL de téléchargement de sessions d'agent
+        description: Combien d'URL présignées de téléchargement de sessions d'agent peut-on
+          demander pendant la fenêtre de téléchargement des sessions d'agent ? Mettre à 0
+          pour désactiver le téléchargement des transcriptions brutes.
+      agent_session_presign_window:
+        title: Fenêtre de téléchargement des sessions d'agent (secondes)
+        description: Durée de la fenêtre, en secondes, pour la limite d'URL de téléchargement
+          de sessions d'agent (par ex. 3600 pour une heure).
       user:
         title: Limiter le nombre de modifications qu'une personne peut apporter à
           son compte
@@ -611,6 +647,10 @@ fr:
         title: Limiter le nombre de fois où une personne peut signaler un abus
         description: Combien de fois une personne peut-elle signaler un abus sur une
           période de 5 minutes ?
+      flag_appeal:
+        title: Limiter le nombre de recours de modération qu'une personne peut soumettre
+        description: Combien de recours de modération une personne peut-elle soumettre
+          sur une période de 5 minutes ?
       comment:
         title: Limiter le nombre de commentaires créés
         description: Combien de commentaires une personne peut-elle créer dans une
@@ -621,6 +661,15 @@ fr:
         title: Limiter le nombre de @-mentions dans un message ou un commentaire
         description: Combien de fois une personne peut-elle @-mentionner d'autres
           utilisateurs dans un message ou un commentaire ?
+      mention_antispam:
+        title: Limiter le nombre de @-mentions dans un message ou un commentaire par un nouveau membre
+        description: Combien d'autres utilisateurs un nouveau membre ou un membre peu fiable peut-il @-mentionner dans un message ou un commentaire ?
+      mention_hourly:
+        title: Limiter le nombre de @-mentions par heure
+        description: Combien d'autres utilisateurs un membre établi peut-il @-mentionner sur une période d'une heure ?
+      mention_antispam_hourly:
+        title: Limiter le nombre de @-mentions par heure par un nouveau membre
+        description: Combien d'autres utilisateurs un nouveau membre ou un membre peu fiable peut-il @-mentionner sur une période d'une heure ?
       listing:
         title: Limiter le nombre de listings créés
         description: Combien d'annonces peuvent être créées pendant une période d'une

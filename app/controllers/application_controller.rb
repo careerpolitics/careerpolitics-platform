@@ -26,6 +26,7 @@ class ApplicationController < ActionController::Base
   before_action :forward_to_app_config_domain
   before_action :redirect_custom_domain_non_profile_pages
   before_action :determine_locale
+  before_action :set_request_signed_in_context
   after_action  :clear_request_store
 
   include SessionCurrentUser
@@ -40,7 +41,7 @@ class ApplicationController < ActionController::Base
   # This was removed due to flakiness.
   # include EdgeCacheSafetyCheck unless Rails.env.production?
 
-  rescue_from ActionView::MissingTemplate, with: :routing_error
+  rescue_from ActionView::MissingTemplate, with: :respond_with_missing_template
 
   rescue_from RateLimitChecker::LimitReached do |exc|
     error_too_many_requests(exc)
@@ -83,6 +84,13 @@ class ApplicationController < ActionController::Base
   ].freeze
   private_constant :CONTENT_CHANGE_PATHS
 
+  CONTENT_CHANGE_SURROGATE_KEYS = %w[
+    tags
+    onboarding-slideshow
+    main_app_home_page
+  ].freeze
+  private_constant :CONTENT_CHANGE_SURROGATE_KEYS
+
   # @!scope class
   # @!attribute [w] api_action
   #   If set to true, all actions on the class (and subclasses) will be considered "api_actions"
@@ -106,7 +114,7 @@ class ApplicationController < ActionController::Base
   def verify_private_forem
     return if controller_name.in?(PUBLIC_CONTROLLERS)
     return if self.class.module_parent.to_s == "Admin"
-    return if user_signed_in? || Settings::UserExperience.public
+    return if Settings::UserExperience.public || user_signed_in?
 
     if api_action?
       authenticate!
@@ -122,7 +130,12 @@ class ApplicationController < ActionController::Base
   #
   # @raise [ActiveRecord::RecordNotFound] when called
   def not_found
-    if request.env["forem.custom_domain_org"].present?
+    if (org = request.env["forem.custom_domain_org"]).present?
+      # These redirects inherit the action's edge-cache headers. Tag them with the org key, which
+      # EdgeCache::BustArticle purges whenever an org article changes, so a redirect cached while a
+      # post was a draft (or before it existed) doesn't outlive its publication.
+      set_surrogate_key_header(org.record_key)
+
       redirect_rule = RequestRedirect.find_by(
         request_domain: request.host&.downcase,
         original_url: request.fullpath
@@ -150,6 +163,23 @@ class ApplicationController < ActionController::Base
   # @raise [ActionController::RoutingError] when called
   def routing_error
     raise ActionController::RoutingError, "Routing Error"
+  end
+
+  # A missing template usually means the format negotiated from the Accept header has no
+  # template (e.g. a feed reader or bot asking for JSON on an HTML-only page), not that the
+  # page is missing. Render the 404 here rather than raising, so the response keeps headers that
+  # stop Fastly from caching it: an edge-cached 404 without Vary: Accept is served to browsers
+  # requesting the same URL, and carries no surrogate key for a purge to clear it.
+  def respond_with_missing_template
+    unset_cache_control_headers
+    response.headers["Cache-Control"] = "private, no-store"
+    add_vary_header("Accept")
+
+    if request.format.html?
+      render file: Rails.public_path.join("404.html"), layout: false, status: :not_found, content_type: "text/html"
+    else
+      head :not_found
+    end
   end
 
   # When called render unauthorized JSON status and raise Pundit::NotAuthorizedError
@@ -222,7 +252,7 @@ class ApplicationController < ActionController::Base
   #
   # @see {#authenticate_user}
   # @see {ApplicationPolicy} for discussion around authentication and authorization.
-  def authenticate_user!
+  def authenticate_user!(_opts = {})
     return true if authenticate_user
 
     respond_with_request_for_authentication
@@ -241,6 +271,8 @@ class ApplicationController < ActionController::Base
   end
 
   def should_redirect_to_subforem?(article)
+    return false if Subforem.disabled_by_env?
+
     subforem_not_same = article.subforem_id.present? && article.subforem_id != RequestStore.store[:subforem_id]
     subforem_not_default_and_no_subforem_id = article.subforem_id.blank? &&
       RequestStore.store[:subforem_id].present? &&
@@ -249,11 +281,13 @@ class ApplicationController < ActionController::Base
   end
 
   def redirect_page_if_different_subforem
+    return if Subforem.disabled_by_env?
     return unless @page.subforem_id.present? &&
       RequestStore.store[:subforem_id].present? &&
       @page.subforem_id != RequestStore.store[:subforem_id]
 
-    redirect_to URL.page(@page), allow_other_host: true, status: :moved_permanently
+    target_url = embedded_view? ? "#{URL.page(@page)}?mode=embed" : URL.page(@page)
+    redirect_to target_url, allow_other_host: true, status: :moved_permanently
   end
 
   def respond_with_request_for_authentication
@@ -281,7 +315,8 @@ class ApplicationController < ActionController::Base
     if current_user.saw_onboarding
       path = request.env["omniauth.origin"] || stored_location_for(resource) || root_path(signin: "true")
 
-      if URI.parse(path).path == "/signout_confirm"
+      parsed_path = URI.parse(path).path
+      if parsed_path == "/signout_confirm" || parsed_path&.start_with?("/users/password")
         path = root_path(signin: "true")
       end
 
@@ -319,14 +354,21 @@ class ApplicationController < ActionController::Base
   end
 
   def respond_with_user_suspended
+    unset_cache_control_headers
+    set_no_cache_header
     response.status = :forbidden
     render "pages/forbidden"
   end
 
   def internal_navigation?
-    params[:i] == "i"
+    params[:i] == "i" || params[:i].to_s.match?(/\A[a-f0-9]{8,12}\z/)
   end
   helper_method :internal_navigation?
+
+  def embedded_view?
+    params[:mode] == "embed"
+  end
+  helper_method :embedded_view?
 
   def feed_style_preference
     Settings::UserExperience.feed_style
@@ -352,7 +394,7 @@ class ApplicationController < ActionController::Base
   end
 
   def determine_locale
-    I18n.locale = if %w[en fr pt].include?(params[:locale])
+    I18n.locale = if Constants::Settings::UserExperience::SUPPORTED_LOCALES.key?(params[:locale])
                     params[:locale]
                   else
                     Settings::UserExperience.default_locale
@@ -384,12 +426,17 @@ class ApplicationController < ActionController::Base
 
   def remember_cookie_sync
     # Set remember cookie token in case not properly set.
-    if user_signed_in? &&
-        cookies[:remember_user_token].blank?
+    if cookies[:remember_user_token].blank? &&
+        user_signed_in?
       current_user.remember_me = true
       current_user.remember_me!
       remember_me(current_user)
     end
+  end
+
+  def set_request_signed_in_context
+    RequestStore.store[:user_signed_in] = user_signed_in?
+    RequestStore.store[:custom_domain_org] = request.env["forem.custom_domain_org"]
   end
 
   def after_sign_out_path_for(_resource_or_scope)
@@ -397,15 +444,15 @@ class ApplicationController < ActionController::Base
   end
 
   def current_user_by_token
-    auth_header = request.headers["Authorization"]
-    return unless auth_header.present? && auth_header.start_with?("Bearer ")
+    token = Authentication::AuthToken.extract_bearer_token(request.headers["Authorization"])
+    return unless token
 
-    token = auth_header.split(" ").last
     payload = decode_auth_token(token)
     return unless payload && payload["user_id"]
+    return if payload["purpose"] == Authentication::AuthToken::AUTH_PASS_PURPOSE
 
     user = User.find_by(id: payload["user_id"])
-    return unless user
+    return unless user && Authentication::AuthToken.valid_for_user?(payload, user)
 
     @current_user = user
     @token_authenticated = true
@@ -416,11 +463,11 @@ class ApplicationController < ActionController::Base
   end
 
   def decode_auth_token(token)
-    JWT.decode(token, Rails.application.secret_key_base, true, algorithm: "HS256")[0]
-  rescue JWT::ExpiredSignature
-    nil
-  rescue StandardError
-    nil
+    native = ForemNative.verify_hs256_jwt(token, Rails.application.secret_key_base, Time.now.to_i)
+    return if native == false
+    return native if native
+
+    legacy_decode_auth_token(token)
   end
 
   def client_geolocation
@@ -456,7 +503,7 @@ class ApplicationController < ActionController::Base
   end
 
   def bust_content_change_caches
-    EdgeCache::Bust.call(CONTENT_CHANGE_PATHS)
+    EdgeCache::PurgeByKey.call(CONTENT_CHANGE_SURROGATE_KEYS, fallback_paths: CONTENT_CHANGE_PATHS)
     Settings::General.admin_action_taken_at = Time.current # Used as cache key
   end
 
@@ -474,7 +521,11 @@ class ApplicationController < ActionController::Base
     return unless request.get? || request.head?
     return unless request.format.html?
 
-    if controller_name == "stories" && action_name.in?(%w[custom_domain_index custom_domain_show])
+    if controller_name == "stories" && (action_name.in?(%w[custom_domain_index custom_domain_show]) || (action_name == "index" && params[:page_suffix].present?))
+      return
+    end
+
+    if (controller_name == "pages" && action_name == "robots") || controller_name == "sitemaps"
       return
     end
 
@@ -485,7 +536,7 @@ class ApplicationController < ActionController::Base
   end
 
   def custom_domain_org
-    OrgCustomDomainConstraint.custom_domain_org(request)
+    request.env["forem.custom_domain_org"] ||= OrgCustomDomainConstraint.custom_domain_org_for_host(request.host)
   end
 
   def redirect_www_and_unregistred_subforems_to_root
@@ -497,7 +548,8 @@ class ApplicationController < ActionController::Base
       new_host = host.sub(/^www\./i, "")
       redirect_to("#{request.protocol}#{new_host}#{request.fullpath}", allow_other_host: true,
                                                                        status: :moved_permanently)
-    elsif host.end_with?(".#{RequestStore.store[:root_subforem_domain]}") &&
+    elsif RequestStore.store[:root_subforem_domain].present? &&
+        host.end_with?(".#{RequestStore.store[:root_subforem_domain]}") &&
         RequestStore.store[:subforem_id].blank?
       # Check memory-first cache to avoid redirecting custom organization domains
       cache_key = "org_custom_domain_id:#{host}"
@@ -534,7 +586,8 @@ class ApplicationController < ActionController::Base
     is_custom_org_domain = org_id.present? && org_id != "not_found"
     return if is_custom_org_domain
 
-    is_subforem_subdomain = host.end_with?(".#{RequestStore.store[:root_subforem_domain]}")
+    is_subforem_subdomain = RequestStore.store[:root_subforem_domain].present? &&
+      host.end_with?(".#{RequestStore.store[:root_subforem_domain]}")
     is_registered_subforem = RequestStore.store[:subforem_id].present? &&
       RequestStore.store[:subforem_id] != RequestStore.store[:default_subforem_id]
 
@@ -553,6 +606,7 @@ class ApplicationController < ActionController::Base
   def set_unauthenticated_session_expiry
     # If the user is unauthenticated, expire their session quickly to save Redis memory.
     # Authenticated users use the default `expire_after` defined in config/initializers/session_store.rb
+    return if request.session_options[:skip]
     return if user_signed_in?
 
     configured_ttl = ApplicationConfig["ANONYMOUS_SESSION_EXPIRY_SECONDS"]
@@ -563,6 +617,14 @@ class ApplicationController < ActionController::Base
                   end
 
     request.session_options[:expire_after] = ttl_seconds
+  end
+
+  def legacy_decode_auth_token(token)
+    JWT.decode(token, Rails.application.secret_key_base, true, algorithm: "HS256")[0]
+  rescue JWT::ExpiredSignature
+    nil
+  rescue StandardError
+    nil
   end
 
   def set_session_domain
@@ -583,6 +645,10 @@ class ApplicationController < ActionController::Base
   end
 
   def root_domain(host)
+    domain = ForemNative.public_suffix_domain(host)
+    return domain if domain
+    return host if domain == false
+
     # The `default_rule: nil` option ensures it raises an error if the domain is invalid
     parsed = PublicSuffix.parse(host, default_rule: nil)
     parsed.domain # Returns the domain with TLD, e.g. "example.com"
@@ -591,9 +657,9 @@ class ApplicationController < ActionController::Base
   end
 
   def internal_nav_param
-    return "" unless params[:i] == "i"
+    return "" unless internal_navigation?
 
-    "?i=i"
+    "?i=#{params[:i]}"
   end
 
   def clear_request_store

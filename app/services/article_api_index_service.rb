@@ -1,5 +1,6 @@
 class ArticleApiIndexService
   DEFAULT_PER_PAGE = 30
+  MAX_TOP_DAYS = 730
 
   def initialize(params)
     @page = params[:page].to_i
@@ -12,6 +13,7 @@ class ArticleApiIndexService
     @top = params[:top]
     @collection_id = params[:collection_id]
     @per_page = [(params[:per_page] || DEFAULT_PER_PAGE).to_i, per_page_max].min
+    @per_page_requested = params[:per_page].present?
   end
 
   def get
@@ -43,39 +45,47 @@ class ArticleApiIndexService
   end
 
   def username_articles
-    num = if @state == "all"
-            per_page_max
-          else
-            DEFAULT_PER_PAGE
-          end
+    # state=all lifts the default page size, but never overrides an explicit per_page
+    articles_per_page = @state == "all" && !@per_page_requested ? per_page_max : per_page
 
     if (user = User.includes(:profile).find_by(username: username))
       user.articles.published.from_subforem
         .includes(:organization)
         .order(published_at: :desc)
         .page(page)
-        .per(per_page || num)
+        .per(articles_per_page)
     elsif (organization = Organization.find_by(slug: username))
       organization.articles.published.from_subforem
         .includes(user: :profile)
         .order(published_at: :desc)
         .page(page)
-        .per(per_page || num)
+        .per(articles_per_page)
     else
       Article.none
     end
   end
 
   def tag_articles
-    articles = published_articles_with_users_and_organizations.cached_tagged_with(tag)
-
-    articles = if Tag.find_by(name: tag)&.requires_approval
-                 articles.approved.order(published_at: :desc)
+    articles = if Tag.where(name: tag).pick(:requires_approval)
+                 published_articles_with_users_and_organizations
+                   .cached_tagged_with(tag)
+                   .approved
+                   .order(published_at: :desc)
                elsif top.present?
-                 articles.where("published_at > ?", top.to_i.days.ago)
+                 published_articles_with_users_and_organizations
+                   .cached_tagged_with(tag)
+                   .where("published_at > ?", top_days.days.ago)
                    .order(score: :desc)
                else
-                 articles.order(hotness_score: :desc)
+                 # Evaluating the published check as a single boolean expression keeps
+                 # PostgreSQL from intersecting the selective `index_articles_on_tags_array`
+                 # GIN bitmap with multi-million-row full-history B-tree bitmaps on
+                 # `index_articles_on_published` and `index_articles_on_published_at`.
+                 Article.from_subforem
+                   .includes([{ user: :profile }, :organization])
+                   .where("COALESCE(articles.published AND articles.published_at <= ?, false)", Time.current)
+                   .cached_tagged_with(tag)
+                   .order(hotness_score: :desc)
                end
 
     articles.page(page).per(per_page || DEFAULT_PER_PAGE)
@@ -101,9 +111,13 @@ class ArticleApiIndexService
 
   def top_articles
     published_articles_with_users_and_organizations
-      .where("published_at > ?", top.to_i.days.ago)
+      .where("published_at > ?", top_days.days.ago)
       .order(score: :desc)
       .page(page).per(per_page || DEFAULT_PER_PAGE)
+  end
+
+  def top_days
+    top.to_i.clamp(0, MAX_TOP_DAYS)
   end
 
   def state_articles(state)

@@ -12,7 +12,7 @@
   <div class="crayons-field mt-3">
     <%= f.label :parent_id, "Parent Concept", class: "crayons-field__label" %>
     <% 
-      parent_options = Concept.order(:name)
+      parent_options = Concept.select(:id, :name).order(:name)
       parent_options = parent_options.where.not(id: concept.id) if concept.persisted?
     %>
     <%= f.select :parent_id, options_from_collection_for_select(parent_options, :id, :name, concept.parent_id), { include_blank: "None" }, class: "crayons-select" %>
@@ -22,6 +22,12 @@
     <%= f.label :similarity_threshold, t("views.admin.concepts.form.similarity_threshold"), class: "crayons-field__label" %>
     <%= f.number_field :similarity_threshold, step: :any, min: 0.0, max: 1.0, class: "crayons-textfield", placeholder: t("views.admin.concepts.form.similarity_threshold_placeholder") %>
     <p class="fs-xs color-base-60 mt-1"><%= t("views.admin.concepts.form.similarity_threshold_help") %></p>
+  </div>
+
+  <div class="crayons-field mt-3">
+    <%= f.label :score, t("views.admin.concepts.form.score"), class: "crayons-field__label" %>
+    <%= f.number_field :score, step: :any, class: "crayons-textfield", placeholder: t("views.admin.concepts.form.score_placeholder") %>
+    <p class="fs-xs color-base-60 mt-1"><%= t("views.admin.concepts.form.score_help") %></p>
   </div>
 
   <div class="flex items-center gap-4 mt-6">

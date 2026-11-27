@@ -10,11 +10,18 @@ module Articles
       # we need to cache the ids in advance
       article_comments_ids = article.comments.ids
 
-      article.destroy!
+      ActiveRecord::Associations::Preloader.new(
+        records: [article],
+        associations: [{ reactions: { user: :roles } }, { rating_votes: :user }],
+      ).call
+
+      CounterCulture.aggregate_counter_updates do
+        article.destroy!
+      end
 
       Notification.remove_all(notifiable_ids: article.id, notifiable_type: "Article")
 
-      unless article_comments_ids.blank?
+      if article_comments_ids.present?
         Notification.remove_all(notifiable_ids: article_comments_ids, notifiable_type: "Comment")
       end
 
