@@ -7,11 +7,8 @@ require "simplecov_json_formatter"
 
 if ENV["CI"]
   SimpleCov.formatter = SimpleCov::Formatter::JSONFormatter
-  SimpleCov.command_name("rspec_ci_node_#{ENV.fetch('CI_NODE_INDEX',0)}")
+  SimpleCov.command_name("rspec_ci_node_#{ENV.fetch('CI_NODE_INDEX', 0)}")
 end
-
-TMP_RSPEC_XML_REPORT = "tmp/rspec.xml".freeze
-FINAL_RSPEC_XML_REPORT = "tmp/rspec_final_results.xml".freeze
 
 require "spec_helper"
 
