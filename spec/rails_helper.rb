@@ -18,6 +18,7 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 
 # Rake tasks are only needed by `type: :task` specs (see the before(:all) hook below),
 # so avoid loading every task file on each RSpec boot.
+require "rake"
 Rake.application = Rake::Application.new
 
 # Add additional requires below this line. Rails is not loaded until this point!
