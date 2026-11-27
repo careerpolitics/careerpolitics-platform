@@ -2,7 +2,7 @@ module Articles
   class HandleSpamWorker
     include Sidekiq::Job
 
-    sidekiq_options queue: :high_priority
+    sidekiq_options queue: :high_priority, lock: :until_executing, on_conflict: :replace
 
     def perform(article_id)
       article = Article.find_by(id: article_id)
@@ -21,9 +21,8 @@ module Articles
     private
 
     def enhance_article(article)
-      # Create AI client for dependency injection
-      ai_client = Ai::Base.new
-      enhancer = Ai::ArticleEnhancer.new(article, ai_client: ai_client)
+      # The enhancer resolves the model for each capability (see Ai::FunctionConfig).
+      enhancer = Ai::ArticleEnhancer.new(article)
 
       # Calculate and update clickbait score
       clickbait_score = enhancer.calculate_clickbait_score
@@ -49,7 +48,8 @@ module Articles
       valid_tags = Tag.supported.where(name: tag_names).pluck(:name)
 
       if valid_tags.any?
-        # Apply tags to article
+        # Apply tags to article without re-triggering HandleSpamWorker
+        article.skip_autovomits = true
         article.tag_list = valid_tags
         article.cached_tag_list = valid_tags.join(", ")
         article.save
@@ -58,6 +58,8 @@ module Articles
       else
         Rails.logger.warn("No valid tags found from suggestions #{tag_names.join(', ')} for article #{article.id}")
       end
+    ensure
+      article.skip_autovomits = false
     end
   end
 end

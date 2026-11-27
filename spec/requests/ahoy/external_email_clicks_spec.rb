@@ -21,13 +21,15 @@ RSpec.describe "ExternalAhoyEmailClicks" do
     end
 
     context "when bb parameter is present in the URL" do
-      it "enqueues Billboards::TrackEmailClickWorker with bb and current_user" do
+      it "enqueues Billboards::TrackEmailClickWorker with bb, current_user, and user_agent" do
         expect do
-          get "/ahoy/click", params: { u: url_with_bb, t: token }
+          get "/ahoy/click",
+              params: { u: url_with_bb, t: token },
+              headers: { "User-Agent" => "EmailClickUA/2.0" }
         end.to change(Billboards::TrackEmailClickWorker.jobs, :size).by(1)
 
         job = Billboards::TrackEmailClickWorker.jobs.last
-        expect(job["args"]).to eq([bb_value, user.id])
+        expect(job["args"]).to eq([bb_value, user.id, "EmailClickUA/2.0"])
 
         expect(response).to have_http_status(:redirect)
         expect(response).to redirect_to(url_with_bb)
@@ -42,6 +44,36 @@ RSpec.describe "ExternalAhoyEmailClicks" do
 
         expect(response).to have_http_status(:redirect)
         expect(response).to redirect_to(url_without_bb)
+      end
+    end
+
+    context "when the URL is not a valid URI" do
+      before do
+        allow(ActiveSupport::SecurityUtils).to receive(:secure_compare).and_return(false)
+      end
+
+      it "does not raise on trailing whitespace and delegates to Ahoy::MessagesController#click" do
+        expect do
+          get "/ahoy/click", params: { u: "https://example.com/path ", t: token }
+        end.not_to change(Billboards::TrackEmailClickWorker.jobs, :size)
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "does not raise on non-ASCII characters and delegates to Ahoy::MessagesController#click" do
+        expect do
+          get "/ahoy/click", params: { u: "invalid..\u2663", t: token }
+        end.not_to change(Billboards::TrackEmailClickWorker.jobs, :size)
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "does not raise on non-scalar url params and delegates to Ahoy::MessagesController#click" do
+        expect do
+          get "/ahoy/click", params: { u: ["https://example.com"], t: token }
+        end.not_to change(Billboards::TrackEmailClickWorker.jobs, :size)
+
+        expect(response).to have_http_status(:not_found)
       end
     end
   end

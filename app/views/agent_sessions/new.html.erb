@@ -322,6 +322,8 @@
   function uploadToS3(content) {
     setStep('upload', 'active', '<%= j t("views.agent_sessions.uploading_to_storage", default: "Uploading file...") %>');
     var csrfToken = document.querySelector("meta[name='csrf-token']");
+    // The presigned URL is signed for this exact byte count, so send the same Blob.
+    var body = new Blob([content]);
 
     return fetch('/agent_sessions/presign', {
       method: 'POST',
@@ -331,6 +333,7 @@
         'Accept': 'application/json'
       },
       credentials: 'same-origin',
+      body: JSON.stringify({ content_length: body.size }),
     }).then(function(response) {
       if (!response.ok) throw new Error('Presign request failed');
       return response.json();
@@ -339,8 +342,11 @@
       setProgress(25);
       return fetch(data.presigned_url, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/x-jsonlines' },
-        body: content,
+        headers: {
+          'Content-Type': 'application/x-jsonlines',
+          'x-amz-acl': 'private'
+        },
+        body: body,
       });
     }).then(function(response) {
       if (!response.ok) throw new Error('S3 upload failed');

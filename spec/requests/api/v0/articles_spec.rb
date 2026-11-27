@@ -8,6 +8,26 @@ RSpec.describe "Api::V0::Articles" do
 
   before { stub_const("FlareTag::FLARE_TAG_IDS_HASH", { "discuss" => tag.id }) }
 
+  # Checks association state on the legacy Jbuilder fallback path before serialization can lazily load records.
+  def expect_preloaded_articles_at_render(assignment, include_organization: false)
+    allow(ForemNative).to receive(:available?).and_return(false)
+    controller = Api::V0::ArticlesController.new
+    allow(Api::V0::ArticlesController).to receive(:new).and_return(controller)
+    allow(controller).to receive(:render).and_wrap_original do |render, *args|
+      articles = Array.wrap(controller.view_assigns.fetch(assignment))
+      expect(articles).not_to be_empty
+      articles.each do |decorated_article|
+        loaded_article = decorated_article.object
+        expect(loaded_article.association(:user)).to be_loaded
+        expect(loaded_article.user.association(:profile)).to be_loaded
+        expect(loaded_article.association(:organization)).to be_loaded if include_organization
+      end
+      render.call(*args)
+    end
+    yield
+    expect(controller).to have_received(:render)
+  end
+
   describe "GET /api/articles" do
     before { article }
 
@@ -23,7 +43,8 @@ RSpec.describe "Api::V0::Articles" do
     end
 
     it "has correct keys in the response" do
-      article.update_columns(organization_id: organization.id)
+      article.update_columns(organization_id: organization.id, canonical_url: nil)
+      article.user.profile.update!(website_url: "https://example.com")
       get api_articles_path
 
       index_keys = %w[
@@ -31,10 +52,49 @@ RSpec.describe "Api::V0::Articles" do
         tag_list tags slug path url canonical_url comments_count public_reactions_count positive_reactions_count
         collection_id created_at edited_at crossposted_at published_at last_comment_at
         published_timestamp user organization flare_tag reading_time_minutes
-        language subforem_id
+        language subforem_id ai_disclosure_level ai_disclosure_label
       ]
 
       expect(response.parsed_body.first.keys).to match_array index_keys
+      expect(response.parsed_body.first).to include("type_of" => "article", "canonical_url" => article.url)
+      expect(response.parsed_body.first["user"]).to include(
+        "user_id" => article.user_id, "website_url" => "https://example.com",
+      )
+      expect(response.parsed_body.first["organization"]["slug"]).to eq(organization.slug)
+      index_item = response.parsed_body.first
+      create(:article) # search omits body_markdown only when it returns more than one article
+      get "/api/articles/search" # still rendered via the shared partials, so the payload must not drift from them
+      search_item = response.parsed_body.detect { |item| item["id"] == article.id }
+      expect(index_item.keys).to match_array(search_item.keys)
+      %w[user organization flare_tag].each { |key| expect(index_item[key].keys).to match_array(search_item[key].keys) }
+    end
+
+    it "returns all the relevant datetimes" do
+      article.update_columns(
+        edited_at: 1.minute.ago, crossposted_at: 2.minutes.ago, last_comment_at: 30.seconds.ago,
+      )
+      get api_articles_path
+
+      expect(response.parsed_body.first).to include(
+        "created_at" => article.created_at.utc.iso8601,
+        "edited_at" => article.edited_at.utc.iso8601,
+        "crossposted_at" => article.crossposted_at.utc.iso8601,
+        "published_at" => article.published_at.utc.iso8601,
+        "last_comment_at" => article.last_comment_at.utc.iso8601,
+      )
+    end
+
+    it "omits absent organization and flare tag and preserves null timestamps" do
+      article.update_columns(
+        organization_id: nil, cached_tag_list: "", edited_at: nil, crossposted_at: nil, last_comment_at: nil,
+      )
+      get api_articles_path
+
+      expect(response.parsed_body.first).not_to have_key("organization")
+      expect(response.parsed_body.first).not_to have_key("flare_tag")
+      expect(response.parsed_body.first).to include(
+        "edited_at" => nil, "crossposted_at" => nil, "last_comment_at" => nil,
+      )
     end
 
     it "returns correct tag list" do
@@ -47,6 +107,29 @@ RSpec.describe "Api::V0::Articles" do
       get api_articles_path
 
       expect(response.parsed_body.first["tags"]).to be_a String
+    end
+
+    it "includes the tag top surrogate key when filtering by tag and top" do
+      tagged_article = create(:article, tags: "ruby", score: 10, published: true)
+      get api_articles_path, params: { tag: "ruby", top: 7 }
+
+      expect(response.headers["Surrogate-Key"].split).to include(
+        "articles",
+        tagged_article.record_key,
+        "api-articles-tag-ruby-top",
+      )
+    end
+
+    it "omits multi-tag or invalid tag params from the single-tag top Surrogate-Key", :aggregate_failures do
+      get api_articles_path, params: { tag: "ruby, rails", top: 7 }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.headers["Surrogate-Key"]).not_to include("rails-top")
+
+      get api_articles_path, params: { tag: "ruby\r\ninjected", top: 7 }
+
+      expect(response).to have_http_status(:not_found)
+      expect(response.headers["Surrogate-Key"]).to be_nil
     end
 
     context "without params" do
@@ -72,6 +155,44 @@ RSpec.describe "Api::V0::Articles" do
         expect(response.parsed_body.length).to eq(2)
         get api_articles_path, params: { page: 2, per_page: 2 }
         expect(response.parsed_body.length).to eq(1)
+      end
+
+      it "rejects requests with page greater than 1000 without an API key" do
+        get api_articles_path, params: { page: 1001 }
+        expect(response).to have_http_status(:unauthorized)
+        expect(response.parsed_body["error"]).to eq("Page depth limited to 1000 without an API key")
+        expect(response.headers["Cache-Control"]).to eq("no-store")
+        expect(response.headers["Surrogate-Control"]).to eq("no-store")
+      end
+
+      it "allows requests with page greater than 1000 with a valid API key" do
+        user = create(:user)
+        api_secret = create(:api_secret, user: user)
+        get api_articles_path, params: { page: 1001 }, headers: { "api-key" => api_secret.secret }
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "rejects requests whose pagination offset exceeds 30000 without an API key", :aggregate_failures do
+        get "/api/articles/latest", params: { page: 32, per_page: 1000 }
+        expect(response).to have_http_status(:unauthorized)
+        expect(response.parsed_body["error"]).to eq("Pagination offset limited to 30000 without an API key")
+        expect(response.headers["Cache-Control"]).to eq("no-store")
+        expect(response.headers["Surrogate-Control"]).to eq("no-store")
+      end
+
+      it "allows requests within the 30000 pagination offset limit without an API key", :aggregate_failures do
+        get "/api/articles/latest", params: { page: 31, per_page: 1000 }
+        expect(response).to have_http_status(:ok)
+
+        get api_articles_path, params: { page: 1000 }
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "allows requests whose pagination offset exceeds 30000 with a valid API key" do
+        user = create(:user)
+        api_secret = create(:api_secret, user: user)
+        get "/api/articles/latest", params: { page: 32, per_page: 1000 }, headers: { "api-key" => api_secret.secret }
+        expect(response).to have_http_status(:ok)
       end
 
       it "returns flare tag in the response" do
@@ -264,7 +385,7 @@ RSpec.describe "Api::V0::Articles" do
         create(:article, published: true, tags: "node")
         get api_articles_path(tags_exclude: "  node  , java  ")
         expect(response).to have_http_status(:ok)
-        
+
         # The test database already has one other globally defined article from `before { article }`
         expect(response.parsed_body.size).to eq(1)
         expect(response.parsed_body.first["tags"]).not_to include("java", "node")
@@ -418,6 +539,7 @@ RSpec.describe "Api::V0::Articles" do
 
         get api_articles_path
         expect(response).to have_http_status(:ok)
+        expect(response.parsed_body.first).to include("cover_image" => nil)
       end
 
       it "respects API_PER_PAGE_MAX limit set in ENV variable" do
@@ -428,6 +550,47 @@ RSpec.describe "Api::V0::Articles" do
         create_list(:article, 3, tags: "discuss", public_reactions_count: 1, score: 1, published: true, featured: true)
         get api_articles_path, params: { per_page: 10 }
         expect(response.parsed_body.count).to eq(2)
+      end
+
+      it "matches the Jbuilder fallback bit-for-bit on V0 index including headers", :aggregate_failures do
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("TZ").and_return("Etc/UTC")
+
+        Time.use_zone("UTC") do
+          expect(ForemNative.available?).to be(true)
+          native_results = []
+          allow(ForemNative).to receive(:serialize_api_articles_json).and_wrap_original do |original, *args|
+            original.call(*args).tap { |result| native_results << result }
+          end
+
+          org = create(:organization)
+          article.user.profile.update_column(:website_url, "  https://example.com/author  ")
+          article.update!(organization: org, ai_disclosure_level: :some_ai, crossposted_at: 2.days.ago)
+
+          get api_articles_path
+          expect(native_results.length).to eq(1)
+          expect(native_results.first).to be_a(String)
+          native_body = response.body
+          native_keys = response.headers["surrogate-key"].split.to_set
+          native_warning = response.headers["Warning"]
+
+          allow(ForemNative).to receive(:available?).and_return(false)
+          get api_articles_path
+          expect(response.body).to eq(native_body)
+          expect(response.headers["surrogate-key"].split.to_set).to eq(native_keys)
+          expect(response.headers["Warning"]).to eq(native_warning)
+        end
+      end
+
+      it "preserves unsupported format rejection on V0 articles index" do
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("TZ").and_return("Etc/UTC")
+
+        Time.use_zone("UTC") do
+          expect do
+            get api_articles_path(format: :xml)
+          end.to raise_error(ActionController::UnknownFormat)
+        end
       end
     end
   end
@@ -453,7 +616,7 @@ RSpec.describe "Api::V0::Articles" do
         tag_list tags slug path url canonical_url comments_count public_reactions_count positive_reactions_count
         collection_id created_at edited_at crossposted_at published_at last_comment_at
         published_timestamp body_html body_markdown user organization flare_tag reading_time_minutes
-        language subforem_id
+        language subforem_id ai_disclosure_level ai_disclosure_label
       ]
 
       expect(response.parsed_body.keys).to match_array show_keys
@@ -510,6 +673,39 @@ RSpec.describe "Api::V0::Articles" do
 
       expected_key = [article.record_key].to_set
       expect(response.headers["surrogate-key"].split.to_set).to eq(expected_key)
+    end
+
+    it "matches the Jbuilder fallback bit-for-bit on V0 show including headers", :aggregate_failures do
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with("TZ").and_return("Etc/UTC")
+
+      Time.use_zone("UTC") do
+        expect(ForemNative.available?).to be(true)
+        native_results = []
+        allow(ForemNative).to receive(:serialize_api_article_show_json).and_wrap_original do |original, *args|
+          original.call(*args).tap { |result| native_results << result }
+        end
+
+        org = create(:organization)
+        article.user.profile.update_column(:website_url, "  https://example.com/author  ")
+        article.update!(organization: org, ai_disclosure_level: :some_ai, crossposted_at: 2.days.ago)
+
+        get api_article_path(article.id)
+        expect(response).to have_http_status(:ok)
+        expect(native_results.length).to eq(1)
+        expect(native_results.first).to be_a(String)
+        native_body = response.body
+        native_media_type = response.media_type
+        native_keys = response.headers["surrogate-key"].split.to_set
+        native_cache = response.headers["Cache-Control"]
+
+        allow(ForemNative).to receive(:available?).and_return(false)
+        get api_article_path(article.id)
+        expect(response.media_type).to eq(native_media_type)
+        expect(response.body).to eq(native_body)
+        expect(response.headers["surrogate-key"].split.to_set).to eq(native_keys)
+        expect(response.headers["Cache-Control"]).to eq(native_cache)
+      end
     end
   end
 
@@ -570,6 +766,39 @@ RSpec.describe "Api::V0::Articles" do
       expected_key = [article.record_key].to_set
       expect(response.headers["surrogate-key"].split.to_set).to eq(expected_key)
     end
+
+    it "preloads user and profile before rendering" do
+      expect_preloaded_articles_at_render("article") { get "/api/articles/#{article.username}/#{article.slug}" }
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "matches the Jbuilder fallback bit-for-bit on V0 show_by_slug including headers", :aggregate_failures do
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with("TZ").and_return("Etc/UTC")
+
+      Time.use_zone("UTC") do
+        expect(ForemNative.available?).to be(true)
+        native_results = []
+        allow(ForemNative).to receive(:serialize_api_article_show_json).and_wrap_original do |original, *args|
+          original.call(*args).tap { |result| native_results << result }
+        end
+
+        get "/api/articles/#{article.username}/#{article.slug}"
+        expect(response).to have_http_status(:ok)
+        expect(native_results.length).to eq(1)
+        expect(native_results.first).to be_a(String)
+        native_body = response.body
+        native_media_type = response.media_type
+        native_keys = response.headers["surrogate-key"].split.to_set
+
+        allow(ForemNative).to receive(:available?).and_return(false)
+        get "/api/articles/#{article.username}/#{article.slug}"
+        expect(response.media_type).to eq(native_media_type)
+        expect(response.body).to eq(native_body)
+        expect(response.headers["surrogate-key"].split.to_set).to eq(native_keys)
+      end
+    end
   end
 
   describe "GET /api/articles/me(/:status)" do
@@ -582,6 +811,14 @@ RSpec.describe "Api::V0::Articles" do
       it "return unauthorized" do
         get "/api/articles/me"
         expect(response).to have_http_status(:unauthorized)
+      end
+
+      # Regression test for https://github.com/forem/forem/issues/23675
+      it "sets no-store cache headers on the 401 response" do
+        get "/api/articles/me"
+        expect(response).to have_http_status(:unauthorized)
+        expect(response.headers["Cache-Control"]).to eq("no-store")
+        expect(response.headers["Surrogate-Control"]).to eq("no-store")
       end
     end
 
@@ -608,6 +845,37 @@ RSpec.describe "Api::V0::Articles" do
         expect(response.parsed_body[0]["body_markdown"]).not_to be_nil
       end
 
+      it "matches the Jbuilder fallback bit-for-bit on V0 /me/all including headers", :aggregate_failures do
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("TZ").and_return("Etc/UTC")
+
+        Time.use_zone("UTC") do
+          expect(ForemNative.available?).to be(true)
+          native_results = []
+          allow(ForemNative).to receive(:serialize_api_articles_me_json).and_wrap_original do |original, *args|
+            original.call(*args).tap { |result| native_results << result }
+          end
+
+          create(:article, user: user, organization: organization)
+          create(:article, user: user, published: false)
+          create(:article)
+
+          get "/api/articles/me/all", headers: headers
+          expect(response).to have_http_status(:ok)
+          expect(native_results.length).to eq(1)
+          expect(native_results.first).to be_a(String)
+          native_body = response.body
+          native_media_type = response.media_type
+          native_cache = response.headers["Cache-Control"]
+
+          allow(ForemNative).to receive(:available?).and_return(false)
+          get "/api/articles/me/all", headers: headers
+          expect(response.media_type).to eq(native_media_type)
+          expect(response.body).to eq(native_body)
+          expect(response.headers["Cache-Control"]).to eq(native_cache)
+        end
+      end
+
       it "supports pagination" do
         create_list(:article, 3, user: user)
         get "/api/articles/me", headers: headers, params: { page: 2, per_page: 2 }
@@ -628,6 +896,15 @@ RSpec.describe "Api::V0::Articles" do
         ]
 
         expect(response.parsed_body.first.keys).to match_array(keys)
+      end
+
+      it "only returns flare tags for articles that have one" do
+        flare_article = create(:article, user: user, tags: "discuss")
+        other_article = create(:article, user: user, tags: "ruby")
+        get "/api/articles/me", headers: headers
+        articles_by_id = response.parsed_body.index_by { |a| a["id"] }
+        expect(articles_by_id[flare_article.id]["flare_tag"]["name"]).to eq("discuss")
+        expect(articles_by_id[other_article.id]).not_to have_key("flare_tag")
       end
 
       it "only includes published articles by default" do
@@ -672,6 +949,17 @@ RSpec.describe "Api::V0::Articles" do
 
         get "/api/articles/me", headers: headers
         expect(response.parsed_body.first["reading_time_minutes"]).to eq(article.reading_time)
+      end
+
+      it "preloads user, profile, and organization before rendering" do
+        user_article = create(:article, user: user)
+        user_article.update_columns(organization_id: organization.id)
+
+        expect_preloaded_articles_at_render("articles", include_organization: true) do
+          get "/api/articles/me", headers: headers
+        end
+
+        expect(response).to have_http_status(:ok)
       end
     end
   end
@@ -999,6 +1287,50 @@ RSpec.describe "Api::V0::Articles" do
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.parsed_body["error"]).to be_present
       end
+
+      it "creates an article with ai_disclosure_level when enable_ai_disclosure is true" do
+        allow(Settings::General).to receive(:enable_ai_disclosure).and_return(true)
+        expect do
+          post_article(
+            title: Faker::Book.title,
+            body_markdown: "AI Post Body",
+            ai_disclosure_level: "some_ai",
+          )
+          expect(response).to have_http_status(:created)
+        end.to change(Article, :count).by(1)
+        created_article = Article.find(response.parsed_body["id"])
+        expect(created_article.ai_disclosure_level).to eq("some_ai")
+        expect(response.parsed_body["ai_disclosure_level"]).to eq("some_ai")
+        expect(response.parsed_body["ai_disclosure_label"]).to eq("AI-assisted")
+      end
+
+      it "ignores ai_disclosure_level param when enable_ai_disclosure is false" do
+        allow(Settings::General).to receive(:enable_ai_disclosure).and_return(false)
+        expect do
+          post_article(
+            title: Faker::Book.title,
+            body_markdown: "AI Post Body",
+            ai_disclosure_level: "some_ai",
+          )
+          expect(response).to have_http_status(:created)
+        end.to change(Article, :count).by(1)
+        created_article = Article.find(response.parsed_body["id"])
+        expect(created_article.ai_disclosure_level).to eq("not_disclosed")
+        expect(response.parsed_body["ai_disclosure_level"]).to eq("not_disclosed")
+      end
+
+      it "creates an article with ai_disclosure_level in front matter when enable_ai_disclosure is true" do
+        allow(Settings::General).to receive(:enable_ai_disclosure).and_return(true)
+        body_markdown = "---\ntitle: Front Matter AI\nai_disclosure_level: fully_autonomous\n---\nPost content"
+        expect do
+          post_article(body_markdown: body_markdown)
+          expect(response).to have_http_status(:created)
+        end.to change(Article, :count).by(1)
+        created_article = Article.find(response.parsed_body["id"])
+        expect(created_article.ai_disclosure_level).to eq("fully_autonomous")
+        expect(response.parsed_body["ai_disclosure_level"]).to eq("fully_autonomous")
+        expect(response.parsed_body["ai_disclosure_label"]).to eq("Fully Autonomous")
+      end
     end
   end
 
@@ -1266,6 +1598,48 @@ RSpec.describe "Api::V0::Articles" do
         expect(article.reload.organization).to eq(organization)
       end
 
+      it "updates the ai_disclosure_level when enable_ai_disclosure is true" do
+        allow(Settings::General).to receive(:enable_ai_disclosure).and_return(true)
+        expect do
+          put_article(ai_disclosure_level: "some_ai")
+          article.reload
+        end.to change(article, :ai_disclosure_level).from("not_disclosed").to("some_ai")
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body["ai_disclosure_level"]).to eq("some_ai")
+        expect(response.parsed_body["ai_disclosure_label"]).to eq("AI-assisted")
+      end
+
+      it "translates similar ai_disclosure_level terms like ai_generated on update" do
+        allow(Settings::General).to receive(:enable_ai_disclosure).and_return(true)
+        expect do
+          put_article(ai_disclosure_level: "ai_generated")
+          article.reload
+        end.to change(article, :ai_disclosure_level).from("not_disclosed").to("fully_autonomous")
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body["ai_disclosure_level"]).to eq("fully_autonomous")
+        expect(response.parsed_body["ai_disclosure_label"]).to eq("Fully Autonomous")
+      end
+
+      it "does not update ai_disclosure_level when enable_ai_disclosure is false" do
+        allow(Settings::General).to receive(:enable_ai_disclosure).and_return(false)
+        expect do
+          put_article(ai_disclosure_level: "some_ai")
+          article.reload
+        end.not_to change(article, :ai_disclosure_level)
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "returns 422 for an unrecognized ai_disclosure_level when enable_ai_disclosure is true" do
+        allow(Settings::General).to receive(:enable_ai_disclosure).and_return(true)
+        expect do
+          put_article(ai_disclosure_level: "bogus")
+          article.reload
+        end.not_to change(article, :ai_disclosure_level)
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body["error"])
+          .to eq("ai_disclosure_level must be one of: not_disclosed, no_ai, some_ai, fully_autonomous")
+      end
+
       it "fails if params are not a Hash" do
         # Not using the nifty put_article helper method because it expects a Hash
         headers = { "api-key" => api_secret.secret, "content-type" => "application/json" }
@@ -1298,6 +1672,51 @@ RSpec.describe "Api::V0::Articles" do
       expect(response.headers["Access-Control-Max-Age"]).to eq(2.hours.to_i.to_s)
     end
 
+    it "sets Fastly Surrogate-Key and 1-hour cache control headers", :aggregate_failures do
+      get "/api/articles/search"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.headers["Surrogate-Key"]).to include("articles", article.record_key)
+      expect(response.headers["Surrogate-Control"]).to include("max-age=3600")
+    end
+
+    it "matches the Jbuilder fallback bit-for-bit on V0 search (single-hit and multi-hit)", :aggregate_failures do
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with("TZ").and_return("Etc/UTC")
+
+      Time.use_zone("UTC") do
+        expect(ForemNative.available?).to be(true)
+        native_results = []
+        allow(ForemNative).to receive(:serialize_api_articles_search_json).and_wrap_original do |original, *args|
+          original.call(*args).tap { |result| native_results << result }
+        end
+
+        article.update_columns(organization_id: organization.id)
+        get "/api/articles/search"
+        expect(response).to have_http_status(:ok)
+        expect(native_results.length).to eq(1)
+        single_native_body = response.body
+        single_native_keys = response.headers["surrogate-key"].split.to_set
+
+        allow(ForemNative).to receive(:available?).and_return(false)
+        get "/api/articles/search"
+        expect(response.body).to eq(single_native_body)
+        expect(response.headers["surrogate-key"].split.to_set).to eq(single_native_keys)
+
+        allow(ForemNative).to receive(:available?).and_return(true)
+        create(:article, organization: organization)
+        get "/api/articles/search"
+        expect(native_results.length).to eq(2)
+        multi_native_body = response.body
+        multi_native_keys = response.headers["surrogate-key"].split.to_set
+
+        allow(ForemNative).to receive(:available?).and_return(false)
+        get "/api/articles/search"
+        expect(response.body).to eq(multi_native_body)
+        expect(response.headers["surrogate-key"].split.to_set).to eq(multi_native_keys)
+      end
+    end
+
     context "when there is one article returned" do
       it "has correct keys in the response" do
         article.update_columns(organization_id: organization.id)
@@ -1308,7 +1727,7 @@ RSpec.describe "Api::V0::Articles" do
           tag_list tags slug path url canonical_url comments_count public_reactions_count positive_reactions_count
           collection_id created_at edited_at crossposted_at published_at last_comment_at
           published_timestamp user organization flare_tag reading_time_minutes body_markdown
-          language subforem_id
+          language subforem_id ai_disclosure_level ai_disclosure_label
         ]
 
         expect(response.parsed_body.first.keys).to match_array index_keys
@@ -1328,7 +1747,7 @@ RSpec.describe "Api::V0::Articles" do
           tag_list tags slug path url canonical_url comments_count public_reactions_count positive_reactions_count
           collection_id created_at edited_at crossposted_at published_at last_comment_at
           published_timestamp user organization flare_tag reading_time_minutes
-          language subforem_id
+          language subforem_id ai_disclosure_level ai_disclosure_label
         ]
 
         expect(response.parsed_body.first.keys).to match_array keys
@@ -1341,6 +1760,34 @@ RSpec.describe "Api::V0::Articles" do
       expect(response.parsed_body.length).to eq(2)
       get "/api/articles/search", params: { page: 2, per_page: 2 }
       expect(response.parsed_body.length).to eq(1)
+    end
+
+    it "rejects requests with page greater than 1000 without an API key" do
+      get "/api/articles/search", params: { page: 1001 }
+      expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body["error"]).to eq("Page depth limited to 1000 without an API key")
+    end
+
+    it "allows requests with page greater than 1000 with a valid API key" do
+      user = create(:user)
+      api_secret = create(:api_secret, user: user)
+      get "/api/articles/search", params: { page: 1001 }, headers: { "api-key" => api_secret.secret }
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "rejects requests whose pagination offset exceeds 30000 without an API key", :aggregate_failures do
+      get "/api/articles/search", params: { page: 32, per_page: 1000 }
+      expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body["error"]).to eq("Pagination offset limited to 30000 without an API key")
+      expect(response.headers["Cache-Control"]).to eq("no-store")
+      expect(response.headers["Surrogate-Control"]).to eq("no-store")
+    end
+
+    it "allows requests whose pagination offset exceeds 30000 with a valid API key" do
+      user = create(:user)
+      api_secret = create(:api_secret, user: user)
+      get "/api/articles/search", params: { page: 32, per_page: 1000 }, headers: { "api-key" => api_secret.secret }
+      expect(response).to have_http_status(:ok)
     end
 
     it "returns flare tag in the response" do

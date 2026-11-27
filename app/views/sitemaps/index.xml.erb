@@ -11,12 +11,14 @@
         <loc><%= app_url("sitemap-posts.xml") %></loc>
     </sitemap>
   <% end %>
+  <% unless @organization %>
   <sitemap>
       <loc><%= app_url("sitemap-users.xml") %></loc>
   </sitemap>
   <sitemap>
       <loc><%= app_url("sitemap-tags.xml") %></loc>
   </sitemap>
+  <% end %>
   <sitemap>
       <loc><%= app_url("sitemap-jobs.xml") %></loc>
   </sitemap>

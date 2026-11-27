@@ -1,6 +1,16 @@
 module Constants
   module Settings
     module UserExperience
+      SUPPORTED_LOCALES = {
+        "en" => "English",
+        "fr" => "Français",
+        "pt" => "Português"
+      }.freeze
+
+      def self.locale_options
+        SUPPORTED_LOCALES.map { |code, label| [label, code] }
+      end
+
       def self.details
         {
           default_font: {
@@ -28,6 +38,15 @@ module Constants
           feed_lookback_days: {
             description: I18n.t("lib.constants.settings.user_experience.feed_lookback_days.description"),
             placeholder: I18n.t("lib.constants.settings.user_experience.feed_lookback_days.placeholder")
+          },
+          feed_config_sticky_hours: {
+            description: I18n.t("lib.constants.settings.user_experience.feed_config_sticky_hours.description")
+          },
+          feed_config_sticky_percentage: {
+            description: I18n.t("lib.constants.settings.user_experience.feed_config_sticky_percentage.description")
+          },
+          feed_config_repeat_visit_minutes: {
+            description: I18n.t("lib.constants.settings.user_experience.feed_config_repeat_visit_minutes.description")
           },
           home_feed_minimum_score: {
             description: I18n.t("lib.constants.settings.user_experience.home_feed.description"),

@@ -7,6 +7,56 @@ RSpec.describe Comment do
 
   include_examples "#sync_reactions_count", :article_comment
 
+  describe "ai_disclosure_level" do
+    it "defines expected enum values" do
+      expect(Comment.ai_disclosure_levels).to eq({
+        "not_disclosed" => 0,
+        "no_ai" => 1,
+        "some_ai" => 3,
+        "fully_autonomous" => 5
+      })
+    end
+
+    it "defaults to not_disclosed" do
+      new_comment = build(:comment, user: user, commentable: article)
+      expect(new_comment.ai_disclosure_level).to eq("not_disclosed")
+      expect(new_comment.ai_disclosed?).to be false
+    end
+
+    it "correctly identifies when AI usage is disclosed" do
+      some_ai_comment = build(:comment, user: user, commentable: article, ai_disclosure_level: :some_ai)
+      autonomous_comment = build(:comment, user: user, commentable: article, ai_disclosure_level: :fully_autonomous)
+
+      expect(some_ai_comment.ai_disclosed?).to be true
+      expect(autonomous_comment.ai_disclosed?).to be true
+    end
+
+    it "returns the proper human-readable label" do
+      not_disclosed_comment = build(:comment, user: user, commentable: article, ai_disclosure_level: :not_disclosed)
+      no_ai_comment = build(:comment, user: user, commentable: article, ai_disclosure_level: :no_ai)
+      some_ai_comment = build(:comment, user: user, commentable: article, ai_disclosure_level: :some_ai)
+      autonomous_comment = build(:comment, user: user, commentable: article, ai_disclosure_level: :fully_autonomous)
+
+      expect(not_disclosed_comment.ai_disclosure_label).to eq("Not Disclosed")
+      expect(no_ai_comment.ai_disclosure_label).to eq("No AI")
+      expect(some_ai_comment.ai_disclosure_label).to eq("AI-assisted")
+      expect(autonomous_comment.ai_disclosure_label).to eq("Fully Autonomous")
+    end
+
+    it "translates similar AI disclosure terms instead of raising ArgumentError" do
+      new_comment = build(:comment, user: user, commentable: article)
+
+      new_comment.ai_disclosure_level = "ai_generated"
+      expect(new_comment.ai_disclosure_level).to eq("fully_autonomous")
+
+      new_comment.ai_disclosure_level = "ai_assisted"
+      expect(new_comment.ai_disclosure_level).to eq("some_ai")
+
+      new_comment.ai_disclosure_level = "human"
+      expect(new_comment.ai_disclosure_level).to eq("no_ai")
+    end
+  end
+
   describe "validations" do
     subject { comment }
 
@@ -15,6 +65,7 @@ RSpec.describe Comment do
 
       it { is_expected.to belong_to(:user) }
       # it { is_expected.to belong_to(:commentable).optional }
+      it { is_expected.to belong_to(:favorited_by_user).class_name("User").optional }
       it { is_expected.to have_many(:reactions).dependent(:destroy) }
       it { is_expected.to have_many(:mentions).dependent(:delete_all) }
       it { is_expected.to have_many(:notifications).dependent(:delete_all) }
@@ -172,6 +223,53 @@ RSpec.describe Comment do
         expect(subject.errors[:base])
           .to include("You cannot mention more than #{Settings::RateLimit.mention_creation} users in a comment!")
       end
+
+      it "restricts untrusted users from mentioning more than mention_antispam_creation other users in a comment" do
+        other_users = create_list(:user, 3)
+        subject.commentable_type = "Article"
+        subject.body_markdown = other_users.map { |u| "@#{u.username}" }.join(" ")
+
+        expect(subject).not_to be_valid
+        expect(subject.errors[:base])
+          .to include("You cannot mention more than #{Settings::RateLimit.mention_antispam_creation} users in a comment!")
+      end
+
+      it "allows trusted users to mention up to mention_creation other users in a comment" do
+        user.add_role(:trusted)
+        other_users = create_list(:user, 5)
+        subject.commentable_type = "Article"
+        subject.body_markdown = other_users.map { |u| "@#{u.username}" }.join(" ")
+
+        expect(subject).to be_valid
+      end
+
+      it "blocks comments that exceed the user's hourly mention rate limit across multiple comments" do
+        other_users = create_list(:user, 5)
+        create(:comment, user: user, commentable: article,
+                         body_markdown: "@#{other_users[0].username} @#{other_users[1].username}")
+        create(:comment, user: user, commentable: article,
+                         body_markdown: "@#{other_users[2].username} @#{other_users[3].username}")
+
+        subject.commentable_type = "Article"
+        subject.body_markdown = "Hello @#{other_users[4].username}"
+
+        expect(subject).not_to be_valid
+        expect(subject.errors[:base]).to include(I18n.t("models.comment.mention_rate_limit_reached"))
+      end
+
+      it "skips the Nokogiri parse when no mention markup is present" do
+        subject.processed_html = "<p>No mentions here, just <code>don&#39;t</code> and <a href=\"/x\">a link</a>.</p>"
+        allow(Nokogiri).to receive(:HTML).and_call_original
+
+        expect(subject.__send__(:mentioned_user_link_count)).to eq(0)
+        expect(Nokogiri).not_to have_received(:HTML)
+      end
+
+      it "still counts mention links spelled with numeric character references" do
+        subject.processed_html = '<a class="mentioned&#45;user" href="/x">@x</a>'
+
+        expect(subject.__send__(:mentioned_user_link_count)).to eq(1)
+      end
     end
     # rubocop:enable RSpec/NamedSubject
 
@@ -312,6 +410,41 @@ RSpec.describe Comment do
     end
   end
 
+  describe ".favorited" do
+    let(:leader) { create(:user, :community_leader_level_1) }
+
+    it "returns only comments that have been favorited" do
+      favorited = create(:comment, commentable: article, favorited_by_user: leader, favorited_at: Time.current)
+      create(:comment, commentable: article)
+
+      expect(described_class.favorited).to include(favorited)
+      expect(described_class.favorited.count).to eq(1)
+    end
+  end
+
+  describe "#favorited?" do
+    let(:leader) { create(:user, :community_leader_level_1) }
+
+    it "returns true when favorited_by_user_id is present" do
+      comment = build(:comment, favorited_by_user: leader)
+      expect(comment.favorited?).to be true
+    end
+
+    it "returns false when favorited_by_user_id is nil" do
+      comment = build(:comment, favorited_by_user_id: nil)
+      expect(comment.favorited?).to be false
+    end
+  end
+
+  describe "#async_score_calc" do
+    it "calls calculate_score" do
+      target_comment = build_stubbed(:comment, id: 123)
+      allow(Comments::CalculateScoreWorker).to receive(:perform_async)
+      target_comment.async_score_calc
+      expect(Comments::CalculateScoreWorker).to have_received(:perform_async).with(123)
+    end
+  end
+
   describe "#readable_publish_date" do
     it "does not show year in readable time if not current year" do
       expect(comment.readable_publish_date).to eq(comment.created_at.strftime("%b %-e"))
@@ -393,6 +526,32 @@ RSpec.describe Comment do
       comment.body_markdown = "&eacute;lan"
       comment.validate!
       expect(comment.title).to eq("élan")
+    end
+
+    context "with HTML the native kernel handles or declines" do
+      let(:titles_html) do
+        [
+          "<p>Tom &amp; Jerry &lt;3 \"quotes\" 'apostrophes' &copy; 🚀</p>",
+          "<p>#{'x' * 72}&amp;yyyyyyyy</p>",
+          "<p>#{'x' * 76}&amp;yy</p>", # truncation cuts the reference: falls back to Ruby
+          "<p>a&#13;b</p>", # carriage return: falls back to Ruby
+          "<p>\u2003</p>", # blank text without images: falls back to Ruby
+        ]
+      end
+
+      it "matches the legacy pipeline" do
+        titles_html.each do |html|
+          comment.processed_html = html
+          expect(comment.title).to eq(comment.__send__(:legacy_title, 80)), html
+        end
+      end
+    end
+
+    it "falls back to the legacy pipeline when the native kernel declines" do
+      comment.processed_html = "<p><img src=\"https://example.com/a.png\"></p>"
+      allow(ForemNative).to receive(:comment_title).and_call_original
+      expect(comment.title).to eq("[image]")
+      expect(ForemNative).to have_received(:comment_title).with(comment.processed_html, 80)
     end
   end
 
@@ -536,6 +695,16 @@ RSpec.describe Comment do
       allow(Settings::RateLimit).to receive(:trigger_spam_for?).and_return(true)
       comment = create(:comment, user: user, commentable: article)
       expect(comment.score).to eq(-5)
+    end
+
+    it "produces the same spam score via native title extraction and the legacy fallback" do
+      allow(Settings::RateLimit).to receive(:spam_trigger_terms).and_return(["buy & win"])
+      native_comment = create(:comment, user: user, commentable: article, body_markdown: "buy &amp; win")
+      allow(ForemNative).to receive(:comment_title).and_return(nil)
+      # A separate article keeps identical markdown from tripping the scoped uniqueness validation.
+      legacy_comment = create(:comment, user: user, commentable: create(:article, user: user),
+                                        body_markdown: "buy &amp; win")
+      expect([native_comment.score, legacy_comment.score]).to eq([-5, -5])
     end
   end
 
@@ -708,6 +877,19 @@ RSpec.describe Comment do
         comment.processed_html = "Content with no images or domains."
         expect(comment.processed_html_final).to eq("Content with no images or domains.")
       end
+
+      it "returns the stored processed_html without copying it when the prior domain is absent" do
+        comment.processed_html = "Content with no images or domains."
+        expect(comment.processed_html_final).to equal(comment.processed_html)
+      end
+
+      it "falls back to String#gsub when the new domain contains a backslash" do
+        backslash_domain = "https://new.cdn.com/\\0"
+        allow(ApplicationConfig).to receive(:[]).with("CLOUDFLARE_IMAGES_DOMAIN").and_return(backslash_domain)
+        html = "<img src='#{prior_domain}/image1.jpg'>"
+        comment.processed_html = html
+        expect(comment.processed_html_final).to eq(html.gsub(prior_domain, backslash_domain))
+      end
     end
 
     context "when the application configuration for the domains is blank" do
@@ -760,6 +942,27 @@ RSpec.describe Comment do
       allow(UpdateUserInterestEmbeddingWorker).to receive(:perform_async)
       create(:comment, commentable: podcast, user: user)
       expect(UpdateUserInterestEmbeddingWorker).not_to have_received(:perform_async)
+    end
+  end
+
+  describe "dependent article embed scheduling" do
+    before { allow(Articles::UpdateDependentEmbedsWorker).to receive(:schedule_for_engagement) }
+
+    it "schedules engagement updates on create and soft-delete, ignoring body edits" do
+      created_comment = create(:comment, commentable: article, user: user, body_markdown: "Initial comment")
+      created_comment.update!(body_markdown: "Edited comment body")
+      created_comment.update!(deleted: true)
+
+      expect(Articles::UpdateDependentEmbedsWorker)
+        .to have_received(:schedule_for_engagement).with(article.id).twice
+    end
+
+    it "schedules engagement updates on comment destroy" do
+      created_comment = create(:comment, commentable: article, user: user, body_markdown: "Doomed comment")
+      created_comment.destroy!
+
+      expect(Articles::UpdateDependentEmbedsWorker)
+        .to have_received(:schedule_for_engagement).with(article.id).twice
     end
   end
 end

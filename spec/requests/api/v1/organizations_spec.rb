@@ -209,6 +209,26 @@ RSpec.describe "Api::V1::Organizations" do
       end
     end
 
+    it "matches Jbuilder byte-for-byte via ForemNative", :aggregate_failures do
+      organization.update!(name: "Forem <V1> & Co.", summary: "Open source 🚀")
+
+      native_results = []
+      allow(ForemNative).to receive(:serialize_api_organization_json).and_wrap_original do |method, *args|
+        method.call(*args).tap { |res| native_results << res }
+      end
+
+      get api_organization_path(organization.id), headers: headers
+      native_body = response.body
+      native_media_type = response.media_type
+      expect(native_results.length).to eq(1)
+      expect(native_results.first).to be_a(String)
+
+      allow(ForemNative).to receive(:serialize_api_organization_json).and_return(nil)
+      get api_organization_path(organization.id), headers: headers
+      expect(response.media_type).to eq(native_media_type)
+      expect(native_body).to eq(response.body)
+    end
+
     it "returns 404 if the organizations id is not found" do
       get "/api/organizations/0", headers: headers
       expect(response).to have_http_status(:not_found)
@@ -299,6 +319,30 @@ RSpec.describe "Api::V1::Organizations" do
         expect(response_org_users["profile_image"]).to eq(org_user.profile_image_url_for(length: 320))
         expect(response_org_users.key?("email")).to be false
       end
+
+      it "matches Jbuilder byte-for-byte via ForemNative under UTC", :aggregate_failures do
+        org_user.update!(name: "Ada <V1> & Co.", created_at: Time.utc(2026, 1, 5, 8, 30, 0))
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("TZ").and_return("Etc/UTC")
+
+        Time.use_zone("UTC") do
+          native_results = []
+          allow(ForemNative).to receive(:serialize_api_users_json).and_wrap_original do |method, *args|
+            method.call(*args).tap { |res| native_results << res }
+          end
+
+          get api_organization_users_path(id_or_slug), headers: headers
+          native_body = response.body
+          native_media_type = response.media_type
+          expect(native_results.length).to eq(1)
+          expect(native_results.first).to be_a(String)
+
+          allow(ForemNative).to receive(:serialize_api_users_json).and_return(nil)
+          get api_organization_users_path(id_or_slug), headers: headers
+          expect(response.media_type).to eq(native_media_type)
+          expect(native_body).to eq(response.body)
+        end
+      end
     end
 
     context "when looking up by the organization's id" do
@@ -311,6 +355,24 @@ RSpec.describe "Api::V1::Organizations" do
       let(:id_or_slug) { organization.username }
 
       it_behaves_like "a lookup by ID or slug"
+    end
+  end
+
+  describe "GET /api/organizations/:organization_id_or_slug/listings" do
+    let(:organization) { create(:organization) }
+
+    it "returns 404 if the organization is not found" do
+      get "/api/organizations/invalid-id-or-username/listings", headers: headers
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns an empty array when looking up by the organization's ID or username" do
+      [organization.id, organization.username].each do |identifier|
+        get "/api/organizations/#{identifier}/listings", headers: headers
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body).to eq([])
+      end
     end
   end
 

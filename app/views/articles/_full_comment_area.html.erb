@@ -57,7 +57,7 @@
       <% end %>
 
       <div class="comments" id="comment-trees-container">
-        <% if @article.comments_count > 0 %>
+        <% if @article.displayed_comments_count.to_i > 0 %>
           <% @current_comment_index = 0 %>
           <%= render partial: "articles/comment_tree",
                      collection: article_comment_tree(@article, @comments_to_show_count, @comments_order),
@@ -70,5 +70,7 @@
     <%= render "articles/comments_actions" %>
   <% end %>
 </section>
-<%= render "comments/hide_comments_modal" %>
+<% if user_signed_in? %>
+  <%= render "comments/hide_comments_modal" %>
+<% end %>
 <% return if @warm_only %>

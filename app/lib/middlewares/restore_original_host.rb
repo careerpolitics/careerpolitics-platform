@@ -20,12 +20,22 @@ module Middlewares
         env["HTTP_HOST"] = original_host
       end
 
+      # Clear X-Forwarded-Host so downstream Rack/Rails host helpers cannot bypass
+      # RestoreOriginalHost's trust and validation checks by reading the raw header.
+      env.delete("HTTP_X_FORWARDED_HOST")
+
       @app.call(env)
     end
 
     private
 
     def valid_host?(host)
+      valid = ForemNative.original_host_valid(host)
+      valid.nil? ? legacy_valid_host?(host) : valid
+    end
+
+    # Handles the hosts ForemNative declines (non-ASCII, nothing before the first ":").
+    def legacy_valid_host?(host)
       host_without_port = host.split(":").first
       host_without_port.match?(VALID_HOST_REGEXP) || host_without_port == "localhost"
     end

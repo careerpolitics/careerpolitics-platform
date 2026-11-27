@@ -1,7 +1,7 @@
 module Api
   module V0
     class EventsController < ApiController
-      skip_before_action :verify_authenticity_token, only: %i[create update destroy]
+      skip_csrf_unless_cookie_authenticated only: %i[create update destroy]
       before_action :authenticate!, except: %i[index show]
       before_action :set_event, only: %i[show update destroy]
 
@@ -10,27 +10,48 @@ module Api
       before_action :evaluate_authentication, only: %i[index show]
 
       def index
+        include_drafts = admin_event_access?
         @events = Event.all
-        unless @user&.administrative_access_to?(resource: Event)
-          @events = @events.published
+        @events = @events.published unless include_drafts
+
+        if params[:type_of].present? && Event.type_ofs.key?(params[:type_of])
+          @events = @events.where(type_of: params[:type_of])
         end
-        render json: @events.order(created_at: :desc)
+
+        @events = apply_hierarchy_filters(@events, include_drafts: include_drafts)
+        return if performed?
+
+        include_hierarchy = ActiveModel::Type::Boolean.new.cast(params[:include_hierarchy] || params[:members])
+
+        # Serializing tag_list reads each event's taggings (acts-as-taggable-on's
+        # custom context check), so preload them in one query instead of one per event.
+        ordered_events = @events.includes(:taggings).order(created_at: :desc)
+        render json: Events::ApiSerializer.serialize_collection(
+          ordered_events,
+          include_drafts: include_drafts,
+          include_hierarchy: include_hierarchy,
+        )
       end
 
       def show
-        unless @event.published? || @user&.administrative_access_to?(resource: Event)
+        include_drafts = admin_event_access?
+        unless @event.published? || include_drafts
           return render json: { error: "Event not found" }, status: :not_found
         end
-        render json: @event
+
+        render json: Events::ApiSerializer.serialize_single(@event, include_drafts: include_drafts)
       end
 
       def create
         authorize Event
+        parent_ids, child_entries = extract_hierarchy_params
         @event = Event.new(event_params.except(:user_id))
         @event.user_id = @user.id if @event.user_id.blank?
 
-        if @event.save
-          render json: @event, status: :created
+        saved = save_event_with_memberships(parent_ids: parent_ids, child_entries: child_entries)
+        if saved
+          Audit::Logger.log(:admin_api, @user, { "action" => "api_event_create", "event_id" => @event.id })
+          render json: Events::ApiSerializer.serialize_single(@event, include_drafts: true), status: :created
         else
           render json: { error: @event.errors.full_messages }, status: :unprocessable_entity
         end
@@ -38,9 +59,14 @@ module Api
 
       def update
         authorize @event
+        parent_ids, child_entries = extract_hierarchy_params
         # Prevents arbitrary user hijacking via parameters:
-        if @event.update(event_params.except(:user_id))
-          render json: @event
+        @event.assign_attributes(event_params.except(:user_id))
+
+        saved = save_event_with_memberships(parent_ids: parent_ids, child_entries: child_entries)
+        if saved
+          Audit::Logger.log(:admin_api, @user, { "action" => "api_event_update", "event_id" => @event.id })
+          render json: Events::ApiSerializer.serialize_single(@event, include_drafts: true)
         else
           render json: { error: @event.errors.full_messages }, status: :unprocessable_entity
         end
@@ -49,17 +75,85 @@ module Api
       def destroy
         authorize @event
         @event.destroy
+        if @event.destroyed?
+          Audit::Logger.log(:admin_api, @user, { "action" => "api_event_destroy", "event_id" => @event.id })
+        end
         head :no_content
       end
 
       private
 
+      def admin_event_access?
+        @user&.administrative_access_to?(resource: Event) || false
+      end
+
+      def apply_hierarchy_filters(scope, include_drafts:)
+        if params[:parent_event_id].present?
+          parent = Event.find_by(id: params[:parent_event_id])
+          if parent.nil? || (!parent.published? && !include_drafts)
+            render json: []
+            return scope.none
+          end
+
+          scope = scope.where(id: EventMembership.where(parent_event_id: parent.id).select(:child_event_id))
+        end
+
+        if params[:child_event_id].present?
+          child = Event.find_by(id: params[:child_event_id])
+          if child.nil? || (!child.published? && !include_drafts)
+            render json: []
+            return scope.none
+          end
+
+          scope = scope.where(id: EventMembership.where(child_event_id: child.id).select(:parent_event_id))
+        end
+
+        if params[:scope] == "top_level" || ActiveModel::Type::Boolean.new.cast(params[:top_level])
+          scope = include_drafts ? scope.top_level : scope.top_level_published
+        end
+
+        scope
+      end
+
+      def extract_hierarchy_params
+        event_hash = params[:event]
+        return [nil, nil] unless event_hash.is_a?(ActionController::Parameters)
+
+        parent_ids = event_hash.key?(:parent_event_ids) ? Array(event_hash[:parent_event_ids]) : nil
+        child_entries = if event_hash.key?(:sub_event_memberships)
+                          Array(event_hash[:sub_event_memberships]).map do |entry|
+                            if entry.is_a?(ActionController::Parameters)
+                              entry.permit(:child_event_id, :event_id, :id, :position, :role, :featured).to_h
+                            else
+                              entry
+                            end
+                          end
+                        elsif event_hash.key?(:sub_event_ids)
+                          Array(event_hash[:sub_event_ids])
+                        end
+        [parent_ids, child_entries]
+      end
+
+      def save_event_with_memberships(parent_ids:, child_entries:)
+        success = false
+        Event.transaction do
+          raise ActiveRecord::Rollback unless @event.save
+
+          unless Events::SyncMemberships.sync_both(@event, parent_ids: parent_ids, child_entries: child_entries)
+            raise ActiveRecord::Rollback
+          end
+
+          success = true
+        end
+        success
+      end
+
       def evaluate_authentication
         # Forem's ApiController usually requires valid token if provided, but optional if omitted.
         # This safely tries to log them in if token is sent.
-        if request.headers["api-key"]
-          authenticate!
-        end
+        return unless request.headers["api-key"]
+
+        authenticate!
       end
 
       def set_event
@@ -70,19 +164,30 @@ module Api
 
       def event_params
         params.require(:event).permit(
-          :title, 
+          :title,
           :event_name_slug,
           :event_variation_slug,
-          :description, 
-          :primary_stream_url, 
-          :published, 
-          :start_time, 
-          :end_time, 
-          :type_of, 
-          :user_id, 
-          :organization_id, 
+          :description,
+          :body_markdown,
+          :full_details,
+          :primary_stream_url,
+          :published,
+          :elevated,
+          :allow_articles,
+          :broadcast_config,
+          :manual_broadcast_end,
+          :bg_color_hex,
+          :page_id,
+          :delegate_to_page,
+          :start_time,
+          :end_time,
+          :type_of,
+          :user_id,
+          :organization_id,
+          :cover_image,
+          :banner_image,
           :tag_list,
-          data: {}
+          data: {},
         )
       end
     end

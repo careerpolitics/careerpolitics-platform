@@ -1,10 +1,10 @@
 module Feeds
   class AssembleArticleMarkdown
-    def self.call(item, user, feed, feed_source_url, feed_source: nil)
-      new(item, user, feed, feed_source_url, feed_source: feed_source).call
+    def self.call(item, user, feed, feed_source_url, feed_source: nil, remote_fetches: true)
+      new(item, user, feed, feed_source_url, feed_source: feed_source, remote_fetches: remote_fetches).call
     end
 
-    def initialize(item, user, feed, feed_source_url, feed_source: nil)
+    def initialize(item, user, feed, feed_source_url, feed_source: nil, remote_fetches: true)
       @item = item
       @title = item.title.strip
       @categories = item.categories || []
@@ -12,6 +12,7 @@ module Feeds
       @feed = feed
       @feed_source_url = feed_source_url
       @feed_source = feed_source
+      @remote_fetches = remote_fetches
     end
 
     def call
@@ -44,6 +45,10 @@ module Feeds
     end
 
     def get_tags
+      ForemNative.format_feed_tags(@categories) || legacy_get_tags
+    end
+
+    def legacy_get_tags
       @categories.first(4).map do |tag|
         tag.delete(" ").gsub(/[^[:alnum:]]/i, "")[0..19]
       end.join(",")
@@ -56,19 +61,35 @@ module Feeds
         return resolve_relative_image_urls(raw_content.to_s.strip)
       end
 
-      cleaned_content = Feeds::CleanHtml.call(raw_content)
-      cleaned_content = thorough_parsing(cleaned_content, base_url)
+      raw_html = raw_content.to_s
+      html_doc = Nokogiri::HTML(raw_html)
+      Feeds::CleanHtml.clean_document!(html_doc, raw_html: raw_html)
+      thorough_parsing_on_doc!(html_doc, base_url, raw_html: raw_html)
 
-      content = ReverseMarkdown
-        .convert(cleaned_content, github_flavored: true)
+      content = convert_doc_to_markdown(html_doc)
+      ForemNative.postprocess_feed_markdown(content) || legacy_postprocess_feed_markdown(content)
+    end
+
+    def convert_doc_to_markdown(html_doc)
+      root = html_doc.root
+      return "" unless root
+
+      ReverseMarkdown.config.with(github_flavored: true) do
+        result = ReverseMarkdown::Converters.lookup(root.name).convert(root)
+        ReverseMarkdown.cleaner.tidy(result)
+      end
+    end
+
+    def legacy_postprocess_feed_markdown(content)
+      result = content
         .gsub("```\n\n```", "")
         .gsub(/&nbsp;|\u00A0/, " ")
 
-      content.gsub!(/{%\syoutube\s(.{11,18})\s%}/) do |tag|
+      result.gsub!(/{%\syoutube\s(.{11,18})\s%}/) do |tag|
         tag.gsub("\\_", "_")
       end
 
-      content
+      result
     end
 
     def get_content
@@ -76,9 +97,16 @@ module Feeds
     end
 
     def resolve_relative_image_urls(content)
+      ForemNative.resolve_feed_markdown_images(content, base_url, @feed_source_url) ||
+        legacy_resolve_relative_image_urls(content)
+    end
+
+    def legacy_resolve_relative_image_urls(content)
       # Fix relative src attributes in inline <img> tags
       content = content.gsub(/(<img\s[^>]*?src=["'])([^"']+)(["'])/) do
-        prefix, path, suffix = Regexp.last_match(1), Regexp.last_match(2), Regexp.last_match(3)
+        prefix = Regexp.last_match(1)
+        path = Regexp.last_match(2)
+        suffix = Regexp.last_match(3)
         if path.match?(%r{\Ahttps?://})
           "#{prefix}#{path}#{suffix}"
         else
@@ -89,7 +117,8 @@ module Feeds
 
       # Fix relative URLs in markdown image syntax ![alt](/path)
       content.gsub(/!\[([^\]]*)\]\(([^)]+)\)/) do
-        alt, path = Regexp.last_match(1), Regexp.last_match(2)
+        alt = Regexp.last_match(1)
+        path = Regexp.last_match(2)
         if path.match?(%r{\Ahttps?://})
           "![#{alt}](#{path})"
         else
@@ -102,6 +131,13 @@ module Feeds
     def html_content?(content)
       return false if content.blank?
 
+      native = ForemNative.feed_html_content(content)
+      return native unless native.nil?
+
+      legacy_html_content?(content)
+    end
+
+    def legacy_html_content?(content)
       block_tag_count = content.scan(/<\s*(p|div|h[1-6]|ul|ol|li|blockquote|pre|table|section|figure)[\s>]/i).size
       return false if block_tag_count.zero?
 
@@ -112,21 +148,40 @@ module Feeds
     end
 
     def thorough_parsing(content, feed_url)
-      html_doc = Nokogiri::HTML(content)
+      raw_html = content.to_s
+      html_doc = Nokogiri::HTML(raw_html)
+      thorough_parsing_on_doc!(html_doc, feed_url, raw_html: raw_html)
+      html_doc.to_html
+    end
 
+    def thorough_parsing_on_doc!(html_doc, feed_url, raw_html: nil)
       find_and_replace_possible_links!(html_doc) if referential_link?
-      find_and_replace_picture_tags_with_img!(html_doc)
+      find_and_replace_picture_tags_with_img!(html_doc, raw_html: raw_html)
 
-      if feed_url&.include?("medium.com")
-        parse_and_translate_gist_iframe!(html_doc)
+      if medium_host?(feed_url)
+        parse_and_translate_gist_iframe!(html_doc) if @remote_fetches
         parse_and_translate_youtube_iframe!(html_doc)
         parse_and_translate_tweet!(html_doc)
-        parse_liquid_variable!(html_doc)
+        parse_liquid_variable!(html_doc, raw_html: raw_html)
       elsif feed_url
         clean_relative_path!(html_doc, feed_url)
       end
 
-      html_doc.to_html
+      html_doc
+    end
+
+    def medium_host?(url)
+      return false if url.blank?
+
+      uri = begin
+        URI.parse(url)
+      rescue URI::InvalidURIError
+        nil
+      end
+      return false unless uri&.scheme.in?(%w[http https])
+
+      host = uri.host&.downcase
+      host == "medium.com" || host.to_s.end_with?(".medium.com")
     end
 
     def parse_and_translate_gist_iframe!(html_doc)
@@ -136,8 +191,13 @@ module Feeds
 
         possible_link = a_tag[0].inner_html
         next unless %r{medium\.com/media/.+/href}.match?(possible_link)
+        next unless medium_host?(possible_link)
 
-        real_link = HTTParty.head(possible_link).request.last_uri.to_s
+        real_link = begin
+          SafeHttp.head(possible_link, timeout: 10).request.last_uri.to_s
+        rescue SafeHttp::Error
+          next
+        end
         return nil unless real_link.include?("gist.github.com")
 
         iframe.name = "p"
@@ -163,11 +223,16 @@ module Feeds
       end
     end
 
-    def parse_liquid_variable!(html_doc)
+    def parse_liquid_variable!(html_doc, raw_html: nil)
+      return if raw_html&.exclude?("{{") && raw_html&.exclude?("&#")
+
       # Medium articles does not wrap {{ }} content in liquid tag.
       # This will wrap do so for content that isn't in pre and code tag
       html_doc.css("//body :not(pre):not(code)").each do |node|
-        node.inner_html = node.inner_html.gsub(/{{.*?}}/) { |liquid| "`#{liquid}`" }
+        inner = node.inner_html
+        next unless inner.include?("{{")
+
+        node.inner_html = inner.gsub(/{{.*?}}/) { |liquid| "`#{liquid}`" }
       end
     end
 
@@ -208,19 +273,35 @@ module Feeds
     end
 
     def find_and_replace_possible_links!(html_doc)
-      html_doc.css("a").each do |a_tag|
+      a_tags = html_doc.css("a")
+      return if a_tags.empty?
+
+      links = a_tags.filter_map { |a_tag| a_tag.attributes["href"]&.value }.uniq
+      return if links.empty?
+
+      articles_by_source_url = Article
+        .select(:id, :slug, :path, :organization_id, :subforem_id, :feed_source_url)
+        .where(feed_source_url: links)
+        .each_with_object({}) do |article, by_source_url|
+          by_source_url[article.feed_source_url] ||= article
+        end
+      return if articles_by_source_url.empty?
+
+      a_tags.each do |a_tag|
         link = a_tag.attributes["href"]&.value
         next unless link
 
-        found_article = Article.find_by(feed_source_url: link)&.decorate
-        a_tag.attributes["href"].value = found_article.url if found_article
+        found_article = articles_by_source_url[link]
+        a_tag.attributes["href"].value = URL.article(found_article) if found_article
       end
     end
 
     # <picture> tags are not automatically converted to Markdown, they live on as verbatim HTML.
     # Since they are also not supported by the editor, we need to replace them with their inner <img> tag.
     # We'll rely on Cloudinary to provide responsive images to the client
-    def find_and_replace_picture_tags_with_img!(html_doc)
+    def find_and_replace_picture_tags_with_img!(html_doc, raw_html: nil)
+      return if raw_html && !raw_html.match?(/<picture[\s>]/i)
+
       picture_tags = html_doc.css("picture")
       return unless picture_tags
 

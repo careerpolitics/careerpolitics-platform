@@ -13,9 +13,52 @@ module Html
     include InlineSvg::ActionView::Helpers
     include ApplicationHelper
 
+    ALERT_TYPES = %w[note tip important warning caution].freeze
+    # The marker must be followed by whitespace or the end of the text node, so
+    # `[!NOTE]worthy` stays an ordinary blockquote.
+    ALERT_TOKEN = /\A\[!(#{ALERT_TYPES.join('|')})\](?=\s|\z)\s*/i
+
     RAW_TAG_DELIMITERS = ["{", "}", "raw", "endraw", "----"].freeze
     RAW_TAG = "{----% raw %----}".freeze
     END_RAW_TAG = "{----% endraw %----}".freeze
+    FULLSCREEN_ACTION_CACHE = Concurrent::Map.new
+
+    def self.resolve_existing_usernames(usernames)
+      return [] if usernames.empty?
+      return User.find_by(username: usernames.first) ? usernames : [] if usernames.size == 1
+
+      User.where(username: usernames).pluck(:username)
+    end
+
+    def self.alert_labels
+      ALERT_TYPES.map { |type| I18n.t("services.html.parser.alerts.#{type}") }
+    end
+
+    def self.native_prefix_images_config(width: 880, synchronous_detail_detection: false)
+      return if synchronous_detail_detection
+      return unless width.nil? || width.is_a?(Integer) || width.is_a?(String)
+      return if Images::Optimizer.imgproxy_enabled? || Images::Optimizer.cloudinary_enabled?
+
+      app_domain = Settings::General.app_domain
+      app_host = app_domain.present? ? URI("https://#{app_domain}").host : nil
+      asset_host_raw = ActionController::Base.asset_host
+      asset_host = if asset_host_raw.present?
+                     return unless asset_host_raw.is_a?(String)
+
+                     URI("https://#{asset_host_raw.sub(%r{^https?://}, '')}").host
+                   end
+      cf_domain = Images::Optimizer.cloudflare_enabled? ? ApplicationConfig["CLOUDFLARE_IMAGES_DOMAIN"] : nil
+
+      [
+        width.nil? ? "" : width.to_s,
+        app_host,
+        asset_host,
+        cf_domain,
+        Images::Optimizer::CLOUDFLARE_DIRECTORY,
+      ]
+    rescue URI::InvalidURIError
+      nil
+    end
 
     attr_accessor :html
     private :html=
@@ -26,142 +69,112 @@ module Html
 
     def remove_nested_linebreak_in_list
       html_doc = Nokogiri::HTML(@html)
-      html_doc.xpath("//*[self::ul or self::ol or self::li]/br").each(&:remove)
+      html_doc.xpath("//*[self::ul or self::ol or self::li]/br").each(&:remove) if @html&.match?(/<br/i)
       @html = html_doc.to_html
 
       self
     end
 
     def prefix_all_images(width: 880, synchronous_detail_detection: false, quality: "auto")
-      # wrap with Cloudinary or allow if from giphy or githubusercontent.com
-      doc = Nokogiri::HTML.fragment(@html)
+      return self if @html.blank? || (!@html.match?(/<img/i) && @html.exclude?("<!DOCTYPE"))
 
-      doc.css("img").each do |img|
-        src = img.attr("src")
-        next unless src
-        # allow image to render as-is
-        next if allowed_image_host?(src)
-        next if img["data-ignore-prefix"] == "true"
-
-        if synchronous_detail_detection
-          header = { "User-Agent" => "#{Settings::Community.community_name} (#{URL.url})" }
-          img["width"], img["height"] = FastImage.size(src, timeout: 10, http_header: header)
-        end
-
-        img["loading"] = "lazy"
-        img["src"] = if Giphy::Image.valid_url?(src)
-                       src.gsub("https://media.", "https://i.")
-                     else
-                       img_of_size(src, width, quality: quality)
-                     end
-      end
-
-      @html = doc.to_html
+      @html = native_prefix_all_images(width: width, synchronous_detail_detection: synchronous_detail_detection) ||
+        legacy_prefix_all_images(width: width, synchronous_detail_detection: synchronous_detail_detection,
+                                 quality: quality)
 
       self
     end
 
     def wrap_all_images_in_links
-      doc = Nokogiri::HTML.fragment(@html)
+      return self if @html.blank? || !@html.match?(/<img/i)
 
-      doc.search("p img").each do |image|
-        next if image.parent.name == "a"
-
-        image.swap("<a href='#{image.attr('src')}' class='article-body-image-wrapper'>#{image}</a>")
-      end
-
-      @html = doc.to_html
+      @html = ForemNative.wrap_all_images_in_links(@html) ||
+        legacy_wrap_all_images_in_links
 
       self
     end
 
     def add_control_class_to_codeblock
-      doc = Nokogiri::HTML.fragment(@html)
+      return self if @html.blank? || !may_contain?("highlight")
 
-      doc.search("div.highlight").each do |codeblock|
-        codeblock.add_class("js-code-highlight")
-      end
-
-      @html = doc.to_html
+      @html = ForemNative.add_control_class_to_codeblock(@html) ||
+        legacy_add_control_class_to_codeblock
 
       self
     end
 
     def add_control_panel_to_codeblock
-      doc = Nokogiri::HTML.fragment(@html)
+      return self if @html.blank? || !may_contain?("highlight")
 
-      doc.search("div.highlight").each do |codeblock|
-        codeblock.add_child('<div class="highlight__panel js-actions-panel"></div>')
-      end
-
-      @html = doc.to_html
+      @html = ForemNative.add_control_panel_to_codeblock(@html) ||
+        legacy_add_control_panel_to_codeblock
 
       self
     end
 
     def add_fullscreen_button_to_panel
+      return self if @html.blank? || !may_contain?("highlight__panel")
+
+      action_html = fullscreen_action_html
+      @html = ForemNative.add_fullscreen_button_to_panel(@html, action_html) ||
+        legacy_add_fullscreen_button_to_panel(action_html)
+
+      self
+    end
+
+    def fullscreen_action_html
       on_title = I18n.t("services.html.parser.enter_fullscreen_mode")
-      on_cls = "highlight-action crayons-icon highlight-action--fullscreen-on"
-      icon_fullscreen_on = inline_svg_tag(
-        "fullscreen-on.svg", class: on_cls, title: on_title, width: "20px", height: "20px"
-      )
       off_title = I18n.t("services.html.parser.exit_fullscreen_mode")
-      off_cls = "highlight-action crayons-icon highlight-action--fullscreen-off"
-      icon_fullscreen_off = inline_svg_tag(
-        "fullscreen-off.svg", class: off_cls, title: off_title, width: "20px", height: "20px"
-      )
-      doc = Nokogiri::HTML.fragment(@html)
-      doc.search("div.highlight__panel").each do |codeblock|
-        fullscreen_action = <<~HTML
+
+      FULLSCREEN_ACTION_CACHE.compute_if_absent([on_title, off_title]) do
+        on_cls = "highlight-action crayons-icon highlight-action--fullscreen-on"
+        icon_fullscreen_on = inline_svg_tag(
+          "fullscreen-on.svg", class: on_cls, title: on_title, width: "20px", height: "20px"
+        )
+        off_cls = "highlight-action crayons-icon highlight-action--fullscreen-off"
+        icon_fullscreen_off = inline_svg_tag(
+          "fullscreen-off.svg", class: off_cls, title: off_title, width: "20px", height: "20px"
+        )
+        raw_action = <<~HTML
           <div class="highlight__panel-action js-fullscreen-code-action">
               #{icon_fullscreen_on}
               #{icon_fullscreen_off}
           </div>
         HTML
-
-        codeblock.add_child(fullscreen_action)
+        Nokogiri::HTML.fragment(raw_action).to_html
       end
+    end
 
-      @html = doc.to_html
+    def wrap_all_tables
+      return self if @html.blank? || !@html.match?(/<table/i)
+
+      @html = ForemNative.wrap_all_tables(@html) ||
+        legacy_wrap_all_tables
 
       self
     end
 
-    def wrap_all_tables
-      doc = Nokogiri::HTML.fragment(@html)
-      doc.search("table").each { |table| table.swap("<div class='table-wrapper-paragraph'>#{table}</div>") }
-      @html = doc.to_html
+    def transform_markdown_alerts
+      return self if @html.blank? || !@html.match?(/<blockquote/i) || !(@html.include?("[!") || @html.include?("&"))
+
+      @html = ForemNative.transform_markdown_alerts(@html, self.class.alert_labels) ||
+        legacy_transform_markdown_alerts
 
       self
     end
 
     def remove_empty_paragraphs
-      doc = Nokogiri::HTML.fragment(@html)
-      doc.css("p").select { |paragraph| all_children_are_blank?(paragraph) }.each(&:remove)
-      @html = doc.to_html
+      return self if @html.blank? || !@html.match?(/<p/i)
+
+      @html = ForemNative.remove_empty_paragraphs(@html) ||
+        legacy_remove_empty_paragraphs
 
       self
     end
 
     def escape_colon_emojis_in_codeblock
-      html_doc = Nokogiri::HTML.fragment(@html)
-
-      html_doc.children.each do |el|
-        next if el.name == "code"
-
-        if el.search("code").empty?
-          if el.parent.present?
-            parsed_html = Html::Parser.new(el.to_html).parse_emojis.html
-            el.swap(parsed_html)
-          end
-        else
-          el.children = self.class.new(el.children.to_html)
-            .escape_colon_emojis_in_codeblock
-            .html
-        end
-      end
-
-      @html = html_doc.to_html
+      @html = ForemNative.escape_colon_emojis_in_codeblock(@html) ||
+        legacy_escape_colon_emojis_in_codeblock
 
       self
     end
@@ -169,79 +182,26 @@ module Html
     def unescape_raw_tag_in_codeblocks
       return self if @html.blank?
 
-      @html.gsub!(RAW_TAG, "{% raw %}")
-      @html.gsub!(END_RAW_TAG, "{% endraw %}")
-      html_doc = Nokogiri::HTML(@html)
-      html_doc.xpath("//body/div/pre/code").each do |codeblock|
-        next unless codeblock.content.include?(RAW_TAG) || codeblock.content.include?(END_RAW_TAG)
-
-        children_content = codeblock.children.map(&:content)
-        indices = children_content.size.times.select do |i|
-          possibly_raw_tag_syntax?(children_content[i..i + 2])
-        end
-        indices.each do |i|
-          codeblock.children[i].content = codeblock.children[i].content.delete("----")
-        end
-      end
-
-      @html =
-        if html_doc.at_css("body")
-          html_doc.at_css("body").inner_html
-        else
-          html_doc.to_html
-        end
+      @html = ForemNative.unescape_raw_tag_in_codeblocks(@html) ||
+        legacy_unescape_raw_tag_in_codeblocks
 
       self
     end
 
     def wrap_all_figures_with_tags
-      html_doc = Nokogiri::HTML(@html)
+      return self if @html.blank? || !@html.match?(/<figcaption/i)
 
-      html_doc.xpath("//figcaption").each do |caption|
-        next if caption.parent.name == "figure"
-        next unless caption.previous_element
-
-        fig = html_doc.create_element "figure"
-        prev = caption.previous_element
-        prev.replace(fig) << prev << caption
-      end
-
-      @html =
-        if html_doc.at_css("body")
-          html_doc.at_css("body").inner_html
-        else
-          html_doc.to_html
-        end
+      @html = ForemNative.wrap_all_figures_with_tags(@html) ||
+        legacy_wrap_all_figures_with_tags
 
       self
     end
 
     def wrap_mentions_with_links
-      html_doc = Nokogiri::HTML(@html)
+      return self if @html.blank? || !may_contain?("@")
 
-      # looks for nodes that isn't <code>, <a>, and contains "@"
-      targets = html_doc.xpath('//html/body/*[not (self::code) and not(self::a) and contains(., "@")]').to_a
-
-      # A Queue system to look for and replace possible usernames
-      until targets.empty?
-        node = targets.shift
-
-        # only focus on portion of text with "@"
-        node.xpath("text()[contains(.,'@')]").each do |el|
-          el.replace(el.to_s.gsub(/\B@[a-z0-9_-]+/i) { |text| user_link_if_exists(text) })
-        end
-
-        # enqueue children that has @ in it's text
-        children = node.xpath('*[not(self::code) and not(self::a) and contains(., "@")]').to_a
-        targets.concat(children)
-      end
-
-      @html =
-        if html_doc.at_css("body")
-          html_doc.at_css("body").inner_html
-        else
-          html_doc.to_html
-        end
+      @html = native_wrap_mentions_with_links ||
+        legacy_wrap_mentions_with_links
 
       self
     end
@@ -249,40 +209,52 @@ module Html
     def parse_emojis
       return self if @html.blank?
 
-      @html.gsub!(/:([\w+-]+):/) do |match|
-        emoji = Emoji.find_by_alias(Regexp.last_match(1)) # rubocop:disable Rails/DynamicFindBy
-        emoji.present? ? emoji.raw : match
-      end
+      @html = ForemNative.parse_emojis(@html) || legacy_parse_emojis
 
       self
     end
 
     def enforce_gif_like_videos
-      doc = Nokogiri::HTML.fragment(@html)
+      return self if @html.blank? || !@html.match?(/<video/i)
 
-      doc.css("video").each do |video|
-        # Mark as gif-like for JS to attach behavior
-        video["data-gif-video"] = "true"
-        # Default attributes to mimic GIF behavior, unless explicitly overridden
-        video["autoplay"] = video["autoplay"] || "autoplay"
-        video["loop"] = video["loop"] || "loop"
-        video["muted"] = video["muted"] || "muted"
-        video["playsinline"] = video["playsinline"] || "playsinline"
-        # Remove controls by default unless explicitly present
-        video.remove_attribute("controls") unless video["controls"]
-        # Avoid preloading to save bandwidth if not provided
-        video["preload"] = video["preload"] || "metadata"
-      end
-
-      @html = doc.to_html
+      @html = ForemNative.enforce_gif_like_videos(@html) ||
+        legacy_enforce_gif_like_videos
 
       self
     end
 
     private
 
+    # Literal-substring fast-exit guard. Any "&" means the marker may be spelled with
+    # character references (e.g. "&#64;" or "high&#108;ight") that Nokogiri decodes,
+    # so fall through to the full parse in that case.
+    def may_contain?(marker)
+      @html.include?(marker) || @html.include?("&")
+    end
+
     def img_of_size(source, width = 880, quality: "auto")
       Images::Optimizer.call(source, width: width, quality: quality).gsub(",", "%2C")
+    end
+
+    def strip_alert_token(paragraph)
+      text_node = paragraph.children.detect { |child| child.text? && child.content.match?(ALERT_TOKEN) }
+      return unless text_node
+
+      text_node.content = text_node.content.sub(ALERT_TOKEN, "")
+
+      # the newline after the token leaves a leading <br> behind
+      while (leading = paragraph.children.first) && blank?(leading)
+        leading.remove
+      end
+
+      paragraph.remove if all_children_are_blank?(paragraph)
+    end
+
+    def alert_label_node(doc, alert_type)
+      label = Nokogiri::XML::Node.new("p", doc)
+      label["data-alert-label"] = alert_type
+      label.content = I18n.t("services.html.parser.alerts.#{alert_type}")
+      label
     end
 
     def all_children_are_blank?(node)
@@ -310,6 +282,247 @@ module Html
 
     def possibly_raw_tag_syntax?(array)
       (RAW_TAG_DELIMITERS & array).any?
+    end
+
+    def legacy_wrap_all_images_in_links
+      doc = Nokogiri::HTML.fragment(@html)
+
+      doc.search("p img").each do |image|
+        next if image.parent.name == "a"
+
+        link = doc.document.create_element("a")
+        link["href"] = image.attr("src").to_s
+        link["class"] = "article-body-image-wrapper"
+        image.replace(link)
+        link.add_child(image)
+      end
+
+      doc.to_html
+    end
+
+    def legacy_add_control_class_to_codeblock
+      doc = Nokogiri::HTML.fragment(@html)
+
+      doc.search("div.highlight").each do |codeblock|
+        codeblock.add_class("js-code-highlight")
+      end
+
+      doc.to_html
+    end
+
+    def legacy_add_control_panel_to_codeblock
+      doc = Nokogiri::HTML.fragment(@html)
+
+      doc.search("div.highlight").each do |codeblock|
+        codeblock.add_child('<div class="highlight__panel js-actions-panel"></div>')
+      end
+
+      doc.to_html
+    end
+
+    def legacy_wrap_all_tables
+      doc = Nokogiri::HTML.fragment(@html)
+      doc.search("table").each { |table| table.swap("<div class='table-wrapper-paragraph'>#{table}</div>") }
+      doc.to_html
+    end
+
+    def legacy_remove_empty_paragraphs
+      doc = Nokogiri::HTML.fragment(@html)
+      doc.css("p").select { |paragraph| all_children_are_blank?(paragraph) }.each(&:remove)
+      doc.to_html
+    end
+
+    def legacy_unescape_raw_tag_in_codeblocks
+      html = @html.gsub(RAW_TAG, "{% raw %}").gsub(END_RAW_TAG, "{% endraw %}")
+      html_doc = Nokogiri::HTML(html)
+      html_doc.xpath("//body/div/pre/code").each do |codeblock|
+        next unless codeblock.content.include?(RAW_TAG) || codeblock.content.include?(END_RAW_TAG)
+
+        children_content = codeblock.children.map(&:content)
+        indices = children_content.size.times.select do |i|
+          possibly_raw_tag_syntax?(children_content[i..i + 2])
+        end
+        indices.each do |i|
+          codeblock.children[i].content = codeblock.children[i].content.delete("----")
+        end
+      end
+
+      body = html_doc.at_css("body")
+      body ? body.inner_html : html_doc.to_html
+    end
+
+    def legacy_add_fullscreen_button_to_panel(action_html)
+      doc = Nokogiri::HTML.fragment(@html)
+      doc.search("div.highlight__panel").each do |codeblock|
+        codeblock.add_child(action_html)
+      end
+      doc.to_html
+    end
+
+    def legacy_enforce_gif_like_videos
+      doc = Nokogiri::HTML.fragment(@html)
+
+      doc.css("video").each do |video|
+        # Mark as gif-like for JS to attach behavior
+        video["data-gif-video"] = "true"
+        # Default attributes to mimic GIF behavior, unless explicitly overridden
+        video["autoplay"] = video["autoplay"] || "autoplay"
+        video["loop"] = video["loop"] || "loop"
+        video["muted"] = video["muted"] || "muted"
+        video["playsinline"] = video["playsinline"] || "playsinline"
+        # Remove controls by default unless explicitly present
+        video.remove_attribute("controls") unless video["controls"]
+        # Avoid preloading to save bandwidth if not provided
+        video["preload"] = video["preload"] || "metadata"
+      end
+
+      doc.to_html
+    end
+
+    def native_wrap_mentions_with_links
+      usernames = ForemNative.extract_mention_usernames(@html)
+      return unless usernames
+
+      existing = self.class.resolve_existing_usernames(usernames)
+      base_url = "#{ApplicationConfig['APP_PROTOCOL']}#{Settings::General.app_domain}"
+      ForemNative.wrap_mentions_with_links(@html, existing, base_url)
+    end
+
+    def legacy_wrap_mentions_with_links
+      html_doc = Nokogiri::HTML(@html)
+
+      # looks for nodes that isn't <code>, <a>, and contains "@"
+      targets = html_doc.xpath('//html/body/*[not (self::code) and not(self::a) and contains(., "@")]').to_a
+
+      # A Queue system to look for and replace possible usernames
+      until targets.empty?
+        node = targets.shift
+
+        # only focus on portion of text with "@"
+        node.xpath("text()[contains(.,'@')]").each do |el|
+          el.replace(el.to_s.gsub(/\B@[a-z0-9_-]+/i) { |text| user_link_if_exists(text) })
+        end
+
+        # enqueue children that has @ in it's text
+        children = node.xpath('*[not(self::code) and not(self::a) and contains(., "@")]').to_a
+        targets.concat(children)
+      end
+
+      body = html_doc.at_css("body")
+      body ? body.inner_html : html_doc.to_html
+    end
+
+    def legacy_escape_colon_emojis_in_codeblock
+      html_doc = Nokogiri::HTML.fragment(@html)
+
+      html_doc.children.each do |el|
+        next if el.name == "code"
+
+        if el.search("code").empty?
+          if el.parent.present?
+            parsed_html = Html::Parser.new(el.to_html).parse_emojis.html
+            el.swap(parsed_html)
+          end
+        else
+          el.children = self.class.new(el.children.to_html)
+            .escape_colon_emojis_in_codeblock
+            .html
+        end
+      end
+
+      html_doc.to_html
+    end
+
+    # Handles non-plain-String inputs (such as ActiveSupport::SafeBuffer or non-UTF-8 strings)
+    # using the embedded gemoji lookup table in ForemNative (see `crates/forem_core/src/emoji_data.rs`).
+    def legacy_parse_emojis
+      @html.gsub!(/:([\w+-]+):/) do |match|
+        ForemNative.emoji_by_alias(Regexp.last_match(1)) || match
+      end
+      @html
+    end
+
+    def native_prefix_all_images(width:, synchronous_detail_detection:)
+      config = self.class.native_prefix_images_config(
+        width: width,
+        synchronous_detail_detection: synchronous_detail_detection,
+      )
+      return unless config
+
+      ForemNative.prefix_all_images(
+        @html,
+        width: config[0],
+        app_host: config[1],
+        asset_host: config[2],
+        cloudflare_domain: config[3],
+        cloudflare_directory: config[4],
+      )
+    end
+
+    def legacy_prefix_all_images(width:, synchronous_detail_detection:, quality:)
+      doc = Nokogiri::HTML.fragment(@html)
+
+      if @html&.match?(/<img/i)
+        doc.css("img").each do |img|
+          src = img.attr("src")
+          next unless src
+          next if allowed_image_host?(src)
+          next if img["data-ignore-prefix"] == "true"
+
+          if synchronous_detail_detection
+            header = { "User-Agent" => "#{Settings::Community.community_name} (#{URL.url})" }
+            img["width"], img["height"] = SafeFastImage.size(src, timeout: 10, http_header: header)
+          end
+
+          img["loading"] = "lazy"
+          img["src"] = if Giphy::Image.valid_url?(src)
+                         src.gsub("https://media.", "https://i.")
+                       else
+                         img_of_size(src, width, quality: quality)
+                       end
+        end
+      end
+
+      doc.to_html
+    end
+
+    def legacy_transform_markdown_alerts
+      doc = Nokogiri::HTML.fragment(@html)
+
+      doc.css("blockquote").each do |blockquote|
+        first = blockquote.element_children.first
+        next unless first&.name == "p"
+
+        leading = first.children.first
+        next unless leading&.text?
+
+        match = leading.content.match(ALERT_TOKEN)
+        next unless match
+
+        alert_type = match[1].downcase
+        strip_alert_token(first)
+
+        blockquote["data-alert"] = alert_type
+        blockquote.prepend_child(alert_label_node(doc, alert_type))
+      end
+
+      doc.to_html
+    end
+
+    def legacy_wrap_all_figures_with_tags
+      html_doc = Nokogiri::HTML(@html)
+
+      html_doc.xpath("//figcaption").each do |caption|
+        next if caption.parent.name == "figure"
+        next unless caption.previous_element
+
+        fig = html_doc.create_element "figure"
+        prev = caption.previous_element
+        prev.replace(fig) << prev << caption
+      end
+
+      body = html_doc.at_css("body")
+      body ? body.inner_html : html_doc.to_html
     end
   end
 end

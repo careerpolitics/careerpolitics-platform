@@ -2,11 +2,11 @@ class ArticlesController < ApplicationController
   include ApplicationHelper
 
   # NOTE: It seems quite odd to not authenticate the user for the :new action.
-  before_action :authenticate_user!, except: %i[feed new]
+  before_action :authenticate_user!, except: %i[feed new short_link]
   before_action :set_article, only: %i[edit manage update destroy stats admin_unpublish admin_featured_toggle]
   # NOTE: Consider pushing this check into the associated Policy.  We could choose to raise a
   #       different error which we could then rescue as part of our exception handling.
-  before_action :check_suspended, only: %i[new create update]
+  before_action :check_suspended, only: %i[new create update edit manage destroy delete_confirm]
   before_action :set_cache_control_headers, only: %i[feed]
   after_action :verify_authorized
 
@@ -33,41 +33,57 @@ class ArticlesController < ApplicationController
     #              do with a comment.
     skip_authorization
 
-    @articles = Article.feed.order(published_at: :desc).page(params[:page].to_i).per(12)
+    @articles = Article.feed.select(:cached_user_name).order(published_at: :desc).page(params[:page].to_i).per(12)
     @latest = request.path == latest_feed_path
-    @articles = if params[:username]
-                  handle_user_or_organization_feed
-                elsif params[:tag]
-                  handle_tag_feed
-                elsif @latest
-                  @articles
-                    .where("score > ?", Articles::Feeds::Latest::MINIMUM_SCORE)
-                    .includes(:user)
-                else
-                  @articles
-                    .with_at_least_home_feed_minimum_score
-                    .includes(:user)
-                end
 
-    not_found unless @articles&.any?
+    @organization = custom_domain_org
+    if @organization
+      @user = @organization
+      @articles = @articles.where(organization_id: @organization.id)
+      if params[:tag]
+        handle_tag_feed
+      end
+    else
+      @articles = if params[:username]
+                    handle_user_or_organization_feed
+                  elsif params[:tag]
+                    handle_tag_feed
+                  elsif @latest
+                    @articles
+                      .where("score > ?", Articles::Feeds::Latest::MINIMUM_SCORE)
+                  else
+                    @articles
+                      .with_at_least_home_feed_minimum_score
+                  end
+    end
+
+    # Load once up front; `any?` on an unloaded relation would issue an extra EXISTS query.
+    not_found unless @articles&.load&.any?
 
     user_keys = if @user&.respond_to?(:profile_identity_cache_keys)
                   @user.profile_identity_cache_keys
                 else
                   Array.wrap(@user&.record_key)
                 end
-    set_surrogate_key_header(*[user_keys, @articles.map(&:record_key)].flatten.compact)
+    set_surrogate_key_header("articles-feed", *user_keys, @tag&.record_key, *@articles.map(&:record_key))
     set_cache_control_headers(10.minutes.to_i, stale_while_revalidate: 30, stale_if_error: 1.day.to_i)
 
-    render layout: false, content_type: "application/xml", locals: {
-      articles: @articles,
-      user: @user,
-      tag: @tag,
-      latest: @latest,
-      allowed_tags: MarkdownProcessor::AllowedTags::FEED,
-      allowed_attributes: MarkdownProcessor::AllowedAttributes::FEED,
-      scrubber: FeedMarkdownScrubber.new
-    }
+    render_rss_feed
+  end
+
+  def short_link
+    skip_authorization
+    code = params[:code].to_s.downcase
+    id = code.reverse.to_i(26)
+    @article = Article.published.find_by(id: id)
+
+    if @article
+      set_surrogate_key_header("articles/#{@article.id}")
+      set_cache_control_headers(1.hour.to_i)
+      redirect_to @article.path
+    else
+      not_found
+    end
   end
 
   # @note The /new path is a unique creature.  We want to ensure that folks coming to the /new with
@@ -96,7 +112,7 @@ class ArticlesController < ApplicationController
 
     @version = @article.has_frontmatter? ? "v1" : "v2"
     @user = @article.user
-    @organizations = @user&.organizations
+    @organizations = @user&.member_organizations
     @user_approved_liquid_tags = Users::ApprovedLiquidTags.call(@user)
   end
 
@@ -106,7 +122,7 @@ class ArticlesController < ApplicationController
     @article = @article.decorate
     @discussion_lock = @article.discussion_lock
     @user = @article.user
-    @organizations = @user&.organizations
+    @organizations = @user&.member_organizations
     # TODO: fix this for multi orgs
     @org_members = @organization.users.pluck(:name, :id) if @organization
   end
@@ -132,15 +148,20 @@ class ArticlesController < ApplicationController
           if front_matter["tags"]
             tags = Article.new.tag_list.add(front_matter["tags"], parser: ActsAsTaggableOn::TagParser)
           end
-          if front_matter["cover_image"]
+          # A YAML list or number in front matter isn't an image URL; skip it instead of raising.
+          if front_matter["cover_image"].is_a?(String)
             cover_image = ApplicationController.helpers.cloud_cover_url(front_matter["cover_image"])
           end
+
+          raw_disclosure = front_matter["ai_disclosure_level"] || front_matter["ai_disclosure"]
+          ai_disclosure_level = Article.normalize_ai_disclosure_level(raw_disclosure)&.to_s || raw_disclosure
 
           render json: {
             processed_html: processed_html,
             title: front_matter["title"],
             tags: tags,
-            cover_image: cover_image
+            cover_image: cover_image,
+            ai_disclosure_level: ai_disclosure_level
           }, status: :ok
         end
       end
@@ -151,7 +172,7 @@ class ArticlesController < ApplicationController
     authorize Article
     @user = current_user
     article_params_json[:subforem_id] ||= RequestStore.store[:subforem_id]
-    article = Articles::Creator.call(@user, article_params_json)
+    article = Articles::Creator.call(@user, article_params_json, co_author_invitee_ids: co_author_invitee_ids)
 
     if article.persisted?
       if article.type_of == "status"
@@ -168,7 +189,7 @@ class ArticlesController < ApplicationController
     authorize @article
     @user = @article.user || current_user
 
-    updated = Articles::Updater.call(@user, @article, article_params_json)
+    updated = Articles::Updater.call(@user, @article, article_params_json, co_author_invitee_ids: co_author_invitee_ids)
 
     respond_to do |format|
       format.html do
@@ -217,6 +238,10 @@ class ArticlesController < ApplicationController
     authorize @article
     @organization_id = @article.organization_id
     @reactions = @article.reactions.public_category.order(created_at: :desc).limit(500).includes(:user)
+    # Gems are stored on the article itself rather than as Reactions, so they
+    # are surfaced separately in the Reaction History.
+    @gem_given_by = @article.favorited_by_user
+    @gem_given_at = @article.favorited_at
   end
 
   def admin_unpublish
@@ -274,26 +299,137 @@ class ArticlesController < ApplicationController
   def base_editor_assignments
     @user = current_user
     @version = @user.setting.editor_version if @user
-    @organizations = @user&.organizations
-    @tag = Tag.find_by(name: params[:template])
+    @organizations = @user&.member_organizations
+    # Signed-out GET /new(:template) renders only the sign-in prompt, and Articles::Builder
+    # only reads name and submission_template when building a tag-prefilled draft for a user.
+    if @user && params[:template].present?
+      @tag = Tag.select(:id, :name, :submission_template).find_by(name: params[:template])
+    end
     @prefill = params[:prefill].to_s.gsub("\\n ", "\n").gsub("\\n", "\n")
     @user_approved_liquid_tags = Users::ApprovedLiquidTags.call(@user)
   end
 
   def handle_user_or_organization_feed
-    if (@user = User.find_by(username: params[:username]))
+    if (@user = User.select(:id, :name, :username, :profile_image).find_by(username: params[:username]))
       @articles = @articles.where(user_id: @user.id)
-    elsif (@user = Organization.find_by(slug: params[:username]))
-      @articles = @articles.where(organization_id: @user.id).includes(:user)
+    elsif (@user = Organization.select(:id, :name, :slug, :profile_image).find_by(slug: params[:username]))
+      @articles = @articles.where(organization_id: @user.id)
     end
   end
 
   def handle_tag_feed
-    tag_name = Tag.aliased_name(params[:tag])
-    return unless tag_name
+    tag = Tag.select(:id, :name, :alias_for).find_by(name: params[:tag].to_s.downcase)
+    return unless tag
 
-    @tag = Tag.find_by(name: tag_name)
+    tag_name = tag.alias_for.presence || tag.name
+    @tag = tag.alias_for.present? ? Tag.select(:id, :name).find_by(name: tag_name) : tag
     @articles = @articles.cached_tagged_with(tag_name)
+  end
+
+  def render_rss_feed
+    allowed_tags = MarkdownProcessor::AllowedTags::FEED
+    allowed_attributes = MarkdownProcessor::AllowedAttributes::FEED
+    scrubber = FeedMarkdownScrubber.new
+
+    if request.format.rss? && ForemNative.available? &&
+        (xml = serialize_rss_feed_natively(allowed_tags: allowed_tags, allowed_attributes: allowed_attributes,
+                                           scrubber: scrubber))
+      render plain: xml, content_type: "application/xml"
+      return
+    end
+
+    render layout: false, content_type: "application/xml", locals: {
+      articles: @articles,
+      user: @user,
+      tag: @tag,
+      latest: @latest,
+      allowed_tags: allowed_tags,
+      allowed_attributes: allowed_attributes,
+      scrubber: scrubber
+    }
+  end
+
+  def serialize_rss_feed_natively(allowed_tags:, allowed_attributes:, scrubber:)
+    descriptions = helpers.feed_item_descriptions(
+      @articles,
+      tags: allowed_tags,
+      attributes: allowed_attributes,
+      scrubber: scrubber,
+    )
+    items_flat = native_rss_items_flat(descriptions)
+    return unless items_flat
+
+    ForemNative.serialize_rss_feed_xml(native_rss_channel_fields, items_flat)
+  end
+
+  def native_rss_channel_fields
+    community = community_name
+    custom_domain = request.env["forem.custom_domain_org"].present?
+
+    if @user
+      title = "#{community}: #{@user.name}"
+      user_handle = @user.instance_of?(User) ? "@#{@user.username}" : @user.slug
+      description = "The latest articles on #{community} by #{@user.name} (#{user_handle})."
+      channel_link = custom_domain ? request.base_url : app_url(@user.path)
+      image_url = app_url(@user.profile_image_90)
+      [title, description, channel_link, true, image_url, title, channel_link, request.original_url, "en"]
+    elsif @tag
+      [
+        "#{community}: #{@tag.name}",
+        "The latest articles tagged '#{@tag.name}' on #{community}.",
+        tag_url(@tag),
+        false, nil, nil, nil,
+        request.original_url,
+        "en"
+      ]
+    elsif @latest
+      [
+        "#{community}: Latest",
+        "The most recent articles on #{community}.",
+        "#{app_url}/latest",
+        false, nil, nil, nil,
+        request.original_url,
+        "en"
+      ]
+    else
+      [
+        community,
+        "The most recent home feed on #{community}.",
+        app_url,
+        false, nil, nil, nil,
+        request.original_url,
+        "en"
+      ]
+    end
+  end
+
+  def native_rss_items_flat(descriptions)
+    custom_domain = request.env["forem.custom_domain_org"].present?
+    base_url = request.base_url if custom_domain
+    is_user = @user.instance_of?(User)
+    user_name = @user.name if is_user
+
+    items_flat = Array.new(@articles.size * 8)
+    idx = 0
+    @articles.each do |article|
+      published_at = article.published_at
+      if published_at && !(published_at.respond_to?(:tv_sec) && published_at.respond_to?(:utc_offset))
+        return nil
+      end
+
+      article_link = custom_domain ? "#{base_url}/#{article.slug}" : app_url(article.path)
+
+      items_flat[idx] = article.title
+      items_flat[idx + 1] = is_user ? user_name : (article.cached_user_name.presence || article.user.name)
+      items_flat[idx + 2] = published_at&.tv_sec
+      items_flat[idx + 3] = published_at&.utc_offset
+      items_flat[idx + 4] = article_link
+      items_flat[idx + 5] = article_link
+      items_flat[idx + 6] = descriptions[article.id]
+      items_flat[idx + 7] = article.cached_tag_list
+      idx += 8
+    end
+    items_flat
   end
 
   def set_article
@@ -321,17 +457,14 @@ class ArticlesController < ApplicationController
                        %i[
                          title body_markdown main_image published description video_thumbnail_url
                          tag_list canonical_url series collection_id archived published_at timezone
-                         published_at_date published_at_time type_of body_url subforem_id
+                         published_at_date published_at_time type_of body_url subforem_id ai_disclosure_level
                        ]
                      end
 
-    # Allow video_source_url if it's a valid YouTube, Mux, or Twitch URL
-    video_url = params.dig("article", "video_source_url")
-    if video_url.present?
-      youtube_pattern = /\Ahttps?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)/
-      mux_pattern = /\Ahttps?:\/\/player\.mux\.com\//
-      twitch_pattern = /\Ahttps?:\/\/(www\.)?twitch\.tv\/videos\//
-      allowed_params << :video_source_url if video_url.match?(youtube_pattern) || video_url.match?(mux_pattern) || video_url.match?(twitch_pattern)
+    # Allow video_source_url only for supported hosts; a blank value removes the cover video
+    if params["article"].key?("video_source_url") &&
+        Article.permitted_video_source_url?(params["article"]["video_source_url"])
+      allowed_params << :video_source_url
     end
 
     # NOTE: the organization logic is still a little counter intuitive but this should
@@ -352,6 +485,18 @@ class ArticlesController < ApplicationController
     @article_params_json = params.require(:article).permit(allowed_params)
   end
 
+  # The editor's co-author invitee list, or nil to leave the article's invitations untouched (the
+  # list wasn't sent, or invitations aren't enabled). Invitees must follow the author, so only the
+  # author manages them; an admin editing someone else's post leaves them alone.
+  def co_author_invitee_ids
+    article_params_json # normalizes the editor's camelCased keys
+    return unless params["article"].key?("co_author_invitee_ids")
+    return if @article && @article.user_id != current_user.id
+    return unless feature_flag_enabled?(:co_author_invitations)
+
+    params.require(:article).permit(co_author_invitee_ids: [])[:co_author_invitee_ids] || []
+  end
+
   def manage_published_at_params
     time_zone_str = params["article"].delete("timezone")
 
@@ -368,18 +513,32 @@ class ArticlesController < ApplicationController
   end
 
   def allowed_to_change_org_id?
-    potential_user = @article&.user || current_user
+    return true if current_user.any_admin?
+
+    potential_user_id = effective_author_id
     potential_org_id = requested_organization_id || @article&.organization_id
-    OrganizationMembership.exists?(user: potential_user, organization_id: potential_org_id) ||
-      current_user.any_admin?
+    return false unless OrganizationMembership.member.exists?(user_id: potential_user_id,
+                                                              organization_id: potential_org_id)
+
+    # Require admin membership in the target organization when editing or attributing to another author
+    potential_user_id == current_user.id || current_user.org_admin?(potential_org_id)
   end
 
   def org_admin_user_change_privilege
-    params[:article][:user_id] &&
-      # if current_user is an org admin of the article's org
-      current_user.org_admin?(@article.organization_id) &&
+    return false unless @article && params.dig(:article, :user_id).present?
+    return false if params["article"].key?("organization_id") && requested_organization_id.blank?
+
+    # if current_user is an org admin of the article's org
+    current_user.org_admin?(@article.organization_id) &&
       # and if the author being changed to belongs to the article's org
-      OrganizationMembership.exists?(user_id: params[:article][:user_id], organization_id: @article.organization_id)
+      OrganizationMembership.member.exists?(user_id: params[:article][:user_id],
+                                            organization_id: @article.organization_id)
+  end
+
+  def effective_author_id
+    return params[:article][:user_id].to_i if org_admin_user_change_privilege
+
+    @article&.user_id || current_user.id
   end
 
   def allowed_to_manage_org_co_authors?

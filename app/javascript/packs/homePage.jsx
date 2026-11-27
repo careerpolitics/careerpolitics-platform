@@ -1,5 +1,5 @@
 import { h, render } from 'preact';
-import ahoy from 'ahoy.js';
+import { ahoy } from '@utilities/ahoy/client';
 import { TagsFollowed } from '../leftSidebar/TagsFollowed';
 import {
   observeBillboards,
@@ -8,7 +8,7 @@ import {
 } from '../packs/billboardAfterRenderActions';
 import { observeFeedElements } from '../packs/feedEvents';
 import { setupBillboardInteractivity } from '@utilities/billboardInteractivity';
-import { trackCreateAccountClicks } from '@utilities/ahoy/trackEvents';
+import { cleanupBillboardShadowHostsIn } from '../utilities/billboardShadowDom';
 
 /* global userData */
 const frontPageFeedPathNames = new Map([
@@ -21,7 +21,9 @@ const frontPageFeedPathNames = new Map([
   ['/latest', 'latest'],
   ['/latest_less_filtered', 'latest_less_filtered'],
   ['/following', ''],
-  ['/following/latest', 'latest']
+  ['/following/latest', 'latest'],
+  ['/following/latest_less_filtered', 'latest_less_filtered'],
+  ['/curated', ''],
 ]);
 
 /**
@@ -93,85 +95,88 @@ function renderSidebar() {
   if (
     sidebarContainer &&
     screen.width >= 640 &&
-    (pathname === '/' || pathname === '/latest' || pathname.includes('/top/') || pathname.includes('/discover') || pathname.includes('/following'))
+    (pathname === '/' || pathname === '/latest' || pathname.includes('/top/') || pathname.includes('/discover') || pathname.includes('/following') || pathname.includes('/curated'))
   ) {
     window
       .fetch('/sidebars/home')
       .then((res) => res.text())
       .then((response) => {
+        cleanupBillboardShadowHostsIn(sidebarContainer);
         sidebarContainer.innerHTML = response;
+        initializeBillboardVisibility();
+        observeBillboards();
         setupBillboardInteractivity();
+        executeBBScripts(sidebarContainer);
       });
   }
+}
+
+export function afterHomeFeedRender() {
+  const feedEl =
+    document.getElementById('rendered-article-feed') ||
+    document.getElementById('homepage-feed');
+  initializeBillboardVisibility();
+  observeBillboards();
+  setupBillboardInteractivity();
+  if (feedEl) {
+    executeBBScripts(feedEl);
+  }
+  observeFeedElements();
 }
 
 const feedTimeFrame = frontPageFeedPathNames.get(window.location.pathname);
 const homeFeedEl = document.getElementById('homepage-feed');
 
-if (document.getElementById('sidebar-nav-followed-tags')) {
+if (document.getElementById('sidebar-nav-followed-tags') && !window._homePageFeedListenersRegistered) {
   const waitingForDataLoad = setInterval(() => {
     const { user = null, userStatus } = document.body.dataset;
     if (userStatus === 'logged-out') {
+      clearInterval(waitingForDataLoad);
       return;
     }
 
-    if (userStatus === 'logged-in' && user !== null && homeFeedEl) {
+    const currentHomeFeedEl =
+      document.getElementById('homepage-feed') || homeFeedEl;
+
+    if (userStatus === 'logged-in' && user !== null && currentHomeFeedEl) {
       clearInterval(waitingForDataLoad);
       if (document.getElementById('rendered-article-feed')) {
         return;
       }
       import('./homePageFeed').then(({ renderFeed }) => {
-        const callback = () => {
-          initializeBillboardVisibility();
-          observeBillboards();
-          setupBillboardInteractivity();
-          executeBBScripts(homeFeedEl);
-          observeFeedElements();
-        };
+        renderFeed(feedTimeFrame, afterHomeFeedRender);
 
-        renderFeed(feedTimeFrame, callback);
+        if (!window._homePageFeedListenersRegistered) {
+          InstantClick.on('change', () => {
+            const { userStatus: currentUserStatus } = document.body.dataset;
 
-        InstantClick.on('change', () => {
-          const { userStatus: currentUserStatus } = document.body.dataset;
+            if (currentUserStatus === 'logged-out') {
+              return;
+            }
 
-          if (currentUserStatus === 'logged-out') {
-            return;
-          }
+            const url = new URL(window.location.href);
+            const changedFeedTimeFrame = frontPageFeedPathNames.get(url.pathname);
 
-          const url = new URL(window.location);
-          const changedFeedTimeFrame = frontPageFeedPathNames.get(url.pathname);
+            if (!frontPageFeedPathNames.has(url.pathname)) {
+              return;
+            }
 
-          if (!frontPageFeedPathNames.has(url.pathname)) {
-            return;
-          }
+            renderFeed(changedFeedTimeFrame, afterHomeFeedRender);
+          });
 
-          const callback = () => {
-            initializeBillboardVisibility();
-            observeBillboards();
-            setupBillboardInteractivity();
-            observeFeedElements();
-          };
+          window.addEventListener('forem:feed:refresh', () => {
+            const url = new URL(window.location.href);
+            const changedFeedTimeFrame = frontPageFeedPathNames.get(url.pathname);
 
-          renderFeed(changedFeedTimeFrame, callback);
-        });
+            if (!frontPageFeedPathNames.has(url.pathname)) {
+              return;
+            }
 
-        window.addEventListener('forem:feed:refresh', () => {
-          const url = new URL(window.location);
-          const changedFeedTimeFrame = frontPageFeedPathNames.get(url.pathname);
+            renderFeed(changedFeedTimeFrame, afterHomeFeedRender);
+          });
 
-          if (!frontPageFeedPathNames.has(url.pathname)) {
-            return;
-          }
-
-          const callback = () => {
-            initializeBillboardVisibility();
-            observeBillboards();
-            setupBillboardInteractivity();
-            observeFeedElements();
-          };
-
-          renderFeed(changedFeedTimeFrame, callback);
-        });
+          window._homePageFeedListenersRegistered = true;
+        }
       });
 
       renderTagsFollowed();
@@ -180,15 +185,16 @@ if (document.getElementById('sidebar-nav-followed-tags')) {
   }, 2);
 }
 
-InstantClick.on('change', () => {
-  if (document.body.dataset.userStatus !== 'logged-in') {
-    // Nothing to do, the user is not logged on.
-    return false;
-  }
+if (!window._homePageSidebarListenersRegistered) {
+  InstantClick.on('change', () => {
+    if (document.body.dataset.userStatus !== 'logged-in') {
+      // Nothing to do, the user is not logged on.
+      return false;
+    }
 
-  renderTagsFollowed();
-  renderSidebar();
-});
+    renderTagsFollowed();
+    renderSidebar();
+  });
+  window._homePageSidebarListenersRegistered = true;
+}
 InstantClick.init();
-
-trackCreateAccountClicks('sidebar-wrapper-left');

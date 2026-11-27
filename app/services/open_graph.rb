@@ -10,10 +10,11 @@ class OpenGraph
 
   DEFAULT_METHODS = %i[description title url].freeze
   CACHE_EXPIRY_IN_MINUTES = 15
+  MAX_REDIRECT_HOPS = 3
 
   def initialize(url)
     html = fetch_html(url)
-    @page = MetaInspector.new(url, document: html)
+    @page = MetaInspector.new(url, document: html.presence || "", download_images: false)
     @tags = meta_tags
   end
 
@@ -26,7 +27,7 @@ class OpenGraph
   DEFAULT_METHODS.each do |method_name|
     define_method(method_name) do |use_best = false|
       if use_best
-        page.public_send("best_#{method_name}".to_sym)
+        page.public_send(:"best_#{method_name}")
       else
         page.public_send(method_name)
       end
@@ -57,7 +58,7 @@ class OpenGraph
   end
 
   def preferred_desc
-    properties["og:description"].first || page.description
+    properties["og:description"]&.first || page.description
   end
 
   # this method groups like-properties, making it a little easier to determine
@@ -85,9 +86,29 @@ class OpenGraph
 
   def fetch_html(url)
     Rails.cache.fetch("#{url}_open_graph_html", expires_in: CACHE_EXPIRY_IN_MINUTES.minutes) do
-      response = HTTParty.get(url, headers: { "User-Agent" => "#{Settings::Community.community_name} (#{URL.url})" })
-      response&.body
+      safe_fetch_html(url)
     end
+  end
+
+  # Fetches the HTML for a URL via SafeHttp, which validates every hop against
+  # the SSRF guard, pins each hop to its resolved IP to prevent DNS rebinding,
+  # and disables proxy discovery.
+  def safe_fetch_html(url)
+    response = SafeHttp.get(
+      url,
+      max_redirects: MAX_REDIRECT_HOPS,
+      timeout: 15,
+      headers: { "User-Agent" => "#{Settings::Community.community_name} (#{URL.url})" },
+    )
+    return if response&.redirection?
+
+    response&.body
+  rescue SafeHttp::TooManyRedirectsError
+    Rails.logger.warn("[OpenGraph] Too many redirects fetching Open Graph metadata")
+    nil
+  rescue SafeHttp::BlockedUrlError
+    Rails.logger.warn("[OpenGraph] Blocked unsafe URL while fetching Open Graph metadata")
+    nil
   end
 
   def group(data)

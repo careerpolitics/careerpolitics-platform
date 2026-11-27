@@ -5,6 +5,22 @@ RSpec.describe Billboard do
   let(:billboard) { build(:billboard, organization: nil) }
   let(:audience_segment) { create(:audience_segment) }
 
+  def create(name, *traits_and_overrides, &block)
+    if name == :billboard
+      overrides = traits_and_overrides.extract_options!
+      overrides[:organization] = nil unless overrides.key?(:organization) || overrides.key?(:organization_id)
+      overrides[:name] = "Billboard" unless overrides.key?(:name)
+      return super(name, *traits_and_overrides, **overrides, &block)
+    end
+    super
+  end
+
+  def create_list(name, amount, *traits_and_overrides)
+    return Array.new(amount) { create(name, *traits_and_overrides) } if name == :billboard
+
+    super
+  end
+
   it_behaves_like "Taggable"
 
   describe "#update_links_with_bb_param" do
@@ -85,6 +101,16 @@ RSpec.describe Billboard do
       it { is_expected.to have_many(:tags) }
     end
 
+    it "requires minimized_body_markdown if special_behavior is persistent" do
+      billboard.special_behavior = "persistent"
+      billboard.minimized_body_markdown = nil
+      expect(billboard).not_to be_valid
+      expect(billboard.errors[:minimized_body_markdown]).to include("can't be blank")
+
+      billboard.minimized_body_markdown = "minimized content"
+      expect(billboard).to be_valid
+    end
+
     it "allows sidebar_right" do
       billboard.placement_area = "sidebar_right"
       expect(billboard).to be_valid
@@ -117,6 +143,18 @@ RSpec.describe Billboard do
     it "returns human readable name" do
       billboard.placement_area = "sidebar_left_2"
       expect(billboard.human_readable_placement_area).to eq("Sidebar Left (Second Position)")
+    end
+
+    it "allows secondary post placement areas" do
+      %w[post_body_bottom_secondary post_sidebar_secondary post_comments_secondary].each do |area|
+        billboard.placement_area = area
+        expect(billboard).to be_valid
+      end
+    end
+
+    it "returns human readable names for secondary post placement areas" do
+      billboard.placement_area = "post_comments_secondary"
+      expect(billboard.human_readable_placement_area).to eq("Below the comment section (Secondary)")
     end
 
     it "allows creator_id to be set" do
@@ -196,7 +234,7 @@ RSpec.describe Billboard do
         expect(billboard).to be_valid
       end
 
-      it "prevents setting approved to true when expires_at is in the past" do
+      it "prevents updating approved to true when expires_at is in the past" do
         billboard.expires_at = 1.day.ago
         billboard.approved = false # First set to false to pass validation
         billboard.save!
@@ -238,7 +276,7 @@ RSpec.describe Billboard do
 
     it "renders survey tag" do
       survey = create(:survey)
-      poll = create(:poll, survey: survey)
+      create(:poll, survey: survey)
       admin_user = create(:user, :admin)
 
       survey_billboard = create(:billboard,
@@ -261,6 +299,17 @@ RSpec.describe Billboard do
       raw_input = "<div class=\"bb\"><img src=\"https://dummyimage.com/100x100\" /></div>"
       raw_billboard = create(:billboard, body_markdown: raw_input, render_mode: "raw")
       expect(raw_billboard.processed_html).to include "dummyimage.com/100x100\" width=\"\" height=\"\" loading=\"lazy\""
+    end
+
+    it "normalizes stray closing tags and unclosed elements so raw HTML cannot break ancestor layout",
+       :aggregate_failures do
+      raw_input = '</div></aside></main><div class="unclosed-banner"><a href="https://example.com">Promo copy'
+      raw_billboard = create(:billboard, body_markdown: raw_input, render_mode: "raw", template: "plain")
+
+      expect(raw_billboard.processed_html).to eq(
+        "<div class=\"unclosed-banner\"><a href=\"https://example.com?bb=#{raw_billboard.id}\">Promo copy</a></div>",
+      )
+      expect(raw_billboard.processed_html).not_to include("</aside>", "</main>")
     end
   end
 
@@ -299,18 +348,18 @@ RSpec.describe Billboard do
   end
 
   describe "#process_markdown" do
-    # FastImage.size is called when synchronous_detail_detection: true is passed to Html::Parser#prefix_all_images
+    # SafeFastImage.size is called when synchronous_detail_detection: true is passed to Html::Parser#prefix_all_images
     # which should be the case for Billboard
     # Images::Optimizer is also called with widht
     it "calls Html::Parser#prefix_all_images with parameters" do
       # Html::Parser.new(html).prefix_all_images(prefix_width, synchronous_detail_detection: true).html
       image_url = "https://dummyimage.com/100x100"
-      allow(FastImage).to receive(:size)
+      allow(SafeFastImage).to receive(:size)
       allow(Images::Optimizer).to receive(:call).and_return(image_url)
       image_md = "![Image description](#{image_url})<p style='margin-top:100px'>Hello <em>hey</em> Hey hey</p>"
       create(:billboard, body_markdown: image_md, placement_area: "post_comments")
-      options = { http_header: { "User-Agent" => "DEV(local) (http://forem.test)" }, timeout: 10 }
-      expect(FastImage).to have_received(:size).with(image_url, options)
+      options = { http_header: { "User-Agent" => "#{Settings::Community.community_name} (http://forem.test)" }, timeout: 10 }
+      expect(SafeFastImage).to have_received(:size).with(image_url, options)
       # width is billboard.prefix_width
       expect(Images::Optimizer).to have_received(:call).with(image_url, width: Billboard::POST_WIDTH, quality: 100)
       # Images::Optimizer.call(source, width: width)
@@ -318,7 +367,7 @@ RSpec.describe Billboard do
 
     it "uses sidebar width for sidebar location" do
       image_url = "https://dummyimage.com/100x100"
-      allow(FastImage).to receive(:size)
+      allow(SafeFastImage).to receive(:size)
       allow(Images::Optimizer).to receive(:call).and_return(image_url)
       image_md = "![Image description](#{image_url})<p style='margin-top:100px'>Hello <em>hey</em> Hey hey</p>"
       create(:billboard, body_markdown: image_md, placement_area: "post_sidebar")
@@ -327,7 +376,7 @@ RSpec.describe Billboard do
 
     it "uses post width for feed location" do
       image_url = "https://dummyimage.com/100x100"
-      allow(FastImage).to receive(:size)
+      allow(SafeFastImage).to receive(:size)
       allow(Images::Optimizer).to receive(:call).and_return(image_url)
       image_md = "![Image description](#{image_url})<p style='margin-top:100px'>Hello <em>hey</em> Hey hey</p>"
       create(:billboard, body_markdown: image_md, placement_area: "feed_second")
@@ -340,6 +389,67 @@ RSpec.describe Billboard do
       billboard.update(name: "Sample billboard")
       billboard.reload
       expect(billboard.processed_html).to eq(html)
+    end
+
+    it "processes minimized_body_markdown using the same render_mode" do
+      billboard = create(:billboard, render_mode: "forem_markdown", minimized_body_markdown: "Minimized **bold**")
+      expect(billboard.minimized_processed_html).to include("<strong>bold</strong>")
+
+      billboard.update(render_mode: "raw", minimized_body_markdown: "<div>Raw minimized</div>")
+      expect(billboard.minimized_processed_html).to eq("<div>Raw minimized</div>")
+    end
+
+    it "re-processes body_markdown and minimized_body_markdown when render_mode or placement_area changes" do
+      billboard = create(:billboard, render_mode: "forem_markdown", body_markdown: "**bold**",
+                                     minimized_body_markdown: "Minimized **bold**")
+      expect(billboard.processed_html).to include("<strong>bold</strong>")
+      expect(billboard.minimized_processed_html).to include("<strong>bold</strong>")
+
+      billboard.update!(render_mode: "raw")
+      expect(billboard.processed_html).to eq("**bold**")
+      expect(billboard.minimized_processed_html).to eq("Minimized **bold**")
+    end
+
+    it "adds a validation error when body_markdown raises ContentParsingError" do
+      invalid_billboard = build(:billboard, body_markdown: "{% cta invalid-url %}Click here{% endcta %}")
+
+      expect(invalid_billboard).not_to be_valid
+      expect(invalid_billboard.errors[:base]).to include(I18n.t("liquid_tags.invalid_url_scheme", option: "link"))
+    end
+
+    it "adds a validation error when minimized_body_markdown raises ContentParsingError" do
+      invalid_billboard = build(
+        :billboard,
+        special_behavior: "persistent",
+        minimized_body_markdown: "{% cta invalid-url %}Click here{% endcta %}",
+      )
+
+      expect(invalid_billboard).not_to be_valid
+      expect(invalid_billboard.errors[:base]).to include(I18n.t("liquid_tags.invalid_url_scheme", option: "link"))
+    end
+
+    it "keeps rendered HTML synchronized when markdown is modified, validated, and restored before save" do
+      billboard = create(
+        :billboard,
+        render_mode: "forem_markdown",
+        body_markdown: "Original **body**",
+        minimized_body_markdown: "Original **minimized**",
+      )
+      original_html = billboard.processed_html
+      original_minimized_html = billboard.minimized_processed_html
+
+      billboard.body_markdown = "Temporary **body**"
+      billboard.minimized_body_markdown = "Temporary **minimized**"
+      expect(billboard).to be_valid
+      expect(billboard.processed_html).to include("Temporary")
+      expect(billboard.minimized_processed_html).to include("Temporary")
+
+      billboard.body_markdown = "Original **body**"
+      billboard.minimized_body_markdown = "Original **minimized**"
+      billboard.save!
+
+      expect(billboard.processed_html).to eq(original_html)
+      expect(billboard.minimized_processed_html).to eq(original_minimized_html)
     end
   end
 
@@ -359,23 +469,11 @@ RSpec.describe Billboard do
       create(:billboard, name: "This is a billboard", body_markdown: "Billboard Body", placement_area: "post_comments")
     end
 
-    it "finds via name" do
+    it "finds ads by name, body, placement_area, or multiple criteria", :aggregate_failures do
       expect(described_class.search_ads("this").ids).to contain_exactly(billboard.id)
-    end
-
-    it "finds via body" do
       expect(described_class.search_ads("body").ids).to contain_exactly(billboard.id)
-    end
-
-    it "finds via placement_area" do
       expect(described_class.search_ads("comment").ids).to contain_exactly(billboard.id)
-    end
-
-    it "finds just one result via multiple criteria" do
       expect(described_class.search_ads("billboard").ids).to contain_exactly(billboard.id)
-    end
-
-    it "returns empty when no match" do
       expect(described_class.search_ads("foo")).to eq([])
     end
   end
@@ -592,48 +690,51 @@ RSpec.describe Billboard do
   describe "#update_exclude_article_ids" do
     let(:article) { create(:article) }
 
-    it "automatically extracts article IDs from relative links in the billboard content" do
-      billboard = build(:billboard, body_markdown: "Check out this great post: [link](#{article.path})")
-      
-      expect { billboard.save! }.to change { billboard.exclude_article_ids }.from([]).to([article.id])
-    end
-
-    it "automatically extracts article IDs from absolute links matching the app domain" do
+    it "extracts article IDs from internal/subforem links and ignores external or invalid paths", :aggregate_failures do
       app_url = URI.parse(URL.url)
-      billboard = build(:billboard, body_markdown: "Check out this great post: [link](#{app_url}#{article.path})")
-      
-      expect { billboard.save! }.to change { billboard.exclude_article_ids }.from([]).to([article.id])
-    end
+      www_url = "#{app_url.scheme}://www.#{app_url.host}"
+      subforem_domain = "subforem.customdomain.com"
+      allow(Settings::General).to receive(:app_domain).and_return("customdomain.com")
+      allow(Subforem).to receive(:cached_domains).and_return([subforem_domain])
 
-    it "does not parse links from external domains" do
-      billboard = build(:billboard, body_markdown: "Check out this great post: [link](https://external-domain.com#{article.path})")
-      
-      expect { billboard.save! }.not_to change { billboard.exclude_article_ids }
-    end
-    
-    it "does not add invalid paths" do
-      billboard = build(:billboard, body_markdown: "Check out this great post: [link](/not-a-real-path)")
-      
-      expect { billboard.save! }.not_to change { billboard.exclude_article_ids }
+      [
+        { body_markdown: "Check out this great post: [link](#{article.path})" },
+        { render_mode: "raw", body_markdown: "<a href=\"#{article.path}\">link</a>" },
+        { body_markdown: "Check out this great post: [link](#{app_url}#{article.path})" },
+        { body_markdown: "Check out this great post: [link](#{www_url}#{article.path})" },
+        { body_markdown: "Check out this great post: [link](https://customdomain.com#{article.path})" },
+        { body_markdown: "Check out this great post: [link](https://#{subforem_domain}#{article.path})" },
+      ].each do |attrs|
+        bb = build(:billboard, **attrs)
+        expect { bb.save! }.to change(bb, :exclude_article_ids).from([]).to([article.id])
+      end
+
+      [
+        "Check out this great post: [link](https://external-domain.com#{article.path})",
+        "Check out this great post: [link](/not-a-real-path)",
+      ].each do |markdown|
+        bb = build(:billboard, body_markdown: markdown)
+        expect { bb.save! }.not_to change(bb, :exclude_article_ids)
+      end
     end
 
     it "removes IDs of linked articles if they are removed from the markdown" do
       billboard = create(:billboard, body_markdown: "Check out this great post: [link](#{article.path})")
       expect(billboard.exclude_article_ids).to eq([article.id])
 
-      expect {
+      expect do
         billboard.update!(body_markdown: "Never mind, no links here!")
-      }.to change { billboard.exclude_article_ids }.from([article.id]).to([])
+      end.to change(billboard, :exclude_article_ids).from([article.id]).to([])
     end
 
     it "only runs when the body_markdown is changed" do
       billboard = create(:billboard, body_markdown: "Check out this great post: [link](#{article.path})")
-      
+
       allow(Article).to receive(:where).and_call_original
-      
+
       # Now save without changing markdown
       billboard.update!(name: "A different name")
-      
+
       expect(Article).not_to have_received(:where)
       expect(billboard.exclude_article_ids).to eq([article.id])
     end
@@ -676,45 +777,28 @@ RSpec.describe Billboard do
 
     before { create(:billboard, priority: true, impressions_count: low_impression_count + 1) }
 
-    it "includes ads with impressions count less than LOW_IMPRESSION_COUNT" do
+    it "includes ads below the default, global, or area-specific LOW_IMPRESSION_COUNT or marked priority",
+       :aggregate_failures do
       expect(described_class.seldom_seen("sidebar_left")).to include(low_impression_ad)
-    end
+      expect(described_class.seldom_seen("sidebar_left")).not_to include(high_impression_ad)
+      expect(described_class.seldom_seen("sidebar_left").size).to be 2
 
-    it "does not include ads with impression count more than env area override of LOW_IMPRESSION_COUNT" do
       allow(ApplicationConfig).to receive(:[]).with("LOW_IMPRESSION_COUNT_FOR_SIDEBAR_LEFT").and_return("990")
       expect(described_class.seldom_seen("sidebar_left")).not_to include(low_impression_ad)
-    end
 
-    it "includes ads with impression count less than than env area override of LOW_IMPRESSION_COUNT" do
       allow(ApplicationConfig).to receive(:[]).with("LOW_IMPRESSION_COUNT_FOR_SIDEBAR_LEFT").and_return("1010")
       expect(described_class.seldom_seen("sidebar_left")).to include(low_impression_ad)
-    end
 
-    it "does not include ads with impression count more than env GLOBAL override of LOW_IMPRESSION_COUNT" do
+      allow(ApplicationConfig).to receive(:[]).with("LOW_IMPRESSION_COUNT_FOR_SIDEBAR_LEFT").and_return(nil)
       allow(ApplicationConfig).to receive(:[]).with("LOW_IMPRESSION_COUNT").and_return("990")
-      allow(ApplicationConfig).to receive(:[]).with("LOW_IMPRESSION_COUNT_FOR_SIDEBAR_LEFT").and_return(nil)
       expect(described_class.seldom_seen("sidebar_left")).not_to include(low_impression_ad)
-    end
 
-    it "includes ads with impression count less than than env GLOBAL override of LOW_IMPRESSION_COUNT" do
       allow(ApplicationConfig).to receive(:[]).with("LOW_IMPRESSION_COUNT").and_return("1010")
-      allow(ApplicationConfig).to receive(:[]).with("LOW_IMPRESSION_COUNT_FOR_SIDEBAR_LEFT").and_return(nil)
       expect(described_class.seldom_seen("sidebar_left")).to include(low_impression_ad)
-    end
 
-    it "ignores override of LOW_IMPRESSION_COUNT to a different location" do
-      allow(ApplicationConfig).to receive(:[]).with("LOW_IMPRESSION_COUNT_FOR_POST_COMMENTS").and_return("990")
-      allow(ApplicationConfig).to receive(:[]).with("LOW_IMPRESSION_COUNT_FOR_SIDEBAR_LEFT").and_return(nil)
       allow(ApplicationConfig).to receive(:[]).with("LOW_IMPRESSION_COUNT").and_return(nil)
+      allow(ApplicationConfig).to receive(:[]).with("LOW_IMPRESSION_COUNT_FOR_POST_COMMENTS").and_return("990")
       expect(described_class.seldom_seen("sidebar_left")).to include(low_impression_ad)
-    end
-
-    it "excludes ads with impressions count greater than or equal to LOW_IMPRESSION_COUNT" do
-      expect(described_class.seldom_seen("sidebar_left")).not_to include(high_impression_ad)
-    end
-
-    it "includes both priority to be proper size when two qualifying ads exist" do
-      expect(described_class.seldom_seen("sidebar_left").size).to be 2
     end
   end
 
@@ -728,28 +812,19 @@ RSpec.describe Billboard do
         bb4 = create(:billboard, weight: 2)
         bb5 = create(:billboard, weight: 1)
 
-        total_weight = 5 + 1 + 1 + 2 + 1 # 10
-        expected_probabilities = {
-          bb1.id => 5.0 / total_weight,
-          bb2.id => 1.0 / total_weight,
-          bb3.id => 1.0 / total_weight,
-          bb4.id => 2.0 / total_weight,
-          bb5.id => 1.0 / total_weight
-        }
-
-        counts = Hash.new(0)
-        num_trials = 5_000
-
-        num_trials.times do
-          id = described_class.weighted_random_selection(described_class.all).id
-          counts[id] += 1
-        end
-
-        counts.each do |id, count|
-          observed_probability = count.to_f / num_trials
-          expected_probability = expected_probabilities[id]
-
-          expect(observed_probability).to be_within(0.025).of(expected_probability)
+        # Cumulative weights (total = 10): bb1 [0..5], bb2 (5..6], bb3 (6..7], bb4 (7..9], bb5 (9..10]
+        expect(described_class.weighted_random_selection(described_class.all)).to be_a(described_class)
+        {
+          [0.0, 0.5] => bb1,
+          [0.501, 0.6] => bb2,
+          [0.601, 0.7] => bb3,
+          [0.701, 0.9] => bb4,
+          [0.901, 0.999] => bb5
+        }.each do |rand_bounds, expected_bb|
+          rand_bounds.each do |r|
+            allow(described_class).to receive(:rand).and_return(r)
+            expect(described_class.weighted_random_selection(described_class.all)).to eq(expected_bb)
+          end
         end
       end
     end
@@ -768,29 +843,20 @@ RSpec.describe Billboard do
         bb4 = create(:billboard, weight: 2, preferred_article_ids: [])
         bb5 = create(:billboard, weight: 1, preferred_article_ids: [])
 
-        # Adjusted total weight accounting for the favored records
-        total_weight = (5 * favored_weight_multiplier) + 1 + (1 * favored_weight_multiplier) + 2 + 1
-        expected_probabilities = {
-          bb1.id => (5.0 * favored_weight_multiplier) / total_weight,
-          bb2.id => 1.0 / total_weight,
-          bb3.id => (1.0 * favored_weight_multiplier) / total_weight,
-          bb4.id => 2.0 / total_weight,
-          bb5.id => 1.0 / total_weight
-        }
-
-        counts = Hash.new(0)
-        num_trials = 5_000
-
-        num_trials.times do
-          id = described_class.weighted_random_selection(described_class.all, target_article_id).id
-          counts[id] += 1
-        end
-
-        counts.each do |id, count|
-          observed_probability = count.to_f / num_trials
-          expected_probability = expected_probabilities[id]
-
-          expect(observed_probability).to be_within(0.025).of(expected_probability)
+        # Adjusted cumulative weights (total = 64): bb1 [0..50], bb2 (50..51], bb3 (51..61], bb4 (61..63], bb5 (63..64]
+        total_weight = (5.0 * favored_weight_multiplier) + 1 + (1.0 * favored_weight_multiplier) + 2 + 1
+        expect(described_class.weighted_random_selection(described_class.all, target_article_id)).to be_present
+        {
+          [0.0, 50.0 / total_weight] => bb1,
+          [50.01 / total_weight, 51.0 / total_weight] => bb2,
+          [51.01 / total_weight, 61.0 / total_weight] => bb3,
+          [61.01 / total_weight, 63.0 / total_weight] => bb4,
+          [63.01 / total_weight, 63.99 / total_weight] => bb5
+        }.each do |rand_bounds, expected_bb|
+          rand_bounds.each do |r|
+            allow(described_class).to receive(:rand).and_return(r)
+            expect(described_class.weighted_random_selection(described_class.all, target_article_id)).to eq(expected_bb)
+          end
         end
       end
     end
@@ -807,13 +873,35 @@ RSpec.describe Billboard do
 
     context "when the prior domain and new domain are both present" do
       it "replaces instances of the prior domain with the new domain" do
-        billboard.processed_html = "Here is an image <img src='#{prior_domain}/image1.jpg'> and another <img src='#{prior_domain}/image2.jpg'>."
-        expect(billboard.processed_html_final).to eq("Here is an image <img src='#{new_domain}/image1.jpg'> and another <img src='#{new_domain}/image2.jpg'>.")
+        billboard.processed_html =
+          "Here is an image <img src='#{prior_domain}/image1.jpg'> and another <img src='#{prior_domain}/image2.jpg'>."
+        expect(billboard.processed_html_final).to eq(
+          "Here is an image <img src='#{new_domain}/image1.jpg'> and another <img src='#{new_domain}/image2.jpg'>.",
+        )
       end
 
       it "does not modify text if the prior domain is not present in the processed_html" do
         billboard.processed_html = "Content with no images or domains."
         expect(billboard.processed_html_final).to eq("Content with no images or domains.")
+      end
+
+      it "returns the stored processed_html without copying it when the prior domain is absent" do
+        billboard.processed_html = "Content with no images or domains."
+        expect(billboard.processed_html_final).to equal(billboard.processed_html)
+      end
+
+      it "falls back to String#gsub when the new domain contains a backslash" do
+        backslash_domain = "https://new.cdn.com/\\0"
+        allow(ApplicationConfig).to receive(:[]).with("CLOUDFLARE_IMAGES_DOMAIN").and_return(backslash_domain)
+        html = "<img src='#{prior_domain}/image1.jpg'>"
+        billboard.processed_html = html
+        expect(billboard.processed_html_final).to eq(html.gsub(prior_domain, backslash_domain))
+      end
+
+      it "leaves legacy runkit markup untouched" do
+        html = "<div class='runkit-element'><code>pre</code><code>body</code></div> #{prior_domain}/a.png"
+        billboard.processed_html = html
+        expect(billboard.processed_html_final).to eq(html.gsub(prior_domain, new_domain))
       end
     end
 
@@ -832,15 +920,6 @@ RSpec.describe Billboard do
 
   describe "#update_event_counts_when_taking_down" do
     let!(:active_billboard) { create(:billboard, published: true, approved: true) }
-    let!(:impression_event) do
-      create(:billboard_event, billboard: active_billboard, category: "impression", counts_for: 2)
-    end
-    let!(:click_event) do
-      create(:billboard_event, billboard: active_billboard, category: "click", counts_for: 1)
-    end
-    let!(:conversion_event) do
-      create(:billboard_event, billboard: active_billboard, category: "conversion", counts_for: 3)
-    end
 
     before do
       # Make sure Sidekiq is in fake mode and clear any existing jobs
@@ -1001,7 +1080,7 @@ RSpec.describe Billboard do
     end
 
     context "when prefer_paired_with_billboard_id is provided" do
-      xit "returns the billboard matching that ID" do
+      it "returns the billboard matching that ID", skip: "paired billboard preference not yet enabled" do
         result = described_class.for_display(
           area: "digest_second",
           user_signed_in: true,
@@ -1013,7 +1092,7 @@ RSpec.describe Billboard do
         expect(result).to eq(paired_bb)
       end
 
-      xit "falls back to normal selection if the paired ID isn't in the available set" do
+      it "falls back to normal selection if the paired ID isn't in the available set", skip: "not yet enabled" do
         # pick some ID that doesn't exist in billboards_for_display
         missing_id = other_bb.id + paired_bb.id + 1
 
@@ -1031,35 +1110,35 @@ RSpec.describe Billboard do
     end
   end
 
-  describe "#check_and_handle_expiration" do
+  describe "#check_and_handle_delivery_limits" do
     let(:billboard) { create(:billboard, approved: true, published: true) }
 
     it "does nothing when expires_at is nil" do
       billboard.expires_at = nil
-      expect { billboard.check_and_handle_expiration }.not_to change { billboard.reload.approved }
+      expect { billboard.check_and_handle_delivery_limits }.not_to change { billboard.reload.approved }
     end
 
     it "does nothing when expires_at is in the future" do
       billboard.expires_at = 1.day.from_now
-      expect { billboard.check_and_handle_expiration }.not_to change { billboard.reload.approved }
+      expect { billboard.check_and_handle_delivery_limits }.not_to change { billboard.reload.approved }
     end
 
     it "does nothing when billboard is not approved" do
       billboard.update!(approved: false)
       billboard.expires_at = 1.day.ago
-      expect { billboard.check_and_handle_expiration }.not_to change { billboard.reload.approved }
+      expect { billboard.check_and_handle_delivery_limits }.not_to change { billboard.reload.approved }
     end
 
     it "marks billboard as not approved when expired and currently approved" do
       billboard.update_column(:expires_at, 1.day.ago)
-      expect { billboard.check_and_handle_expiration }.to change { billboard.reload.approved }.from(true).to(false)
+      expect { billboard.check_and_handle_delivery_limits }.to change { billboard.reload.approved }.from(true).to(false)
     end
 
     it "busts caches if the billboard was published and on home page" do
       billboard.update!(placement_area: "feed_first")
       billboard.update_column(:expires_at, 1.day.ago)
       allow(EdgeCache::PurgeByKey).to receive(:call)
-      billboard.check_and_handle_expiration
+      billboard.check_and_handle_delivery_limits
       expect(EdgeCache::PurgeByKey).to have_received(:call).with(billboard.record_key)
       expect(EdgeCache::PurgeByKey).to have_received(:call).with("main_app_home_page", fallback_paths: "/")
     end
@@ -1068,9 +1147,110 @@ RSpec.describe Billboard do
       billboard.update!(placement_area: "sidebar_left")
       billboard.update_column(:expires_at, 1.day.ago)
       allow(EdgeCache::PurgeByKey).to receive(:call)
-      billboard.check_and_handle_expiration
+      billboard.check_and_handle_delivery_limits
       expect(EdgeCache::PurgeByKey).to have_received(:call).with(billboard.record_key)
       expect(EdgeCache::PurgeByKey).not_to have_received(:call).with("main_app_home_page", fallback_paths: "/")
+    end
+  end
+
+  describe "delivery caps" do
+    let(:billboard) { create(:billboard, approved: true, published: true) }
+
+    it "takes the billboard down once it reaches its impression cap" do
+      billboard.update_columns(max_impressions_count: 100, impressions_count: 100)
+      expect { billboard.check_and_handle_delivery_limits }.to change { billboard.reload.approved }.from(true).to(false)
+    end
+
+    it "takes the billboard down once it reaches its click cap" do
+      billboard.update_columns(max_clicks_count: 5, clicks_count: 5)
+      expect { billboard.check_and_handle_delivery_limits }.to change { billboard.reload.approved }.from(true).to(false)
+    end
+
+    it "leaves the billboard up while it is under its caps" do
+      billboard.update_columns(max_impressions_count: 100, impressions_count: 99, max_clicks_count: 5, clicks_count: 4)
+      expect { billboard.check_and_handle_delivery_limits }.not_to change { billboard.reload.approved }
+    end
+
+    it "treats a cap of 0 as no cap" do
+      billboard.update_columns(impressions_count: 1_000_000, clicks_count: 1_000)
+      expect { billboard.check_and_handle_delivery_limits }.not_to change { billboard.reload.approved }
+    end
+
+    it "takes the billboard down once its campaign has expired" do
+      campaign = BillboardCampaign.create!(name: "Launch", expires_at: 1.day.ago)
+      billboard.update_column(:billboard_campaign_id, campaign.id)
+      expect { billboard.check_and_handle_delivery_limits }.to change { billboard.reload.approved }.from(true).to(false)
+    end
+
+    it "takes the billboard and its approved campaign siblings down once the campaign reaches its cap",
+       :aggregate_failures do
+      campaign = BillboardCampaign.create!(name: "Launch", max_impressions_count: 150)
+      billboard.update_columns(billboard_campaign_id: campaign.id, impressions_count: 100)
+      sibling = create(:billboard, billboard_campaign: campaign, approved: true, published: true)
+      sibling.update_column(:impressions_count, 50)
+
+      expect { billboard.check_and_handle_delivery_limits }
+        .to change { billboard.reload.approved }.from(true).to(false)
+        .and change { sibling.reload.approved }.from(true).to(false)
+    end
+
+    it "immediately takes down an approved billboard when its own cap is lowered below its current counts",
+       :aggregate_failures do
+      billboard.update_column(:impressions_count, 200)
+
+      expect(billboard.update(max_impressions_count: 150)).to be(true)
+      expect(billboard.approved).to be(false)
+      expect(billboard.reload.approved).to be(false)
+    end
+
+    it "immediately takes down approved campaign siblings when a joining billboard pushes the campaign over cap",
+       :aggregate_failures do
+      campaign = BillboardCampaign.create!(name: "Launch", max_impressions_count: 100)
+      billboard.update_columns(billboard_campaign_id: campaign.id, impressions_count: 60)
+      joining = create(:billboard, approved: false, published: false)
+      joining.update_column(:impressions_count, 50)
+
+      expect(joining.update(billboard_campaign: campaign)).to be(true)
+      expect(billboard.reload.approved).to be(false)
+    end
+
+    it "does not allow approving a billboard that has reached its cap" do
+      capped = create(:billboard, approved: false, max_clicks_count: 5)
+      capped.update_column(:clicks_count, 5)
+      expect(capped.update(approved: true)).to be(false)
+      expect(capped.errors[:approved])
+        .to include("cannot be set to true once the billboard or its campaign has ended or reached a cap")
+    end
+
+    it "allows approving a capped billboard when its cap is raised in the same save" do
+      capped = create(:billboard, approved: false, max_clicks_count: 5)
+      capped.update_column(:clicks_count, 5)
+      expect(capped.update(approved: true, max_clicks_count: 10)).to be(true)
+    end
+
+    [nil, "", 1.5, 2**31].each do |value|
+      it "rejects a cap of #{value.inspect} with a validation error when approving", :aggregate_failures do
+        draft = create(:billboard, approved: false)
+        expect(draft.update(approved: true, max_impressions_count: value, max_clicks_count: value)).to be(false)
+        expect(draft.errors.attribute_names).to include(:max_impressions_count, :max_clicks_count)
+      end
+    end
+
+    it "counts the billboard being approved toward a campaign it is joining in the same save" do
+      campaign = BillboardCampaign.create!(name: "Launch", max_impressions_count: 100)
+      draft = create(:billboard, approved: false)
+      draft.update_column(:impressions_count, 100)
+
+      expect(draft.update(approved: true, billboard_campaign: campaign)).to be(false)
+      expect(draft.reload.billboard_campaign_id).to be_nil
+    end
+
+    it "allows joining and approving when the campaign stays under its cap" do
+      campaign = BillboardCampaign.create!(name: "Launch", max_impressions_count: 101)
+      draft = create(:billboard, approved: false)
+      draft.update_column(:impressions_count, 100)
+
+      expect(draft.update(approved: true, billboard_campaign: campaign)).to be(true)
     end
   end
 
@@ -1080,16 +1260,22 @@ RSpec.describe Billboard do
       let!(:expired_billboard) { create(:billboard, approved: false, published: true, expires_at: 1.day.ago) }
       let!(:future_expiry_billboard) { create(:billboard, approved: true, published: true, expires_at: 1.day.from_now) }
 
-      it "includes billboards with no expiration" do
-        expect(described_class.approved_and_published).to include(active_billboard)
-      end
-
-      it "excludes expired billboards" do
+      it "includes billboards with no expiration or future expiration and excludes expired ones", :aggregate_failures do
+        expect(described_class.approved_and_published).to include(active_billboard, future_expiry_billboard)
         expect(described_class.approved_and_published).not_to include(expired_billboard)
       end
 
-      it "includes billboards with future expiration" do
-        expect(described_class.approved_and_published).to include(future_expiry_billboard)
+      it "excludes billboards whose campaign has expired while including active campaign billboards",
+         :aggregate_failures do
+        expired_campaign = BillboardCampaign.create!(name: "Ended", expires_at: 1.minute.ago)
+        active_campaign = BillboardCampaign.create!(name: "Active", expires_at: 1.day.from_now)
+
+        expired_campaign_bb = create(:billboard, approved: true, published: true)
+        expired_campaign_bb.update_column(:billboard_campaign_id, expired_campaign.id)
+        active_campaign_bb = create(:billboard, approved: true, published: true, billboard_campaign: active_campaign)
+
+        expect(described_class.approved_and_published).to include(active_billboard, active_campaign_bb)
+        expect(described_class.approved_and_published).not_to include(expired_campaign_bb)
       end
     end
   end
@@ -1158,6 +1344,15 @@ RSpec.describe Billboard do
       end
     end
 
+    it "does not update when seconds_visible changes" do
+      original_time = billboard.content_updated_at
+      Timecop.travel(1.hour.from_now) do
+        billboard.update!(seconds_visible: 1000)
+        billboard.reload
+        expect(billboard.content_updated_at).to eq(original_time)
+      end
+    end
+
     it "does not update when clicks_count changes" do
       original_time = billboard.content_updated_at
       Timecop.travel(1.hour.from_now) do
@@ -1192,122 +1387,165 @@ RSpec.describe Billboard do
           "new_and_priority" => 20,
           "new_only" => 5,
           "weighted_performance" => 65
-        }
+        },
       )
     end
 
-    it "returns nil when billboards_for_display is nil" do
-      result = described_class.select_billboard_by_weighted_strategy(nil, area)
-      expect(result).to be_nil
+    it "returns nil for nil or empty inputs without querying when already loaded", :aggregate_failures do
+      expect(described_class.select_billboard_by_weighted_strategy(nil, area)).to be_nil
+      expect(described_class.select_billboard_by_weighted_strategy([], area)).to be_nil
+      expect(described_class.select_billboard_by_weighted_strategy(described_class.none, area)).to be_nil
+
+      unloaded_empty = described_class.where(placement_area: "nonexistent_placement_area")
+      expect(described_class.select_billboard_by_weighted_strategy(unloaded_empty, area)).to be_nil
+
+      loaded_empty = unloaded_empty.load
+      display_ad_queries = []
+      callback = lambda do |*, payload|
+        sql = payload[:sql].to_s
+        display_ad_queries << sql if sql.include?('"display_ads"') && !payload[:cached]
+      end
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        expect(described_class.select_billboard_by_weighted_strategy(loaded_empty, area)).to be_nil
+      end
+      expect(display_ad_queries).to be_empty
     end
 
-    it "returns nil when billboards_for_display is empty array" do
-      result = described_class.select_billboard_by_weighted_strategy([], area)
-      expect(result).to be_nil
-    end
-
-    it "returns nil when billboards_for_display is empty relation" do
-      empty_relation = described_class.none
-      result = described_class.select_billboard_by_weighted_strategy(empty_relation, area)
-      expect(result).to be_nil
-    end
-
-    it "returns a billboard when billboards_for_display has items" do
+    it "selects a valid billboard across weight configurations and fallback cases", :aggregate_failures do
       relation = described_class.where(id: billboards.map(&:id))
+      config = BillboardPlacementAreaConfig.find_by(placement_area: area)
+
       result = described_class.select_billboard_by_weighted_strategy(relation, area)
       expect(result).to be_a(described_class)
       expect(billboards.map(&:id)).to include(result.id)
-    end
 
-    it "handles all zero weights by falling back to random selection" do
-      BillboardPlacementAreaConfig.find_by(placement_area: area).update!(
-        selection_weights: {
-          "random_selection" => 0,
-          "new_and_priority" => 0,
-          "new_only" => 0,
-          "weighted_performance" => 0
-        }
-      )
-
-      relation = described_class.where(id: billboards.map(&:id))
-      result = described_class.select_billboard_by_weighted_strategy(relation, area)
-      expect(result).to be_a(described_class)
-    end
-
-    it "handles negative weights by treating them as zero" do
-      config = BillboardPlacementAreaConfig.find_by(placement_area: area)
-      # Bypass validation to set negative values for testing
-      config.update_column(:selection_weights, {
-        "random_selection" => -10,
-        "new_and_priority" => 20,
-        "new_only" => 5,
-        "weighted_performance" => 65
-      })
-
-      relation = described_class.where(id: billboards.map(&:id))
-      # Should not raise an error and should select a billboard
-      result = described_class.select_billboard_by_weighted_strategy(relation, area)
-      expect(result).to be_a(described_class)
-    end
-
-    it "handles nil weights in selection_weights" do
-      config = BillboardPlacementAreaConfig.find_by(placement_area: area)
-      # Bypass validation to set nil values for testing
-      config.update_column(:selection_weights, {
-        "random_selection" => 10,
-        "new_and_priority" => nil,
-        "new_only" => 5,
-        "weighted_performance" => 65
-      })
-
-      relation = described_class.where(id: billboards.map(&:id))
-      # Should not raise an error and should select a billboard
-      result = described_class.select_billboard_by_weighted_strategy(relation, area)
-      expect(result).to be_a(described_class)
-    end
-
-    it "handles non-existent placement area by using defaults" do
-      relation = described_class.where(id: billboards.map(&:id))
-      result = described_class.select_billboard_by_weighted_strategy(relation, "nonexistent_area")
-      expect(result).to be_a(described_class)
-    end
-
-    it "handles empty selection_weights by using defaults" do
-      BillboardPlacementAreaConfig.find_by(placement_area: area).update!(
-        selection_weights: {}
-      )
-
-      relation = described_class.where(id: billboards.map(&:id))
-      result = described_class.select_billboard_by_weighted_strategy(relation, area)
-      expect(result).to be_a(described_class)
-    end
-
-    it "selects from all strategies over multiple calls" do
-      relation = described_class.where(id: billboards.map(&:id))
-      
-      # Run multiple times to ensure randomness works
-      results = 10.times.map do
-        described_class.select_billboard_by_weighted_strategy(relation, area)
-      end
-
-      # All results should be valid billboards
+      results = Array.new(10) { described_class.select_billboard_by_weighted_strategy(relation, area) }
       expect(results).to all(be_a(described_class))
       expect(results.map(&:id)).to all(be_in(billboards.map(&:id)))
+
+      expect(
+        described_class.select_billboard_by_weighted_strategy(relation, "nonexistent_area"),
+      ).to be_a(described_class)
+
+      [
+        { "random_selection" => 0, "new_and_priority" => 0, "new_only" => 0, "weighted_performance" => 0 },
+        { "random_selection" => 0, "new_and_priority" => 0, "new_only" => 0, "weighted_performance" => 100 },
+        {},
+      ].each do |weights|
+        config.update!(selection_weights: weights)
+        expect(described_class.select_billboard_by_weighted_strategy(relation, area)).to be_a(described_class)
+      end
+
+      [
+        { "random_selection" => -10, "new_and_priority" => 20, "new_only" => 5, "weighted_performance" => 65 },
+        { "random_selection" => 10, "new_and_priority" => nil, "new_only" => 5, "weighted_performance" => 65 },
+      ].each do |weights|
+        config.update_column(:selection_weights, weights)
+        expect(described_class.select_billboard_by_weighted_strategy(relation, area)).to be_a(described_class)
+      end
     end
 
-    it "handles single weight being non-zero" do
+    it "executes only one display_ads query for weighted_performance instead of loading the relation upfront" do
       BillboardPlacementAreaConfig.find_by(placement_area: area).update!(
         selection_weights: {
           "random_selection" => 0,
           "new_and_priority" => 0,
           "new_only" => 0,
           "weighted_performance" => 100
-        }
+        },
       )
 
-      relation = described_class.where(id: billboards.map(&:id))
-      result = described_class.select_billboard_by_weighted_strategy(relation, area)
+      relation = described_class.where(id: billboards.map(&:id)).order(success_rate: :desc)
+      display_ad_queries = []
+      callback = lambda do |*, payload|
+        sql = payload[:sql].to_s
+        display_ad_queries << sql if sql.include?('"display_ads"') && !payload[:cached]
+      end
+
+      result = nil
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        result = described_class.select_billboard_by_weighted_strategy(relation, area)
+      end
+
       expect(result).to be_a(described_class)
+      expect(display_ad_queries.size).to eq(1)
+      expect(display_ad_queries.first).to include("LIMIT")
+    end
+
+    it "executes only one display_ads query for new_and_priority when a seldom_seen billboard exists" do
+      BillboardPlacementAreaConfig.find_by(placement_area: area).update!(
+        selection_weights: {
+          "random_selection" => 0,
+          "new_and_priority" => 100,
+          "new_only" => 0,
+          "weighted_performance" => 0
+        },
+      )
+
+      relation = described_class.where(id: billboards.map(&:id)).order(success_rate: :desc)
+      display_ad_queries = []
+      callback = lambda do |*, payload|
+        sql = payload[:sql].to_s
+        display_ad_queries << sql if sql.include?('"display_ads"') && !payload[:cached]
+      end
+
+      result = nil
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        result = described_class.select_billboard_by_weighted_strategy(relation, area)
+      end
+
+      expect(result).to be_a(described_class)
+      expect(display_ad_queries.size).to eq(1)
+      expect(display_ad_queries.first).to include("WITH base AS")
+    end
+
+    it "executes only one display_ads query for new_only when a low-impression billboard exists" do
+      BillboardPlacementAreaConfig.find_by(placement_area: area).update!(
+        selection_weights: {
+          "random_selection" => 0,
+          "new_and_priority" => 0,
+          "new_only" => 100,
+          "weighted_performance" => 0
+        },
+      )
+
+      relation = described_class.where(id: billboards.map(&:id)).order(success_rate: :desc)
+      display_ad_queries = []
+      callback = lambda do |*, payload|
+        sql = payload[:sql].to_s
+        display_ad_queries << sql if sql.include?('"display_ads"') && !payload[:cached]
+      end
+
+      result = nil
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        result = described_class.select_billboard_by_weighted_strategy(relation, area)
+      end
+
+      expect(result).to be_a(described_class)
+      expect(display_ad_queries.size).to eq(1)
+      expect(display_ad_queries.first).to include("impressions_count <")
+    end
+
+    it "executes only one display_ads query for new_and_priority and new_only when falling back" do
+      described_class.where(id: billboards.map(&:id))
+        .update_all(impressions_count: described_class::LOW_IMPRESSION_COUNT + 100, priority: false)
+      relation = described_class.where(id: billboards.map(&:id)).order(success_rate: :desc)
+      config = BillboardPlacementAreaConfig.find_by(placement_area: area)
+
+      %w[new_and_priority new_only].each do |strategy|
+        config.update!(selection_weights: { "random_selection" => 0, "new_and_priority" => 0,
+                                            "new_only" => 0, "weighted_performance" => 0, strategy => 100 })
+        display_ad_queries = []
+        callback = lambda do |*, payload|
+          display_ad_queries << payload[:sql] if payload[:sql].to_s.include?('"display_ads"') && !payload[:cached]
+        end
+        result = ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+          described_class.select_billboard_by_weighted_strategy(relation, area)
+        end
+
+        expect(billboards).to include(result)
+        expect(display_ad_queries.size).to eq(1)
+      end
     end
   end
 
@@ -1434,15 +1672,127 @@ RSpec.describe Billboard do
   describe "#sync_tags_array" do
     it "syncs tags_array perfectly when tags are updated using tag_list" do
       billboard = create(:billboard, tag_list: "javascript")
-      expect(billboard.tags_array).to match_array(["javascript"])
-      
+      expect(billboard.tags_array).to contain_exactly("javascript")
+
       billboard.update!(tag_list: "javascript, typescript, webdev")
-      expect(billboard.tags_array).to match_array(["javascript", "typescript", "webdev"])
+      expect(billboard.tags_array).to contain_exactly("javascript", "typescript", "webdev")
     end
-    
+
     it "handles empty tags gracefully natively" do
       billboard = create(:billboard, tag_list: "")
       expect(billboard.tags_array).to eq([])
+    end
+  end
+
+  describe "database indexes" do
+    it "defines a partial composite index on placement_area and success_rate for active billboards" do
+      indexes = ActiveRecord::Base.connection.indexes(:display_ads)
+      idx = indexes.detect { |i| i.name == "index_display_ads_on_placement_area_and_success_rate" }
+      expect(idx).to have_attributes(
+        columns: %w[placement_area success_rate],
+        orders: { "success_rate" => :desc },
+        where: "((approved = true) AND (published = true))",
+      )
+    end
+  end
+
+  describe "Liquid embed tracking and refresh" do
+    it "enqueues SyncLiquidEmbedReferencesWorker when markdown contains Liquid tags" do
+      article = create(:article)
+      allow(SyncLiquidEmbedReferencesWorker).to receive(:perform_async)
+
+      billboard = create(:billboard, render_mode: :forem_markdown, body_markdown: "{% link #{article.path} %}")
+
+      expect(SyncLiquidEmbedReferencesWorker).to have_received(:perform_async).with("Billboard", billboard.id)
+    end
+
+    it "re-renders stale embeds automatically when an inactive billboard is activated" do
+      article = create(:article, title: "Draft Stage Title")
+      billboard = create(
+        :billboard,
+        approved: false,
+        published: false,
+        render_mode: :forem_markdown,
+        body_markdown: "{% link #{article.path} %}",
+      )
+      expect(billboard.processed_html).to include("Draft Stage Title")
+
+      article.update_column(:title, "Live Stage Title")
+      billboard.update!(approved: true, published: true)
+
+      expect(billboard.reload.processed_html).to include("Live Stage Title")
+      expect(billboard.processed_html).to include("bb=#{billboard.id}")
+    end
+
+    it "returns false without DB writes when refresh_embedded_markdown! produces identical HTML" do
+      article = create(:article, title: "Stable Title")
+      billboard = create(
+        :billboard,
+        approved: true,
+        published: true,
+        render_mode: :forem_markdown,
+        body_markdown: "{% link #{article.path} %}",
+      )
+
+      expect(billboard.refresh_embedded_markdown!).to be(false)
+    end
+
+    it "enqueues SyncLiquidEmbedReferencesWorker even when name is nil and generated in after_save" do
+      article = create(:article)
+      allow(SyncLiquidEmbedReferencesWorker).to receive(:perform_async)
+
+      billboard = create(
+        :billboard,
+        name: nil,
+        render_mode: :forem_markdown,
+        body_markdown: "{% link #{article.path} %}",
+      )
+
+      expect(billboard.name).to eq("Billboard #{billboard.id}")
+      expect(SyncLiquidEmbedReferencesWorker).to have_received(:perform_async).with("Billboard", billboard.id)
+    end
+
+    it "does not overwrite a concurrent admin markdown edit during refresh_embedded_markdown!" do
+      article_a = create(:article, title: "Original Post A")
+      article_b = create(:article, title: "Concurrent Admin Post B")
+      billboard = create(
+        :billboard,
+        approved: true,
+        published: true,
+        render_mode: :forem_markdown,
+        body_markdown: "{% link #{article_a.path} %}",
+      )
+
+      stale_worker_copy = described_class.find(billboard.id)
+      article_a.update_column(:title, "Updated Post A")
+
+      # Admin concurrently switches the billboard to Post B while worker holds stale_worker_copy
+      billboard.update!(body_markdown: "{% link #{article_b.path} %}")
+      article_b.update_column(:title, "Refreshed Concurrent Admin Post B")
+
+      expect(stale_worker_copy.refresh_embedded_markdown!).to be(true)
+      expect(billboard.reload.body_markdown).to eq("{% link #{article_b.path} %}")
+      expect(billboard.processed_html).to include("Refreshed Concurrent Admin Post B")
+      expect(billboard.processed_html).not_to include("Updated Post A")
+    end
+
+    it "re-renders embeds when extending an expired billboard's expires_at back into the future" do
+      article = create(:article, title: "Before Expiration Title")
+      billboard = create(
+        :billboard,
+        approved: true,
+        published: true,
+        expires_at: 1.day.from_now,
+        render_mode: :forem_markdown,
+        body_markdown: "{% link #{article.path} %}",
+      )
+
+      # Simulate natural expiration before cron flips approved=false
+      billboard.update_column(:expires_at, 1.hour.ago)
+      article.update_column(:title, "Extended Campaign Title")
+
+      billboard.update!(expires_at: 2.days.from_now)
+      expect(billboard.reload.processed_html).to include("Extended Campaign Title")
     end
   end
 end

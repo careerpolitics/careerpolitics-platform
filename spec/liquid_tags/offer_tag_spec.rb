@@ -48,5 +48,33 @@ RSpec.describe "Offer liquid tag", type: :liquid_tag do
       result = parse('{% offer %}<strong>Bold offer</strong>{% endoffer %}').render
       expect(result).to include("<strong>Bold offer</strong>")
     end
+
+    it "sanitizes unpermitted HTML from the offer body" do
+      template = '{% offer %}<strong>Safe</strong><script>alert(1)</script>' \
+                 '<img src="x" onerror="alert(1)"><a href="javascript:alert(1)">bad</a>{% endoffer %}'
+      result = parse(template).render
+      expect(result).to include("<strong>Safe</strong>")
+      expect(result).not_to include("<script")
+      expect(result).not_to include("onerror")
+      expect(result).not_to include("javascript:")
+    end
+  end
+
+  describe "validation" do
+    it "rejects javascript: and HTML-entity-encoded javascript: links" do
+      expect do
+        parse('{% offer link="javascript:alert(1)" %}Promo{% endoffer %}')
+      end.to raise_error(StandardError, /Invalid URL for 'link'/)
+
+      expect do
+        parse('{% offer link="javascript&#58;alert(1)" %}Promo{% endoffer %}')
+      end.to raise_error(StandardError, /Invalid URL for 'link'/)
+    end
+
+    it "rejects hostless https: URLs" do
+      expect do
+        parse('{% offer link="https:javascript:alert(1)" %}Promo{% endoffer %}')
+      end.to raise_error(StandardError, /Invalid URL for 'link'/)
+    end
   end
 end

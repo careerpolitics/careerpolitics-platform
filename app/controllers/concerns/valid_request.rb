@@ -8,9 +8,30 @@ module ValidRequest
     # HTTP Origin header (https://dev.to) didn't match request.base_url (http://dev.to)
     # Not sure why, but once we work it out, we can delete this method.
     # We are at least secure for now.
-    return if Rails.env.test?
+    return true if Rails.env.test?
 
-    if (referer = request.referer).present?
+    evaluate_request_origin
+  end
+
+  def evaluate_request_origin
+    referer = request.referer
+    origin = referer.present? ? nil : request.origin
+    base_url = referer.present? || origin.nil? || origin == "null" ? nil : request.base_url
+    req_host = referer.present? ? request.host : nil
+    req_port = referer.present? ? request.port : nil
+
+    native = ForemNative.valid_request_origin(referer, origin, base_url, req_host, req_port)
+    if native == :null_origin
+      raise ::ActionController::InvalidAuthenticityToken, ::ApplicationController::NULL_ORIGIN_MESSAGE
+    end
+    return native unless native.nil?
+
+    legacy_valid_request_origin?(referer)
+  end
+  private :evaluate_request_origin
+
+  def legacy_valid_request_origin?(referer = request.referer)
+    if referer.present?
       # -      subforem = Subforem.find_by(domain: request.host)
       # -      referer.start_with?(URL.url(nil, subforem))
       # only compare host (and port), regardless of http vs https
@@ -24,7 +45,10 @@ module ValidRequest
 
       origin.nil? || origin.gsub("https", "http") == request.base_url.gsub("https", "http")
     end
+  rescue URI::InvalidURIError
+    false
   end
+  private :legacy_valid_request_origin?
 
   def _compute_redirect_to_location(request, options) # :nodoc:
     case options

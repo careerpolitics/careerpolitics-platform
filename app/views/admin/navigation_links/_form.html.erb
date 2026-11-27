@@ -14,7 +14,7 @@
       <%= form.label :icon, class: "crayons-field__label" %>
       <p class="crayons-field__description">An SVG icon should be uploaded</p>
       <div data-svg-icon-upload-target="svgIconPreview" class="<%= form.object[:id].nil? ? "" : "pb-3" %>" style="width: 48px;">
-        <%= form.object[:icon]&.html_safe %>
+        <%= form.object.sanitized_icon %>
       </div>
       <%= form.hidden_field :icon, "data-svg-icon-upload-target": "svgIconContent" %>
 
@@ -49,7 +49,7 @@
     <%= form.number_field :position, class: "crayons-textfield" %>
   </div>
   <div class="crayons-field mb-2">
-    <fieldset aria-describedby="section-description" aria-describedby="display-to-description">
+    <fieldset aria-describedby="display-to-description">
       <legend class="crayons-field__label pl-0">User group</legend>
       <p id="display-to-description" class="crayons-field__description mb-2">Determines which users will be able to see the link</p>
       <label class="rich-selector crayons-field crayons-field--radio">

@@ -1,5 +1,7 @@
 .dockerignore
 .gitignore
+.kamal/
+.env*
 logs/
 tmp/
 node_modules/
@@ -59,3 +61,12 @@ package-lock.json
 
 # Development container gem storage location
 .gems
+
+# Rust native extension local build artifacts (keep precompiled platform directories)
+/gems/forem_native/target/
+/gems/forem_native/lib/forem_native/*.bundle
+/gems/forem_native/lib/forem_native/*.so
+/gems/forem_native/lib/forem_native/*.dll
+!/gems/forem_native/lib/forem_native/*/*.so
+!/gems/forem_native/lib/forem_native/*/*.bundle
+/gems/forem_native/ext/forem_native/Makefile

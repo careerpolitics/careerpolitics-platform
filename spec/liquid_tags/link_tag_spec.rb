@@ -117,4 +117,51 @@ RSpec.describe LinkTag, type: :liquid_tag do
     liquid = generate_new_liquid(slug: "/#{user.username}/#{escaped_article.slug}/")
     assert_link_tag_renders(liquid.render, escaped_article)
   end
+
+  context "when the article author is a community leader" do
+    let(:leader) { create(:user, :community_leader_level_2) }
+    let(:leader_article) { create(:article, user: leader) }
+
+    before do
+      FeatureFlag.add(:community_favorites)
+      FeatureFlag.enable(:community_favorites)
+    end
+
+    after do
+      FeatureFlag.remove(:community_favorites)
+    end
+
+    it "renders the community leader icon" do
+      liquid = generate_new_liquid(slug: "/#{leader.username}/#{leader_article.slug}")
+      expect(liquid.render).to include(%(class="community-leader-icon"))
+    end
+  end
+
+  context "when the article is not published" do
+    it "renders the missing message for an unpublished user article" do
+      draft = create(:article, user_id: user.id, title: "Draft User Article", published: false)
+      rendered = generate_new_liquid(slug: "#{user.username}/#{draft.slug}").render
+
+      expect(rendered).to include("Post not found or has been removed.")
+      expect(rendered).not_to include("Draft User Article")
+    end
+
+    it "renders the missing message for a scheduled user article" do
+      scheduled = create(:article, user_id: user.id, title: "Scheduled Article", published: true,
+                                   published_at: 2.days.from_now)
+      rendered = generate_new_liquid(slug: "#{user.username}/#{scheduled.slug}").render
+
+      expect(rendered).to include("Post not found or has been removed.")
+      expect(rendered).not_to include("Scheduled Article")
+    end
+
+    it "renders the missing message for an unpublished organization article" do
+      org_draft = create(:article, user_id: org_user.id, organization_id: org.id,
+                                   title: "Draft Org Article", published: false)
+      rendered = generate_new_liquid(slug: "#{org.slug}/#{org_draft.slug}").render
+
+      expect(rendered).to include("Post not found or has been removed.")
+      expect(rendered).not_to include("Draft Org Article")
+    end
+  end
 end

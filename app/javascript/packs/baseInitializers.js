@@ -4,7 +4,11 @@ import { initializeTimeFixer } from './initializers/initializeTimeFixer';
 import { initializeNotifications } from './initializers/initializeNotifications';
 import { initializeDateHelpers } from './initializers/initializeDateTimeHelpers';
 import { initializeSettings } from './initializers/initializeSettings';
+import { initializeTurnstile } from '../initializers/initializeTurnstile';
+import { initializeHcaptcha } from '../initializers/initializeHcaptcha';
 import { initializeGifVideos } from '@utilities/gifVideo';
+import { initializeMermaidDiagrams } from '@utilities/mermaidDiagrams';
+import { initializePageEmbedSandboxLoader } from '@utilities/pageEmbedSandboxLoader';
 import {
   showUserAlertModal,
   showModalAfterError,
@@ -17,14 +21,26 @@ initializeNotifications();
 initializeTimeFixer();
 initializeDateHelpers();
 initializeGifVideos(document);
+initializeMermaidDiagrams(document);
+initializePageEmbedSandboxLoader(document);
+initializeTurnstile();
+initializeHcaptcha();
 
 InstantClick.on('change', () => {
   initializeCommentDate();
   initializeCommentPreview();
   initializeSettings();
   initializeNotifications();
+  initializeDateHelpers(); // Re-format dates on page navigation
   initializeGifVideos(document);
+  initializeMermaidDiagrams(document);
+  initializePageEmbedSandboxLoader(document);
+  initializeTurnstile();
+  initializeHcaptcha();
 });
+
+InstantClick.on('restore', initializeTurnstile);
+InstantClick.on('restore', initializeHcaptcha);
 
 window.showUserAlertModal = showUserAlertModal;
 window.showModalAfterError = showModalAfterError;

@@ -2,6 +2,7 @@ require "rails_helper"
 
 RSpec.describe "AgentSessions#create" do
   let(:user) { create(:user) }
+  let(:valid_s3_key) { "agent_sessions/#{user.id}/#{SecureRandom.uuid}.jsonl" }
 
   before { sign_in user }
 
@@ -22,7 +23,7 @@ RSpec.describe "AgentSessions#create" do
           title: "My S3 Session",
           tool_name: "claude_code",
           curated_data: valid_curated_data.to_json,
-          s3_key: "agent_sessions/#{user.id}/test.jsonl",
+          s3_key: valid_s3_key
         }
       }, as: :json
 
@@ -33,7 +34,23 @@ RSpec.describe "AgentSessions#create" do
       session = AgentSession.last
       expect(session.title).to eq("My S3 Session")
       expect(session.curated_data["messages"].size).to eq(2)
-      expect(session.s3_key).to eq("agent_sessions/#{user.id}/test.jsonl")
+      expect(session.s3_key).to eq(valid_s3_key)
+    end
+
+    it "rejects session with invalid or foreign s3_key" do
+      other_user = create(:user)
+      post agent_sessions_path, params: {
+        agent_session: {
+          title: "Attacker S3 Session",
+          tool_name: "claude_code",
+          curated_data: valid_curated_data.to_json,
+          s3_key: "agent_sessions/#{other_user.id}/#{SecureRandom.uuid}.jsonl"
+        }
+      }, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      json = response.parsed_body
+      expect(json["error"]).to include("S3 key is invalid or does not belong to this user")
     end
 
     it "creates a session from curated_data without s3_key" do
@@ -41,7 +58,7 @@ RSpec.describe "AgentSessions#create" do
         agent_session: {
           title: "No S3 Session",
           tool_name: "claude_code",
-          curated_data: valid_curated_data.to_json,
+          curated_data: valid_curated_data.to_json
         }
       }, as: :json
 
@@ -59,7 +76,7 @@ RSpec.describe "AgentSessions#create" do
         agent_session: {
           title: "Scrubbed Session",
           tool_name: "claude_code",
-          curated_data: data_with_secret.to_json,
+          curated_data: data_with_secret.to_json
         }
       }, as: :json
 
@@ -79,7 +96,7 @@ RSpec.describe "AgentSessions#create" do
         agent_session: {
           title: "Client Scrubbed Session",
           tool_name: "claude_code",
-          curated_data: data_with_client_redaction.to_json,
+          curated_data: data_with_client_redaction.to_json
         }
       }, as: :json
 
@@ -94,7 +111,7 @@ RSpec.describe "AgentSessions#create" do
         agent_session: {
           title: "Bad Data",
           tool_name: "claude_code",
-          curated_data: { "not_messages" => [] }.to_json,
+          curated_data: { "not_messages" => [] }.to_json
         }
       }, as: :json
 
@@ -110,7 +127,7 @@ RSpec.describe "AgentSessions#create" do
         agent_session: {
           title: "Bad Roles",
           tool_name: "claude_code",
-          curated_data: bad_data.to_json,
+          curated_data: bad_data.to_json
         }
       }, as: :json
 
@@ -125,7 +142,7 @@ RSpec.describe "AgentSessions#create" do
           title: "Session with Slices",
           tool_name: "claude_code",
           curated_data: valid_curated_data.to_json,
-          slices: [{ name: "intro", indices: [0] }].to_json,
+          slices: [{ name: "intro", indices: [0] }].to_json
         }
       }, as: :json
 
@@ -137,20 +154,47 @@ RSpec.describe "AgentSessions#create" do
   end
 
   describe "POST /agent_sessions/presign" do
+    let(:cache) { ActiveSupport::Cache::MemoryStore.new }
+
+    before { allow(Rails).to receive(:cache).and_return(cache) }
+
     context "when S3 is enabled" do
       before do
-        allow(AgentSessions::S3Storage).to receive(:enabled?).and_return(true)
-        allow(AgentSessions::S3Storage).to receive(:generate_key).and_return("agent_sessions/1/test.jsonl")
-        allow(AgentSessions::S3Storage).to receive(:presigned_put_url).and_return("https://s3.example.com/presigned")
+        allow(AgentSessions::S3Storage).to receive_messages(
+          enabled?: true,
+          generate_key: "agent_sessions/1/test.jsonl",
+          presigned_put_url: "https://s3.example.com/presigned",
+        )
       end
 
-      it "returns presigned URL and s3_key" do
-        post presign_agent_sessions_path, as: :json
+      it "returns presigned URL, s3_key and upload headers for the declared size" do
+        post presign_agent_sessions_path, params: { content_length: 2048 }, as: :json
 
         expect(response).to have_http_status(:ok)
         json = response.parsed_body
         expect(json["s3_key"]).to eq("agent_sessions/1/test.jsonl")
         expect(json["presigned_url"]).to eq("https://s3.example.com/presigned")
+        expect(json["headers"]).to include("Content-Length" => "2048")
+        expect(AgentSessions::S3Storage).to have_received(:presigned_put_url)
+          .with("agent_sessions/1/test.jsonl", content_length: 2048)
+      end
+
+      it "returns 422 when content_length is missing or too large" do
+        post presign_agent_sessions_path, as: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+
+        post presign_agent_sessions_path, params: { content_length: AgentSession::MAX_CURATED_DATA_SIZE + 1 }, as: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it "returns 429 once the presign limit is reached" do
+        allow(Settings::RateLimit).to receive(:agent_session_presign).and_return(1)
+
+        post presign_agent_sessions_path, params: { content_length: 2048 }, as: :json
+        expect(response).to have_http_status(:ok)
+
+        post presign_agent_sessions_path, params: { content_length: 2048 }, as: :json
+        expect(response).to have_http_status(:too_many_requests)
       end
     end
 
@@ -160,14 +204,14 @@ RSpec.describe "AgentSessions#create" do
       end
 
       it "returns 503" do
-        post presign_agent_sessions_path, as: :json
+        post presign_agent_sessions_path, params: { content_length: 2048 }, as: :json
         expect(response).to have_http_status(:service_unavailable)
       end
     end
 
     it "requires authentication" do
       sign_out user
-      post presign_agent_sessions_path, as: :json
+      post presign_agent_sessions_path, params: { content_length: 2048 }, as: :json
       expect(response.status).to be_in([302, 401])
     end
   end
@@ -177,14 +221,13 @@ RSpec.describe "AgentSessions#create" do
       AgentSession.create!(
         user: user, title: "Test", tool_name: "claude_code",
         curated_data: valid_curated_data,
-        s3_key: "agent_sessions/#{user.id}/test.jsonl",
+        s3_key: valid_s3_key
       )
     end
 
     context "when S3 is enabled" do
       before do
-        allow(AgentSessions::S3Storage).to receive(:enabled?).and_return(true)
-        allow(AgentSessions::S3Storage).to receive(:presigned_get_url).and_return("https://s3.example.com/get")
+        allow(AgentSessions::S3Storage).to receive_messages(enabled?: true, presigned_get_url: "https://s3.example.com/get")
       end
 
       it "returns a presigned GET URL" do
@@ -199,7 +242,7 @@ RSpec.describe "AgentSessions#create" do
     it "returns 404 when session has no s3_key" do
       session_without_s3 = AgentSession.create!(
         user: user, title: "No S3", tool_name: "claude_code",
-        curated_data: valid_curated_data,
+        curated_data: valid_curated_data
       )
 
       get raw_url_agent_session_path(session_without_s3), as: :json
@@ -210,9 +253,9 @@ RSpec.describe "AgentSessions#create" do
       other_user = create(:user)
       sign_in other_user
 
-      expect {
+      expect do
         get raw_url_agent_session_path(agent_session), as: :json
-      }.to raise_error(Pundit::NotAuthorizedError)
+      end.to raise_error(Pundit::NotAuthorizedError)
     end
   end
 
@@ -221,7 +264,7 @@ RSpec.describe "AgentSessions#create" do
       AgentSession.create!(
         user: user, title: "Test", tool_name: "claude_code",
         curated_data: valid_curated_data,
-        s3_key: "agent_sessions/#{user.id}/test.jsonl",
+        s3_key: valid_s3_key
       )
     end
 
@@ -249,7 +292,7 @@ RSpec.describe "AgentSessions#create" do
             "index" => 0,
             "role" => "user",
             "content" => [{ "type" => "text", "text" => "My key is [REDACTED]" }],
-            "metadata" => { "redactions" => [{ "pattern_name" => "GitHub Token", "match_count" => 1 }] },
+            "metadata" => { "redactions" => [{ "pattern_name" => "GitHub Token", "match_count" => 1 }] }
           },
         ],
         "metadata" => { "total_messages" => 2, "curated_indices" => [0] }

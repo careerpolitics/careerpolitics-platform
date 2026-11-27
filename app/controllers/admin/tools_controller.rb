@@ -22,6 +22,16 @@ module Admin
       redirect_to admin_tools_path
     end
 
+    def regenerate_social_images
+      user = User.find(params[:user_id].to_i)
+      Images::SocialImageWorker.perform_async(user.id, "User")
+      flash[:success] = I18n.t("admin.tools_controller.social_images_queued", user: user.username)
+      redirect_to admin_tools_path
+    rescue ActiveRecord::RecordNotFound
+      flash[:danger] = I18n.t("admin.tools_controller.user_not_found")
+      redirect_to admin_tools_path
+    end
+
     def feed_playground
       return if params[:config].blank?
 
@@ -38,6 +48,9 @@ module Admin
           tag: nil,
         )
         @articles = @feed.more_comments_minimal_weight_randomized.to_a
+        ActiveRecord::Associations::Preloader.new(
+          records: @articles, associations: :context_notes, scope: ContextNote.order(:id),
+        ).call
       rescue KeyError, JSON::ParserError, ActiveRecord::StatementInvalid => e
         flash[:danger] = e.message
       end
@@ -52,7 +65,7 @@ module Admin
     def handle_user_cache
       user = User.find(params[:bust_user].to_i)
       user.touch(:profile_updated_at, :last_followed_at, :last_comment_at)
-      bust_link(user.path)
+      EdgeCache::BustUser.call(user)
     end
 
     def handle_article_cache

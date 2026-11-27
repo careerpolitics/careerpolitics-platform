@@ -3,7 +3,7 @@ import { checkUserLoggedIn } from '../../utilities/checkUserLoggedIn';
 import { showModalAfterError } from '../../utilities/showUserAlertModal';
 import { initializeSubscribeButton } from '../../packs/subscribeButton';
 // eslint-disable-next-line no-redeclare
-/* global InstantClick, instantClick */
+/* global InstantClick, instantClick, getCsrfToken, sendFetch */
 
 function markNotificationsAsRead() {
   if (navigator.userAgent === 'ForemWebView/1') {
@@ -43,10 +43,10 @@ function fetchNotificationsCount() {
     if (instantClick) {
       InstantClick.removeExpiredKeys('force');
       setTimeout(() => {
-        InstantClick.preload(
-          document.getElementById('notifications-link').href,
-          'force',
-        );
+        const notificationsLink = document.getElementById('notifications-link');
+        if (notificationsLink) {
+          InstantClick.preload(notificationsLink.href, 'force');
+        }
       }, 30);
     }
   }
@@ -113,12 +113,56 @@ function initReactions() {
           thisButt.classList.add('hidden');
           thisButt.classList.remove('inline-flex');
           setTimeout(() => {
-            document
-              .getElementById(
-                `comment-textarea-for-${thisButt.dataset.reactableId}`,
-              )
-              .focus();
+            const textarea = document.getElementById(
+              `comment-textarea-for-${thisButt.dataset.reactableId}`,
+            );
+            if (!textarea) {
+              return;
+            }
+            textarea.focus();
+            // Mount the rich text toolbar (formatting buttons, image upload,
+            // emoji picker, etc.) on the reply textarea so the notification
+            // reply matches the article comment form. Mirrors the dynamic
+            // reply path in commentsPage.js.
+            if (
+              window.Forem &&
+              typeof window.Forem.initializeEnhancedCommentTextArea ===
+                'function'
+            ) {
+              window.Forem.initializeEnhancedCommentTextArea(textarea);
+            }
           }, 30);
+        };
+      }
+
+      // Dismissing an inline reply form should only hide it (and restore the
+      // "Reply" toggle button) so it can be reopened, rather than removing the
+      // form from the DOM like the shared handleFormClose does.
+      butts = document.getElementsByClassName('js-notification-reply-dismiss');
+
+      for (let i = 0; i < butts.length; i++) {
+        const butt = butts[i];
+
+        butt.onclick = function (event) {
+          event.preventDefault();
+          const { reactableId } = this.dataset;
+
+          const form = document.getElementById(
+            `comment-form-for-${reactableId}`,
+          );
+          if (form) {
+            form.classList.add('hidden');
+          }
+
+          // Restore the matching "Reply" toggle button that was hidden when the
+          // form was opened.
+          const toggle = document.querySelector(
+            `.toggle-reply-form[data-reactable-id="${reactableId}"]`,
+          );
+          if (toggle) {
+            toggle.classList.remove('hidden');
+            toggle.classList.add('inline-flex');
+          }
         };
       }
     }
@@ -126,13 +170,22 @@ function initReactions() {
 }
 
 function listenForNotificationsBellClick() {
+  const notificationsNumber = document.getElementById('notifications-number');
+  if (
+    notificationsNumber &&
+    document.getElementById('notifications-container')
+  ) {
+    notificationsNumber.classList.add('hidden');
+  }
+
   const notificationsLink = document.getElementById('notifications-link');
   if (notificationsLink) {
-    setTimeout(() => {
-      notificationsLink.onclick = function () {
-        document.getElementById('notifications-number').classList.add('hidden');
-      };
-    }, 180);
+    notificationsLink.onclick = function () {
+      const badge = document.getElementById('notifications-number');
+      if (badge) {
+        badge.classList.add('hidden');
+      }
+    };
   }
 }
 
@@ -199,11 +252,23 @@ function initLoadMoreButton() {
   }
 }
 
+/**
+ * Initializes the navbar notifications bell and `/notifications` page interactions for signed-in users.
+ */
 export function initializeNotifications() {
+  if (!checkUserLoggedIn()) {
+    return;
+  }
+
   fetchNotificationsCount();
+  listenForNotificationsBellClick();
+
+  if (!document.getElementById('notifications-container')) {
+    return;
+  }
+
   markNotificationsAsRead();
   initReactions();
-  listenForNotificationsBellClick();
   initFilter();
   initPagination();
   initLoadMoreButton();

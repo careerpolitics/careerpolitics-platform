@@ -1,9 +1,9 @@
 require "rails_helper"
 
 RSpec.describe "ReadingListItems" do
-  let(:user) { create(:user) }
-  let(:separate_user) { create(:user) }
-  let(:article) { create(:article, user_id: user.id) }
+  let(:user) { create(:user, :without_profile, profile_image: nil) }
+  let(:separate_user) { create(:user, :without_profile, profile_image: nil) }
+  let(:article) { create(:article, user_id: user.id, with_tags: false, with_main_image: false) }
   let(:reaction) { create(:reaction, reactable: article, user_id: user.id) }
   let(:unauthorized_reaction) { create(:reaction, reactable: article, user_id: separate_user.id) }
 
@@ -12,9 +12,19 @@ RSpec.describe "ReadingListItems" do
   end
 
   describe "GET reading list" do
-    it "returns reading list page" do
+    it "returns reading list page", :aggregate_failures do
       get "/readinglist"
+      expect(response).to have_http_status(:ok)
       expect(response.body).to include("Reading List")
+      expect(response.body).to include('id="reading-list"')
+      expect(response.body).to include('data-view="valid,confirmed"')
+    end
+
+    context "when viewing archived items" do
+      it "sets the correct archive view parameter" do
+        get "/readinglist/archive"
+        expect(response.body).to include('data-view="archived"')
+      end
     end
   end
 

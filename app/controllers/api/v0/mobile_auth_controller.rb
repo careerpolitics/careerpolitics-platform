@@ -36,14 +36,33 @@ module Api
           @user = ::Authentication::Authenticator.call(auth_payload)
           
           if @user&.persisted?
+            response.headers["Cache-Control"] = "no-store"
+            response.headers["Surrogate-Control"] = "no-store"
+
             # Ensure the user passes the AuthPassController `user_not_signed_out?` validation
             @user.update_tracked_fields!(request)
             @user.save(validate: false)
 
             bypass_sign_in(@user)
-            
-            payload = { user_id: @user.id, exp: 30.days.from_now.to_i }
-            jwt_token = JWT.encode(payload, Rails.application.secret_key_base)
+            @user.remember_me!
+
+            custom_domain = root_domain(request.host)
+            remember_cookie_values = Devise::Controllers::Rememberable.cookie_values.merge(
+              domain: custom_domain,
+              value: @user.class.serialize_into_cookie(@user),
+              expires: @user.remember_expires_at,
+            )
+            cookies.signed["remember_user_token"] = remember_cookie_values
+
+            cookies[:forem_user_signed_in] = {
+              value: "true",
+              domain: custom_domain == "localhost" ? nil : ".#{custom_domain}",
+              httponly: true,
+              secure: ApplicationConfig["FORCE_SSL_IN_RAILS"] == "true",
+              expires: 2.years.from_now
+            }
+
+            jwt_token = Authentication::AuthToken.encode_mobile_api(@user)
             
             session_cookie_options = Rails.application.config.session_options.slice(:domain, :secure, :same_site)
             
@@ -105,7 +124,13 @@ module Api
         if !valid_clients.include?(parsed_response["aud"])
           raise StandardError, 'Token audience mismatch'
         end
-        
+
+        # Authenticator links accounts by email, so only a Google-verified address
+        # may be trusted (mirrors omniauth-google-oauth2's `verified_email`).
+        unless [true, "true"].include?(parsed_response["email_verified"])
+          raise StandardError, I18n.t("api.v0.mobile_auth_controller.email_not_verified")
+        end
+
         [parsed_response["email"], parsed_response["sub"], parsed_response]
       end
 
@@ -148,7 +173,9 @@ module Api
           end
           if emails_response.status == 200
             emails = JSON.parse(emails_response.body)
-            primary_email = emails.find { |e| e["primary"] } || emails.first
+            # Authenticator links accounts by email, so only a GitHub-verified primary
+            # address may be trusted (mirrors omniauth-github's `primary_email`).
+            primary_email = emails.detect { |e| e["primary"] && e["verified"] == true }
             extracted_email = primary_email["email"] if primary_email
           end
         end

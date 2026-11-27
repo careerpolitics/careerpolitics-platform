@@ -18,7 +18,8 @@ module Feeds
 
     validate :validate_feed_url, if: :feed_url_changed?
     validate :validate_organization_membership, if: -> { organization_id.present? && organization_id_changed? }
-    validate :validate_author_permission, if: -> { author_user_id.present? && author_user_id_changed? }
+    validate :validate_author_permission,
+             if: -> { author_user_id.present? && (author_user_id_changed? || organization_id_changed?) }
 
     scope :active, -> { where.not(status: :inactive) }
 
@@ -42,15 +43,15 @@ module Feeds
       return if feed_url.blank?
 
       valid = Feeds::ValidateUrl.call(feed_url)
-      errors.add(:feed_url, "is not a valid RSS feed URL") unless valid
+      errors.add(:feed_url, I18n.t("models.users.setting.invalid_rss")) unless valid
     rescue StandardError => e
       errors.add(:feed_url, e.message)
     end
 
     def validate_organization_membership
-      unless user.organization_memberships.exists?(organization_id: organization_id)
-        errors.add(:organization, "you must be a member of this organization")
-      end
+      return if user.organization_memberships.active.exists?(organization_id: organization_id)
+
+      errors.add(:organization, "you must be a member of this organization")
     end
 
     def validate_author_permission
@@ -66,9 +67,9 @@ module Feeds
         return
       end
 
-      unless OrganizationMembership.exists?(user_id: author_user_id, organization_id: organization_id)
-        errors.add(:author_user_id, "must be a member of the selected organization")
-      end
+      return if OrganizationMembership.active.exists?(user_id: author_user_id, organization_id: organization_id)
+
+      errors.add(:author_user_id, "must be a member of the selected organization")
     end
   end
 end

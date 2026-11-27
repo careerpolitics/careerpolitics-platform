@@ -1,11 +1,19 @@
 import { h, Component } from 'preact';
 import PropTypes from 'prop-types';
 import linkState from 'linkstate';
-import postscribe from 'postscribe';
-import moment from 'moment';
+import {
+  parseArticleDate,
+  formatHHmm,
+  formatYYYYMMDD,
+} from './dateHelpers';
 import { KeyboardShortcuts } from '../shared/components/useKeyboardShortcuts';
-import { embedGists } from '../utilities/gist';
-import { submitArticle, previewArticle } from './actions';
+import { embedGists, loadPostScribe } from '../utilities/gist';
+import { initializePageEmbedFullscreen } from '../utilities/pageEmbedFullscreen';
+import {
+  submitArticle,
+  previewArticle,
+  acceptedCoAuthorInvitees,
+} from './actions';
 import { EditorActions, Form, Header, Help, Preview } from './components';
 import { Button, Modal } from '@crayons';
 import { locale } from '@utilities/locale';
@@ -45,33 +53,43 @@ const LINT_OPTIONS = {
 export class ArticleForm extends Component {
   // Scripts inserted via innerHTML won't execute, so we use this handler to
   // make the Asciinema player work in previews.
-  static handleAsciinemaPreview() {
-    const els = document.getElementsByClassName('ltag_asciinema');
+  static async handleAsciinemaPreview() {
+    const els = Array.from(document.getElementsByClassName('ltag_asciinema'));
+    if (els.length === 0) {
+      return;
+    }
+    const postscribe = await loadPostScribe();
     for (let i = 0; i < els.length; i += 1) {
       const el = els[i];
+      if (!el.firstElementChild) {
+        continue;
+      }
       const script = el.removeChild(el.firstElementChild);
       postscribe(el, script.outerHTML);
     }
   }
 
   static handleAgentSessionPreview() {
-    document.querySelectorAll('.ltag-agent-session').forEach(function(embed) {
+    document.querySelectorAll('.ltag-agent-session').forEach(function (embed) {
       if (embed.dataset.bound) return;
       embed.dataset.bound = '1';
 
       // Tool call expand/collapse
-      embed.querySelectorAll('.agent-session-tool-toggle').forEach(function(toggle) {
-        toggle.addEventListener('click', function() {
-          var detail = this.nextElementSibling;
-          var isExpanded = this.getAttribute('aria-expanded') === 'true';
-          detail.style.display = isExpanded ? 'none' : 'block';
-          this.setAttribute('aria-expanded', !isExpanded);
-          this.querySelector('.agent-session-chevron').textContent = isExpanded ? '\u25B8' : '\u25BE';
+      embed
+        .querySelectorAll('.agent-session-tool-toggle')
+        .forEach(function (toggle) {
+          toggle.addEventListener('click', function () {
+            var detail = this.nextElementSibling;
+            var isExpanded = this.getAttribute('aria-expanded') === 'true';
+            detail.style.display = isExpanded ? 'none' : 'block';
+            this.setAttribute('aria-expanded', !isExpanded);
+            this.querySelector('.agent-session-chevron').textContent =
+              isExpanded ? '\u25B8' : '\u25BE';
+          });
         });
-      });
 
       // Collapsible long text
-      embed.querySelectorAll('[data-collapsible]').forEach(function(wrapper) {
+      embed.querySelectorAll('[data-collapsible]').forEach(function (wrapper) {
         var textEl = wrapper.querySelector('.agent-session-text-collapse');
         var btn = wrapper.querySelector('.agent-session-expand-btn');
         if (!textEl || !btn) return;
@@ -80,10 +98,36 @@ export class ArticleForm extends Component {
           textEl.classList.remove('agent-session-text-collapse');
           return;
         }
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
           var expanded = textEl.classList.toggle('expanded');
           btn.textContent = expanded ? 'Show less' : 'Show more';
         });
+      });
+
+      // In-transcript fragment links (e.g. an agent's table of contents):
+      // expand the collapsed text holding the heading and scroll the embed, not the page
+      embed.addEventListener('click', function (event) {
+        var link = event.target.closest('a[href^="#agent-session-"]');
+        if (!link) return;
+        var target = embed.querySelector(
+          '[id="' + CSS.escape(link.getAttribute('href').slice(1)) + '"]',
+        );
+        if (!target) return;
+        event.preventDefault();
+        var collapsed = target.closest('.agent-session-text-collapse');
+        if (collapsed && !collapsed.classList.contains('expanded')) {
+          collapsed.classList.add('expanded');
+          var expandBtn = collapsed.parentNode.querySelector(
+            '.agent-session-expand-btn',
+          );
+          if (expandBtn) expandBtn.textContent = 'Show less';
+        }
+        var scroller = embed.querySelector('.agent-session-scroll');
+        if (scroller) {
+          scroller.scrollTop +=
+            target.getBoundingClientRect().top -
+            scroller.getBoundingClientRect().top;
+        }
       });
     });
   }
@@ -97,11 +141,26 @@ export class ArticleForm extends Component {
     coverImageHeight: PropTypes.string.isRequired,
     coverImageCrop: PropTypes.string.isRequired,
     aiAvailable: PropTypes.bool.isRequired,
+    aiDisclosureEnabled: PropTypes.bool,
+    coAuthorInvitationsEnabled: PropTypes.bool,
+    coAuthorInvitations: PropTypes.string,
+    coAuthorInvitationsMax: PropTypes.string,
   };
 
   static defaultProps = {
     organizations: '[]',
+    aiDisclosureEnabled: false,
+    coAuthorInvitationsEnabled: false,
+    coAuthorInvitations: '[]',
+    coAuthorInvitationsMax: '4',
   };
+
+  // Everyone invited or credited through an invitation, as the co-author picker's selection.
+  static activeCoAuthorInvitees(invitations) {
+    return invitations
+      .filter(({ status }) => status !== 'declined')
+      .map(({ user }) => user);
+  }
 
   constructor(props) {
     super(props);
@@ -113,9 +172,14 @@ export class ArticleForm extends Component {
       coverImageHeight,
       coverImageCrop,
       aiAvailable,
+      aiDisclosureEnabled,
+      coAuthorInvitationsEnabled,
+      coAuthorInvitations,
+      coAuthorInvitationsMax,
     } = this.props;
     let { organizations } = this.props;
     this.article = JSON.parse(article);
+    this.coAuthorInvitations = JSON.parse(coAuthorInvitations || '[]');
     organizations = organizations ? JSON.parse(organizations) : null;
     this.url = window.location.href;
 
@@ -143,9 +207,9 @@ export class ArticleForm extends Component {
     this.publishedAtWas = '';
 
     if (this.article.published_at) {
-      this.publishedAtWas = moment(this.article.published_at);
-      this.publishedAtTime = this.publishedAtWas.format('HH:mm');
-      this.publishedAtDate = this.publishedAtWas.format('YYYY-MM-DD');
+      this.publishedAtWas = parseArticleDate(this.article.published_at);
+      this.publishedAtTime = formatHHmm(this.publishedAtWas);
+      this.publishedAtDate = formatYYYYMMDD(this.publishedAtWas);
     }
 
     this.state = {
@@ -176,6 +240,13 @@ export class ArticleForm extends Component {
       authorId: this.article.user_id,
       coAuthorIdsList: this.article.co_author_ids_list || '',
       coAuthorsData: this.article.co_authors_data || [],
+      coAuthorInvitationsEnabled,
+      coAuthorInvitationsMax: parseInt(coAuthorInvitationsMax, 10),
+      coAuthorInvitations: this.coAuthorInvitations,
+      coAuthorInvitees: ArticleForm.activeCoAuthorInvitees(
+        this.coAuthorInvitations,
+      ),
+      aiDisclosureLevel: this.article.ai_disclosure_level || 'not_disclosed',
       errors: null,
       edited: false,
       updatedAt: this.article.updated_at,
@@ -184,6 +255,8 @@ export class ArticleForm extends Component {
       coverImageHeight,
       coverImageCrop,
       aiAvailable,
+      aiDisclosureEnabled:
+        aiDisclosureEnabled === true || aiDisclosureEnabled === 'true',
       helpFor: null,
       helpPosition: null,
       isModalOpen: false,
@@ -194,21 +267,48 @@ export class ArticleForm extends Component {
 
   componentDidMount() {
     window.addEventListener('beforeunload', this.localStoreContent);
+    this.syncEditorStateForAssistant();
   }
 
   componentWillUnmount() {
     window.removeEventListener('beforeunload', this.localStoreContent);
+    delete window.__foremEditorState;
   }
 
   componentDidUpdate() {
+    this.syncEditorStateForAssistant();
     const { previewResponse } = this.state;
 
     if (previewResponse?.processed_html) {
       embedGists(this.formElement);
       this.constructor.handleAsciinemaPreview();
       this.constructor.handleAgentSessionPreview();
+      initializePageEmbedFullscreen(this.formElement);
     }
   }
+
+  syncEditorStateForAssistant = () => {
+    const currentState = { ...this.state };
+    window.__foremEditorState = {
+      id: currentState.id,
+      version: currentState.version,
+      title: currentState.title,
+      tags: currentState.tagList,
+      body: currentState.bodyMarkdown,
+      published: currentState.published,
+      published_at_date: currentState.publishedAtDate,
+      published_at_time: currentState.publishedAtTime,
+      canonical_url: currentState.canonicalUrl,
+      series: currentState.series,
+      main_image: currentState.mainImage,
+      video_source_url: currentState.videoSourceUrl,
+      organization_id: currentState.organizationId,
+      ai_disclosure_level: currentState.aiDisclosureLevel,
+      preview_showing: currentState.previewShowing,
+      errors: currentState.errors,
+      markdown_lint_errors: currentState.markdownLintErrors,
+    };
+  };
 
   localStoreContent = () => {
     if (sessionStorage.getItem('isSigningOut') === 'true') {
@@ -216,7 +316,8 @@ export class ArticleForm extends Component {
       return;
     }
 
-    const { version, title, tagList, mainImage, bodyMarkdown, videoSourceUrl } = this.state;
+    const { version, title, tagList, mainImage, bodyMarkdown, videoSourceUrl } =
+      this.state;
     const updatedAt = new Date();
     localStorage.setItem(
       `editor-${version}-${this.url}`,
@@ -319,17 +420,24 @@ export class ArticleForm extends Component {
 
   handleOrgIdChange = (e) => {
     const nextOrganizationId = e.target.selectedOptions[0].value;
-    this.setState((currentState) => ({
-      organizationId: nextOrganizationId,
-      coAuthorIdsList:
-        String(currentState.organizationId || '') === String(nextOrganizationId || '')
-          ? currentState.coAuthorIdsList
-          : '',
-      coAuthorsData:
-        String(currentState.organizationId || '') === String(nextOrganizationId || '')
-          ? currentState.coAuthorsData
-          : [],
-    }));
+    this.setState((currentState) => {
+      if (
+        String(currentState.organizationId || '') ===
+        String(nextOrganizationId || '')
+      ) {
+        return { organizationId: nextOrganizationId };
+      }
+
+      const acceptedInvitees = acceptedCoAuthorInvitees(
+        currentState.coAuthorInvitations,
+        currentState.coAuthorInvitees,
+      );
+      return {
+        organizationId: nextOrganizationId,
+        coAuthorIdsList: acceptedInvitees.map(({ id }) => id).join(', '),
+        coAuthorsData: acceptedInvitees,
+      };
+    });
   };
 
   failedPreview = (response) => {
@@ -341,10 +449,29 @@ export class ArticleForm extends Component {
   };
 
   handleConfigChange = (e) => {
-    e.preventDefault();
-    const newState = {};
-    newState[e.target.name] = e.target.value;
-    this.setState(newState);
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
+    const name = e?.target?.name || e?.name;
+    const value = e?.target !== undefined ? e.target.value : e?.value;
+    if (name) {
+      this.setState((currentState) => {
+        if (name === 'coAuthorInvitees' && !currentState.organizationId) {
+          const acceptedInvitees = acceptedCoAuthorInvitees(
+            currentState.coAuthorInvitations,
+            value,
+          );
+          return {
+            coAuthorInvitees: value,
+            coAuthorIdsList: acceptedInvitees.map(({ id }) => id).join(', '),
+            coAuthorsData: acceptedInvitees,
+            edited: true,
+          };
+        }
+
+        return { [name]: value, edited: true };
+      });
+    }
   };
 
   handleMainImageUrlChange = (payload) => {
@@ -439,6 +566,9 @@ export class ArticleForm extends Component {
       organizationId: this.article.organization_id,
       coAuthorIdsList: this.article.co_author_ids_list || '',
       coAuthorsData: this.article.co_authors_data || [],
+      coAuthorInvitees: ArticleForm.activeCoAuthorInvitees(
+        this.coAuthorInvitations,
+      ),
       errors: null,
       edited: false,
       helpFor: null,
@@ -543,7 +673,9 @@ export class ArticleForm extends Component {
 
         <span aria-live="polite" className="screen-reader-only">
           {previewLoading ? locale('core.article_form_loading_preview') : null}
-          {previewShowing && !previewLoading ? locale('core.article_form_preview_loaded') : null}
+          {previewShowing && !previewLoading
+            ? locale('core.article_form_preview_loaded')
+            : null}
         </span>
 
         {previewShowing || previewLoading ? (

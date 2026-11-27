@@ -30,6 +30,21 @@ RSpec.describe "AsyncInfo" do
                                                             default_email_optin_allowed param token user])
       end
 
+      it "returns active announcement broadcast data and omits inactive announcements", :aggregate_failures do
+        sign_in create(:user)
+        inactive_broadcast = create(:announcement_broadcast, active: false)
+
+        get "/async_info/base_data"
+        expect(response.parsed_body["broadcast"]).to be_nil
+
+        inactive_broadcast.update!(active: true)
+        get "/async_info/base_data"
+        expect(JSON.parse(response.parsed_body["broadcast"])).to include(
+          "title" => inactive_broadcast.title,
+          "html" => inactive_broadcast.processed_html,
+        )
+      end
+
       it "returns default_email_optin_allowed true if valid match with client geo" do
         sign_in create(:user)
 
@@ -45,14 +60,37 @@ RSpec.describe "AsyncInfo" do
 
         expect { get "/async_info/base_data" }.to change { user.reload.last_presence_at }
       end
+
+      it "immediately reflects creator role removal without serving stale cached state" do
+        user = create(:user, :creator)
+        sign_in user
+        Users::RemoveRole.call(user: user, role: "creator", resource_type: nil)
+        user.reload
+
+        get "/async_info/base_data"
+        expect(response.parsed_body["creator"]).to be(false)
+      end
     end
   end
 
   describe "GET /async_info/navigation_links" do
-    it "returns html" do
+    it "returns html and sets the navigation_links surrogate key", :aggregate_failures do
       get "/async_info/navigation_links"
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("<div")
+      expect(response.headers["Surrogate-Key"].split).to include("navigation_links")
+    end
+
+    it "includes the hamburger create account tracking element only when signed out", :aggregate_failures do
+      get "/async_info/navigation_links"
+      expect(response.body).to include('data-tracking-id="ca_hamburger_home_page"')
+      expect(response.body).to include('data-tracking-source="mobile_hamburger_nav"')
+
+      sign_in create(:user)
+      get "/async_info/navigation_links"
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("<div")
+      expect(response.body).not_to include('data-tracking-id="ca_hamburger_home_page"')
     end
 
     it "returns the correct 'default' navigation links" do

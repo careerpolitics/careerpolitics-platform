@@ -6,6 +6,15 @@ RSpec.describe "/admin/moderation/reports" do
   let(:trusted_user)      { create(:user, :trusted) }
   let(:admin)             { create(:user, :super_admin) }
 
+  def collect_sql_queries(&block)
+    queries = []
+    callback = lambda do |*, payload|
+      queries << payload[:sql] unless payload[:name] == "SCHEMA"
+    end
+    ActiveSupport::Notifications.subscribed(callback, "sql.active_record", &block)
+    queries
+  end
+
   describe "GET /admin/moderation/reports" do
     let(:single_resource_admin) { create(:user, :single_resource_admin, resource: FeedbackMessage) }
 
@@ -60,14 +69,70 @@ RSpec.describe "/admin/moderation/reports" do
       end
     end
 
+    it "escapes offender report messages in the admin view" do
+      offender = create(:user)
+      payload = %(<img src=x onerror="alert('xss-proof')">)
+      create(:feedback_message, :abuse_report, offender: offender, message: payload)
+
+      sign_in admin
+      get admin_reports_path
+
+      expect(response.body).to include(CGI.escapeHTML(payload))
+      expect(response.body).not_to include(payload)
+    end
+
     context "when there are more than 25 reports" do
       it "paginates the reports" do
-        create_list(:feedback_message, 30, :abuse_report, status: "Open")
+        create_list(:feedback_message, 26, :abuse_report, status: "Open") # rubocop:disable FactoryBot/ExcessiveCreateList
         sign_in admin
         get admin_reports_path
         expect(response).to have_http_status :ok
         expect(response.body.scan(/id="accordion-\d+/).length).to eq(25)
       end
+    end
+
+    it "preloads user roles and reported comment authors without per-report N+1 queries" do
+      offender = create(:user)
+      reported_user = create(:user, :warned)
+      article = create(:article, user: offender, main_image: nil)
+      comment = create(:comment, user: offender, commentable: article)
+
+      create(:feedback_message, :abuse_report,
+             reporter: user, offender: offender, reported: reported_user,
+             reported_url: "/#{reported_user.username}", status: "Open")
+      create(:feedback_message, :abuse_report,
+             reporter: trusted_user, offender: offender, reported: comment,
+             reported_url: comment.path, status: "Open")
+
+      sign_in admin
+      queries = collect_sql_queries { get admin_reports_path }
+
+      expect(response).to have_http_status :ok
+      expect(response.body).to include("Warned")
+      expect(response.body).to include(comment.path)
+      expect(queries.grep(/SELECT COUNT\(\*\) FROM "roles"/)).to be_empty
+    end
+
+    it "skips the open flag reactions count query on non-Open tabs" do
+      sign_in admin
+      queries = collect_sql_queries { get admin_reports_path, params: { status: "Resolved" } }
+
+      expect(response).to have_http_status :ok
+      expect(queries.grep(/reactable_articles/)).to be_empty
+    end
+  end
+
+  describe "GET /admin/moderation/reports/:id" do
+    it "preloads user roles on the individual report view without per-role count queries" do
+      offender = create(:user, :suspended)
+      report = create(:feedback_message, :abuse_report, reporter: user, offender: offender, status: "Open")
+
+      sign_in admin
+      queries = collect_sql_queries { get admin_report_path(report.id) }
+
+      expect(response).to have_http_status :ok
+      expect(response.body).to include("Suspended")
+      expect(queries.grep(/SELECT COUNT\(\*\) FROM "roles"/)).to be_empty
     end
   end
 
@@ -91,6 +156,29 @@ RSpec.describe "/admin/moderation/reports" do
         get flag_reactions_admin_reports_path, params: { status: "Open" }
         expect(response.body).to include(user.username)
       end
+
+      it "renders flagged user and comment reactions without per-row role or vomit N+1 queries" do
+        flagged_user = create(:user, score: 0)
+        comment_author = create(:user, score: 0)
+        article = create(:article, user: comment_author, main_image: nil)
+        comment = create(:comment, user: comment_author, commentable: article, score: 0)
+
+        create(:reaction, category: "vomit", status: "valid", reactable: flagged_user,
+                          user: trusted_user, created_at: 1.week.ago)
+        create(:reaction, category: "vomit", status: "confirmed", reactable: flagged_user,
+                          user: admin, created_at: 2.days.ago)
+        create(:reaction, category: "vomit", status: "valid", reactable: comment,
+                          user: trusted_user, created_at: 1.week.ago)
+
+        queries = collect_sql_queries { get flag_reactions_admin_reports_path, params: { status: "Open" } }
+
+        expect(response).to have_http_status :ok
+        expect(response.body).to include(flagged_user.username)
+        expect(response.body).to include("Flagged")
+        expect(response.body).to include(comment.path)
+        expect(queries.grep(/SELECT COUNT\(\*\) FROM "roles"/)).to be_empty
+        expect(queries.grep(/SELECT 1 AS one FROM "reactions"/)).to be_empty
+      end
     end
   end
 
@@ -107,15 +195,10 @@ RSpec.describe "/admin/moderation/reports" do
         sign_in admin
       end
 
-      it "returns a JSON with an outcome key and Success value" do
+      it "updates the status of the feedback message and returns Success", :aggregate_failures do
         post save_status_admin_reports_path, params: save_status_params
 
         expect(response.parsed_body).to eq("outcome" => "Success")
-      end
-
-      it "updates the status of the feedback message" do
-        post save_status_admin_reports_path, params: save_status_params
-
         expect(FeedbackMessage.last.status).to eq("Resolved")
       end
     end
@@ -145,16 +228,11 @@ RSpec.describe "/admin/moderation/reports" do
         sign_in admin
       end
 
-      it "returns a JSON with an outcome key and Success value" do
-        post send_email_admin_reports_path, params: send_email_params
-
-        expect(response.parsed_body).to eq("outcome" => "Success")
-      end
-
-      it "creates a new email message with the same params" do
+      it "creates a new email message and returns Success", :aggregate_failures do
         allow(ForemInstance).to receive(:smtp_enabled?).and_return(true)
         post send_email_admin_reports_path, params: send_email_params
 
+        expect(response.parsed_body).to eq("outcome" => "Success")
         expect(EmailMessage.last.attributes).to include(email_message_attributes)
       end
     end
@@ -176,8 +254,10 @@ RSpec.describe "/admin/moderation/reports" do
         sign_in admin
       end
 
-      it "renders the proper JSON response" do
-        post create_note_admin_reports_path, params: note_params
+      it "creates a note, queues a slack message, and renders the JSON response", :aggregate_failures do
+        sidekiq_assert_enqueued_with(job: Slack::Messengers::Worker) do
+          post create_note_admin_reports_path, params: note_params
+        end
 
         expected_response = {
           outcome: "Success",
@@ -185,18 +265,7 @@ RSpec.describe "/admin/moderation/reports" do
           author_name: admin.name
         }.stringify_keys
         expect(response.parsed_body).to eq(expected_response)
-      end
-
-      it "creates a note with the correct params" do
-        post create_note_admin_reports_path, params: note_params
-
         expect(Note.last.attributes).to include(note_params)
-      end
-
-      it "queues a slack message to be sent" do
-        sidekiq_assert_enqueued_with(job: Slack::Messengers::Worker) do
-          post create_note_admin_reports_path, params: note_params
-        end
       end
     end
   end

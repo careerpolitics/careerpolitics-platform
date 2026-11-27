@@ -2,52 +2,44 @@ require "rails_helper"
 
 # rubocop:disable RSpec/MultipleExpectations
 RSpec.describe NotificationDecorator, type: :decorator do
-  let!(:notification) { build(:notification) }
+  def build(name, *traits, **attrs)
+    return Notification.new({ notifiable_type: "Article" }.merge(attrs)) if name == :notification
+
+    super
+  end
+
+  let(:notification) { build(:notification) }
 
   context "with serialization" do
-    let(:notification) { create(:notification).decorate }
+    let(:notification) { create(:notification, organization: nil).decorate }
 
-    it "serializes both the decorated object IDs and decorated methods" do
+    it "serializes both decorated objects and collections of decorated objects" do
       expected_result = { "id" => notification.id, "milestone_type" => notification.milestone_type }
       expect(notification.as_json(only: [:id], methods: [:milestone_type])).to eq(expected_result)
-    end
 
-    it "serializes collections of decorated objects" do
       decorated_collection = Notification.decorate
-      expected_result = [{ "id" => notification.id, "milestone_type" => notification.milestone_type }]
-      expect(decorated_collection.as_json(only: [:id], methods: [:milestone_type])).to eq(expected_result)
+      expect(decorated_collection.as_json(only: [:id], methods: [:milestone_type])).to eq([expected_result])
     end
   end
 
   describe "#mocked_object" do
     let(:comment) { create(:comment, commentable: create(:article, organization: create(:organization))) }
 
-    it "returns empty struct if the notification is new" do
+    it "returns an empty struct and class name if the notification is new" do
       result = notification.decorate.mocked_object("user")
 
       expect(result.name).to be_empty
       expect(result.id).to be_nil
-    end
-
-    it "returns empty struct class and its name if the notification is new" do
-      result = notification.decorate.mocked_object("user")
-
       expect(result.class).to be_a(Struct)
       expect(result.class.name).to be_empty
     end
 
-    it "returns class name and id for the reactable in a struct" do
+    it "returns class name, id, and struct class for the reactable" do
       notification = Notification.send_new_comment_notifications_without_delay(comment)
-
       result = notification.decorate.mocked_object("user")
+
       expect(result.name).to eq("User")
       expect(result.id).to eq(comment.user.id)
-    end
-
-    it "returns struct class and its name" do
-      notification = Notification.send_new_comment_notifications_without_delay(comment)
-      result = notification.decorate.mocked_object("user")
-
       expect(result.class).to be_a(Struct)
       expect(result.class.name).to eq("User")
       expect(result.class_name).to eq("User")
@@ -90,12 +82,9 @@ RSpec.describe NotificationDecorator, type: :decorator do
   describe "reaction to a article" do
     subject(:decorated) { notification.decorate }
 
-    let!(:notification) do
-      article = build(:article)
-      reaction = build(:reaction, reactable: article)
-
+    let(:notification) do
       build(:notification,
-            notifiable: reaction,
+            notifiable_type: "Reaction",
             action: "Reaction",
             json_data: {
               reaction: {
@@ -150,6 +139,7 @@ RSpec.describe NotificationDecorator, type: :decorator do
 
     it "responds to article fields (even if blank)" do
       expect(decorated.article_id).to be_nil
+      expect(decorated.article_path).to be_nil
       expect(decorated.article_url).to be_nil
       expect(decorated.article_title).to be_nil
       expect(decorated.article_tag_list).to eq([])
@@ -172,13 +162,9 @@ RSpec.describe NotificationDecorator, type: :decorator do
   describe "reaction to a comment" do
     subject(:decorated) { notification.decorate }
 
-    let!(:notification) do
-      article = build(:article)
-      comment = build(:comment, commentable: article)
-      reaction = build(:reaction, reactable: comment)
-
+    let(:notification) do
       build(:notification,
-            notifiable: reaction,
+            notifiable_type: "Reaction",
             action: "Reaction",
             json_data: {
               reaction: {
@@ -235,6 +221,7 @@ RSpec.describe NotificationDecorator, type: :decorator do
 
     it "responds to article fields (even if blank)" do
       expect(decorated.article_id).to be_nil
+      expect(decorated.article_path).to be_nil
       expect(decorated.article_url).to be_nil
       expect(decorated.article_title).to be_nil
       expect(decorated.article_tag_list).to eq([])
@@ -261,7 +248,7 @@ RSpec.describe NotificationDecorator, type: :decorator do
 
     let(:article_id) { 2 }
 
-    let!(:notification) do
+    let(:notification) do
       build(:notification,
             notifiable_id: article_id,
             notifiable_type: "Article",
@@ -300,8 +287,8 @@ RSpec.describe NotificationDecorator, type: :decorator do
     end
 
     context "when a user may have a subscription" do
-      let(:subscriber) { build(:user) }
-      let(:non_subscriber) { build(:user) }
+      let(:subscriber) { build_stubbed(:user) }
+      let(:non_subscriber) { build_stubbed(:user) }
       let(:mock_subscriptions) { class_double NotificationSubscription }
       let(:mock_non_subscriptions) { class_double NotificationSubscription }
 
@@ -323,12 +310,32 @@ RSpec.describe NotificationDecorator, type: :decorator do
           .with(notifiable_type: "Article", notifiable_id: article_id)
       end
 
-      it "can find article's id, path title, tag_list and updated_at" do
+      it "can find article's id, path, title, tag_list and updated_at" do
         expect(decorated.article_id).to eq(article_id)
-        expect(decorated.article_url).to eq("https://example.com/a_user/article-here")
+        expect(decorated.article_path).to eq("/a_user/article-here")
+        expect(decorated.article_url).to eq("/a_user/article-here")
         expect(decorated.article_title).to eq("Article Here")
         expect(decorated.article_tag_list).to eq([])
         expect(decorated.article_updated_at).to eq("2023-06-02T06:55:53.406Z")
+      end
+
+      it "prefers path over a custom domain url and cleans malformed double ports when falling back to url" do
+        custom_domain_article = { "url" => "https://blog.mlh.com/article-here",
+                                  "path" => "/mlh/article-here" }
+        custom_domain_notif = build(:notification, json_data: { "article" => custom_domain_article }).decorate
+        expect(custom_domain_notif.article_path).to eq("/mlh/article-here")
+        expect(custom_domain_notif.article_url).to eq("/mlh/article-here")
+
+        double_port_article = { "url" => "http://localhost:3000:3100/a_user/article-here",
+                                "path" => "/a_user/article-here" }
+        double_port_notif = build(:notification, json_data: { "article" => double_port_article }).decorate
+        expect(double_port_notif.article_path).to eq("/a_user/article-here")
+        expect(double_port_notif.article_url).to eq("/a_user/article-here")
+
+        no_path_article = { "url" => "http://localhost:3000:3100/a_user/article-here" }
+        no_path_notif = build(:notification, json_data: { "article" => no_path_article }).decorate
+        expect(no_path_notif.article_path).to eq("http://localhost:3000/a_user/article-here")
+        expect(no_path_notif.article_url).to eq("http://localhost:3000/a_user/article-here")
       end
 
       it "responds to comment and commentable fields (even if blank)" do
@@ -353,7 +360,7 @@ RSpec.describe NotificationDecorator, type: :decorator do
     let(:comment_id) { 2 }
     let(:article_id) { 3 }
 
-    let!(:notification) do
+    let(:notification) do
       build(:notification,
             notifiable_id: comment_id,
             notifiable_type: "Comment",
@@ -390,8 +397,8 @@ RSpec.describe NotificationDecorator, type: :decorator do
     end
 
     context "when a user may have a subscription" do
-      let(:subscriber) { build(:user) }
-      let(:non_subscriber) { build(:user) }
+      let(:subscriber) { build_stubbed(:user) }
+      let(:non_subscriber) { build_stubbed(:user) }
       let(:mock_subscriptions) { class_double NotificationSubscription }
       let(:mock_non_subscriptions) { class_double NotificationSubscription }
 
@@ -416,6 +423,7 @@ RSpec.describe NotificationDecorator, type: :decorator do
 
       it "responds to article fields (even if blank)" do
         expect(decorated.article_id).to be_blank
+        expect(decorated.article_path).to be_blank
         expect(decorated.article_url).to be_blank
         expect(decorated.article_title).to be_blank
         expect(decorated.article_tag_list).to eq([])
@@ -445,7 +453,7 @@ RSpec.describe NotificationDecorator, type: :decorator do
     let(:ancestor_ids) { "5/6/7" }
     let(:article_id) { 3 }
 
-    let!(:notification) do
+    let(:notification) do
       build(:notification,
             notifiable_id: comment_id,
             notifiable_type: "Comment",
@@ -503,8 +511,8 @@ RSpec.describe NotificationDecorator, type: :decorator do
     end
 
     context "when a user may have a subscription" do
-      let(:subscriber) { build(:user) }
-      let(:non_subscriber) { build(:user) }
+      let(:subscriber) { build_stubbed(:user) }
+      let(:non_subscriber) { build_stubbed(:user) }
       let(:mock_subscriptions) { class_double NotificationSubscription }
       let(:mock_non_subscriptions) { class_double NotificationSubscription }
 
@@ -528,6 +536,7 @@ RSpec.describe NotificationDecorator, type: :decorator do
 
       it "responds to article fields (even if blank)" do
         expect(decorated.article_id).to be_blank
+        expect(decorated.article_path).to be_blank
         expect(decorated.article_url).to be_blank
         expect(decorated.article_title).to be_blank
         expect(decorated.article_tag_list).to eq([])
@@ -549,6 +558,91 @@ RSpec.describe NotificationDecorator, type: :decorator do
         expect(decorated.comment_updated_at).to eq("2023-06-09T12:56:56.572Z")
         expect(decorated.commentable_class_name).to eq("Article")
       end
+    end
+  end
+
+  describe ".decorate_collection" do
+    it "batches subscription lookups across the collection and preserves precedence" do
+      user = create(:user)
+      article = create(:article)
+      root_comment = create(:comment, commentable: article)
+      reply_comment = create(:comment, commentable: article, parent: root_comment)
+
+      root_sub = create(:notification_subscription, user: user, notifiable: root_comment)
+      article_sub = create(:notification_subscription, user: user, notifiable: article)
+
+      reply_notif = build(:notification, notifiable_type: "Comment", json_data: {
+                            "comment" => { "id" => reply_comment.id, "ancestry" => root_comment.id.to_s,
+                                           "commentable" => { "id" => article.id, "class" => { "name" => "Article" } } }
+                          })
+      article_notif = build(:notification, notifiable_type: "Article",
+                                           json_data: { "article" => { "id" => article.id } })
+
+      decorated_list = described_class.decorate_collection([reply_notif, article_notif])
+
+      expect(decorated_list.map { |n| n.subscription_for(user) }).to eq([root_sub, article_sub])
+    end
+
+    it "batches reaction existence lookups across the collection across categories" do
+      user = create(:user, :trusted)
+      article = create(:article)
+      comment = create(:comment, commentable: article)
+
+      create(:reaction, user: user, reactable: article, category: "like")
+      create(:reaction, user: user, reactable: comment, category: "thumbsdown")
+
+      article_notif = build(:notification, notifiable_type: "Article", json_data: {
+                              "article" => { "id" => article.id, "class" => { "name" => "Article" } }
+                            })
+      comment_notif = build(:notification, notifiable_type: "Comment", json_data: {
+                              "comment" => { "id" => comment.id, "class" => { "name" => "Comment" } }
+                            })
+
+      decorated_list = described_class.decorate_collection([article_notif, comment_notif])
+      allow(Reaction).to receive(:cached_any_reactions_for?)
+      reaction_selects = 0
+      subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
+        reaction_selects += 1 if payload[:sql].include?('FROM "reactions"')
+      end
+
+      expect(decorated_list.first.any_cached_reactions_for_object?(user)).to be(true)
+      expect(decorated_list.first.any_cached_reactions_for_object?(user, category: "readinglist")).to be(false)
+      expect(
+        decorated_list.second.any_cached_reactions_for_object?(user, "comment", category: "thumbsdown"),
+      ).to be(true)
+      expect(decorated_list.second.any_cached_reactions_for_object?(user, "comment", category: "like")).to be(false)
+      ActiveSupport::Notifications.unsubscribe(subscriber)
+      expect(Reaction).not_to have_received(:cached_any_reactions_for?)
+      expect(reaction_selects).to eq(1)
+    end
+
+    it "batches comment reply lookups across the collection and preloads the replying user" do
+      user = create(:user)
+      article = create(:article)
+      root_comment = create(:comment, commentable: article)
+      nested_parent = create(:comment, commentable: article, parent: root_comment)
+      root_reply = create(:comment, user: user, commentable: article, parent: root_comment)
+      nested_reply = create(:comment, user: user, commentable: article, parent: nested_parent)
+      unreplied_comment = create(:comment, commentable: article)
+
+      notifs = [root_comment, nested_parent, unreplied_comment].map do |comment|
+        build(:notification, notifiable_type: "Comment", json_data: { "comment" => { "id" => comment.id } })
+      end
+
+      decorated_list = described_class.decorate_collection(notifs)
+      queries = []
+      subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
+        queries << payload[:sql] if payload[:sql].include?('FROM "comments"') || payload[:sql].include?('FROM "users"')
+      end
+
+      replies = decorated_list.map { |n| n.comment_reply_for(user) }
+      reply_paths = replies.compact.map(&:path)
+      ActiveSupport::Notifications.unsubscribe(subscriber)
+
+      expect(replies).to eq([root_reply, nested_reply, nil])
+      expect(reply_paths).to eq([root_reply.path, nested_reply.path])
+      expect(queries.size).to eq(2)
+      expect(queries.none? { |sql| sql.include?("body_markdown") || sql.include?('FROM "users"') }).to be(true)
     end
   end
 end

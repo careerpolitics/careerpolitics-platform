@@ -21,7 +21,17 @@
                          multiple: false,
                          class: "crayons-select" %>
         </div>
-        <% #feed_lookback_days %>
+        <% %i[feed_config_sticky_hours feed_config_sticky_percentage feed_config_repeat_visit_minutes].each do |setting| %>
+          <div class="crayons-field">
+            <%= admin_config_label setting, t("lib.constants.settings.user_experience.#{setting}.label"), model: Settings::UserExperience %>
+            <%= admin_config_description Constants::Settings::UserExperience.details[setting][:description] %>
+            <%= f.number_field setting,
+                               class: "crayons-textfield",
+                               min: setting == :feed_config_repeat_visit_minutes ? 1 : 0,
+                               max: setting == :feed_config_sticky_percentage ? 100 : nil,
+                               value: Settings::UserExperience.public_send(setting) %>
+          </div>
+        <% end %>
         <div class="crayons-field">
           <%= admin_config_label :feed_lookback_days, model: Settings::UserExperience %>
           <%= admin_config_description Constants::Settings::UserExperience.details[:feed_lookback_days][:description] %>
@@ -94,7 +104,7 @@
           <%= admin_config_description Constants::Settings::UserExperience.details[:default_locale][:description] %>
           <%= select_tag "settings_user_experience[default_locale]",
                          options_for_select(
-                           [%w[English en], %w[Français fr]],
+                           Constants::Settings::UserExperience.locale_options,
                            Settings::UserExperience.default_locale,
                          ),
                          multiple: false,
