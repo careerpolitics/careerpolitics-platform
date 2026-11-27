@@ -3,7 +3,6 @@ require "json"
 require "openssl"
 require "excon"
 require "httpclient"
-require "stripe"
 require_relative "../../../../config/initializers/tls_trust"
 
 RSpec.describe OpenSSL::X509::Store do
@@ -60,20 +59,6 @@ RSpec.describe OpenSSL::X509::Store do
         expect { ssl_config.check_peer_certificates([certificate]) }.to raise_error(OpenSSL::SSL::SSLError)
       end
       expect { ssl_config.check_peer_certificates([trusted_root]) }.not_to raise_error
-    end
-  end
-
-  context "with Stripe" do
-    let(:store) { Stripe.ca_store }
-
-    include_examples "a corrected CA store"
-
-    it "uses the maintained Excon bundle without opening a connection", :aggregate_failures do
-      expect(Stripe.ca_bundle_path).to eq(Excon::DEFAULT_CA_FILE)
-      connection = Stripe::ConnectionManager.new.__send__(:create_connection, URI("https://stripe.example.test"))
-      expect(connection.cert_store).to equal(store)
-      expect(connection.verify_mode).to eq(OpenSSL::SSL::VERIFY_PEER)
-      expect(connection.started?).to be(false)
     end
   end
 

@@ -28,14 +28,6 @@ class CommunityBotPolicy < ApplicationPolicy
     has_mod_permission?
   end
 
-  def update?
-    has_mod_permission?
-  end
-
-  def toggle_enabled?
-    has_mod_permission?
-  end
-
   def reactivate?
     has_mod_permission?
   end

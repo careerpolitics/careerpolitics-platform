@@ -638,6 +638,47 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_25_200000) do
     t.index ["context_id", "context_type", "action"], name: "index_context_notification_on_context_and_action", unique: true
   end
 
+  create_table "cp_payments", force: :cascade do |t|
+    t.integer "amount_cents", null: false
+    t.bigint "cp_subscription_id", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "INR", null: false
+    t.string "method_type"
+    t.datetime "paid_at"
+    t.string "razorpay_payment_id"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["cp_subscription_id"], name: "index_cp_payments_on_cp_subscription_id"
+    t.index ["razorpay_payment_id"], name: "index_cp_payments_on_razorpay_payment_id", unique: true, where: "(razorpay_payment_id IS NOT NULL)"
+    t.index ["status"], name: "index_cp_payments_on_status"
+    t.index ["user_id"], name: "index_cp_payments_on_user_id"
+  end
+
+  create_table "cp_subscriptions", force: :cascade do |t|
+    t.integer "amount_cents"
+    t.datetime "cancelled_at"
+    t.datetime "created_at", null: false
+    t.string "currency", default: "INR"
+    t.datetime "current_period_end"
+    t.datetime "current_period_start"
+    t.string "plan_type"
+    t.string "provider", default: "razorpay", null: false
+    t.string "razorpay_customer_id"
+    t.string "razorpay_order_id"
+    t.string "razorpay_plan_id"
+    t.string "razorpay_subscription_id"
+    t.integer "status", default: 0, null: false
+    t.datetime "trial_ends_at"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["razorpay_order_id"], name: "index_cp_subscriptions_on_razorpay_order_id", unique: true, where: "(razorpay_order_id IS NOT NULL)"
+    t.index ["razorpay_subscription_id"], name: "index_cp_subscriptions_on_razorpay_subscription_id", unique: true, where: "(razorpay_subscription_id IS NOT NULL)"
+    t.index ["status"], name: "index_cp_subscriptions_on_status"
+    t.index ["trial_ends_at"], name: "index_cp_subscriptions_on_trial_ends_at", where: "(status = 0)"
+    t.index ["user_id"], name: "index_cp_subscriptions_on_user_id"
+  end
+
   create_table "credits", force: :cascade do |t|
     t.float "cost", default: 0.0
     t.datetime "created_at", precision: nil, null: false
@@ -2551,6 +2592,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_25_200000) do
   add_foreign_key "concept_memberships", "concepts", on_delete: :cascade
   add_foreign_key "context_notes", "articles"
   add_foreign_key "context_notes", "tags"
+  add_foreign_key "cp_payments", "cp_subscriptions"
+  add_foreign_key "cp_payments", "users"
+  add_foreign_key "cp_subscriptions", "users"
   add_foreign_key "credits", "organizations", on_delete: :restrict
   add_foreign_key "credits", "users", on_delete: :cascade
   add_foreign_key "devices", "consumer_apps"
