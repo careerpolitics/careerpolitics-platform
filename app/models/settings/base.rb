@@ -19,15 +19,14 @@ module Settings
 
     class << self
       def clear_cache
-        # Clear the main cache
-        RequestStore.delete(cache_key)
+        # Clear the main cache and any subforem-specific caches in RequestStore
+        RequestStore.store.delete_if { |key, _| key == cache_key || key.to_s.start_with?("#{cache_key}-") }
         Rails.cache.delete(cache_key)
+        return if Rails.cache.is_a?(ActiveSupport::Cache::NullStore)
 
-        # Clear any subforem-specific caches
-        Subforem.find_each do |subforem|
-          subforem_cache_key = "#{cache_key}-#{subforem.id}"
-          RequestStore.delete(subforem_cache_key)
-          Rails.cache.delete(subforem_cache_key)
+        # Clear any subforem-specific caches in Rails.cache
+        Subforem.ids.each do |subforem_id|
+          Rails.cache.delete("#{cache_key}-#{subforem_id}")
         end
       end
 
@@ -177,42 +176,60 @@ module Settings
       end
 
       def value_of(var_name, subforem_id = nil)
+        default_subforem_id = effective_default_subforem_id
+        subforem_id = default_subforem_id if Subforem.disabled_by_env? && default_subforem_id.present?
         # Ensure we fallback to the request store if not provided
-        subforem_id ||= (RequestStore.store[:subforem_id] || RequestStore.store[:default_subforem_id] || nil)
+        subforem_id ||= RequestStore.store[:subforem_id] || default_subforem_id || nil
         all = all_settings(subforem_id)
         all[var_name]
       end
 
       def all_settings(subforem_id = nil)
+        default_subforem_id = effective_default_subforem_id
+        subforem_id = default_subforem_id if Subforem.disabled_by_env? && default_subforem_id.present?
+
         # Use a subforem-specific cache key if we have a subforem_id
         cache_key_with_subforem = subforem_id.present? ? "#{cache_key}-#{subforem_id}" : cache_key
 
         RequestStore[cache_key_with_subforem] ||= Rails.cache.fetch(cache_key_with_subforem, expires_in: 1.week) do
-          unless table_exists?
-            # If table doesn't exist yet, return an empty hash
-            {}
-          else
-            # If subforem_id is given, fetch both subforem-specific and global (nil) settings
-            # Ordering ensures subforem-specific appear first and set the var in the hash
-            query = if subforem_id
-                      unscoped
-                        .select(:var, :value, :subforem_id)
-                        .where(subforem_id: [subforem_id, nil])
-                        .order(Arel.sql("CASE WHEN subforem_id IS NULL THEN 1 ELSE 0 END"))
-                    else
-                      # No subforem_id means only global settings (subforem_id = nil)
-                      unscoped.select(:var, :value).where(subforem_id: nil)
-                    end
-
+          if table_exists?
+            records = settings_records_for(subforem_id, default_subforem_id)
             result = {}
-            query.each do |record|
+            records.each do |record|
               # The first time we set a var will be the subforem-specific row if it exists,
-              # else the global one will remain.
-              result[record.var] ||= record.value
+              # else the default subforem or global one will remain.
+              result[record.var] = record.value if result[record.var].nil?
             end
             result.with_indifferent_access
+          else
+            # If table doesn't exist yet, return an empty hash
+            {}
           end
         end
+      end
+
+      def effective_default_subforem_id
+        RequestStore.store[:default_subforem_id] ||
+          (Subforem.cached_default_id if Subforem.disabled_by_env?)
+      end
+
+      def settings_records_for(subforem_id, default_subforem_id)
+        return unscoped.select(:var, :value).where(subforem_id: nil) unless subforem_id
+
+        target_ids = [subforem_id, default_subforem_id, nil].uniq
+        unscoped
+          .select(:var, :value, :subforem_id)
+          .where(subforem_id: target_ids)
+          .to_a
+          .sort_by do |record|
+            if record.subforem_id.nil?
+              2
+            elsif record.subforem_id.to_s == subforem_id.to_s
+              0
+            else
+              1
+            end
+          end
       end
     end
 

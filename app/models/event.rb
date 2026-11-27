@@ -7,47 +7,447 @@ class Event < ApplicationRecord
   belongs_to :organization, optional: true
   belongs_to :page, optional: true
 
-  has_many :billboards, foreign_key: :event_id, dependent: :destroy
+  has_many :billboards, dependent: :destroy
   has_many :event_signups, dependent: :destroy
   has_many :signed_up_users, through: :event_signups, source: :user
+  has_many :emails, dependent: :nullify
+  has_many :pages, inverse_of: :event, dependent: :destroy
+  has_many :articles, dependent: :nullify
+  has_many :child_event_memberships,
+           class_name: "EventMembership",
+           foreign_key: :parent_event_id,
+           inverse_of: :parent_event,
+           dependent: :destroy
+  has_many :sub_events, through: :child_event_memberships, source: :child_event
+  has_many :parent_event_memberships,
+           class_name: "EventMembership",
+           foreign_key: :child_event_id,
+           inverse_of: :child_event,
+           dependent: :destroy
+  has_many :parent_events, through: :parent_event_memberships, source: :parent_event
 
-  enum :type_of, { live_stream: 0, takeover: 1, other: 2, challenge: 3 }
+  enum :type_of, { live_stream: 0, takeover: 1, other: 2, challenge: 3, meetup: 4, conference: 5 }
   enum :broadcast_config, { no_broadcast: 0, tagged_broadcast: 1, global_broadcast: 2 }
 
   validates :title, presence: true
   validates :start_time, presence: true
   validates :end_time, presence: true
-  validates :event_name_slug, presence: true, format: { with: /\A[a-z0-9-]+\z/, message: "can only contain lowercase letters, numbers, and dashes" }
-  validates :event_variation_slug, presence: true, format: { with: /\A[a-z0-9-]+\z/, message: "can only contain lowercase letters, numbers, and dashes" }, uniqueness: { scope: :event_name_slug, case_sensitive: false }
+  validates :event_name_slug, presence: true,
+                              format: { with: /\A[a-z0-9-]+\z/, message: "can only contain lowercase letters, numbers, and dashes" }
+  validates :event_variation_slug, presence: true,
+                                   format: { with: /\A[a-z0-9-]+\z/, message: "can only contain lowercase letters, numbers, and dashes" }, uniqueness: { scope: :event_name_slug, case_sensitive: false }
   validate :end_time_after_start_time
-  validates :primary_stream_url, format: { with: /\Ahttps:\/\/(www\.)?(youtube\.com|youtu\.be|twitch\.tv|player\.twitch\.tv|streamyard\.com)\/.*\z/, message: "must be a valid HTTPS YouTube, Twitch, or Streamyard URL" }, allow_blank: true
+  validates :primary_stream_url,
+            format: { with: %r{\Ahttps://(www\.)?(youtube\.com|youtu\.be|twitch\.tv|player\.twitch\.tv|streamyard\.com)/.*\z}, message: "must be a valid HTTPS YouTube, Twitch, or Streamyard URL" }, allow_blank: true
   validates :page, presence: true, if: :delegate_to_page?
+  validates :bg_color_hex,
+            format: { with: /\A#[0-9a-fA-F]{6}\z/, message: "must be a valid 6-digit hex color (e.g. #3B49DF)" },
+            allow_blank: true
+  validate :validate_owned_page_slug_sync,
+           on: :update,
+           if: -> { event_name_slug_changed? || event_variation_slug_changed? }
 
+  before_validation :set_default_bg_color_hex
   before_save :format_stream_urls
-  after_commit :ensure_broadcast_billboards_and_workers, on: [:create, :update]
-  after_commit :bust_upcoming_events_cache, on: [:create, :update, :destroy]
+  before_save :evaluate_markdown, if: :body_markdown_changed?
+  after_update :sync_owned_page_slugs,
+               if: -> { saved_change_to_event_name_slug? || saved_change_to_event_variation_slug? }
+  before_destroy :capture_owned_page_fallback_paths, prepend: true
+  after_commit :ensure_broadcast_billboards_and_workers, on: %i[create update]
+  after_commit :bust_upcoming_events_cache, on: %i[create update destroy]
+  after_commit :purge_event_edge_cache, on: %i[update destroy]
 
   scope :published, -> { where(published: true) }
   scope :elevated, -> { where(elevated: true) }
+  scope :top_level, -> { where.not(id: EventMembership.select(:child_event_id)) }
+  scope :top_level_published, lambda {
+    where.not(
+      id: EventMembership.joins(:parent_event)
+                         .where(parent_event: { published: true })
+                         .select(:child_event_id),
+    )
+  }
+  scope :top_level_active_published, lambda { |at = Time.current|
+    where.not(
+      id: EventMembership.joins(:parent_event)
+                         .where(parent_event: { published: true, end_time: at.. })
+                         .select(:child_event_id),
+    )
+  }
+
+  DEFAULT_HEX_COLORS = ["#3B49DF", "#0D9488", "#7C3AED", "#DB2777", "#D97706"].freeze
+
+  # Challenges a post enters: published challenges running at `at` whose every
+  # tag the post carries. Recurring series (weekend challenges) reuse the same
+  # tags, so the time window is what tells their runs apart.
+  def self.challenges_entered_by(tag_names, at:)
+    return none if tag_names.blank?
+
+    published.challenge
+      .where.not(tags_array: [])
+      .where("tags_array <@ ARRAY[?]::text[]", tag_names)
+      .where("start_time <= :at AND end_time >= :at", at: at)
+  end
 
   def self.active_broadcast_events
     Rails.cache.fetch("active_broadcast_events", expires_in: 30.seconds) do
       published
         .where.not(broadcast_config: "no_broadcast")
-        .where("start_time <= ? AND end_time >= ?", Time.current + 15.minutes, Time.current - 5.minutes)
+        .where("start_time <= ? AND end_time >= ?", 15.minutes.from_now, 5.minutes.ago)
         .select(:id, :broadcast_config, :start_time, :end_time, :tags_array)
         .to_a
     end
   end
 
+  mount_uploader :cover_image, EventCoverImageUploader
+  mount_uploader :banner_image, EventBannerImageUploader
+
+  def set_default_bg_color_hex
+    return if bg_color_hex.present?
+
+    first_supported = tags.detect { |t| t.supported? && t.bg_color_hex.present? }
+    self.bg_color_hex = first_supported.bg_color_hex if first_supported.present?
+  end
+
+  def background_hex_color
+    return bg_color_hex if bg_color_hex.present?
+
+    color_index = (id || title.to_s.bytes.sum) % DEFAULT_HEX_COLORS.size
+    DEFAULT_HEX_COLORS[color_index]
+  end
+
+  def gradient_background_css
+    base_hex = background_hex_color
+    dark_hex = adjust_hex_brightness(base_hex, 0.65)
+    "linear-gradient(135deg, #{base_hex} 0%, #{dark_hex} 100%)"
+  end
+
+  def adjust_hex_brightness(hex, factor)
+    clean_hex = hex.to_s.delete("#")
+    return "#18181A" unless clean_hex.match?(/\A[0-9a-fA-F]{6}\z/)
+
+    r = (clean_hex[0..1].to_i(16) * factor).round.clamp(0, 255)
+    g = (clean_hex[2..3].to_i(16) * factor).round.clamp(0, 255)
+    b = (clean_hex[4..5].to_i(16) * factor).round.clamp(0, 255)
+
+    format("#%<r>02x%<g>02x%<b>02x", r: r, g: g, b: b)
+  end
+
+  def social_image_url
+    if cover_image.present?
+      if cover_image.respond_to?(:social) && cover_image.social.present? && cover_image.social.url.present?
+        cover_image.social.url
+      else
+        cover_image.url
+      end
+    else
+      Settings::General.main_social_image.to_s
+    end
+  end
+
+  def banner_image_url
+    if banner_image.present?
+      if banner_image.respond_to?(:banner) && banner_image.banner.present? && banner_image.banner.url.present?
+        banner_image.banner.url
+      else
+        banner_image.url
+      end
+    else
+      data&.dig("banner_image_url").presence
+    end
+  end
+
+  # Keep the rendered page body out of the public events API responses.
+  def serializable_hash(options = nil)
+    options = (options || {}).dup
+    options[:except] = Array(options[:except]) + %i[body_markdown processed_html]
+    super
+  end
+
+  # The event page shows the rendered markdown body when present, and falls
+  # back to the short description otherwise.
+  def body_html
+    return processed_html.html_safe if body_markdown.present? && processed_html.present? # rubocop:disable Rails/OutputSafety
+
+    ActionController::Base.helpers.simple_format(description)
+  end
+
+  def path
+    "/events/#{event_name_slug}/#{event_variation_slug}"
+  end
+
+  def live?(at = Time.current)
+    start_time.present? && end_time.present? && start_time <= at && end_time >= at
+  end
+
+  def started?(at = Time.current)
+    start_time.present? && start_time <= at
+  end
+
+  def upcoming?(at = Time.current)
+    start_time.present? && start_time > at
+  end
+
+  def ended?(at = Time.current)
+    end_time.present? && end_time < at
+  end
+
+  def articles_visible?(at = Time.current)
+    allow_articles? && started?(at)
+  end
+
+  def accepting_articles?(at: Time.current, as_admin: false)
+    return false unless allow_articles?
+
+    as_admin || (published? && live?(at))
+  end
+
+  def visible_articles(at = Time.current)
+    return Article.none unless articles_visible?(at)
+
+    articles.published
+  end
+
+  def formatted_date_range
+    return "" if start_time.blank?
+
+    start_date = start_time.to_date
+    end_date = (end_time || start_time).to_date
+
+    if start_date == end_date
+      start_date.strftime("%b %-d").upcase
+    elsif start_date.month == end_date.month && start_date.year == end_date.year
+      "#{start_date.strftime('%b %-d').upcase} - #{end_date.strftime('%-d')}"
+    else
+      "#{start_date.strftime('%b %-d').upcase} - #{end_date.strftime('%b %-d').upcase}"
+    end
+  end
+
+  # The zone that the event's dates are shown in, from data["time_zone"]
+  # (for example "America/Los_Angeles").  Falls back to the app time zone.
+  def time_zone
+    ActiveSupport::TimeZone[data&.dig("time_zone").to_s] || Time.zone
+  end
+
+  def location_display
+    data&.dig("location") || data&.dig(:location) || "Everywhere, Worldwide"
+  end
+
+  def format_pill_label
+    custom_format = data&.dig("format") || data&.dig(:format)
+    return custom_format.to_s.upcase if custom_format.present?
+
+    case type_of
+    when "live_stream"
+      "DIGITAL"
+    when "challenge"
+      "CHALLENGE"
+    when "takeover"
+      "TAKEOVER"
+    when "meetup"
+      "MEETUP"
+    when "conference"
+      "CONFERENCE"
+    else
+      "EVENT"
+    end
+  end
+
+  def signup_button_text(signed_up: false)
+    if challenge?
+      signed_up ? "Signed Up" : "Sign Up"
+    else
+      signed_up ? "Interested" : "I'm Interested"
+    end
+  end
+
+  def signup_confirm_message
+    if challenge?
+      "Are you sure you want to cancel your sign up?"
+    else
+      "Are you sure you want to cancel your interest?"
+    end
+  end
+
+  # Shared by the challenge_signed_up and challenge_submitted CDP events.
+  def challenge_trackable_properties
+    {
+      "challenge_id" => id,
+      "challenge_slug" => event_variation_slug,
+      "challenge_title" => title
+    }
+  end
+
+  def ordered_pages
+    pages.non_embed_html.order(:position, :created_at, :id)
+  end
+
+  def ordered_embed_pages
+    pages.embed_html.order(:created_at, :id)
+  end
+
+  def main_page
+    pages.non_embed_html.find_by(slug: page_slug_for(Page::SHOWCASE_SLUG_SUFFIX))
+  end
+  alias showcase_page main_page
+
+  def readme_page?
+    main_page.present?
+  end
+
+  def navigation_pages
+    ordered_pages.where(show_in_navigation: true)
+  end
+
+  def page_slug_prefix
+    "events/#{event_name_slug}/#{event_variation_slug}"
+  end
+
+  def page_slug_for(suffix)
+    "#{page_slug_prefix}/#{suffix}"
+  end
+
+  def embed_page_slug_for(suffix)
+    "#{page_slug_prefix}/embed/#{suffix}"
+  end
+
+  def sub_event_schedule(include_drafts: false, at: Time.current, memberships: nil)
+    Events::SubEventSchedule.new(self, include_drafts: include_drafts, at: at, memberships: memberships)
+  end
+
+  def ancestor_event_ids
+    return [] if id.blank?
+
+    EventMembership.ancestor_depths_for(id).keys
+  end
+
+  def descendant_event_ids
+    return [] if id.blank?
+
+    EventMembership.descendant_depths_for(id).keys
+  end
+
+  def purge_hierarchy_edge_cache!
+    EdgeCache::PurgeByKeyWorker.perform_async(record_key, event_edge_cache_fallback_paths)
+    bust_upcoming_events_cache if elevated?
+  end
+
   private
+
+  def validate_owned_page_slug_sync
+    return if errors[:event_name_slug].any? || errors[:event_variation_slug].any?
+
+    old_name = event_name_slug_was || event_name_slug
+    old_var = event_variation_slug_was || event_variation_slug
+    old_prefix = "events/#{old_name}/#{old_var}/"
+    new_prefix = "#{page_slug_prefix}/"
+    return if old_prefix == new_prefix
+
+    owned_pages_with_slug_prefix(old_prefix).find_each do |owned_page|
+      owned_page.association(:event).target = self
+      owned_page.slug = "#{new_prefix}#{owned_page.slug.delete_prefix(old_prefix)}"
+      next if owned_page.valid?
+
+      errors.add(:base, owned_page.errors.full_messages.to_sentence)
+      break
+    end
+  end
+
+  def sync_owned_page_slugs
+    old_name = saved_change_to_event_name_slug&.first || event_name_slug
+    old_var = saved_change_to_event_variation_slug&.first || event_variation_slug
+    old_prefix = "events/#{old_name}/#{old_var}/"
+    new_prefix = "#{page_slug_prefix}/"
+    return if old_prefix == new_prefix
+
+    owned_pages_with_slug_prefix(old_prefix).find_each do |owned_page|
+      owned_page.association(:event).target = self
+      new_slug = "#{new_prefix}#{owned_page.slug.delete_prefix(old_prefix)}"
+      next if owned_page.update(slug: new_slug)
+
+      errors.add(:base, owned_page.errors.full_messages.to_sentence)
+      raise ActiveRecord::Rollback
+    end
+  rescue ActiveRecord::RecordNotUnique
+    errors.add(:base, I18n.t("models.event.owned_page_slug_taken"))
+    raise ActiveRecord::Rollback
+  end
+
+  def owned_pages_with_slug_prefix(prefix)
+    escaped_prefix = ActiveRecord::Base.sanitize_sql_like(prefix)
+    pages.where("slug LIKE ?", "#{escaped_prefix}%")
+  end
+
+  def capture_owned_page_fallback_paths
+    @destroyed_owned_page_fallback_paths = owned_page_fallback_paths_for(path)
+  end
+
+  def purge_event_edge_cache
+    return unless destroyed? || previous_changes.except("updated_at").any?
+
+    EdgeCache::PurgeByKeyWorker.perform_async(record_key, event_edge_cache_fallback_paths)
+    return if destroyed?
+
+    parent_events.find_each(&:purge_hierarchy_edge_cache!)
+  end
+
+  def event_edge_cache_fallback_paths
+    current_base = path
+    paths = [current_base]
+
+    if destroyed?
+      paths.concat(Array(@destroyed_owned_page_fallback_paths))
+    else
+      old_base = previous_event_base_path
+      paths << old_base if old_base
+      owned_pages_snapshot = pages.pluck(:slug, :template)
+      paths.concat(owned_page_fallback_paths_for(current_base, owned_pages_snapshot))
+      paths.concat(owned_page_fallback_paths_for(old_base, owned_pages_snapshot)) if old_base
+    end
+
+    paths.uniq
+  end
+
+  def previous_event_base_path
+    return unless previous_changes.key?("event_name_slug") || previous_changes.key?("event_variation_slug")
+
+    old_name = previous_changes.dig("event_name_slug", 0) || event_name_slug
+    old_var = previous_changes.dig("event_variation_slug", 0) || event_variation_slug
+    "/events/#{old_name}/#{old_var}"
+  end
+
+  def owned_page_fallback_paths_for(base_path, rows = pages.pluck(:slug, :template))
+    rows.filter_map do |page_slug, template|
+      suffix = page_slug.to_s.split("/").last
+      next if suffix.blank?
+
+      if template == Page::EMBED_HTML_TEMPLATE
+        "#{base_path}/embed/#{suffix}?mode=embed"
+      else
+        "#{base_path}/p/#{suffix}"
+      end
+    end
+  end
+
+  def evaluate_markdown
+    if body_markdown.blank?
+      self.processed_html = nil
+      return
+    end
+
+    renderer = ContentRenderer.new(body_markdown, source: organization, user: user)
+    self.processed_html = renderer.process.processed_html
+  rescue ContentRenderer::ContentParsingError => e
+    errors.add(:body_markdown, ErrorMessages::Clean.call(e.message))
+    throw :abort
+  end
 
   def end_time_after_start_time
     return if end_time.blank? || start_time.blank?
 
-    if end_time < start_time
-      errors.add(:end_time, "must be after the start time")
-    end
+    return unless end_time < start_time
+
+    errors.add(:end_time, "must be after the start time")
   end
 
   def format_stream_urls
@@ -57,31 +457,30 @@ class Event < ApplicationRecord
     self.data ||= {}
 
     youtube_match = primary_stream_url.match(%r{(?:youtu\.be/|youtube\.com/(?:watch\?v=|embed/|live/|v/|shorts/))([a-zA-Z0-9_-]{11})}i) ||
-                    primary_stream_url.match(%r{[?&]v=([a-zA-Z0-9_-]{11})}i) ||
-                    primary_stream_url.match(/\A([a-zA-Z0-9_-]{11})\z/)
+      primary_stream_url.match(/[?&]v=([a-zA-Z0-9_-]{11})/i) ||
+      primary_stream_url.match(/\A([a-zA-Z0-9_-]{11})\z/)
 
     if youtube_match
       video_id = youtube_match[1]
       self.primary_stream_url = "https://www.youtube.com/embed/#{video_id}?autoplay=1"
       self.data["chat_url"] = "https://www.youtube.com/live_chat?v=#{video_id}&embed_domain=#{app_domain}"
-    elsif primary_stream_url.match?(%r{twitch\.tv}i)
+    elsif primary_stream_url.match?(/twitch\.tv/i)
       channel_name = nil
-      if primary_stream_url.include?("channel=")
-        match = primary_stream_url.match(/channel=([a-zA-Z0-9_]+)/i)
-        channel_name = match[1] if match
-      else
-        match = primary_stream_url.match(%r{twitch\.tv/([a-zA-Z0-9_]+)}i)
-        channel_name = match[1] if match
-      end
+      match = if primary_stream_url.include?("channel=")
+                primary_stream_url.match(/channel=([a-zA-Z0-9_]+)/i)
+              else
+                primary_stream_url.match(%r{twitch\.tv/([a-zA-Z0-9_]+)}i)
+              end
+      channel_name = match[1] if match
 
-      if channel_name && !%w[videos clip clips directory].include?(channel_name.downcase)
+      if channel_name && %w[videos clip clips directory].exclude?(channel_name.downcase)
         self.primary_stream_url = "https://player.twitch.tv/?channel=#{channel_name}&parent=#{app_domain}"
         self.data["chat_url"] = "https://www.twitch.tv/embed/#{channel_name}/chat?parent=#{app_domain}"
       end
-    elsif primary_stream_url.match?(%r{streamyard\.com}i)
+    elsif primary_stream_url.match?(/streamyard\.com/i)
       begin
         uri = URI.parse(primary_stream_url)
-        path_segments = uri.path.split('/').reject(&:blank?)
+        path_segments = uri.path.split("/").compact_blank
         if path_segments.any?
           streamyard_id = path_segments.last
           self.primary_stream_url = "https://streamyard.com/e/#{streamyard_id}"
@@ -106,8 +505,8 @@ class Event < ApplicationRecord
 
     prefix = takeover? ? "takeover" : "live_now"
     stream_hour = start_time.strftime("%H")
-    base_name = "#{prefix}_#{Time.now.strftime('%B').downcase}_#{Time.now.strftime('%d')}_#{stream_hour}_#{Time.now.strftime('%Y')}"
-    
+    base_name = "#{prefix}_#{Time.zone.now.strftime('%B').downcase}_#{Time.zone.now.strftime('%d')}_#{stream_hour}_#{Time.zone.now.strftime('%Y')}"
+
     custom_display_label = takeover? ? "#{Settings::Community.community_name} Takeovers" : "#{Settings::Community.community_name} Live Events"
 
     # Only process if it has a published state linking (though we generate them regardless)
@@ -124,11 +523,11 @@ class Event < ApplicationRecord
       render_mode: "raw",
       template: "authorship_box",
       approved: home_feed_bb.new_record? ? false : home_feed_bb.approved,
-      published: true
+      published: true,
     )
 
     post_bottom_bb = billboards.find_or_initialize_by(placement_area: "post_fixed_bottom")
-    post_bottom_bb.update!(
+    post_bottom_attributes = {
       name: "#{base_name}_post",
       dismissal_sku: base_name,
       custom_display_label: custom_display_label,
@@ -140,7 +539,14 @@ class Event < ApplicationRecord
       template: "authorship_box",
       approved: post_bottom_bb.new_record? ? false : post_bottom_bb.approved,
       published: true
-    )
+    }
+
+    if live_stream?
+      post_bottom_attributes[:special_behavior] = "persistent"
+      post_bottom_attributes[:minimized_body_markdown] = generator.minimized_post_html
+    end
+
+    post_bottom_bb.update!(post_bottom_attributes)
   end
 
   def bust_upcoming_events_cache

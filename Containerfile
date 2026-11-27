@@ -1,7 +1,18 @@
-FROM ghcr.io/forem/ruby:3.3.0@sha256:9cda49a45931e9253d58f7d561221e43bd0d47676b8e75f55862ce1e9997ab5c as base
+FROM ghcr.io/forem/ruby:3.3.14@sha256:e28bebcb1c3215cf5e243b2164d1c9a19e2a2431ef0fe78c4832c9965e2d0a71 AS base
 
-# HOTFIX: Remove broken nodesource list from base image to unblock apt update
-RUN rm -f /etc/apt/sources.list.d/nodesource.list
+FROM rust:1.85-bullseye as rust-toolchain
+
+FROM base as rust-builder
+COPY --from=rust-toolchain /usr/local/cargo /usr/local/cargo
+COPY --from=rust-toolchain /usr/local/rustup /usr/local/rustup
+ENV PATH="/usr/local/cargo/bin:${PATH}" \
+    RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo
+RUN apt update && apt install -y build-essential clang libclang-dev && apt clean
+WORKDIR /opt/apps/forem/gems/forem_native
+COPY ./gems/forem_native /opt/apps/forem/gems/forem_native
+RUN cargo build --release --manifest-path /opt/apps/forem/gems/forem_native/Cargo.toml && \
+    strip /opt/apps/forem/gems/forem_native/target/release/libforem_native.so
 
 FROM base as builder
 
@@ -27,6 +38,7 @@ RUN apt update && \
         build-essential \
         libcurl4-openssl-dev \
         libffi-dev \
+        libyaml-dev \
         libxml2-dev \
         libxslt-dev \
         libpcre3-dev \
@@ -48,7 +60,7 @@ ENV APP_USER=forem APP_UID=1000 APP_GID=1000 APP_HOME=/opt/apps/forem \
     LD_PRELOAD=libjemalloc.so.2
 RUN mkdir -p ${APP_HOME} && chown "${APP_UID}":"${APP_GID}" "${APP_HOME}" && \
     groupadd -g "${APP_GID}" "${APP_USER}" && \
-    adduser --uid "${APP_UID}" --gid "${APP_GID}" --home "${APP_HOME}" "${APP_USER}"
+    adduser --disabled-password --gecos '' --uid "${APP_UID}" --gid "${APP_GID}" --home "${APP_HOME}" "${APP_USER}"
 
 ENV DOCKERIZE_VERSION=v0.7.0
 RUN curl -fsSLO https://github.com/jwilder/dockerize/releases/download/"${DOCKERIZE_VERSION}"/dockerize-linux-${TARGETARCH}-"${DOCKERIZE_VERSION}".tar.gz \
@@ -62,6 +74,8 @@ WORKDIR "${APP_HOME}"
 COPY --chown=${APP_UID}:${APP_GID} ./.ruby-version "${APP_HOME}"/
 COPY --chown=${APP_UID}:${APP_GID} ./Gemfile ./Gemfile.lock "${APP_HOME}"/
 COPY --chown=${APP_UID}:${APP_GID} ./vendor/cache "${APP_HOME}"/vendor/cache
+COPY --chown=${APP_UID}:${APP_GID} ./gems/forem_native "${APP_HOME}"/gems/forem_native
+COPY --from=rust-builder --chown=${APP_UID}:${APP_GID} /opt/apps/forem/gems/forem_native/target/release/libforem_native.so "${APP_HOME}"/gems/forem_native/lib/forem_native/forem_native.so
 
 # Have to reset APP_CONFIG, which appears to be set by upstream images, to
 # avoid permission errors in the development/test images (which run bundle
@@ -79,8 +93,10 @@ RUN mkdir -p "${BUNDLE_APP_CONFIG}" && \
     find "${APP_HOME}"/vendor/bundle -name "*.o" -delete
 
 COPY --chown=${APP_UID}:${APP_GID} . "${APP_HOME}"
+COPY --from=rust-builder --chown=${APP_UID}:${APP_GID} /opt/apps/forem/gems/forem_native/target/release/libforem_native.so "${APP_HOME}"/gems/forem_native/lib/forem_native/forem_native.so
 
-RUN mkdir -p "${APP_HOME}"/public/{assets,images,packs,podcasts,uploads}
+RUN mkdir -p "${APP_HOME}"/public/assets "${APP_HOME}"/public/images "${APP_HOME}"/public/packs \
+    "${APP_HOME}"/public/podcasts "${APP_HOME}"/public/uploads "${APP_HOME}"/tmp/pids
 
 # While it's relatively rare for bare metal builds to hit the default
 # timeout, QEMU-based ones (as is the case with Docker BuildX for
@@ -93,7 +109,7 @@ RUN echo 'httpTimeout: 300000' >> ~/.yarnrc.yml
 # Docker storage drivers (resulting in Directory Not Empty errors).
 RUN NODE_ENV=production yarn install && \
     yarn build && \
-    RAILS_ENV=production NODE_ENV=production bundle exec rake assets:precompile && \
+    SKIP_JS_BUILD=true RAILS_ENV=production NODE_ENV=production bundle exec rake assets:precompile && \
     rm -rf node_modules
 
 # This used to be calculated within the container build, but we then tried
@@ -112,6 +128,10 @@ FROM base as production
 
 USER root
 
+# Optional disposable per-host cache; the web launcher starts it only when
+# LOCAL_REDIS_URL is set. No persistence or public TCP listener is enabled.
+RUN apt-get update -qq && apt-get install -y --no-install-recommends redis-server && apt-get clean
+
 ENV BUNDLER_VERSION=2.4.17 BUNDLE_SILENCE_ROOT_WARNING=1
 RUN gem install -N bundler:"${BUNDLER_VERSION}"
 
@@ -119,18 +139,16 @@ ENV APP_USER=forem APP_UID=1000 APP_GID=1000 APP_HOME=/opt/apps/forem \
     LD_PRELOAD=libjemalloc.so.2
 RUN mkdir -p ${APP_HOME} && chown "${APP_UID}":"${APP_GID}" "${APP_HOME}" && \
     groupadd -g "${APP_GID}" "${APP_USER}" && \
-    adduser --uid "${APP_UID}" --gid "${APP_GID}" --home "${APP_HOME}" "${APP_USER}"
+    adduser --disabled-password --gecos '' --uid "${APP_UID}" --gid "${APP_GID}" --home "${APP_HOME}" "${APP_USER}"
 
 COPY --from=builder --chown="${APP_USER}":"${APP_USER}" ${APP_HOME} ${APP_HOME}
 
 USER "${APP_USER}"
 WORKDIR "${APP_HOME}"
 
-VOLUME "${APP_HOME}"/public/
-
 ENTRYPOINT ["./scripts/entrypoint.sh"]
 
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "3000"]
+CMD ["bundle", "exec", "ruby", "bin/web", "rails", "server", "-b", "0.0.0.0", "-p", "3000"]
 
 ## Testing
 FROM builder AS testing
@@ -194,12 +212,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     gnupg2 \
     curl \
     less \
-    git
+    git \
+    libyaml-dev
 
 ARG PG_MAJOR
 RUN curl -sSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgres-archive-keyring.gpg \
   && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/postgres-archive-keyring.gpg] https://apt.postgresql.org/pub/repos/apt/" \
-    $(lsb_release -cs)-pgdg main $PG_MAJOR | tee /etc/apt/sources.list.d/postgres.list > /dev/null
+    $(. /etc/os-release && echo "$VERSION_CODENAME")-pgdg main $PG_MAJOR | tee /etc/apt/sources.list.d/postgres.list > /dev/null
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   --mount=type=tmpfs,target=/var/log \

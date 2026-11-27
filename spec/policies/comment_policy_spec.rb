@@ -87,7 +87,17 @@ RSpec.describe CommentPolicy, type: :policy do
     context "when user is trusted" do
       before { user.add_role(:trusted) }
 
-      it { is_expected.to permit_actions(%i[moderator_create]) }
+      it { is_expected.to permit_actions(%i[moderator_create moderate]) }
+
+      it "forbids moderating when user is also suspended" do
+        user.add_role(:suspended)
+        expect(comment_policy).to forbid_actions(%i[moderate])
+      end
+
+      it "forbids moderating when user is also marked as spam" do
+        user.add_role(:spam)
+        expect(comment_policy).to forbid_actions(%i[moderate])
+      end
     end
   end
 
@@ -137,6 +147,19 @@ RSpec.describe CommentPolicy, type: :policy do
           .for_action(:moderator_create)
       end
     end
+  end
+
+  context "when user is a support admin" do
+    let(:user) { create(:user, :support_admin) }
+
+    it { is_expected.to permit_actions(%i[admin_access]) }
+    it { is_expected.to forbid_actions(%i[admin_delete]) }
+  end
+
+  context "when user is an admin" do
+    let(:user) { create(:user, :admin) }
+
+    it { is_expected.to permit_actions(%i[admin_access admin_delete]) }
   end
 
   context "when user is commentable author" do

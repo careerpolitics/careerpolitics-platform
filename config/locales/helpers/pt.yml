@@ -414,6 +414,15 @@ pt:
         mention:
           title: Mention title
           description: Mention description
+        mention_antispam:
+          title: Mention antispam title
+          description: Mention antispam description
+        mention_hourly:
+          title: Mention hourly title
+          description: Mention hourly description
+        mention_antispam_hourly:
+          title: Mention antispam hourly title
+          description: Mention antispam hourly description
         organization:
           title: Organization title
           description: Organization description
@@ -559,6 +568,33 @@ pt:
       upload:
         title: Limit number of images uploaded
         description: How many images can someone upload within any 30 second period?
+      api_upload:
+        title: Limitar o número de imagens enviadas pela API
+        description: Quantas imagens alguém pode enviar pela API dentro da janela de
+          envio de imagens da API? Defina como 0 para desativar o envio de imagens pela
+          API.
+      api_upload_window:
+        title: Janela de envio de imagens da API (segundos)
+        description: Duração da janela, em segundos, para o limite de envio de imagens
+          pela API (por exemplo, 3600 para uma hora).
+      api_generation:
+        title: Limitar o número de imagens de IA geradas pela API
+        description: Quantas imagens de IA alguém pode gerar pela API dentro da janela
+          de geração de imagens da API? Tentativas que falharem também contam. Defina
+          como 0 para desativar a geração de imagens pela API.
+      api_generation_window:
+        title: Janela de geração de imagens de IA da API (segundos)
+        description: Duração da janela, em segundos, para o limite de geração de imagens
+          de IA pela API (por exemplo, 86400 para um dia).
+      agent_session_presign:
+        title: Limitar o número de URLs de envio de sessões de agente
+        description: Quantas URLs pré-assinadas de envio de sessões de agente alguém pode
+          solicitar dentro da janela de envio de sessões de agente? Defina como 0 para desativar
+          o envio de transcrições brutas.
+      agent_session_presign_window:
+        title: Janela de envio de sessões de agente (segundos)
+        description: Duração da janela, em segundos, para o limite de URLs de envio de sessões
+          de agente (por exemplo, 3600 para uma hora).
       user:
         title: Limit number of changes someone can make to their account
         description: How many changes can someone make to their user account within
@@ -573,6 +609,9 @@ pt:
       feedback:
         title: Limit number of times someone can report abuse
         description: How many times can someone report abuse within any 5 minute period?
+      flag_appeal:
+        title: Limitar o número de recursos de moderação que alguém pode enviar
+        description: Quantos recursos de moderação alguém pode enviar em qualquer período de 5 minutos?
       comment:
         title: Limit number of comments created
         description: How many comments can someone create within any 30 second period?
@@ -582,6 +621,15 @@ pt:
         title: Limit number of @-mentions in a post or comment
         description: How many times can someone @-mention other users in a post or
           comment?
+      mention_antispam:
+        title: Limitar o número de @-menções em um post ou comentário por um membro novo ou de baixa confiança
+        description: Quantos outros usuários um membro novo ou de baixa confiança pode @-mencionar em um post ou comentário?
+      mention_hourly:
+        title: Limitar o número de @-menções por hora
+        description: Quantos outros usuários um membro estabelecido pode @-mencionar em qualquer período de 1 hora?
+      mention_antispam_hourly:
+        title: Limitar o número de @-menções por hora por um membro novo ou de baixa confiança
+        description: Quantos outros usuários um membro novo ou de baixa confiança pode @-mencionar em qualquer período de 1 hora?
       listing:
         title: Limit number of listings created
         description: How many listings can someone create within any 1 minute period?

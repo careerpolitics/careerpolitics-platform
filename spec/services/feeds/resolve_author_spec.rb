@@ -9,7 +9,13 @@ RSpec.describe Feeds::ResolveAuthor do
   end
 
   def item_with_author(author_string)
-    double("FeedItem", author: author_string)
+    Class.new do
+      attr_reader :author
+
+      def initialize(author)
+        @author = author
+      end
+    end.new(author_string)
   end
 
   describe ".call" do
@@ -20,62 +26,102 @@ RSpec.describe Feeds::ResolveAuthor do
         build(:feed_source, user: feed_owner, organization: organization)
       end
 
-      context "when RSS author matches an org member by email" do
-        it "returns the matched org member" do
-          org_member = create(:user, email: "alice@example.com")
-          create(:organization_membership, user: org_member, organization: organization)
-          item = item_with_author("alice@example.com")
+      it "returns the matched org member by email" do
+        org_member = create(:user, email: "alice@example.com")
+        create(:organization_membership, user: org_member, organization: organization)
+        item = item_with_author("alice@example.com")
 
-          result = described_class.call(item, feed_source)
-          expect(result).to eq(org_member)
-        end
-
-        it "extracts email from 'Name <email>' format" do
-          org_member = create(:user, email: "bob@example.com")
-          create(:organization_membership, user: org_member, organization: organization)
-          item = item_with_author("Bob Smith <bob@example.com>")
-
-          result = described_class.call(item, feed_source)
-          expect(result).to eq(org_member)
-        end
+        result = described_class.call(item, feed_source)
+        expect(result).to eq(org_member)
       end
 
-      context "when RSS author matches an org member by name" do
-        it "returns the matched org member" do
-          org_member = create(:user, name: "Alice Johnson")
-          create(:organization_membership, user: org_member, organization: organization)
-          item = item_with_author("Alice Johnson")
+      it "extracts email from 'Name <email>' format for org members" do
+        org_member = create(:user, email: "bob@example.com")
+        create(:organization_membership, user: org_member, organization: organization)
+        item = item_with_author("Bob Smith <bob@example.com>")
 
-          result = described_class.call(item, feed_source)
-          expect(result).to eq(org_member)
-        end
-
-        it "strips email and matches by name" do
-          org_member = create(:user, name: "Bob Smith")
-          create(:organization_membership, user: org_member, organization: organization)
-          item = item_with_author("Bob Smith <unknown@other.com>")
-
-          result = described_class.call(item, feed_source)
-          expect(result).to eq(org_member)
-        end
+        result = described_class.call(item, feed_source)
+        expect(result).to eq(org_member)
       end
 
-      context "when RSS author matches a user outside the organization" do
-        it "does not match and falls back to feed source effective author" do
-          _outsider = create(:user, name: "Alice Johnson", email: "alice@example.com")
-          item = item_with_author("Alice Johnson")
+      it "returns the matched org member by name" do
+        org_member = create(:user, name: "Alice Johnson")
+        create(:organization_membership, user: org_member, organization: organization)
+        item = item_with_author("Alice Johnson")
 
-          result = described_class.call(item, feed_source)
-          expect(result).to eq(feed_owner)
-        end
+        result = described_class.call(item, feed_source)
+        expect(result).to eq(org_member)
+      end
 
-        it "does not match by email for non-org users" do
-          _outsider = create(:user, email: "outsider@example.com")
-          item = item_with_author("outsider@example.com")
+      it "strips email and matches org member by name" do
+        org_member = create(:user, name: "Bob Smith")
+        create(:organization_membership, user: org_member, organization: organization)
+        item = item_with_author("Bob Smith <unknown@example.org>")
 
-          result = described_class.call(item, feed_source)
-          expect(result).to eq(feed_owner)
-        end
+        result = described_class.call(item, feed_source)
+        expect(result).to eq(org_member)
+      end
+
+      it "does not match a user outside the organization by name" do
+        _outsider = create(:user, name: "Alice Johnson", email: "alice@example.com")
+        item = item_with_author("Alice Johnson")
+
+        result = described_class.call(item, feed_source)
+        expect(result).to eq(feed_owner)
+      end
+
+      it "does not match by email for non-org users" do
+        _outsider = create(:user, email: "outsider@example.com")
+        item = item_with_author("outsider@example.com")
+
+        result = described_class.call(item, feed_source)
+        expect(result).to eq(feed_owner)
+      end
+
+      it "falls back to feed owner when configured default author is no longer an active org member" do
+        pending_user = create(:user)
+        create(:organization_membership, user: pending_user, organization: organization, type_of_user: "pending")
+        feed_source.author = pending_user
+
+        item = item_with_author("Unknown Person")
+        result = described_class.call(item, feed_source)
+        expect(result).to eq(feed_owner)
+      end
+    end
+
+    context "when feed source has an organization and owner is a non-admin member" do
+      let(:organization) { create(:organization) }
+      let(:feed_source) do
+        create(:organization_membership, user: feed_owner, organization: organization, type_of_user: "member")
+        build(:feed_source, user: feed_owner, organization: organization)
+      end
+
+      it "does not resolve another organization member by email" do
+        other_member = create(:user, email: "admin@example.com")
+        create(:organization_membership, user: other_member, organization: organization, type_of_user: "admin")
+        item = item_with_author("admin@example.com")
+
+        result = described_class.call(item, feed_source)
+        expect(result).to eq(feed_owner)
+      end
+
+      it "does not resolve another organization member by name" do
+        other_member = create(:user, name: "Org Admin")
+        create(:organization_membership, user: other_member, organization: organization, type_of_user: "admin")
+        item = item_with_author("Org Admin")
+
+        result = described_class.call(item, feed_source)
+        expect(result).to eq(feed_owner)
+      end
+
+      it "falls back to feed owner when a stale default author is set" do
+        other_member = create(:user)
+        create(:organization_membership, user: other_member, organization: organization, type_of_user: "member")
+        feed_source.author = other_member
+
+        item = item_with_author("Unknown Person")
+        result = described_class.call(item, feed_source)
+        expect(result).to eq(feed_owner)
       end
     end
 
@@ -110,15 +156,38 @@ RSpec.describe Feeds::ResolveAuthor do
         result = described_class.call(item, feed_source)
         expect(result).to eq(feed_owner)
       end
+
+      it "falls back to feed owner even if a legacy source has a third-party author_user_id" do
+        other_user = create(:user)
+        feed_source.author = other_user
+        item = item_with_author("Unknown Person")
+
+        result = described_class.call(item, feed_source)
+        expect(result).to eq(feed_owner)
+      end
+
+      it "resolves against preloaded feed_source.user in memory without issuing User SQL queries" do
+        persisted_source = create(:feed_source, user: feed_owner)
+        loaded_source = Feeds::Source.includes(:user).find(persisted_source.id)
+        item = item_with_author("#{feed_owner.name} <#{feed_owner.email}>")
+
+        allow(User).to receive(:where).and_call_original
+        result = described_class.call(item, loaded_source)
+        expect(result).to eq(feed_owner)
+        expect(User).not_to have_received(:where)
+      end
     end
 
     context "when RSS author does not match any user" do
-      it "falls back to feed source default author" do
+      it "falls back to feed source default author for an org-scoped feed" do
+        organization = create(:organization)
         default_author = create(:user)
-        feed_source.author = default_author
+        create(:organization_membership, user: feed_owner, organization: organization, type_of_user: "admin")
+        create(:organization_membership, user: default_author, organization: organization, type_of_user: "member")
+        org_feed_source = build(:feed_source, user: feed_owner, organization: organization, author: default_author)
 
         item = item_with_author("Unknown Person")
-        result = described_class.call(item, feed_source)
+        result = described_class.call(item, org_feed_source)
         expect(result).to eq(default_author)
       end
 
@@ -145,8 +214,7 @@ RSpec.describe Feeds::ResolveAuthor do
 
     context "when item does not respond to author" do
       it "returns feed source effective author" do
-        item = double("FeedItem")
-        allow(item).to receive(:try).with(:author).and_return(nil)
+        item = Object.new
         result = described_class.call(item, feed_source)
         expect(result).to eq(feed_owner)
       end

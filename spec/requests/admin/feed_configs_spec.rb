@@ -1,0 +1,248 @@
+require "rails_helper"
+
+RSpec.describe "/admin/advanced/feed_configs" do
+  let(:get_resource) { get admin_feed_configs_path }
+  let(:params) do
+    {
+      feed_config: {
+        ai_disclosure_matching_weight: 15.0,
+        autonomous_ai_penalty_weight: 25.0,
+        favorited_weight: 8.5,
+        user_follow_weight: 2.0,
+        tag_follow_weight: 3.0,
+        score_weight: 1.5,
+        semantic_similarity_weight: 12.0,
+        semantic_candidate_limit: 350,
+        feed_lookback_hours: 96,
+        published_at_diversity_weight: 4.5
+      }
+    }
+  end
+  let(:post_resource) { post admin_feed_configs_path, params: params }
+
+  context "when the user is not signed in" do
+    it "redirects to sign in or blocks access" do
+      expect { get_resource }.to raise_error(Pundit::NotAuthorizedError)
+    end
+  end
+
+  context "when the user is not an admin" do
+    let(:user) { create(:user) }
+
+    before { sign_in user }
+
+    describe "GET /admin/advanced/feed_configs" do
+      it "blocks the request" do
+        expect { get_resource }.to raise_error(Pundit::NotAuthorizedError)
+      end
+    end
+
+    describe "POST /admin/advanced/feed_configs" do
+      it "blocks the request" do
+        expect { post_resource }.to raise_error(Pundit::NotAuthorizedError)
+      end
+    end
+  end
+
+  context "when the user is a super admin" do
+    let(:super_admin) { create(:user, :super_admin) }
+    let!(:top_config) do
+      create(:feed_config, feed_success_score: 95.5, feed_impressions_count: 5000, ai_disclosure_matching_weight: 10.0)
+    end
+    let!(:other_config) do
+      create(:feed_config, feed_success_score: 50.0, feed_impressions_count: 1000, ai_disclosure_matching_weight: 5.0)
+    end
+
+    def collect_feed_config_queries(&block)
+      queries = []
+      callback = lambda do |*, payload|
+        next if payload[:name] == "SCHEMA" || payload[:cached]
+
+        sql = payload[:sql].to_s
+        queries << sql if sql.include?('"feed_configs"')
+      end
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record", &block)
+      queries
+    end
+
+    before { sign_in super_admin }
+
+    describe "GET /admin/advanced/feed_configs" do
+      it "allows the request and renders the index page" do
+        get_resource
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Feed Configurations")
+        expect(response.body).to include("Feed Config ##{top_config.id}")
+      end
+
+      it "supports sorting by newest and impressions" do
+        get admin_feed_configs_path(sort: "newest")
+        expect(response).to have_http_status(:ok)
+
+        get admin_feed_configs_path(sort: "impressions")
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "supports filtering by targeting_bucket via the filter parameter" do
+        digest_config = create(:feed_config, targeting_bucket: FeedConfig::BUCKET_DIGEST, feed_success_score: 42.0)
+        get admin_feed_configs_path(filter: FeedConfig::BUCKET_DIGEST)
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Feed Config ##{digest_config.id}")
+        expect(response.body).not_to include("Feed Config ##{top_config.id}")
+      end
+
+      it "prefers a config with impressions >= LOW_IMPRESSION_COUNT as the best performing config" do
+        untested_config = create(:feed_config, feed_success_score: 999.0, feed_impressions_count: 0)
+        low_impression_config = create(:feed_config, feed_success_score: 500.0, feed_impressions_count: 15)
+        get_resource
+        expect(response.body).to include("Feed Config ##{top_config.id}</h2>")
+        expect(response.body).not_to include("Feed Config ##{untested_config.id}</h2>")
+        expect(response.body).not_to include("Feed Config ##{low_impression_config.id}</h2>")
+      end
+
+      it "excludes archived feed configs from index and top performer by default" do
+        archived_config = create(
+          :feed_config,
+          feed_success_score: 999.0,
+          feed_impressions_count: 5000,
+          archived: true,
+        )
+        get_resource
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Feed Config ##{top_config.id}")
+        expect(response.body).not_to include("##{archived_config.id}</a>")
+      end
+
+      it "supports filtering by status via mode=archived and mode=all" do
+        archived_config = create(
+          :feed_config,
+          feed_success_score: 999.0,
+          feed_impressions_count: 5000,
+          archived: true,
+        )
+        get admin_feed_configs_path(mode: "archived")
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("##{archived_config.id}</a>")
+        expect(response.body).not_to include("##{other_config.id}</a>")
+
+        get admin_feed_configs_path(mode: "all")
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("##{archived_config.id}</a>")
+        expect(response.body).to include("##{top_config.id}</a>")
+      end
+
+      it "batches bucket stats and pool queries without N+1 or pagination COUNT(*) queries", :aggregate_failures do
+        stub_const("Admin::FeedConfigsController::PER_PAGE", 2)
+        create(:feed_config, targeting_bucket: FeedConfig::BUCKET_DIGEST, feed_success_score: 12.0)
+
+        queries = collect_feed_config_queries { get admin_feed_configs_path }
+
+        expect(response).to have_http_status(:ok)
+        expect(queries.size).to eq(4)
+        expect(queries.grep(/SELECT COUNT\(\*\) FROM/i)).to be_empty
+        expect(response.body).to include("page=2")
+      end
+
+      it "skips active pool queries when mode=archived", :aggregate_failures do
+        create(:feed_config, archived: true, feed_success_score: 80.0, feed_impressions_count: 500)
+
+        queries = collect_feed_config_queries { get admin_feed_configs_path(mode: "archived") }
+
+        expect(response).to have_http_status(:ok)
+        expect(queries.size).to eq(3)
+      end
+    end
+
+    describe "GET /admin/advanced/feed_configs/:id" do
+      it "renders the show view for the feed config including bucket and status badges" do
+        get admin_feed_config_path(top_config)
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Feed Config ##{top_config.id}")
+        expect(response.body).to include("Best in #{top_config.targeting_bucket}")
+        expect(response.body).to include("Active")
+        expect(response.body).to include("ai_disclosure_matching_weight")
+      end
+
+      it "skips bucket pool queries when rendering an archived feed config" do
+        archived_config = create(:feed_config, archived: true)
+
+        queries = collect_feed_config_queries { get admin_feed_config_path(archived_config) }
+
+        expect(response).to have_http_status(:ok)
+        expect(queries.size).to eq(1)
+        expect(response.body).to include("Archived")
+      end
+    end
+
+    describe "GET /admin/advanced/feed_configs/new" do
+      it "pre-populates the new form with attributes from the best performing config" do
+        get new_admin_feed_config_path
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include('value="10.0"')
+      end
+
+      it "pre-populates with specified clone_from_id config when passed and defaults 'all' to non-all bucket" do
+        get new_admin_feed_config_path(clone_from_id: other_config.id)
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include('value="5.0"')
+        expect(response.body).to include("selected=\"selected\" value=\"#{FeedConfig::BUCKET_FEED_CASUAL_USER}\"")
+      end
+
+      it "pre-populates from the best config for a specific bucket when filter is passed" do
+        digest_best = create(
+          :feed_config,
+          targeting_bucket: FeedConfig::BUCKET_DIGEST,
+          feed_success_score: 40.0,
+          feed_impressions_count: 100,
+          ai_disclosure_matching_weight: 7.5,
+        )
+        get new_admin_feed_config_path(filter: digest_best.targeting_bucket)
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include('value="7.5"')
+        expect(response.body).to include("selected=\"selected\" value=\"#{FeedConfig::BUCKET_DIGEST}\"")
+      end
+    end
+
+    describe "POST /admin/advanced/feed_configs" do
+      it "creates a new feed config", :aggregate_failures do
+        expect { post_resource }.to change(FeedConfig, :count).by(1)
+        new_config = FeedConfig.last
+        expect(new_config).to have_attributes(
+          ai_disclosure_matching_weight: 15.0,
+          autonomous_ai_penalty_weight: 25.0,
+          favorited_weight: 8.5,
+          user_follow_weight: 2.0,
+          semantic_similarity_weight: 12.0,
+          semantic_candidate_limit: 350,
+          feed_lookback_hours: 96,
+          published_at_diversity_weight: 4.5,
+        )
+        expect(response).to redirect_to(admin_feed_config_path(new_config))
+      end
+
+      it "treats a blank published_at_diversity_weight as disabled (0.0)" do
+        params[:feed_config][:published_at_diversity_weight] = ""
+
+        expect { post_resource }.to change(FeedConfig, :count).by(1)
+        expect(FeedConfig.last.published_at_diversity_weight).to eq(0.0)
+      end
+
+      it "re-renders the form for a negative published_at_diversity_weight" do
+        params[:feed_config][:published_at_diversity_weight] = -1
+
+        expect { post_resource }.not_to change(FeedConfig, :count)
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Published at diversity weight must be greater than or equal to 0")
+      end
+    end
+
+    describe "DELETE /admin/advanced/feed_configs/:id" do
+      it "destroys the feed config and redirects to index" do
+        expect do
+          delete admin_feed_config_path(other_config)
+        end.to change(FeedConfig, :count).by(-1)
+        expect(response).to redirect_to(admin_feed_configs_path)
+      end
+    end
+  end
+end

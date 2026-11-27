@@ -45,6 +45,11 @@ yarn-debug.log*
 .env.test.local
 .env.development*
 .env
+.env.kamal
+.env.kamal.*
+!.env.kamal.example
+.kamal/secrets.local
+.kamal/secrets.*.local
 
 # Ignore storybook static site generation
 app/javascript/storybook-static/
@@ -131,3 +136,13 @@ doc/
 
 # Local plan/design documents
 docs/plans/
+
+# Rust native extension build artifacts (keep precompiled platform directories under lib/forem_native/<platform>/)
+/gems/forem_native/target/
+/gems/forem_native/lib/forem_native/*.bundle
+/gems/forem_native/lib/forem_native/*.so
+/gems/forem_native/lib/forem_native/*.dll
+!/gems/forem_native/lib/forem_native/*/*.so
+!/gems/forem_native/lib/forem_native/*/*.bundle
+/gems/forem_native/ext/forem_native/Makefile
+

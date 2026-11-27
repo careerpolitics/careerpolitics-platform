@@ -6,6 +6,8 @@ require "sidekiq/sidekiq_connection_cleanup"
 require "sidekiq/transaction_safe_rescue"
 require "sidekiq/throttled"
 require "sidekiq/memory_killer"
+require "sidekiq/request_store_middleware"
+require "sidekiq/boot_memory_trimmer"
 
 module Sidekiq
   module Cron
@@ -51,7 +53,13 @@ Sidekiq.configure_server do |config|
   # Adjust Sidekiq's internal concurrency
   config.concurrency = sidekiq_concurrency if config.respond_to?(:concurrency=)
 
+  # Keep web-only code (controllers, policies, serializers) autoloadable but out of the boot-time
+  # eager load. This runs during initializers, before Rails eager loads the app.
+  Sidekiq::BootMemoryTrimmer.skip_eager_loading_web_only_code!
+
   config.on(:startup) do
+    Sidekiq::BootMemoryTrimmer.release_bootsnap_load_path_cache!
+
     # Disconnect the default Rails pool (which booted at 5 from RAILS_MAX_THREADS)
     ActiveRecord::Base.connection_pool.disconnect!
 
@@ -83,8 +91,11 @@ Sidekiq.configure_server do |config|
     # sidekiq-throttled wires itself up when `require "sidekiq/throttled"` is loaded:
     # it registers `Sidekiq::Throttled::Middlewares::Server` via its own
     # `Sidekiq.configure_server` block (see the gem's `lib/sidekiq/throttled.rb`).
+
+    # First in our chain so the middlewares below and the job all see a fresh RequestStore.
+    chain.prepend Sidekiq::RequestStoreMiddleware
     chain.add Sidekiq::TransactionSafeRescue
-    chain.add Sidekiq::HoneycombMiddleware
+    chain.add Sidekiq::HoneycombMiddleware if ApplicationConfig["HONEYCOMB_API_KEY"].present?
     chain.add SidekiqUniqueJobs::Middleware::Client
     chain.add SidekiqUniqueJobs::Middleware::Server
     chain.add Sidekiq::SidekiqConnectionCleanup

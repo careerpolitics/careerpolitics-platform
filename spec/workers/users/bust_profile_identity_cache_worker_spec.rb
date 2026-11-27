@@ -5,12 +5,54 @@ RSpec.describe Users::BustProfileIdentityCacheWorker, type: :worker do
 
   before do
     allow(EdgeCache::PurgeByKey).to receive(:call)
+    allow(EdgeCache::Bust).to receive(:call)
   end
 
-  it "busts the profile identity cache key" do
-    described_class.new.perform(user.id)
+  it "busts the profile identity cache key without hydrating the full user row" do
+    user
+    full_user_queries = []
+    callback = lambda do |*, payload|
+      full_user_queries << payload[:sql] if payload[:sql].include?('SELECT "users".*')
+    end
+
+    ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+      described_class.new.perform(user.id)
+    end
+
     expect(EdgeCache::PurgeByKey).to have_received(:call).with(
       user.profile_identity_record_key,
+      fallback_paths: user.profile_cache_bust_paths,
+    )
+    expect(EdgeCache::Bust).not_to have_received(:call)
+    expect(full_user_queries).to be_empty
+  end
+
+  it "passes current and previous username fallback paths without firing duplicate URL busts" do
+    user.update_columns(old_username: "thebitforge_dev", old_old_username: "thebitforge_old")
+
+    described_class.new.perform(user.id)
+
+    expect(EdgeCache::PurgeByKey).to have_received(:call).with(
+      user.profile_identity_record_key,
+      fallback_paths: [
+        user.path,
+        "/profile_preview_cards/#{user.id}",
+        "/api/users/#{user.id}",
+        "/thebitforge_dev",
+        "/thebitforge_old",
+      ],
+    )
+    expect(EdgeCache::Bust).not_to have_received(:call)
+  end
+
+  it "also purges a former owner's identity key when claiming their old_username" do
+    former_user = create(:user)
+    former_user.update_columns(old_username: user.username)
+
+    described_class.new.perform(user.id)
+
+    expect(EdgeCache::PurgeByKey).to have_received(:call).with(
+      [user.profile_identity_record_key, former_user.profile_identity_record_key],
       fallback_paths: user.profile_cache_bust_paths,
     )
   end

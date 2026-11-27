@@ -8,7 +8,7 @@
 .crayons-header {
   height: var(--header-height);
   background: var(--header-bg);
-  box-shadow: 0 1px 1px var(--header-shadow);
+  box-shadow: 0 1px 0 var(--header-border, var(--header-shadow));
   z-index: var(--z-sticky);
 
   .default-header & {
@@ -57,6 +57,16 @@
 .main-search-page {
   .crayons-textfield {
     padding-left: 40px;
+  }
+
+  .search-powered-by {
+    align-self: center;
+    flex-shrink: 0;
+    white-space: nowrap;
+
+    @media (min-width: $breakpoint-s) {
+      margin-top: var(--su-1);
+    }
   }
 }
 

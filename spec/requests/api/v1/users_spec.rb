@@ -63,15 +63,23 @@ RSpec.describe "Api::V1::Users" do
       expect(response_user.key?("followers_count")).to be false
     end
 
-    it "includes email if display_email_on_profile is set to true" do
+    it "doesn't include email for unauthenticated requests even if display_email_on_profile is true" do
       user.setting.update_column(:display_email_on_profile, true)
       get api_user_path("by_username"), params: { url: user.username }, headers: headers
+      response_user = response.parsed_body
+      expect(response_user).to have_key("email")
+      expect(response_user["email"]).to be_nil
+    end
+
+    it "includes email for authenticated requests if display_email_on_profile is set to true" do
+      user.setting.update_column(:display_email_on_profile, true)
+      get api_user_path("by_username"), params: { url: user.username }, headers: auth_headers
       response_user = response.parsed_body
       expect(response_user["email"]).to eq(user.email)
     end
 
     it "doesn't include email if display_email_on_profile is false" do
-      get api_user_path("by_username"), params: { url: user.username }, headers: headers
+      get api_user_path("by_username"), params: { url: user.username }, headers: auth_headers
       response_user = response.parsed_body
       expect(response_user.key?("email")).to be true
       expect(response_user["email"]).to be_nil
@@ -83,6 +91,78 @@ RSpec.describe "Api::V1::Users" do
       get api_user_path("by_username"), params: { url: user.username }, headers: headers
       response_user = response.parsed_body
       expect(response_user["badge_ids"]).to eq(badge_ids)
+    end
+
+    it "hydrates joined profile and setting attributes without extra queries" do
+      user.setting.update_column(:display_email_on_profile, true)
+      api_secret
+
+      queries = []
+      callback = ->(_name, _start, _finish, _id, payload) { queries << payload[:sql] unless payload[:name] == "SCHEMA" }
+
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        get api_user_path("by_username"), params: { url: user.username }, headers: auth_headers
+      end
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["email"]).to eq(user.email)
+      expect(queries.grep(/FROM "profiles"/i)).to be_empty
+      expect(queries.grep(/FROM "users_settings"/i)).to be_empty
+    end
+
+    describe "native vs Jbuilder parity and email visibility contract" do
+      let(:owner_secret) { create(:api_secret, user: user) }
+      let(:owner_headers) { headers.merge("api-key" => owner_secret.secret) }
+
+      before do
+        user.update!(name: "Ada <Lovelace> & Co.", created_at: Time.utc(2026, 1, 5, 8, 30, 0))
+        user.profile.update!(summary: "Line 1\nLine 2 🚀")
+        create(:badge_achievement, user: user)
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("TZ").and_return("Etc/UTC")
+      end
+
+      [
+        [:anonymous, false, false],
+        [:anonymous, true, false],
+        [:other_user, false, false],
+        [:other_user, true, true],
+        [:owner, false, true],
+        [:owner, true, true],
+      ].each do |caller_kind, display_email, expect_email|
+        it "matches Jbuilder byte-for-byte for #{caller_kind} when display_email_on_profile=#{display_email}",
+           :aggregate_failures do
+          user.setting.update_column(:display_email_on_profile, display_email)
+          req_headers = case caller_kind
+                        when :anonymous then headers
+                        when :other_user then auth_headers
+                        when :owner then owner_headers
+                        end
+
+          Time.use_zone("UTC") do
+            native_results = []
+            allow(ForemNative).to receive(:serialize_api_user_json).and_wrap_original do |method, *args, **kwargs|
+              method.call(*args, **kwargs).tap { |res| native_results << res }
+            end
+
+            get api_user_path(user.id), headers: req_headers
+            expect(response).to have_http_status(:ok)
+            native_body = response.body
+            native_media_type = response.media_type
+            expected_email = expect_email ? user.email : nil
+            expect(native_results.length).to eq(1)
+            expect(native_results.first).to be_a(String)
+            expect(response.parsed_body["email"]).to eq(expected_email)
+
+            allow(ForemNative).to receive(:serialize_api_user_json).and_return(nil)
+            get api_user_path(user.id), headers: req_headers
+            expect(response).to have_http_status(:ok)
+            expect(response.media_type).to eq(native_media_type)
+            expect(response.parsed_body["email"]).to eq(expected_email)
+            expect(native_body).to eq(response.body)
+          end
+        end
+      end
     end
   end
 
@@ -97,6 +177,142 @@ RSpec.describe "Api::V1::Users" do
     context "when unauthorized" do
       it "returns unauthorized" do
         get me_api_users_path, headers: headers.merge({ "api-key" => "invalid api key" })
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context "with delegated Bearer authentication" do
+      let(:signing_key) { OpenSSL::PKey::RSA.generate(2048) }
+      let(:issuer_user_id) { SecureRandom.uuid }
+      let(:delegated_user) { create(:user) }
+      let(:key_id) { "active-key" }
+      let(:jwks_client) { instance_double(DelegatedAccess::JwksClient) }
+      let(:verifier) do
+        DelegatedAccess::Verifier.new(
+          issuer: "https://issuer.example.test",
+          audience: "https://community.example.test",
+          owner_claim: "https://issuer.example.test/claims/user_id",
+          jwks_client: jwks_client,
+          maximum_token_lifetime: 60,
+          jwks_cache_lifetime: 60,
+        )
+      end
+      let(:delegated_config) do
+        ActiveSupport::OrderedOptions.new.tap do |config|
+          config.enabled = true
+          config.issuer = "https://issuer.example.test"
+          config.audience = "https://community.example.test"
+          config.identity_provider = Authentication::Providers.available.first.to_s
+          config.owner_claim = "https://issuer.example.test/claims/user_id"
+          config.jwks_uri = "https://issuer.example.test/.well-known/jwks.json"
+          config.verifier = verifier
+        end.freeze
+      end
+      let(:claims) do
+        {
+          "iss" => delegated_config.issuer,
+          "aud" => delegated_config.audience,
+          "sub" => issuer_user_id,
+          "client_id" => "trusted-client",
+          "scope" => "profile:read",
+          "iat" => Time.current.to_i,
+          "nbf" => Time.current.to_i,
+          "exp" => 30.seconds.from_now.to_i,
+          "jti" => SecureRandom.uuid,
+          delegated_config.owner_claim => delegated_user.id.to_s
+        }
+      end
+      let(:token) { JWT.encode(claims, signing_key, "RS256", { kid: key_id, typ: "at+jwt" }) }
+      let(:jwk) do
+        JWT::JWK.new(signing_key.public_key, key_id).export.transform_keys(&:to_s).merge(
+          "use" => "sig",
+          "alg" => "RS256",
+        )
+      end
+
+      before do
+        Identity.create!(user: delegated_user, provider: delegated_config.identity_provider, uid: issuer_user_id)
+        allow(Rails.application.config.x).to receive(:delegated_access).and_return(delegated_config)
+        allow(jwks_client).to receive(:fetch).and_return({ "keys" => [jwk] }.to_json)
+      end
+
+      it "returns the delegated user" do
+        get me_api_users_path, headers: headers.merge("Authorization" => "Bearer #{token}")
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body["id"]).to eq(delegated_user.id)
+      end
+
+      it "leaves scope authorization to the trusted delegation service" do
+        claims["scope"] = "articles:read"
+
+        get me_api_users_path, headers: headers.merge("Authorization" => "Bearer #{token}")
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "rejects a token whose owner claim does not match the linked Forem user" do
+        claims[delegated_config.owner_claim] = create(:user).id.to_s
+
+        get me_api_users_path, headers: headers.merge("Authorization" => "Bearer #{token}")
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+
+      it "rejects a suspended mapped user" do
+        delegated_user.add_role(:suspended)
+
+        get me_api_users_path, headers: headers.merge("Authorization" => "Bearer #{token}")
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+
+      it "rejects an unregistered mapped user" do
+        delegated_user.update!(registered: false)
+
+        get me_api_users_path, headers: headers.merge("Authorization" => "Bearer #{token}")
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+
+      it "returns service unavailable when no usable key set can be retrieved" do
+        allow(jwks_client).to receive(:fetch).and_raise(DelegatedAccess::JwksClient::Error)
+
+        get me_api_users_path, headers: headers.merge("Authorization" => "Bearer #{token}")
+
+        expect(response).to have_http_status(:service_unavailable)
+        expect(response.parsed_body).to eq("error" => "delegated access unavailable", "status" => 503)
+      end
+
+      it "does not fall back to a valid API key when Bearer appears in a malformed header" do
+        get me_api_users_path, headers: auth_headers.merge("Authorization" => "Basic ignored, Bearer invalid")
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context "with a Bearer header while delegated access is disabled" do
+      before do
+        disabled = ActiveSupport::OrderedOptions.new.tap { |config| config.enabled = false }.freeze
+        allow(Rails.application.config.x).to receive(:delegated_access).and_return(disabled)
+      end
+
+      it "ignores the Bearer header and authenticates with the api-key as before" do
+        get me_api_users_path, headers: auth_headers.merge("Authorization" => "Bearer some.jwt.token")
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body["id"]).to eq(api_secret.user.id)
+      end
+
+      it "ignores a malformed Bearer header too" do
+        get me_api_users_path, headers: auth_headers.merge("Authorization" => "Basic ignored, Bearer invalid")
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "does not treat a Bearer token as a credential" do
+        get me_api_users_path, headers: headers.merge("Authorization" => "Bearer some.jwt.token")
+
         expect(response).to have_http_status(:unauthorized)
       end
     end
@@ -127,6 +343,16 @@ RSpec.describe "Api::V1::Users" do
 
         expect(response_user["badge_ids"]).to eq(user.badge_ids)
         expect(response_user["followers_count"]).to eq(user.followers_count)
+      end
+
+      it "always includes the user's own email regardless of display_email_on_profile setting" do
+        user.setting.update_column(:display_email_on_profile, false)
+
+        get me_api_users_path, headers: auth_headers
+
+        expect(response).to have_http_status(:ok)
+        response_user = response.parsed_body
+        expect(response_user["email"]).to eq(user.email)
       end
 
       it "returns 200 if no authentication and the Forem instance is set to private but user is authenticated" do
@@ -162,6 +388,33 @@ RSpec.describe "Api::V1::Users" do
         get me_api_users_path, headers: auth_headers
         response_user = response.parsed_body
         expect(response_user["followers_count"]).to eq(0)
+      end
+
+      it "matches Jbuilder byte-for-byte via ForemNative under UTC", :aggregate_failures do
+        user.update!(name: "Ada <Me> & Co.", created_at: Time.utc(2026, 1, 5, 8, 30, 0))
+        user.setting.update_column(:display_email_on_profile, false)
+        create(:badge_achievement, user: user)
+        create(:follow, followable: user)
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("TZ").and_return("Etc/UTC")
+
+        Time.use_zone("UTC") do
+          native_results = []
+          allow(ForemNative).to receive(:serialize_api_user_json).and_wrap_original do |method, *args, **kwargs|
+            method.call(*args, **kwargs).tap { |res| native_results << res }
+          end
+
+          get me_api_users_path, headers: auth_headers
+          native_body = response.body
+          expect(native_results.length).to eq(1)
+          expect(native_results.first).to be_a(String)
+          expect(response.parsed_body["email"]).to eq(user.email)
+          expect(response.parsed_body["followers_count"]).to eq(1)
+
+          allow(ForemNative).to receive(:serialize_api_user_json).and_return(nil)
+          get me_api_users_path, headers: auth_headers
+          expect(native_body).to eq(response.body)
+        end
       end
     end
   end
@@ -202,14 +455,26 @@ RSpec.describe "Api::V1::Users" do
         expect(response).to have_http_status(:ok)
       end
 
-      it "finds a user" do
-        get api_users_search_path(email: user.email), headers: auth_headers
+      it "finds a user without issuing separate profile or setting queries" do
+        queries = []
+        callback = lambda do |_name, _start, _finish, _id, payload|
+          queries << payload[:sql] unless payload[:name] == "SCHEMA"
+        end
+
+        ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+          get api_users_search_path(email: user.email), headers: auth_headers
+        end
 
         response_user = response.parsed_body
         expect(response_user["type_of"]).to eq("user")
         %w[id username name twitter_username github_username].each do |attr|
           expect(response_user[attr]).to eq(user.public_send(attr))
         end
+        %w[summary website_url location].each do |attr|
+          expect(response_user[attr]).to eq(user.profile.public_send(attr))
+        end
+        expect(queries.grep(/FROM "profiles"/i)).to be_empty
+        expect(queries.grep(/FROM "users_settings"/i)).to be_empty
       end
 
       it "returns not found when no email is passed" do
@@ -220,6 +485,33 @@ RSpec.describe "Api::V1::Users" do
       it "returns not found when user is not found" do
         get api_users_search_path(email: "hello@hello.edu"), headers: auth_headers
         expect(response).to have_http_status(:not_found)
+      end
+
+      it "matches Jbuilder byte-for-byte via ForemNative under UTC for both email visibility states",
+         :aggregate_failures do
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("TZ").and_return("Etc/UTC")
+
+        [false, true].each do |display_email|
+          user.setting.update_column(:display_email_on_profile, display_email)
+
+          Time.use_zone("UTC") do
+            native_results = []
+            allow(ForemNative).to receive(:serialize_api_user_json).and_wrap_original do |method, *args, **kwargs|
+              method.call(*args, **kwargs).tap { |res| native_results << res }
+            end
+
+            get api_users_search_path(email: user.email), headers: auth_headers
+            native_body = response.body
+            expect(native_results.length).to eq(1)
+            expect(native_results.first).to be_a(String)
+            expect(response.parsed_body["email"]).to eq(display_email ? user.email : nil)
+
+            allow(ForemNative).to receive(:serialize_api_user_json).and_return(nil)
+            get api_users_search_path(email: user.email), headers: auth_headers
+            expect(native_body).to eq(response.body)
+          end
+        end
       end
     end
   end

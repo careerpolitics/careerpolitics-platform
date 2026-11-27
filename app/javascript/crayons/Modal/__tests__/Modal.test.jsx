@@ -23,6 +23,52 @@ describe('Modal', () => {
     expect(results).toHaveNoViolations();
   });
 
+  it('uses the title as the dialog accessible name', () => {
+    const { getByRole } = render(
+      <Modal title="Delete your account">This is the modal body content</Modal>,
+    );
+
+    expect(getByRole('dialog')).toHaveAccessibleName('Delete your account');
+  });
+
+  it('uses the element referenced by describedBy as the accessible description', () => {
+    const { getByRole } = render(
+      <Modal title="Delete your account" describedBy="modal-description">
+        <p id="modal-description">This cannot be undone</p>
+      </Modal>,
+    );
+
+    expect(getByRole('dialog')).toHaveAccessibleDescription(
+      'This cannot be undone',
+    );
+  });
+
+  it('has no accessible description by default', () => {
+    const { getByRole } = render(
+      <Modal title="Delete your account">This is the modal body content</Modal>,
+    );
+
+    expect(getByRole('dialog')).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('falls back to a generic accessible name when no title is provided', () => {
+    const { getByRole } = render(
+      <Modal showHeader={false}>
+        <button>Modal content button</button>
+      </Modal>,
+    );
+
+    expect(getByRole('dialog')).toHaveAccessibleName('modal');
+  });
+
+  it('falls back to a generic accessible name when the title is empty', () => {
+    const { getByRole } = render(
+      <Modal title="">This is the modal body content</Modal>,
+    );
+
+    expect(getByRole('dialog')).toHaveAccessibleName('modal');
+  });
+
   it('should trap focus inside the modal by default', async () => {
     const { getByText, getByLabelText } = render(
       <div>

@@ -28,6 +28,25 @@ RSpec.describe Html::Parser, type: :service do
       parsed_html = described_class.new(html).remove_nested_linebreak_in_list.html
       expect(parsed_html).not_to include("<br>")
     end
+
+    it "removes uppercase linebreaks nested in lists" do
+      parsed_html = described_class.new("<ul><li>a<BR>b</li></ul>").remove_nested_linebreak_in_list.html
+      expect(parsed_html).not_to include("<br>")
+    end
+  end
+
+  describe "#wrap_all_tables with uppercase tags" do
+    it "wraps uppercase table tags" do
+      parsed_html = described_class.new("<TABLE><tr><td>a</td></tr></TABLE>").wrap_all_tables.html
+      expect(parsed_html).to include("table-wrapper-paragraph")
+    end
+  end
+
+  describe "#add_control_class_to_codeblock with entity-encoded class" do
+    it "still adds the control class when the class marker uses character references" do
+      parsed_html = described_class.new('<div class="high&#108;ight">x</div>').add_control_class_to_codeblock.html
+      expect(parsed_html).to include("js-code-highlight")
+    end
   end
 
   describe "#prefix_all_images" do
@@ -72,10 +91,20 @@ RSpec.describe Html::Parser, type: :service do
       end
 
       it "detects height and width" do
-        allow(FastImage).to receive(:size).and_return([100, 200])
+        allow(SafeFastImage).to receive(:size).and_return([100, 200])
         html = "<img src='https://image.com/image.jpg'>"
         parsed_html = described_class.new(html).prefix_all_images(width: 350, synchronous_detail_detection: true).html
         expect(parsed_html).to include("height=\"200\"")
+      end
+
+      it "blocks SSRF to internal metadata URLs during synchronous_detail_detection" do
+        metadata_url = "http://169.254.169.254/latest/meta-data/"
+        stub_request(:get, metadata_url).to_return(status: 200, body: "secret")
+        html = "<img src='#{metadata_url}'>"
+
+        described_class.new(html).prefix_all_images(width: 350, synchronous_detail_detection: true)
+
+        expect(a_request(:get, metadata_url)).not_to have_been_made
       end
     end
   end
@@ -99,9 +128,31 @@ RSpec.describe Html::Parser, type: :service do
     end
 
     it "wraps image in link" do
-      html = "<p><img src='https://image.com/image.jpg'></p"
+      html = "<p><img src='https://image.com/image.jpg'></p>"
       parsed_html = described_class.new(html).wrap_all_images_in_links.html
-      expect(parsed_html).to include("<a")
+      expected = "<a href=\"https://image.com/image.jpg\" class=\"article-body-image-wrapper\">" \
+                 "<img src=\"https://image.com/image.jpg\"></a>"
+      expect(parsed_html).to include(expected)
+    end
+
+    it "does not wrap images already inside a link" do
+      html = "<p><a href='https://example.com'><img src='https://image.com/image.jpg'></a></p>"
+      parsed_html = described_class.new(html).wrap_all_images_in_links.html
+      doc = Nokogiri::HTML.fragment(parsed_html)
+      expect(doc.css("a").size).to eq(1)
+      expect(doc.at_css("a")["href"]).to eq("https://example.com")
+    end
+
+    it "safely escapes src attributes containing quotes without injecting event handlers" do
+      html = "<p><img src=\"https://github.com/any/repo/badge.svg?x=&#x27;onmouseover=&#x27;alert(1)\" alt=\"B\"></p>"
+      parsed_html = described_class.new(html).wrap_all_images_in_links.html
+      doc = Nokogiri::HTML.fragment(parsed_html)
+
+      link = doc.at_css("a")
+      expect(link).to be_present
+      expect(link["onmouseover"]).to be_nil
+      expect(link["class"]).to eq("article-body-image-wrapper")
+      expect(doc.xpath("//*[@onmouseover]")).to be_empty
     end
   end
 
@@ -197,6 +248,16 @@ RSpec.describe Html::Parser, type: :service do
       html = "<div class='highlight__panel'>Hello World</div>"
       parsed_html = described_class.new(html).add_fullscreen_button_to_panel.html
       expect(parsed_html).to include("Enter fullscreen mode")
+    end
+
+    it "skips SVG rendering and DOM parsing when no highlight panel is present" do
+      parser = described_class.new("<p>Hello World</p>")
+      allow(parser).to receive(:inline_svg_tag)
+      allow(Nokogiri::HTML).to receive(:fragment)
+
+      expect(parser.add_fullscreen_button_to_panel.html).to eq("<p>Hello World</p>")
+      expect(parser).not_to have_received(:inline_svg_tag)
+      expect(Nokogiri::HTML).not_to have_received(:fragment)
     end
   end
 
@@ -406,6 +467,137 @@ RSpec.describe Html::Parser, type: :service do
       parsed_html = described_class.new(html).wrap_mentions_with_links.html
       expect(parsed_html).not_to include("\n")
     end
+
+    it "batches User lookups when multiple candidate mentions exist" do
+      relation = Class.new do
+        def initialize(values)
+          @values = values
+        end
+
+        def pluck(_column)
+          @values
+        end
+      end.new([user.username])
+      allow(User).to receive(:where).with(username: [user.username, "missing_user"]).and_return(relation)
+      allow(User).to receive(:find_by)
+
+      html = "<p>@#{user.username} and @missing_user</p>"
+      parsed_html = described_class.new(html).wrap_mentions_with_links.html
+
+      expect(User).to have_received(:where).with(username: [user.username, "missing_user"])
+      expect(User).not_to have_received(:find_by)
+      expect(parsed_html).to include("@#{user.username}</a>")
+      expect(parsed_html).to include("and @missing_user</p>")
+    end
+  end
+
+  describe "fast substring guards and native transforms" do
+    it "skips DOM parsing in #prefix_all_images when no <img> tag is present" do
+      allow(Nokogiri::HTML).to receive(:fragment)
+      parser = described_class.new("<p>No images here</p>")
+
+      expect(parser.prefix_all_images.html).to eq("<p>No images here</p>")
+      expect(Nokogiri::HTML).not_to have_received(:fragment)
+    end
+
+    it "skips DOM parsing in #transform_markdown_alerts when no alert marker is present" do
+      allow(Nokogiri::HTML).to receive(:fragment)
+      parser = described_class.new("<blockquote><p>Just a quote</p></blockquote>")
+
+      expect(parser.transform_markdown_alerts.html).to eq("<blockquote><p>Just a quote</p></blockquote>")
+      expect(Nokogiri::HTML).not_to have_received(:fragment)
+    end
+
+    it "normalizes <video> elements in #enforce_gif_like_videos without DOM parsing" do
+      allow(Nokogiri::HTML).to receive(:fragment)
+      html = '<p><video src="https://example.com/clip.mp4"></video></p>'
+      parsed_html = described_class.new(html).enforce_gif_like_videos.html
+
+      expect(Nokogiri::HTML).not_to have_received(:fragment)
+      expect(parsed_html).to include('data-gif-video="true"', 'autoplay="autoplay"', 'preload="metadata"')
+    end
+
+    it "prefixes <img> elements in #prefix_all_images without DOM parsing" do
+      allow(Nokogiri::HTML).to receive(:fragment)
+      html = '<p><img src="https://media.giphy.com/media/abc/giphy.gif" alt="gif"></p>'
+      parsed_html = described_class.new(html).prefix_all_images.html
+
+      expect(Nokogiri::HTML).not_to have_received(:fragment)
+      expect(parsed_html).to eq('<p><img src="https://i.giphy.com/media/abc/giphy.gif" alt="gif" loading="lazy"></p>')
+    end
+
+    it "transforms markdown alerts in #transform_markdown_alerts without DOM parsing" do
+      allow(Nokogiri::HTML).to receive(:fragment)
+      html = "<blockquote>\n<p>[!TIP]\nUse Rust.</p>\n</blockquote>"
+      parsed_html = described_class.new(html).transform_markdown_alerts.html
+
+      expect(Nokogiri::HTML).not_to have_received(:fragment)
+      expect(parsed_html).to include('data-alert="tip"', 'data-alert-label="tip"', "<p>Use Rust.</p>")
+    end
+
+    it "wraps figcaptions in #wrap_all_figures_with_tags without DOM parsing" do
+      allow(Nokogiri).to receive(:HTML)
+      html = "<p>Statement</p>\n<figcaption>A fig</figcaption>"
+      parsed_html = described_class.new(html).wrap_all_figures_with_tags.html
+
+      expect(Nokogiri).not_to have_received(:HTML)
+      expect(parsed_html).to eq("<figure><p>Statement</p>\n<figcaption>A fig</figcaption></figure>\n")
+    end
+
+    it "defers cleanly in native_prefix_images_config when asset_host is a callable Proc" do
+      allow(ActionController::Base).to receive(:asset_host).and_return(->(_src) { "https://cdn.example.com" })
+
+      expect(described_class.native_prefix_images_config).to be_nil
+    end
+
+    it "preserves HTML5 elements, attributes, and image destinations across native and fallback #finalize",
+       :aggregate_failures do
+      alice = create(:user, username: "alice_native_finalize")
+      markdown = <<~MD
+        Hello @#{alice.username} and [external](https://example.com/docs).
+
+        ![gif](https://media.giphy.com/media/abc/giphy.gif)
+        <figcaption>Caption text</figcaption>
+
+        > [!TIP]
+        > Use Rust for hot paths.
+      MD
+      allow(described_class).to receive(:alert_labels)
+        .and_return(["Note", "Ask @#{alice.username}", "Important", "Warning", "Caution"])
+
+      native_results = []
+      allow(ForemNative).to receive(:postprocess_rendered_html).and_wrap_original do |method, *args, **kwargs|
+        method.call(*args, **kwargs).tap { |res| native_results << res }
+      end
+      native_html = MarkdownProcessor::Parser.new(markdown).finalize
+      expect(native_results.length).to eq(1)
+      expect(native_results.first).to be_a(String)
+
+      allow(ForemNative).to receive(:postprocess_rendered_html).and_return(nil)
+      fallback_html = MarkdownProcessor::Parser.new(markdown).finalize
+
+      expect(native_html).to eq(fallback_html)
+      native_doc = Nokogiri::HTML5.fragment(native_html)
+      fallback_doc = Nokogiri::HTML5.fragment(fallback_html)
+      expect(native_doc.css("*").map(&:name)).to eq(fallback_doc.css("*").map(&:name))
+      expect(native_doc.css("img").pluck("src")).to eq(fallback_doc.css("img").pluck("src"))
+      expect(native_doc.css("a").pluck("href")).to eq(fallback_doc.css("a").pluck("href"))
+      expect(native_doc.css("blockquote[data-alert='tip'] p[data-alert-label='tip'] a.mentioned-user").size).to eq(1)
+    end
+
+    it "reuses FULLSCREEN_ACTION_CACHE without re-parsing inline SVGs on cache hits", :aggregate_failures do
+      described_class.new("").fullscreen_action_html
+
+      parser = described_class.new("")
+      allow(parser).to receive(:inline_svg_tag).and_call_original
+      allow(Nokogiri::XML::Document).to receive(:parse).and_call_original
+
+      action_html = parser.fullscreen_action_html
+
+      expect(parser).not_to have_received(:inline_svg_tag)
+      expect(Nokogiri::XML::Document).not_to have_received(:parse)
+      expect(action_html).to include("js-fullscreen-code-action")
+    end
   end
 
   describe "#parse_emojis" do
@@ -426,23 +618,32 @@ RSpec.describe Html::Parser, type: :service do
       expect(html_parser).to be_a described_class
     end
 
-    # rubocop:disable Rails/DynamicFindBy
     it "converts emoji names wrapped in colons into unicode" do
-      joy_emoji_unicode = Emoji.find_by_alias("joy").raw
+      joy_emoji_unicode = ForemNative.emoji_by_alias("joy")
       parsed_html = described_class.new(":joy:").parse_emojis.html
       expect(parsed_html).to include(joy_emoji_unicode)
     end
 
     it "converts disability emojis as well", :aggregate_failures do
-      disability_emojis = %w[
-        guide_dog service_dog person_with_probing_cane man_with_probing_cane woman_with_probing_cane probing_cane
-        person_in_motorized_wheelchair man_in_motorized_wheelchair woman_in_motorized_wheelchair
-        person_in_manual_wheelchair man_in_manual_wheelchair woman_in_manual_wheelchair manual_wheelchair
-        motorized_wheelchair wheelchair
-      ]
+      disability_emojis = {
+        "guide_dog" => "🦮",
+        "service_dog" => "🐕‍🦺",
+        "person_with_probing_cane" => "🧑‍🦯",
+        "man_with_probing_cane" => "👨‍🦯",
+        "woman_with_probing_cane" => "👩‍🦯",
+        "probing_cane" => "🦯",
+        "person_in_motorized_wheelchair" => "🧑‍🦼",
+        "man_in_motorized_wheelchair" => "👨‍🦼",
+        "woman_in_motorized_wheelchair" => "👩‍🦼",
+        "person_in_manual_wheelchair" => "🧑‍🦽",
+        "man_in_manual_wheelchair" => "👨‍🦽",
+        "woman_in_manual_wheelchair" => "👩‍🦽",
+        "manual_wheelchair" => "🦽",
+        "motorized_wheelchair" => "🦼",
+        "wheelchair" => "♿"
+      }
 
-      disability_emojis.each do |emoji|
-        unicode = Emoji.find_by_alias(emoji).raw
+      disability_emojis.each do |emoji, unicode|
         parsed_html = described_class.new(":#{emoji}:").parse_emojis.html
         expect(parsed_html).to include(unicode)
       end
@@ -453,6 +654,5 @@ RSpec.describe Html::Parser, type: :service do
       parsed_html = described_class.new(emoji_text).parse_emojis.html
       expect(parsed_html).to include(emoji_text)
     end
-    # rubocop:enable Rails/DynamicFindBy
   end
 end

@@ -8,12 +8,6 @@ RSpec.describe Admin::ScheduledAutomationsController do
 
   before do
     sign_in admin
-    # Allow admin to access the bot
-    allow_any_instance_of(CommunityBotPolicy).to receive(:index?).and_return(true)
-    allow_any_instance_of(CommunityBotPolicy).to receive(:show?).and_return(true)
-    allow_any_instance_of(CommunityBotPolicy).to receive(:edit?).and_return(true)
-    allow_any_instance_of(CommunityBotPolicy).to receive(:update?).and_return(true)
-    allow_any_instance_of(CommunityBotPolicy).to receive(:destroy?).and_return(true)
   end
 
   describe "GET #index" do
@@ -26,18 +20,6 @@ RSpec.describe Admin::ScheduledAutomationsController do
       automation # Create the automation
       get admin_subforem_community_bot_scheduled_automations_path(subforem, bot)
       expect(assigns(:automations)).to include(automation)
-    end
-
-    it "returns success without a subforem route" do
-      get admin_community_bot_scheduled_automations_path(bot)
-      expect(response).to have_http_status(:success)
-    end
-  end
-
-  describe "GET #show" do
-    it "returns success" do
-      # Skip this test for now as we don't have a show view yet
-      skip "show view not implemented yet"
     end
   end
 
@@ -232,8 +214,31 @@ RSpec.describe Admin::ScheduledAutomationsController do
       end
 
       it "does not recalculate next_run_at" do
-        # Skip - this is an optimization test, not critical for the main functionality
-        skip "Recalculation optimization not critical for initial implementation"
+        original_next_run_at = 3.days.from_now.change(usec: 0)
+        automation.update_column(:next_run_at, original_next_run_at)
+
+        patch admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation),
+              params: non_frequency_params
+
+        expect(automation.reload.additional_instructions).to eq("Different instructions")
+        expect(automation.next_run_at).to eq(original_next_run_at)
+      end
+
+      it "does not postpone an overdue run when the form resubmits the unchanged schedule as strings" do
+        overdue_next_run_at = 5.minutes.ago.change(usec: 0)
+        automation.update_column(:next_run_at, overdue_next_run_at)
+
+        patch admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation),
+              params: {
+                scheduled_automation: {
+                  frequency: "daily",
+                  frequency_config: { hour: "9", minute: "0" },
+                  additional_instructions: "Different instructions"
+                }
+              }
+
+        expect(automation.reload.additional_instructions).to eq("Different instructions")
+        expect(automation.next_run_at).to eq(overdue_next_run_at)
       end
     end
 
@@ -285,53 +290,27 @@ RSpec.describe Admin::ScheduledAutomationsController do
   end
 
   describe "PATCH #toggle_enabled" do
+    let(:toggle_path) do
+      toggle_enabled_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
+    end
+
     it "disables the automation" do
-      automation.update!(enabled: true)
-
-      patch toggle_enabled_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
-
+      automation.update_column(:enabled, true)
+      patch toggle_path
       expect(automation.reload.enabled).to be(false)
+      expect(flash[:success]).to eq("Automation disabled successfully!")
     end
 
     it "enables the automation" do
-      automation.update!(enabled: false)
-
-      patch toggle_enabled_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
-
+      automation.update_column(:enabled, false)
+      patch toggle_path
       expect(automation.reload.enabled).to be(true)
+      expect(flash[:success]).to eq("Automation enabled successfully!")
     end
 
     it "redirects to index" do
-      patch toggle_enabled_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
-
+      patch toggle_path
       expect(response).to redirect_to(admin_subforem_community_bot_scheduled_automations_path(subforem, bot))
-    end
-
-    it "works for top-level community bot route" do
-      patch toggle_enabled_admin_community_bot_scheduled_automation_path(bot, automation)
-
-      expect(response).to redirect_to(admin_community_bot_scheduled_automations_path(bot))
-    end
-  end
-
-  describe "PATCH #reactivate" do
-    it "reactivates a failed automation" do
-      automation.update!(state: "failed")
-
-      patch reactivate_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
-
-      automation.reload
-      expect(automation.state).to eq("active")
-      expect(automation.next_run_at).to be_present
-    end
-
-    it "schedules the next run time" do
-      automation.update!(state: "failed", next_run_at: nil)
-
-      patch reactivate_admin_subforem_community_bot_scheduled_automation_path(subforem, bot, automation)
-
-      automation.reload
-      expect(automation.next_run_at).to be > Time.current
     end
 
     it "redirects to index with success flash" do

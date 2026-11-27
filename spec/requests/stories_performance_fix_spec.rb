@@ -18,7 +18,7 @@ RSpec.describe "StoriesPerformanceFix", type: :request do
       # Create articles to trigger sticky nav suggestions
       create_list(:article, 3, user: user, published: true, cached_tag_list: "ruby")
       career_articles = create_list(:article, 3, published: true, cached_tag_list: "career",
-                                    public_reactions_count: 50)
+                                                 score: 50, comment_score: 20)
       career_articles.each { |a| a.update_columns(published_at: 1.day.ago) }
     end
 
@@ -54,14 +54,32 @@ RSpec.describe "StoriesPerformanceFix", type: :request do
     end
 
     it "renders user profile page without MissingAttributeError" do
-      # limited_column_select provides: path, title, id, published, comments_count,
+      # minimal_feed_column_select provides: path, title, id, published, comments_count,
       # public_reactions_count, cached_tag_list, main_image, main_image_background_hex_color,
       # updated_at, slug, video, user_id, organization_id, video_source_url, video_code,
       # video_thumbnail_url, video_closed_caption_track_url, cached_user, cached_organization,
       # published_at, crossposted_at, description, reading_time, video_duration_in_seconds,
-      # score, last_comment_at, main_image_height, type_of, edited_at, processed_html, subforem_id
+      # score, last_comment_at, main_image_height, type_of, edited_at, subforem_id
       get "/#{user.username}"
       expect(response).to have_http_status(:ok)
+    end
+
+    it "does not load processed_html for profile stories", :aggregate_failures do
+      create(:profile_pin, profile: user, pinnable: articles.first)
+      story_queries = []
+      counter = lambda do |_name, _start, _finish, _id, payload|
+        sql = payload[:sql]
+        story_queries << sql if sql.start_with?("SELECT \"articles\".\"path\", \"articles\".\"title\"")
+      end
+
+      ActiveSupport::Notifications.subscribed(counter, "sql.active_record") do
+        get "/#{user.username}"
+      end
+
+      expect(response).to have_http_status(:ok)
+      expect(story_queries.size).to eq(2)
+      expect(story_queries).to all(exclude("processed_html"))
+      articles.each { |article| expect(response.body).to include(article.title) }
     end
 
     it "renders all article titles on the profile page" do
@@ -76,6 +94,32 @@ RSpec.describe "StoriesPerformanceFix", type: :request do
       get "/#{user.username}"
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("min read")
+    end
+
+    context "with context notes" do
+      before do
+        create(:context_note, article: articles.first, content: "first note")
+        create(:context_note, article: articles.first, content: "second note")
+        create(:context_note, article: articles.last, content: "pinned note")
+        create(:profile_pin, profile: user, pinnable: articles.last)
+      end
+
+      it "preloads context notes in one query and renders each article's first note", :aggregate_failures do
+        context_note_queries = 0
+        counter = lambda do |_name, _start, _finish, _id, payload|
+          context_note_queries += 1 if payload[:sql].include?("\"context_notes\"")
+        end
+
+        ActiveSupport::Notifications.subscribed(counter, "sql.active_record") do
+          get "/#{user.username}"
+        end
+
+        expect(response).to have_http_status(:ok)
+        expect(context_note_queries).to eq(1)
+        expect(response.body).to include("first note")
+        expect(response.body).to include("pinned note")
+        expect(response.body).not_to include("second note")
+      end
     end
 
     context "with pinned articles" do

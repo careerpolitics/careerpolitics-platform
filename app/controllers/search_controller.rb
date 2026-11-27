@@ -54,14 +54,13 @@ class SearchController < ApplicationController
   VALID_SORT_DIRECTIONS = %i[asc desc].freeze
 
   def tags
-    result = Search::Tag.search_documents(term: params[:name])
-    render json: { result: result }
+    result = Search::Tag.search_documents(term: params[:name], format: :json)
+    render_search_result(result)
   end
 
   def listings
     render json: { result: [] }
   end
-
 
   def usernames
     context = commentable_context(params[:context_type])&.find(params[:context_id])
@@ -72,27 +71,33 @@ class SearchController < ApplicationController
       context: context,
       priority_user_ids: priority_ids,
       recent_user_ids: current_user&.cached_recent_user_ids,
-      requesting_user_id: current_user&.id
+      requesting_user_id: current_user&.id,
+      format: :json,
     )
 
-    render json: { result: result }
+    render_search_result(result)
   end
 
   # rubocop:disable Metrics/PerceivedComplexity, Metrics/CyclomaticComplexity
   def feed_content
+    requested_page = (feed_params[:page] || params[:page]).to_i
+    if requested_page >= Homepage::ArticlesQuery::MAX_PAGE
+      render json: { result: [] }
+      return
+    end
+
     class_name = feed_params[:class_name].to_s.inquiry
 
-    is_homepage_search = (
+    is_homepage_search =
       class_name.Article? &&
       feed_params[:search_fields].blank? &&
       feed_params[:sort_by].present?
-    )
 
     # If Algolia is configured and it's not a homepage search, return blank response
     algolia_configured = (ApplicationConfig["ALGOLIA_APPLICATION_ID"].present? &&
                           ApplicationConfig["ALGOLIA_API_KEY"].present?) ||
-                         (Settings::General.algolia_application_id.present? &&
-                          Settings::General.algolia_api_key.present?)
+      (Settings::General.algolia_application_id.present? &&
+       Settings::General.algolia_api_key.present?)
 
     if algolia_configured && !is_homepage_search
       render json: { result: [] }
@@ -104,7 +109,7 @@ class SearchController < ApplicationController
 
     result =
       if class_name.blank?
-        search_postgres_article
+        search_postgres_article(format: :json)
       elsif is_homepage_search
         # NOTE: published_at is sent from the frontend in the following ES-friendly format:
         # => {"published_at"=>{"gte"=>"2021-04-06T14:53:23Z"}}
@@ -128,6 +133,7 @@ class SearchController < ApplicationController
           sort_direction: params[:sort_direction],
           page: params[:page],
           per_page: params[:per_page],
+          format: :json,
         )
       elsif class_name.Comment?
         Search::Comment.search_documents(
@@ -136,6 +142,7 @@ class SearchController < ApplicationController
           sort_by: feed_params[:sort_by],
           sort_direction: feed_params[:sort_direction],
           term: feed_params[:search_fields],
+          format: :json,
         )
       elsif class_name.Organization?
         Search::Organization.search_documents(
@@ -144,6 +151,7 @@ class SearchController < ApplicationController
           sort_by: feed_params[:sort_by],
           sort_direction: feed_params[:sort_direction],
           term: feed_params[:search_fields],
+          format: :json,
         )
       elsif class_name.PodcastEpisode?
         Search::PodcastEpisode.search_documents(
@@ -152,6 +160,7 @@ class SearchController < ApplicationController
           sort_by: feed_params[:sort_by],
           sort_direction: feed_params[:sort_direction],
           term: feed_params[:search_fields],
+          format: :json,
         )
       elsif class_name.User?
         Search::User.search_documents(
@@ -160,14 +169,16 @@ class SearchController < ApplicationController
           per_page: feed_params[:per_page],
           sort_by: feed_params[:sort_by] == "published_at" ? :created_at : nil,
           sort_direction: feed_params[:sort_direction],
+          format: :json,
         )
       elsif class_name.Article?
-        search_postgres_article
+        search_postgres_article(format: :json)
       elsif class_name.Tag?
         Search::Tag.search_documents(
           term: feed_params[:search_fields],
           page: feed_params[:page],
           per_page: feed_params[:per_page],
+          format: :json,
         )
       elsif class_name.JobPost?
         Search::JobPost.search_documents(
@@ -186,7 +197,8 @@ class SearchController < ApplicationController
           term: feed_params[:search_fields],
           )
       end
-    render json: { result: result }
+
+    render_search_result(result)
   end
   # rubocop:enable Metrics/PerceivedComplexity, Metrics/CyclomaticComplexity
 
@@ -201,18 +213,31 @@ class SearchController < ApplicationController
       tags: reaction_params[:tag_names],
       term: reaction_params[:search_fields],
       subforem_id: RequestStore.store[:subforem_id],
+      format: :json,
     )
 
-    render json: { result: result[:items], total: result[:total] }
+    if result.is_a?(Homepage::ArticleSerializer::EncodedJson)
+      render json: result.to_str
+    else
+      render json: { result: result[:items], total: result[:total] }
+    end
   end
 
   private
+
+  def render_search_result(result)
+    if result.is_a?(Homepage::ArticleSerializer::EncodedJson)
+      render json: result.to_str
+    else
+      render json: { result: result }
+    end
+  end
 
   def commentable_context(context_type)
     context_type.constantize if Comment::COMMENTABLE_TYPES.include?(context_type)
   end
 
-  def search_postgres_article
+  def search_postgres_article(format: :hash)
     Search::Article.search_documents(
       term: feed_params[:search_fields],
       user_id: feed_params[:user_id],
@@ -220,6 +245,7 @@ class SearchController < ApplicationController
       sort_direction: feed_params[:sort_direction],
       page: feed_params[:page],
       per_page: feed_params[:per_page],
+      format: format,
     )
   end
 
@@ -240,8 +266,16 @@ class SearchController < ApplicationController
   end
 
   def format_integer_params
-    params[:page] = params[:page].to_i if params[:page].present?
-    params[:per_page] = params[:per_page].to_i if params[:per_page].present?
+    %i[page per_page].each do |key|
+      next unless params.key?(key)
+
+      value = params[key]
+      if value.is_a?(String) || value.is_a?(Integer)
+        params[key] = value.to_i if value.present?
+      else
+        params.delete(key)
+      end
+    end
   end
 
   # Some Elasticsearches/QueryBuilders treat values such as empty Strings and
@@ -255,7 +289,12 @@ class SearchController < ApplicationController
   def remove_invalid_sort_directions
     return unless params.key?(:sort_direction)
 
-    direction = params[:sort_direction].downcase.to_sym
-    params.delete(:sort_direction) unless direction.in?(VALID_SORT_DIRECTIONS)
+    value = params[:sort_direction]
+    if value.is_a?(String) || value.is_a?(Symbol)
+      direction = value.downcase.to_sym
+      params.delete(:sort_direction) unless direction.in?(VALID_SORT_DIRECTIONS)
+    else
+      params.delete(:sort_direction)
+    end
   end
 end

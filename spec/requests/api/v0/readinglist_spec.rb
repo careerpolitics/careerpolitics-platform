@@ -35,6 +35,57 @@ RSpec.describe "Api::V0::ReadingList" do
         get api_readinglist_index_path, headers: headers, params: { page: 2, per_page: 2 }
         expect(response.parsed_body.length).to eq(1)
       end
+
+      it "hydrates joined author profile website_url without N+1 profile queries" do
+        authors = Array.new(3) do |i|
+          author = create(:user)
+          author.profile.update!(website_url: "https://author-#{i}.example.com")
+          article = create(:article, user: author)
+          create(:reading_reaction, user: user, reactable: article)
+          author
+        end
+
+        queries = []
+        callback = lambda do |_name, _start, _finish, _id, payload|
+          queries << payload[:sql] unless payload[:name] == "SCHEMA"
+        end
+
+        ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+          get api_readinglist_index_path, headers: headers
+        end
+
+        expect(response).to have_http_status(:ok)
+        expect(queries.grep(/FROM "profiles"/i)).to be_empty
+        expect(response.parsed_body.map { |item| item.dig("article", "user", "website_url") })
+          .to match_array(authors.map(&:processed_website_url))
+      end
+
+      it "matches Jbuilder byte-for-byte via ForemNative under UTC", :aggregate_failures do
+        author = create(:user, name: "Ada <Author> & Co.")
+        author.profile.update!(website_url: "https://ada.example.com")
+        org = create(:organization, name: "Forem & <Friends>")
+        article = create(:article, user: author, organization: org, title: "Post <1> & Demo 🚀")
+        create(:reading_reaction, user: user, reactable: article)
+
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with("TZ").and_return("Etc/UTC")
+
+        Time.use_zone("UTC") do
+          native_results = []
+          allow(ForemNative).to receive(:serialize_api_readinglist_json).and_wrap_original do |method, *args|
+            method.call(*args).tap { |res| native_results << res }
+          end
+
+          get api_readinglist_index_path, headers: headers
+          native_body = response.body
+          expect(native_results.length).to eq(1)
+          expect(native_results.first).to be_a(String)
+
+          allow(ForemNative).to receive(:serialize_api_readinglist_json).and_return(nil)
+          get api_readinglist_index_path, headers: headers
+          expect(native_body).to eq(response.body)
+        end
+      end
     end
   end
 end

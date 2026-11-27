@@ -12,7 +12,8 @@ import {
   HORIZONTAL_ORIENTATION,
 } from 'react-dates/constants';
 import { getDateRangeStartAndEndDates, RANGE_LABELS } from './dateRangeUtils';
-import { Icon, ButtonNew as Button } from '@crayons';
+import { Icon } from '@crayons/Icons';
+import { ButtonNew as Button } from '@crayons/Buttons';
 import ChevronLeft from '@images/chevron-left.svg';
 import ChevronRight from '@images/chevron-right.svg';
 import Calendar from '@images/calendar.svg';
@@ -64,7 +65,7 @@ const MonthYearPicker = ({
     latestYear === selectedYear ? latestMoment.month() : 11;
   const availableMonths = MONTH_NAMES.slice(0, latestMonthIndex + 1);
 
-  const yearsDiff = latestMoment.diff(earliestMoment, 'years');
+  const yearsDiff = latestMoment.year() - earliestMoment.year();
 
   const years = [...Array(yearsDiff).keys()].map(
     (key) => latestMoment.year() - key,

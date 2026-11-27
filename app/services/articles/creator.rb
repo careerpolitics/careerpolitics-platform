@@ -1,5 +1,7 @@
 module Articles
   class Creator
+    include Articles::DeadlockRetry
+
     def self.call(...)
       new(...).call
     end
@@ -18,9 +20,12 @@ module Articles
     # @option article_params [Boolean] :archived
     # @option article_params [String<Array>] :tags
     # @option article_params [NilClass, String, ActiveSupport::TimeWithZone] :published_at
-    def initialize(user, article_params)
+    # @param co_author_invitee_ids [Array<Integer>, nil] users to invite as co-authors; nil leaves
+    #   invitations out of it entirely (see CoAuthorInvitations::Sync)
+    def initialize(user, article_params, co_author_invitee_ids: nil)
       @user = user
       @article_params = normalize_params(article_params)
+      @co_author_invitee_ids = co_author_invitee_ids
     end
 
     def call
@@ -35,7 +40,7 @@ module Articles
 
     private
 
-    attr_reader :article, :user, :article_params
+    attr_reader :article, :user, :article_params, :co_author_invitee_ids
 
     def normalize_params(original_params)
       original_params.except(:tags).tap do |params|
@@ -86,14 +91,32 @@ module Articles
 
       # Set collection after creation to avoid it being cleared by evaluate_front_matter
       # which clears collection_id when title is present in frontmatter
-      if @article.save
+      if save_article
         found_series = series
         if found_series.present?
           @article.update_column(:collection_id, found_series.id)
           @article.association(:collection).reset
         end
+        co_author_invitations&.apply
       end
       @article
+    end
+
+    # Persists @article after validating any pending co-author invitations,
+    # retrying transient PostgreSQL deadlocks via Articles::DeadlockRetry.
+    def save_article
+      if co_author_invitations.nil? || co_author_invitations.prepare
+        return with_deadlock_retry { @article.save }
+      end
+
+      co_author_invitations.errors.each { |message| @article.errors.add(:base, message) }
+      false
+    end
+
+    def co_author_invitations
+      return if co_author_invitee_ids.nil?
+
+      @co_author_invitations ||= CoAuthorInvitations::Sync.new(@article, co_author_invitee_ids)
     end
 
     def series

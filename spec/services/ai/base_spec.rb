@@ -45,34 +45,28 @@ RSpec.describe Ai::Base do
       expect(audit.error_message).to be_nil
     end
 
-    it "concatenates text from multi-part candidate responses" do
-      multi_part_response = instance_double(
-        HTTParty::Response,
-        success?: true,
-        parsed_response: {
-          "candidates" => [
-            {
-              "content" => {
-                "parts" => [
-                  { "text" => "{\"title\":\"A\"," },
-                  { "text" => "\"markdown\":\"B\"}" },
-                ]
-              }
-            },
-          ],
-          "usageMetadata" => {
-            "promptTokenCount" => 3,
-            "candidatesTokenCount" => 2,
-            "totalTokenCount" => 5,
-          },
-        },
-        code: 200,
-        body: '{"candidates":[{"content":{"parts":[{"text":"{\\"title\\":\\"A\\","},{"text":"\\"markdown\\":\\"B\\"}"}]}}]}',
-      )
+    context "when Gemini blocks the prompt as PROHIBITED_CONTENT" do
+      let(:mock_response) do
+        instance_double(HTTParty::Response,
+                        success?: true, code: 200,
+                        parsed_response: { "promptFeedback" => { "blockReason" => "PROHIBITED_CONTENT" } })
+      end
 
-      allow(described_class).to receive(:post).and_return(multi_part_response)
+      it "raises ProhibitedContentError" do
+        expect { client.call(prompt) }.to raise_error(described_class::ProhibitedContentError)
+      end
+    end
 
-      expect(client.call(prompt)).to eq("{\"title\":\"A\",\"markdown\":\"B\"}")
+    context "when only the generated candidate finished with PROHIBITED_CONTENT" do
+      let(:mock_response) do
+        instance_double(HTTParty::Response,
+                        success?: true, code: 200,
+                        parsed_response: { "candidates" => [{ "finishReason" => "PROHIBITED_CONTENT" }] })
+      end
+
+      it "does not treat the input as prohibited" do
+        expect(client.call(prompt)).to be_nil
+      end
     end
 
     context "with wrapper and affected user/content" do

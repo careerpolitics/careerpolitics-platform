@@ -38,7 +38,7 @@ class ArticleDecorator < ApplicationDecorator
   end
 
   def url
-    URL.url(path)
+    URL.article(object)
   end
 
   def title_length_classification
@@ -95,7 +95,13 @@ class ArticleDecorator < ApplicationDecorator
   end
 
   def long_markdown?
-    body_markdown.present? && body_markdown.size > LONG_MARKDOWN_THRESHOLD
+    if object.has_attribute?(:body_markdown)
+      body_markdown.present? && body_markdown.size > LONG_MARKDOWN_THRESHOLD
+    elsif object.has_attribute?(:long_markdown)
+      ActiveModel::Type::Boolean.new.cast(object[:long_markdown]) == true
+    else
+      false
+    end
   end
 
   def co_authors
@@ -103,9 +109,11 @@ class ArticleDecorator < ApplicationDecorator
   end
 
   def co_author_name_and_path
-    User.select(:name, :username).where(id: co_author_ids).in_order_of(:id, co_author_ids).map do |user|
-      %(<a href="#{user.path}" class="crayons-link">#{user.name}</a>)
-    end.to_sentence
+    helpers = ActionController::Base.helpers
+    links = User.select(:name, :username).where(id: co_author_ids).in_order_of(:id, co_author_ids).map do |user|
+      helpers.link_to(user.name, user.path, class: "crayons-link")
+    end
+    helpers.to_sentence(links)
   end
 
   # Used in determining when to bust additional routes for an Article's comments
@@ -114,10 +122,23 @@ class ArticleDecorator < ApplicationDecorator
   end
 
   def permit_adjacent_sponsors?
-    return true unless respond_to?(:user_id) && user_id.present?
+    return @permit_adjacent_sponsors if defined?(@permit_adjacent_sponsors)
+    return @permit_adjacent_sponsors = true unless respond_to?(:user_id) && user_id.present?
+
+    # billboards#show selects the answer alongside the article (see BillboardsController).
+    if object.has_attribute?(:adjacent_sponsors_permitted)
+      return @permit_adjacent_sponsors = object[:adjacent_sponsors_permitted]
+    end
+
+    # articles#show preloads the author's setting; answer from it instead of querying again.
+    # user_id is unique in users_settings, so the loaded row is the only one exists? could match.
+    if co_author_ids.empty? && object.association(:user).loaded? && user&.association(:setting)&.loaded?
+      return @permit_adjacent_sponsors = user.setting.nil? || user.setting.permit_adjacent_sponsors?
+    end
 
     author_ids = [user_id] + co_author_ids
-    Users::Setting.where(user_id: author_ids).all?(&:permit_adjacent_sponsors)
+    # permit_adjacent_sponsors is nullable; nil opts out, matching the previous `all?` check
+    @permit_adjacent_sponsors = !Users::Setting.exists?(user_id: author_ids, permit_adjacent_sponsors: [false, nil])
   end
 
   def pinned?
@@ -150,4 +171,6 @@ class ArticleDecorator < ApplicationDecorator
   delegate :skip_indexing?, to: :object
   delegate :displayable_published_at, to: :object
   delegate :title_for_metadata, to: :object
+  delegate :ai_disclosure_label, to: :object
+  delegate :ai_disclosed?, to: :object
 end

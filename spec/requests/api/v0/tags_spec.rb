@@ -71,6 +71,26 @@ RSpec.describe "Api::V0::Tags" do
     end
   end
 
+  describe "GET /api/tags/supported" do
+    before do
+      RequestStore.store[:subforem_id] = nil
+      RequestStore.store[:default_subforem_id] = nil
+      RequestStore.store[:root_subforem_id] = nil
+    end
+
+    it "returns only supported tags with the edge cache surrogate key" do
+      supported = create(:tag, supported: true)
+      create(:tag, supported: false)
+
+      get supported_api_tags_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.pluck("id")).to eq([supported.id])
+      expect(response.headers["surrogate-key"].split.to_set)
+        .to eq([Tag::SUPPORTED_TAGS_SURROGATE_KEY, supported.record_key].to_set)
+    end
+  end
+
   private
 
   def expect_valid_json_body(body, tag)
@@ -79,5 +99,23 @@ RSpec.describe "Api::V0::Tags" do
     expect(body["name"]).to eq(tag.name)
     expect(body["bg_color_hex"]).to eq(tag.bg_color_hex)
     expect(body["text_color_hex"]).to eq(tag.text_color_hex)
+  end
+
+  it "matches Jbuilder byte-for-byte via ForemNative", :aggregate_failures do
+    create(:tag, name: "rustlang", short_summary: "Fast <safe> & modern 🚀")
+
+    native_results = []
+    allow(ForemNative).to receive(:serialize_api_tags_json).and_wrap_original do |method, *args, **kwargs|
+      method.call(*args, **kwargs).tap { |res| native_results << res }
+    end
+
+    get "/api/tags"
+    native_body = response.body
+    expect(native_results.length).to eq(1)
+    expect(native_results.first).to be_a(String)
+
+    allow(ForemNative).to receive(:serialize_api_tags_json).and_return(nil)
+    get "/api/tags"
+    expect(native_body).to eq(response.body)
   end
 end

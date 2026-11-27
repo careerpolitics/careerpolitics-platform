@@ -4,6 +4,9 @@
 @import 'scaffolds';
 
 @import 'components/admin/users';
+@import 'components/admin/permissions';
+@import 'components/admin/events';
+@import 'components/admin/billboards';
 @import 'components/skip-link';
 
 // overriding Bootstrap styles
@@ -316,4 +319,28 @@ which may be more easily removed once we no longer wish admin layouts to have a 
   &[open] .summary-icon {
     transform: rotate(180deg);
   }
+}
+
+.flag-appeal-card {
+  summary {
+    list-style: none;
+
+    &::marker,
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  .summary-icon {
+    transition: transform var(--transition-props);
+  }
+
+  &[open] .summary-icon {
+    transform: rotate(90deg);
+  }
+}
+
+.flag-appeal-pre {
+  white-space: pre-wrap;
+  max-height: 12rem;
 }

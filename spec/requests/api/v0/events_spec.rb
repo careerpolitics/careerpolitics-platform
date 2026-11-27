@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe "Api::V0::Events", type: :request do
+RSpec.describe "Api::V0::Events" do
   let!(:admin) { create(:user).tap { |u| u.add_role(:super_admin) } }
   let!(:admin_api_secret) { create(:api_secret, user: admin) }
   let!(:admin_headers) { { "api-key" => admin_api_secret.secret, "content-type" => "application/json" } }
@@ -17,8 +17,8 @@ RSpec.describe "Api::V0::Events", type: :request do
       it "returns only published events" do
         get "/api/events"
         expect(response).to have_http_status(:success)
-        
-        json = JSON.parse(response.body)
+
+        json = response.parsed_body
         expect(json.count).to eq(1)
         expect(json.first["id"]).to eq(published_event.id)
       end
@@ -27,7 +27,7 @@ RSpec.describe "Api::V0::Events", type: :request do
     context "when authenticated as basic user" do
       it "returns only published events" do
         get "/api/events", headers: user_headers
-        json = JSON.parse(response.body)
+        json = response.parsed_body
         expect(json.count).to eq(1)
       end
     end
@@ -35,17 +35,96 @@ RSpec.describe "Api::V0::Events", type: :request do
     context "when authenticated as an administrator" do
       it "returns all events including drafts" do
         get "/api/events", headers: admin_headers
-        json = JSON.parse(response.body)
+        json = response.parsed_body
         expect(json.count).to eq(2)
+      end
+    end
+
+    context "when filtering by type_of" do
+      let!(:challenge_event) { create(:event, published: true, type_of: :challenge) }
+      let!(:draft_challenge_event) { create(:event, published: false, type_of: :challenge) }
+      let!(:stream_event) { create(:event, published: true, type_of: :live_stream) }
+      let!(:meetup_event) { create(:event, published: true, type_of: :meetup) }
+      let!(:conference_event) { create(:event, published: true, type_of: :conference) }
+
+      it "returns only events matching the requested type_of when unauthenticated" do
+        get "/api/events", params: { type_of: "challenge" }
+        expect(response).to have_http_status(:success)
+
+        json = response.parsed_body
+        expect(json.pluck("id")).to contain_exactly(challenge_event.id)
+      end
+
+      it "filters by meetup and conference type_of" do
+        get "/api/events", params: { type_of: "meetup" }
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body.pluck("id")).to contain_exactly(meetup_event.id)
+
+        get "/api/events", params: { type_of: "conference" }
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body.pluck("id")).to contain_exactly(conference_event.id)
+      end
+
+      it "returns only events matching the requested type_of for basic users" do
+        get "/api/events", params: { type_of: "live_stream" }, headers: user_headers
+        expect(response).to have_http_status(:success)
+
+        json = response.parsed_body
+        expect(json.pluck("id")).to include(stream_event.id)
+        expect(json.pluck("id")).not_to include(challenge_event.id)
+      end
+
+      it "returns matching events including drafts for administrators" do
+        get "/api/events", params: { type_of: "challenge" }, headers: admin_headers
+        expect(response).to have_http_status(:success)
+
+        json = response.parsed_body
+        expect(json.pluck("id")).to contain_exactly(challenge_event.id, draft_challenge_event.id)
+      end
+
+      it "ignores invalid type_of values" do
+        get "/api/events", params: { type_of: "nonexistent_type" }
+        expect(response).to have_http_status(:success)
+
+        json = response.parsed_body
+        expect(json.pluck("id")).to include(published_event.id, challenge_event.id, stream_event.id)
+      end
+    end
+
+    context "when events have tags" do
+      before do
+        create_list(:event, 3, published: true).each { |event| event.update!(tag_list: "ruby, webdev") }
+      end
+
+      it "returns each event's tag_list and loads taggings in one query" do
+        taggings_queries = 0
+        count_taggings = lambda do |*, payload|
+          taggings_queries += 1 if payload[:sql].include?('FROM "taggings"')
+        end
+
+        ActiveSupport::Notifications.subscribed(count_taggings, "sql.active_record") do
+          get "/api/events"
+        end
+
+        json = response.parsed_body
+        tagged = json.reject { |event| event["id"] == published_event.id }
+        expect(tagged.size).to eq(3)
+        expect(tagged.pluck("tag_list")).to all(contain_exactly("ruby", "webdev"))
+        expect(taggings_queries).to eq(1)
       end
     end
   end
 
   describe "GET /api/events/:id" do
-    context "when requesting a published event" do
-      it "returns the event" do
-        get "/api/events/#{published_event.id}"
+    context "when requesting a published event with full_details" do
+      let!(:detailed_event) { create(:event, published: true, full_details: "Detailed context notes for agent") }
+
+      it "returns the event including full_details" do
+        get "/api/events/#{detailed_event.id}"
         expect(response).to have_http_status(:success)
+
+        json = response.parsed_body
+        expect(json["full_details"]).to eq("Detailed context notes for agent")
       end
     end
 
@@ -74,6 +153,7 @@ RSpec.describe "Api::V0::Events", type: :request do
           title: "New Stream",
           event_name_slug: "new-stream",
           event_variation_slug: "v1",
+          full_details: "Exhaustive event details and speaker roster",
           start_time: 1.day.from_now,
           end_time: 2.days.from_now,
           type_of: "live_stream",
@@ -93,11 +173,116 @@ RSpec.describe "Api::V0::Events", type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    it "allows administrators to create events" do
-      expect {
+    it "allows administrators to create events with full_details" do
+      expect do
         post "/api/events", params: valid_params, headers: admin_headers
-      }.to change(Event, :count).by(1)
+      end.to change(Event, :count).by(1)
       expect(response).to have_http_status(:created)
+      expect(Event.last.full_details).to eq("Exhaustive event details and speaker roster")
+      expect(response.parsed_body["full_details"]).to eq("Exhaustive event details and speaker roster")
+    end
+  end
+
+  describe "PATCH /api/events/:id" do
+    let(:event) { create(:event, published: true) }
+    let(:update_params) do
+      {
+        event: {
+          title: "Updated Stream Title",
+          full_details: "Updated comprehensive agenda and FAQ dump"
+        }
+      }.to_json
+    end
+
+    it "blocks unauthenticated requests" do
+      patch "/api/events/#{event.id}", params: update_params, headers: { "content-type" => "application/json" }
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "blocks basic users" do
+      patch "/api/events/#{event.id}", params: update_params, headers: user_headers
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "allows administrators to update events with full_details" do
+      patch "/api/events/#{event.id}", params: update_params, headers: admin_headers
+      expect(response).to have_http_status(:success)
+      expect(event.reload.title).to eq("Updated Stream Title")
+      expect(event.full_details).to eq("Updated comprehensive agenda and FAQ dump")
+      expect(response.parsed_body["full_details"]).to eq("Updated comprehensive agenda and FAQ dump")
+    end
+
+    it "allows administrators to toggle allow_articles" do
+      patch "/api/events/#{event.id}",
+            params: { event: { allow_articles: true } }.to_json,
+            headers: admin_headers
+
+      expect(response).to have_http_status(:success)
+      expect(event.reload.allow_articles).to be(true)
+      expect(response.parsed_body["allow_articles"]).to be(true)
+    end
+  end
+
+  describe "multipart banner_image and cover_image uploads" do
+    let(:image_file) { fixture_file_upload(Rails.root.join("spec/fixtures/files/800x600.png"), "image/png") }
+    let(:second_image_file) { fixture_file_upload(Rails.root.join("spec/fixtures/files/800x600.png"), "image/png") }
+    let(:invalid_file) { fixture_file_upload(Rails.root.join("spec/fixtures/files/profile_fields.csv"), "text/csv") }
+    let(:admin_multipart_headers) { { "api-key" => admin_api_secret.secret } }
+    let(:user_multipart_headers) { { "api-key" => user_api_secret.secret } }
+
+    it "allows administrators to upload distinct banner_image and cover_image on POST /api/events" do
+      post "/api/events",
+           params: {
+             event: {
+               title: "Multipart Conf",
+               event_name_slug: "multipart-conf",
+               event_variation_slug: "2026",
+               start_time: 1.day.from_now.iso8601,
+               end_time: 2.days.from_now.iso8601,
+               type_of: "conference",
+               published: true,
+               banner_image: image_file,
+               cover_image: second_image_file
+             }
+           },
+           headers: admin_multipart_headers
+
+      expect(response).to have_http_status(:created)
+      created = Event.find(response.parsed_body["id"])
+      expect(created.banner_image).to be_present
+      expect(created.cover_image).to be_present
+      expect(response.parsed_body["banner_image_url"]).to include("banner_image")
+      expect(response.parsed_body["social_image_url"]).to include("cover_image")
+    end
+
+    it "allows administrators to upload banner_image on PATCH /api/events/:id" do
+      patch "/api/events/#{published_event.id}",
+            params: { event: { banner_image: image_file } },
+            headers: admin_multipart_headers
+
+      expect(response).to have_http_status(:success)
+      expect(published_event.reload.banner_image).to be_present
+      expect(published_event.cover_image.file).to be_nil
+      expect(response.parsed_body["banner_image_url"]).to include("banner_image")
+    end
+
+    it "denies non-admin users attempting multipart image upload" do
+      patch "/api/events/#{published_event.id}",
+            params: { event: { banner_image: image_file } },
+            headers: user_multipart_headers
+
+      expect(response).to have_http_status(:unauthorized)
+      expect(published_event.reload.banner_image.file).to be_nil
+    end
+
+    it "rejects invalid non-image file uploads with unprocessable_entity" do
+      patch "/api/events/#{published_event.id}",
+            params: { event: { banner_image: invalid_file } },
+            headers: admin_multipart_headers
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body["error"]).to be_present
+      expect(published_event.reload.banner_image.file).to be_nil
     end
   end
 end

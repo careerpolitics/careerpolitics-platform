@@ -1,0 +1,88 @@
+<%
+  is_showcase_view = @event_page == @showcase_page
+  page_title = is_showcase_view ? @event.title : "#{@event_page.title} — #{@event.title}"
+  page_description = @event_page.description.presence || @event.description
+  canonical_target = is_showcase_view ? event_path(@event.event_name_slug, @event.event_variation_slug) : event_custom_page_path(@event.event_name_slug, @event.event_variation_slug, event_page_suffix(@event_page))
+  social_image = @event_page.social_image_url.presence || @event.social_image_url
+  now = Time.current
+%>
+<% content_for :title, page_title %>
+<%= content_for :page_meta do %>
+  <link rel="canonical" href="<%= app_url(canonical_target) %>" />
+  <meta name="description" content="<%= page_description %>">
+  <meta property="og:title" content="<%= page_title %>" />
+  <meta property="og:description" content="<%= page_description %>" />
+  <meta property="og:url" content="<%= app_url(canonical_target) %>" />
+  <meta property="og:type" content="event" />
+  <meta property="og:image" content="<%= social_image %>" />
+  <meta name="twitter:image:src" content="<%= social_image %>">
+  <meta name="twitter:card" content="summary_large_image">
+<% end %>
+
+<% if embedded_view? %>
+  <main id="main-content" class="crayons-layout crayons-layout--limited-l py-4">
+    <div class="crayons-card p-6 crayons-article__body text-styles event-page-body">
+      <%= @event_page.processed_html.html_safe %>
+    </div>
+  </main>
+<% else %>
+  <%= render "event_tabs" %>
+
+  <%= render "brand_banner", event: @event, fallback_to_cover: @event.challenge? %>
+
+  <div class="event-show-layout event-page-container">
+    <% if !@event.published? %>
+      <div class="crayons-notice crayons-notice--warning mb-5 p-3 fs-s text-center">
+        <strong><%= t("views.events.draft_notice.heading") %></strong> <%= t("views.events.draft_notice.body") %>
+        <a href="<%= edit_admin_event_path(@event) %>" class="c-link c-link--branded ml-2"><%= t("views.events.draft_notice.edit") %></a>
+      </div>
+    <% end %>
+
+    <%= render "parent_context_bar" %>
+
+    <%= render "live_ribbon" %>
+
+    <div class="event-detail-columns">
+      <main class="event-detail-columns__main" id="main-content">
+        <article class="crayons-card event-subpage-card">
+          <% unless is_showcase_view %>
+            <header class="event-subpage-card__header">
+              <div class="event-subpage-card__header-main">
+                <div class="event-subpage-card__eyebrow">
+                  <a href="<%= event_path(@event.event_name_slug, @event.event_variation_slug) %>" class="c-link c-link--branded fw-medium">
+                    <%= @event.title %>
+                  </a>
+                  <span aria-hidden="true">&middot;</span>
+                  <time class="js-event-local-time"
+                        datetime="<%= @event.start_time.iso8601 %>"
+                        data-start-iso="<%= @event.start_time.iso8601 %>"
+                        data-end-iso="<%= @event.end_time.iso8601 %>">
+                    <%= event_datetime_range(@event) %>
+                  </time>
+                </div>
+                <h1 class="event-subpage-card__title"><%= @event_page.title %></h1>
+                <% if @event_page.description.present? %>
+                  <p class="event-subpage-card__desc"><%= @event_page.description %></p>
+                <% end %>
+              </div>
+            </header>
+          <% end %>
+
+          <div class="event-subpage-card__body crayons-article__body text-styles event-page-body">
+            <%= @event_page.processed_html.html_safe %>
+          </div>
+        </article>
+      </main>
+
+      <aside class="event-detail-columns__aside">
+        <% if @event.challenge? %>
+          <%= render "challenge_sidebar", event: @event, now: now %>
+        <% else %>
+          <%= render "gathering_sidebar", event: @event, now: now %>
+        <% end %>
+      </aside>
+    </div>
+
+    <%= render "local_time_script" %>
+  </div>
+<% end %>

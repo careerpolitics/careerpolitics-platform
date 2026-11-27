@@ -8,12 +8,6 @@ RSpec.describe "Api::V0::FollowersController" do
   let(:follower2) { create(:user) }
 
   describe "GET /api/followers/users" do
-    before do
-      follower.follow(user)
-
-      user.reload
-    end
-
     context "when user is unauthorized" do
       it "returns unauthorized" do
         get api_followers_users_path
@@ -32,7 +26,12 @@ RSpec.describe "Api::V0::FollowersController" do
     end
 
     context "when user is authorized with api key" do
-      it "returns user's followers list with the correct format" do
+      before do
+        follower.follow(user)
+        user.reload
+      end
+
+      it "returns user's followers list with the correct format", :aggregate_failures do
         get api_followers_users_path, headers: headers
         expect(response).to have_http_status(:ok)
 
@@ -46,8 +45,12 @@ RSpec.describe "Api::V0::FollowersController" do
         expect(response_follower["created_at"]).to be_an_instance_of(String)
       end
 
-      it "supports pagination" do
+      it "supports pagination and descending order by default", :aggregate_failures do
         follower2.follow(user)
+
+        get api_followers_users_path, headers: headers
+        follows = user.followings.order(id: :desc).last(2).map(&:id)
+        expect(response.parsed_body.pluck("id")).to eq(follows)
 
         get api_followers_users_path, params: { page: 1, per_page: 1 }, headers: headers
         expect(response.parsed_body.length).to eq(1)
@@ -59,16 +62,6 @@ RSpec.describe "Api::V0::FollowersController" do
         expect(response.parsed_body.length).to eq(0)
       end
 
-      it "orders results by descending following date by default" do
-        follower2.follow(user)
-
-        get api_followers_users_path, headers: headers
-
-        follows = user.followings.order(id: :desc).last(2).map(&:id)
-        result = response.parsed_body.pluck("id")
-        expect(result).to eq(follows)
-      end
-
       it "orders results by ascending following date if the 'sort' param is specified" do
         follower2.follow(user)
 
@@ -76,6 +69,45 @@ RSpec.describe "Api::V0::FollowersController" do
         get api_followers_users_path, headers: headers, params: { sort: "created_at" }
         result = response.parsed_body.pluck("id")
         expect(result).to eq(follows)
+      end
+
+      it "filters by blocked = false to align with the composite followable_blocked_and_created_at index",
+         :aggregate_failures do
+        blocked_follower = create(:user)
+        create(:follow, follower: blocked_follower, followable: user, blocked: true)
+
+        follows_queries = []
+        callback = lambda do |*, payload|
+          sql = payload[:sql]
+          follows_queries << sql if sql.include?('FROM "follows"') && payload[:name] != "SCHEMA"
+        end
+
+        ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+          get api_followers_users_path, headers: headers
+        end
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body.pluck("user_id")).to eq([follower.id])
+        expect(follows_queries.size).to eq(1)
+        expect(follows_queries.first).to match(/"follows"\."blocked" = (FALSE|\$\d+)/)
+      end
+
+      it "matches Jbuilder byte-for-byte via ForemNative", :aggregate_failures do
+        follower.update!(name: "Alice <Dev> & Co.")
+
+        native_results = []
+        allow(ForemNative).to receive(:serialize_api_followers_json).and_wrap_original do |method, *args, **kwargs|
+          method.call(*args, **kwargs).tap { |res| native_results << res }
+        end
+
+        get api_followers_users_path, headers: headers
+        native_body = response.body
+        expect(native_results.length).to eq(1)
+        expect(native_results.first).to be_a(String)
+
+        allow(ForemNative).to receive(:serialize_api_followers_json).and_return(nil)
+        get api_followers_users_path, headers: headers
+        expect(native_body).to eq(response.body)
       end
     end
   end

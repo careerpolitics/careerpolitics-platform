@@ -1,4 +1,12 @@
 class CommentsController < ApplicationController
+  UNRENDERED_ARTICLE_COLUMNS = %w[body_markdown body_html semantic_embedding reading_list_document].freeze
+  # The settings page (and CommentPolicy#settings?) only reads these, so skip the comment's body,
+  # processed HTML and ~3KB TOASTed semantic_embedding vector.
+  SETTINGS_COMMENT_COLUMNS = %i[id user_id commentable_id commentable_type].freeze
+  # The permalink header only links to the parent comment and shows its title (Comment#path and
+  # Comment#title), so skip its body_markdown and ~3KB TOASTed semantic_embedding vector.
+  PARENT_HEADER_COMMENT_COLUMNS = %i[id user_id ancestry deleted hidden_by_commentable_user processed_html].freeze
+
   before_action :set_comment, only: %i[update destroy]
   before_action :set_cache_control_headers, only: [:index]
   before_action :authenticate_user!, only: %i[preview create hide unhide]
@@ -14,9 +22,13 @@ class CommentsController < ApplicationController
   def index
     skip_authorization
     @comment = Comment.new
-    @podcast = Podcast.find_by(slug: params[:username])
 
-    @root_comment = Comment.find(params[:id_code].to_i(26)) if params[:id_code].present?
+    # The permalink page never reads the root comment's ~3KB TOASTed semantic_embedding vector
+    if params[:id_code].present?
+      @root_comment = Comment.select(Comment.column_names - Comments::Tree::UNRENDERED_COLUMNS)
+        .find(params[:id_code].to_i(26))
+    end
+    preload_root_article if @root_comment
     redirect_if_different_subforem if @root_comment
 
     if @root_comment
@@ -27,17 +39,17 @@ class CommentsController < ApplicationController
       not_found if !@is_admin && @root_comment.score < Comment::HIDE_THRESHOLD && !@root_comment.has_children?
     end
 
+    set_user
     if @podcast
-      @user = @podcast
       @commentable = @user.podcast_episodes.find_by(slug: params[:slug]) if @user.podcast_episodes
     else
-      set_user
       set_commentable
       @discussion_lock = @commentable.discussion_lock if @commentable.is_a?(Article)
       not_found unless comment_should_be_visible?
     end
 
     @commentable_type = @commentable.class.name if @commentable
+    @root_parent_comment = load_root_parent_comment if @root_comment
 
     set_surrogate_key_header @commentable.record_key if @commentable
   end
@@ -163,6 +175,7 @@ class CommentsController < ApplicationController
       else
         @user = @commentable&.user
       end
+      @root_parent_comment = load_root_parent_comment
 
       render :index
     else
@@ -186,6 +199,7 @@ class CommentsController < ApplicationController
       @comment.deleted = true
       @comment.save!
     end
+    Comments::Count.call(@comment.commentable, recalculate: true) if @comment.commentable.is_a?(Article)
     redirect = @comment.commentable&.path || user_path(current_user)
     # NOTE: Brakeman doesn't like redirecting to a path, because of a "possible
     # unprotected redirect". Using URI.parse().path is the recommended workaround.
@@ -212,7 +226,7 @@ class CommentsController < ApplicationController
   end
 
   def settings
-    @comment = Comment.find(params[:id_code].to_i(26))
+    @comment = Comment.select(*SETTINGS_COMMENT_COLUMNS).find(params[:id_code].to_i(26))
     authorize @comment
     @notification_subscription = NotificationSubscription.find_or_initialize_by(
       user_id: @comment.user_id,
@@ -262,6 +276,7 @@ class CommentsController < ApplicationController
     @comment.deleted = true
 
     if @comment.save
+      Comments::Count.call(@comment.commentable, recalculate: true) if @comment.commentable.is_a?(Article)
       redirect_url = @comment.commentable&.path
       if redirect_url
         flash[:success] = I18n.t("comments_controller.delete.notice")
@@ -303,15 +318,54 @@ class CommentsController < ApplicationController
   end
 
   def set_user
-    @user = User.find_by(username: params[:username]) ||
-      Organization.find_by(slug: params[:username]) ||
+    if (@user = User.find_by(username: params[:username]) || Organization.find_by(slug: params[:username]))
+      @root_comment.association(:user).target = @user if @user.is_a?(User) && @root_comment&.user_id == @user.id
+    elsif (@podcast = Podcast.find_by(slug: params[:username]))
+      @user = @podcast
+    else
       not_found
+    end
+  end
+
+  def load_root_parent_comment
+    return unless @root_comment.depth.positive?
+
+    parent = Comment.select(*PARENT_HEADER_COMMENT_COLUMNS).find_by(id: @root_comment.parent_id)
+    return unless parent
+
+    loaded_user = [@user, (@root_comment.user if @root_comment.association(:user).loaded?),
+                   (@article.user if @article&.association(:user)&.loaded?)].detect do |candidate|
+      candidate.is_a?(User) && candidate.id == parent.user_id
+    end
+    if loaded_user
+      parent.association(:user).target = loaded_user
+    else
+      ActiveRecord::Associations::Preloader.new(
+        records: [parent], associations: :user, scope: User.select(:id, :username),
+      ).call
+    end
+    parent
+  end
+
+  # The comments page never reads the article's TOASTed semantic_embedding vector or
+  # reading_list_document search tsvector, so load the root comment's article without detoasting them.
+  def preload_root_article
+    return unless @root_comment.commentable_type == "Article" && @root_comment.commentable_id
+
+    @root_comment.association(:commentable).target =
+      Article.select(Article.column_names - UNRENDERED_ARTICLE_COLUMNS).find_by(id: @root_comment.commentable_id)
   end
 
   def set_commentable
     @commentable = @root_comment&.commentable ||
-      @user.articles.find_by(slug: params[:slug]) || nil
-    @article = @commentable if @commentable.is_a?(Article)
+      @user.articles.select(Article.column_names - UNRENDERED_ARTICLE_COLUMNS).find_by(slug: params[:slug]) || nil
+    return unless @commentable.is_a?(Article)
+
+    @article = @commentable
+    @article.association(:user).target = @user if @user.is_a?(User) && @article.user_id == @user.id
+    return unless @user.is_a?(Organization) && @article.organization_id == @user.id
+
+    @article.association(:organization).target = @user
   end
 
   # Use callbacks to share common setup or constraints between actions.
