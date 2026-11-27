@@ -2,26 +2,16 @@ ENV["RAILS_ENV"] = "test"
 # Temporary workaround for Ruby 3.0.6 / CGI udpate
 ENV["APP_DOMAIN"] = "forem.test"
 ENV["APP_PROTOCOL"] ||= "http://"
-require "knapsack_pro"
 require "simplecov"
 require "simplecov_json_formatter"
 
 if ENV["CI"]
   SimpleCov.formatter = SimpleCov::Formatter::JSONFormatter
-end
-KnapsackPro::Adapters::RSpecAdapter.bind
-KnapsackPro::Hooks::Queue.before_queue do |_queue_id|
-  SimpleCov.command_name("rspec_ci_node_#{KnapsackPro::Config::Env.ci_node_index}")
+  SimpleCov.command_name("rspec_ci_node_#{ENV.fetch('CI_NODE_INDEX',0)}")
 end
 
 TMP_RSPEC_XML_REPORT = "tmp/rspec.xml".freeze
 FINAL_RSPEC_XML_REPORT = "tmp/rspec_final_results.xml".freeze
-
-KnapsackPro::Hooks::Queue.after_subset_queue do |_queue_id, _subset_queue_id|
-  if File.exist?(TMP_RSPEC_XML_REPORT)
-    FileUtils.mv(TMP_RSPEC_XML_REPORT, FINAL_RSPEC_XML_REPORT)
-  end
-end
 
 require "spec_helper"
 

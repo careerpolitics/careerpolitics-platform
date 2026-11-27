@@ -15,6 +15,8 @@
       <link rel="preload" href="/sidebars/home" as="fetch" crossorigin="same-origin">
     <% end %>
     <meta charset="utf-8">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7098932368298502"
+            crossorigin="anonymous"></script>
     <% title = yield(:title) %>
     <title><%= title || community_name.to_s %></title>
     <%= yield(:page_meta) %>
@@ -80,6 +82,15 @@
       <meta property="forem:domain" content="<%= Settings::General.app_domain %>" />
     <% end %>
     <%= Settings::UserExperience.head_content.html_safe %>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18049632094"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'AW-18049632094');
+    </script>
   </head>
   <% unless internal_navigation? %>
     <%
@@ -122,7 +133,7 @@
       data-global-feature-flags-enabled="<%= j(enabled_global_feature_flags) %>"
       data-style-fingerprint="<%= main_stylesheets_fingerprint %>">
       <%# Repeat of stylesheets in <head> to fix rendering glitch: https://github.com/forem/forem/issues/12377 %>
-      
+
       <%# First script to run no matter what %>
       <script data-no-instant>
         (function() {
@@ -215,11 +226,11 @@
     <%= render "layouts/bottom_scripts"  %>
   <% end %>
   <%= Settings::UserExperience.bottom_of_body_content.html_safe %>
-  
+
   <% if !embedded_view? && user_signed_in? && ArticlePolicy.is_root_subforem? %>
     <%= render "shared/subforem_selection_modal" %>
   <% end %>
-  
+
   </body>
   </html>
 <% end %>

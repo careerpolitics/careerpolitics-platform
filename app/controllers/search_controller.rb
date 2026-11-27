@@ -180,6 +180,22 @@ class SearchController < ApplicationController
           per_page: feed_params[:per_page],
           format: :json,
         )
+      elsif class_name.JobPost?
+        Search::JobPost.search_documents(
+          page: feed_params[:page],
+          per_page: feed_params[:per_page],
+          sort_by: feed_params[:sort_by],
+          sort_direction: feed_params[:sort_direction],
+          term: feed_params[:search_fields],
+          )
+      elsif class_name.MockExamTemplate?
+        Search::MockExam.search_documents(
+          page: feed_params[:page],
+          per_page: feed_params[:per_page],
+          sort_by: feed_params[:sort_by],
+          sort_direction: feed_params[:sort_direction],
+          term: feed_params[:search_fields],
+          )
       end
 
     render_search_result(result)
